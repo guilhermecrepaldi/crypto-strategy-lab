@@ -8,7 +8,7 @@ __pycache__/
 .coverage
 htmlcov/
 .env
-data/
+/data/
 reports/*.json
 reports/*.md
 !reports/.gitkeep
