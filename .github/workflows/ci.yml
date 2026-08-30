@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      timescaledb:
+        image: timescale/timescaledb:latest-pg16@sha256:289d55704b1b3ee8263cd3805c6930f9cd54506835a8f19f9b85dad17d5c5a8a
+        env:
+          POSTGRES_DB: crypto_strategy_lab
+          POSTGRES_USER: crypto_lab
+          POSTGRES_PASSWORD: crypto_lab_local
+        ports:
+          - 54329:5432
+        options: >-
+          --health-cmd "pg_isready -U crypto_lab -d crypto_strategy_lab"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      CRYPTO_LAB_DATABASE_URL: postgresql+psycopg://crypto_lab:crypto_lab_local@localhost:54329/crypto_strategy_lab
+      CRYPTO_LAB_RUN_DB_TESTS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --frozen --all-groups
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+      - run: uv run pytest

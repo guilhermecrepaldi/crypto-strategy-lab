@@ -1,0 +1,18 @@
+{
+  "fixture_version": 1,
+  "start": "2022-01-01T00:00:00Z",
+  "provisional_universe": true,
+  "universe_reason": "Deterministic CI fixture only; not evidence for the definitive 2022 universe.",
+  "symbols": {
+    "ADAUSDT": ["1.00", "1.01", "1.02", "1.03", "1.04", "1.03", "1.02", "1.01", "1.00", "0.99", "0.98", "0.97", "0.96", "0.95", "0.94", "0.93"],
+    "BNBUSDT": ["500", "501", "502", "503", "504", "505", "506", "507", "508", "509", "510", "511", "512", "513", "514", "515"],
+    "BTCUSDT": ["47000", "47100", "47200", "47300", "47400", "47500", "47400", "47300", "47200", "47100", "47000", "46900", "46800", "46700", "46600", "46500"],
+    "ETHUSDT": ["3700", "3690", "3680", "3670", "3660", "3650", "3660", "3680", "3700", "3720", "3740", "3760", "3780", "3800", "3820", "3840"]
+  },
+  "decisions": [
+    {"action": "BUY_FROM_USDT", "from_symbol": null, "to_symbol": "BTCUSDT", "allocation_percent": "75", "confidence": "0.70", "observed_patterns": ["fixture_entry"], "reasoning_summary": "Deterministic entry", "invalidating_conditions": [], "expected_edge_after_costs": "0.01"},
+    {"action": "ROTATE_ASSET", "from_symbol": "BTCUSDT", "to_symbol": "ETHUSDT", "allocation_percent": "75", "confidence": "0.75", "observed_patterns": ["fixture_rotation"], "reasoning_summary": "Deterministic rotation", "invalidating_conditions": [], "expected_edge_after_costs": "0.01"},
+    {"action": "HOLD", "from_symbol": null, "to_symbol": null, "allocation_percent": "0", "confidence": "0.60", "observed_patterns": [], "reasoning_summary": "Wait one interval", "invalidating_conditions": [], "expected_edge_after_costs": null},
+    {"action": "SELL_TO_USDT", "from_symbol": "ETHUSDT", "to_symbol": null, "allocation_percent": "100", "confidence": "0.80", "observed_patterns": ["fixture_exit"], "reasoning_summary": "Deterministic exit", "invalidating_conditions": [], "expected_edge_after_costs": "0.01"}
+  ]
+}

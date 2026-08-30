@@ -1,0 +1,19 @@
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16@sha256:289d55704b1b3ee8263cd3805c6930f9cd54506835a8f19f9b85dad17d5c5a8a
+    environment:
+      POSTGRES_DB: crypto_strategy_lab
+      POSTGRES_USER: crypto_lab
+      POSTGRES_PASSWORD: crypto_lab_local
+    ports:
+      - "54329:5432"
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crypto_lab -d crypto_strategy_lab"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  timescale_data:
