@@ -13,6 +13,9 @@ from crypto_strategy_lab.data.binance import (
 )
 from crypto_strategy_lab.db.persistence import persist_download_manifest, persist_result
 from crypto_strategy_lab.fixtures import load_fixture
+from crypto_strategy_lab.ml.persistence import persist_ml_evaluation
+from crypto_strategy_lab.ml.reporting import write_ml_reports
+from crypto_strategy_lab.ml.workflow import run_short_training, workflow_payload
 from crypto_strategy_lab.reporting import write_reports
 from crypto_strategy_lab.simulation.engine import SimulationConfig, SimulationEngine
 from crypto_strategy_lab.simulation.portfolio import ExecutionCosts
@@ -78,6 +81,116 @@ def validate_archive(path: Path, symbol: str) -> None:
     """Parse and validate a previously downloaded Binance archive."""
     candles = parse_kline_archive(path, symbol)
     typer.echo(f"Validated {len(candles)} candles for {symbol.upper()}")
+
+
+@app.command("rl-train")
+def rl_train(
+    train_fixture: Annotated[Path, typer.Option(exists=True)] = Path("fixtures/short_market.json"),
+    validation_fixture: Annotated[Path, typer.Option(exists=True)] = Path(
+        "fixtures/rl_validation_market.json"
+    ),
+    algorithm: Annotated[str, typer.Option(help="PPO or DQN")] = "PPO",
+    timesteps: Annotated[int, typer.Option(min=1)] = 64,
+    seed: int = 42,
+    artifact_dir: Annotated[Path, typer.Option()] = Path("artifacts/models"),
+    output_dir: Annotated[Path, typer.Option()] = Path("reports"),
+    persist: Annotated[bool, typer.Option(help="Persist ML events and artifacts metadata")] = True,
+    database_url: Annotated[str | None, typer.Option(envvar="CRYPTO_LAB_DATABASE_URL")] = None,
+) -> None:
+    """Train a short PPO/DQN run and evaluate on a separate fixture."""
+    _run_rl_workflow(
+        train_fixture=train_fixture,
+        validation_fixture=validation_fixture,
+        algorithm=algorithm,
+        timesteps=timesteps,
+        seed=seed,
+        artifact_dir=artifact_dir,
+        output_dir=output_dir,
+        persist=persist,
+        database_url=database_url,
+        require_existing_checkpoint=False,
+    )
+
+
+@app.command("rl-evaluate")
+def rl_evaluate(
+    train_fixture: Annotated[Path, typer.Option(exists=True)] = Path("fixtures/short_market.json"),
+    validation_fixture: Annotated[Path, typer.Option(exists=True)] = Path(
+        "fixtures/rl_validation_market.json"
+    ),
+    algorithm: Annotated[str, typer.Option(help="PPO or DQN")] = "PPO",
+    timesteps: Annotated[int, typer.Option(min=1)] = 64,
+    seed: int = 42,
+    artifact_dir: Annotated[Path, typer.Option()] = Path("artifacts/models"),
+    output_dir: Annotated[Path, typer.Option()] = Path("reports"),
+    persist: Annotated[bool, typer.Option(help="Persist evaluation events")] = True,
+    database_url: Annotated[str | None, typer.Option(envvar="CRYPTO_LAB_DATABASE_URL")] = None,
+) -> None:
+    """Evaluate the immutable checkpoint identified by training configuration."""
+    _run_rl_workflow(
+        train_fixture=train_fixture,
+        validation_fixture=validation_fixture,
+        algorithm=algorithm,
+        timesteps=timesteps,
+        seed=seed,
+        artifact_dir=artifact_dir,
+        output_dir=output_dir,
+        persist=persist,
+        database_url=database_url,
+        require_existing_checkpoint=True,
+    )
+
+
+def _run_rl_workflow(
+    *,
+    train_fixture: Path,
+    validation_fixture: Path,
+    algorithm: str,
+    timesteps: int,
+    seed: int,
+    artifact_dir: Path,
+    output_dir: Path,
+    persist: bool,
+    database_url: str | None,
+    require_existing_checkpoint: bool,
+) -> None:
+    if algorithm.upper() not in {"PPO", "DQN"}:
+        raise typer.BadParameter("algorithm must be PPO or DQN")
+    result = run_short_training(
+        train_fixture=train_fixture,
+        validation_fixture=validation_fixture,
+        artifact_dir=artifact_dir,
+        total_timesteps=timesteps,
+        seed=seed,
+        algorithm=algorithm.upper(),
+        require_existing_checkpoint=require_existing_checkpoint,
+    )
+    json_path, markdown_path = write_ml_reports(workflow_payload(result), output_dir)
+    if persist:
+        settings = Settings()
+        url = database_url or settings.database_url
+        run_id, inserted = persist_ml_evaluation(
+            url,
+            env=result.validation_env,
+            normalizer=result.normalizer,
+            evaluation=result.evaluation,
+            artifact=result.artifact,
+        )
+        for baseline in result.baselines:
+            persist_ml_evaluation(
+                url,
+                env=result.validation_env,
+                normalizer=result.normalizer,
+                evaluation=baseline,
+                artifact=None,
+            )
+        typer.echo(f"Database run: {run_id} ({'inserted' if inserted else 'existing'})")
+    typer.echo(
+        f"Model: {result.artifact.model_id} ({'reused' if result.artifact.reused else 'trained'})"
+    )
+    typer.echo(f"Checkpoint: {result.artifact.checkpoint_path}")
+    typer.echo(f"JSON: {json_path}")
+    typer.echo(f"Markdown: {markdown_path}")
 
 
 if __name__ == "__main__":

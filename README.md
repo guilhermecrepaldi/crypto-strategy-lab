@@ -1,8 +1,9 @@
 # Crypto Strategy Lab
 
-Fundação offline-first para pesquisa e replay histórico de estratégias Spot. A primeira
-entrega usa quatro pares, caixa em USDT, candles canônicos de 5 minutos e decisões a cada
-15 minutos. Não existe código para autenticar em exchange, usar Testnet ou enviar ordens.
+Laboratório offline-first para pesquisa histórica de rotação Spot com aprendizado por
+reforço. O corte atual usa ADAUSDT, BNBUSDT, BTCUSDT e ETHUSDT mais caixa em USDT, candles
+canônicos de 5 minutos e decisões a cada 15 minutos. Não existe código para autenticar em
+exchange, usar Testnet ou enviar ordens.
 
 ## Garantias do corte vertical
 
@@ -13,15 +14,25 @@ entrega usa quatro pares, caixa em USDT, candles canônicos de 5 minutos e decis
 - Dinheiro, preços, quantidades e custos usam `Decimal`/`NUMERIC(38,18)`.
 - Decisões inválidas tornam-se `HOLD`.
 - Ordens, fills, decisões, equity e auditoria possuem tabelas append-only.
+- `CryptoRotationEnv` segue o contrato Gymnasium com `Discrete(5)`: USDT e os quatro pares
+  em ordem lexical estável.
+- Features usam somente candles disponíveis antes do relógio simulado. Estatísticas do
+  normalizador só podem ser ajustadas em `TRAIN`.
+- Episódios são sorteados por seed somente entre janelas completas, alinhadas e contidas na
+  partição temporal.
+- PPO é o agente primário; DQN, caixa, buy-and-hold por ativo, momentum causal e política
+  aleatória são comparadores, não promessas de retorno.
 - CoinMarketCap e notícias são contratos complementares e não participam da fixture.
 - O universo da fixture é explicitamente provisório. A seleção definitiva de 2022 permanece
   bloqueada até existir evidência histórica suficiente do catálogo Spot.
 
 ## Stack e arquitetura
 
-Python 3.12, Pydantic 2, SQLAlchemy 2, Alembic, PostgreSQL 16 + TimescaleDB e Typer.
+Python 3.12, Pydantic 2, NumPy, Gymnasium, Stable-Baselines3, PyTorch, SQLAlchemy 2,
+Alembic, PostgreSQL 16 + TimescaleDB e Typer.
 O projeto é um monólito modular: `data` cuida de ingestão/barreiras temporais, `decision` do
-contrato do agente, `simulation` do relógio/carteira/execução e `db` da persistência.
+contrato do agente, `simulation` do relógio/carteira/execução, `ml` de partições, features,
+ambiente, treino e avaliação, e `db` da persistência.
 
 Arquivos oficiais da Binance são baixados de `data.binance.vision` com o `.CHECKSUM`
 correspondente. O parser aceita épocas em milissegundos e microssegundos. Essa decisão segue
@@ -50,6 +61,19 @@ Sem banco, é possível validar somente o engine e os relatórios:
 uv run crypto-lab simulate-fixture --no-persist
 ```
 
+O corte ML curto treina em uma fixture e avalia em outra cronologicamente separada:
+
+```powershell
+uv run crypto-lab rl-train --algorithm PPO --timesteps 64 --seed 42
+uv run crypto-lab rl-evaluate --algorithm PPO --timesteps 64 --seed 42
+uv run crypto-lab rl-train --algorithm DQN --timesteps 64 --seed 42 --no-persist
+```
+
+O segundo comando reutiliza o checkpoint imutável identificado por algoritmo, dataset,
+partição, hiperparâmetros e seed. Artefatos ficam em `artifacts/models/`; relatórios incluem
+ações, componentes da recompensa, equity, hashes, partição e declarações explícitas de que o
+teste bloqueado e trading ao vivo não foram usados.
+
 Downloads grandes nunca fazem parte dos testes:
 
 ```powershell
@@ -63,7 +87,7 @@ uv run crypto-lab validate-archive data/raw/binance/BTCUSDT-5m-2021-12.zip BTCUS
 uv run ruff check .
 uv run ruff format --check .
 uv run mypy
-uv run pytest
+uv run pytest -m "not integration"
 $env:CRYPTO_LAB_RUN_DB_TESTS = "1"
 uv run pytest -m integration
 ```
@@ -77,8 +101,19 @@ testes unitários e migration em banco limpo.
 - Ainda não há importação integral de 2021/2022, validação contra candles nativos ou catálogo
   histórico confiável; existem contratos e comandos para evoluir essa etapa sem inventar dados.
 - CoinMarketCap, notícias e adaptador de LLM real estão indisponíveis nesta entrega.
-- Checkpoints do relógio e contratos de estado existem; não há algoritmo de autoaprendizado.
-- Métricas avançadas por regime e Monte Carlo são schema futuro, não evidência atual.
+- O treino de fixture é uma prova funcional curta, não tuning, backtest representativo ou
+  evidência de lucratividade. `LOCKED_TEST` permanece fechado e sem resultados observados.
+- Currículo longo, walk-forward, robustez por regime, Monte Carlo e mil simulações são gates
+  futuros e comandos explícitos; não rodam no CI.
+- Nenhum resultado histórico libera automaticamente shadow mode, paper trading ou capital real.
+
+## Gates futuros
+
+1. dados históricos integrais, universo comprovado, robustez e walk-forward;
+2. shadow mode sem ordens;
+3. paper trading por período suficiente;
+4. revisão humana de risco, chaves, permissões e kill switch;
+5. capital mínimo com limites rígidos, somente após autorização separada.
 
 ## Segurança operacional
 

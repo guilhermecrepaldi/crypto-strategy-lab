@@ -321,3 +321,120 @@ class OutboxEvent(Base, IdMixin, CreatedMixin):
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
     published_at: Mapped[datetime | None] = mapped_column(UTC_TS)
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+
+class FeatureSet(Base, IdMixin, CreatedMixin):
+    __tablename__ = "feature_set"
+    name: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+class FeatureSetVersion(Base, IdMixin, CreatedMixin):
+    __tablename__ = "feature_set_version"
+    feature_set_id: Mapped[int] = mapped_column(ForeignKey("feature_set.id"), nullable=False)
+    version: Mapped[str] = mapped_column(String(64), nullable=False)
+    definition: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    definition_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    __table_args__ = (UniqueConstraint("feature_set_id", "version"),)
+
+
+class NormalizerArtifact(Base, IdMixin, CreatedMixin):
+    __tablename__ = "normalizer_artifact"
+    feature_set_version_id: Mapped[int] = mapped_column(
+        ForeignKey("feature_set_version.id"), nullable=False
+    )
+    fitted_partition: Mapped[str] = mapped_column(String(32), nullable=False)
+    parameters: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    artifact_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+
+
+class ModelDefinition(Base, IdMixin, CreatedMixin):
+    __tablename__ = "model_definition"
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
+    algorithm: Mapped[str] = mapped_column(String(32), nullable=False)
+    hyperparameters: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    definition_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+
+
+class ModelCheckpoint(Base, IdMixin, CreatedMixin):
+    __tablename__ = "model_checkpoint"
+    model_definition_id: Mapped[int] = mapped_column(ForeignKey("model_definition.id"))
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    artifact_path: Mapped[str] = mapped_column(Text, nullable=False)
+    artifact_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    training_steps: Mapped[int] = mapped_column(BigInteger, nullable=False)
+
+
+class TrainingRun(Base, CreatedMixin):
+    __tablename__ = "training_run"
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    model_definition_id: Mapped[int] = mapped_column(ForeignKey("model_definition.id"))
+    model_checkpoint_id: Mapped[int | None] = mapped_column(ForeignKey("model_checkpoint.id"))
+    feature_set_version_id: Mapped[int] = mapped_column(ForeignKey("feature_set_version.id"))
+    normalizer_artifact_id: Mapped[int] = mapped_column(ForeignKey("normalizer_artifact.id"))
+    partition: Mapped[str] = mapped_column(String(32), nullable=False)
+    global_seed: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    environment_seed: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    algorithm_seed: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    dataset_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    config: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    completed_at: Mapped[datetime | None] = mapped_column(UTC_TS)
+
+
+class TrainingMetric(Base, IdMixin, CreatedMixin):
+    __tablename__ = "training_metric"
+    training_run_id: Mapped[UUID] = mapped_column(ForeignKey("training_run.id"))
+    step: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
+    value: Mapped[Decimal] = mapped_column(MONEY, nullable=False)
+
+
+class ExperimentEpisode(Base, CreatedMixin):
+    __tablename__ = "experiment_episode"
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    experiment_run_id: Mapped[UUID] = mapped_column(ForeignKey("experiment_run.id"))
+    training_run_id: Mapped[UUID | None] = mapped_column(ForeignKey("training_run.id"))
+    partition: Mapped[str] = mapped_column(String(32), nullable=False)
+    episode_start: Mapped[datetime] = mapped_column(UTC_TS, nullable=False)
+    episode_end: Mapped[datetime] = mapped_column(UTC_TS, nullable=False)
+    warmup_start: Mapped[datetime] = mapped_column(UTC_TS, nullable=False)
+    symbols: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    action_mapping: Mapped[dict[str, str]] = mapped_column(JSON, nullable=False)
+    environment_seed: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    termination_reason: Mapped[str] = mapped_column(String(64), nullable=False)
+    replay_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+
+
+class EpisodeStep(Base, IdMixin, CreatedMixin):
+    __tablename__ = "episode_step"
+    experiment_episode_id: Mapped[UUID] = mapped_column(ForeignKey("experiment_episode.id"))
+    step_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    simulated_time: Mapped[datetime] = mapped_column(UTC_TS, nullable=False)
+    available_data_until: Mapped[datetime] = mapped_column(UTC_TS, nullable=False)
+    action: Mapped[int] = mapped_column(Integer, nullable=False)
+    target_symbol: Mapped[str] = mapped_column(String(64), nullable=False)
+    observation_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    reward: Mapped[Decimal] = mapped_column(MONEY, nullable=False)
+    equity_usdt: Mapped[Decimal] = mapped_column(MONEY, nullable=False)
+    terminated: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    truncated: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    info: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    __table_args__ = (UniqueConstraint("experiment_episode_id", "step_index"),)
+
+
+class RewardComponent(Base, IdMixin, CreatedMixin):
+    __tablename__ = "reward_component"
+    episode_step_id: Mapped[int] = mapped_column(ForeignKey("episode_step.id"))
+    component: Mapped[str] = mapped_column(String(64), nullable=False)
+    value: Mapped[Decimal] = mapped_column(MONEY, nullable=False)
+
+
+class BaselineResult(Base, IdMixin, CreatedMixin):
+    __tablename__ = "baseline_result"
+    experiment_run_id: Mapped[UUID] = mapped_column(ForeignKey("experiment_run.id"))
+    policy: Mapped[str] = mapped_column(String(128), nullable=False)
+    seed: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    final_equity_usdt: Mapped[Decimal] = mapped_column(MONEY, nullable=False)
+    total_reward: Mapped[Decimal] = mapped_column(MONEY, nullable=False)
+    metrics: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

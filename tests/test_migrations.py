@@ -12,18 +12,25 @@ from crypto_strategy_lab.data.binance import DownloadManifest
 from crypto_strategy_lab.db.models import (
     AdaptiveStateCheckpoint,
     AuditEvent,
+    BaselineResult,
     DatasetManifest,
     DecisionEvent,
+    EpisodeStep,
+    ExperimentEpisode,
     ExperimentRun,
+    RewardComponent,
     SimulatedFill,
+    TrainingRun,
 )
 from crypto_strategy_lab.db.persistence import persist_download_manifest, persist_result
 from crypto_strategy_lab.fixtures import load_fixture
+from crypto_strategy_lab.ml.persistence import persist_ml_evaluation
+from crypto_strategy_lab.ml.workflow import run_short_training
 from crypto_strategy_lab.simulation.engine import SimulationEngine
 
 
 @pytest.mark.integration
-def test_migrations_upgrade_clean_database_and_persist_fixture(fixture_path) -> None:
+def test_migrations_upgrade_clean_database_and_persist_fixture(fixture_path, tmp_path) -> None:
     if os.getenv("CRYPTO_LAB_RUN_DB_TESTS") != "1":
         pytest.skip("set CRYPTO_LAB_RUN_DB_TESTS=1 with the Compose database running")
     database_url = os.getenv(
@@ -42,6 +49,17 @@ def test_migrations_upgrade_clean_database_and_persist_fixture(fixture_path) -> 
         "portfolio_snapshot",
         "news_event",
         "audit_event",
+        "feature_set",
+        "feature_set_version",
+        "normalizer_artifact",
+        "model_definition",
+        "model_checkpoint",
+        "training_run",
+        "training_metric",
+        "experiment_episode",
+        "episode_step",
+        "reward_component",
+        "baseline_result",
     } <= tables
     candles, provider, _ = load_fixture(fixture_path)
     result = SimulationEngine(candles, provider).run()
@@ -63,3 +81,40 @@ def test_migrations_upgrade_clean_database_and_persist_fixture(fixture_path) -> 
         assert connection.scalar(select(func.count()).select_from(AdaptiveStateCheckpoint)) == 5
         assert connection.scalar(select(func.count()).select_from(AuditEvent)) == 1
         assert connection.scalar(select(func.count()).select_from(DatasetManifest)) == 1
+
+    workflow = run_short_training(
+        train_fixture=fixture_path,
+        validation_fixture=fixture_path.parent / "rl_validation_market.json",
+        artifact_dir=tmp_path / "models",
+        total_timesteps=8,
+        seed=13,
+    )
+    run_id, inserted = persist_ml_evaluation(
+        database_url,
+        env=workflow.validation_env,
+        normalizer=workflow.normalizer,
+        evaluation=workflow.evaluation,
+        artifact=workflow.artifact,
+    )
+    assert inserted is True
+    assert persist_ml_evaluation(
+        database_url,
+        env=workflow.validation_env,
+        normalizer=workflow.normalizer,
+        evaluation=workflow.evaluation,
+        artifact=workflow.artifact,
+    ) == (run_id, False)
+    for baseline in workflow.baselines:
+        persist_ml_evaluation(
+            database_url,
+            env=workflow.validation_env,
+            normalizer=workflow.normalizer,
+            evaluation=baseline,
+            artifact=None,
+        )
+    with engine.connect() as connection:
+        assert connection.scalar(select(func.count()).select_from(TrainingRun)) == 1
+        assert connection.scalar(select(func.count()).select_from(ExperimentEpisode)) == 8
+        assert connection.scalar(select(func.count()).select_from(EpisodeStep)) == 16
+        assert connection.scalar(select(func.count()).select_from(RewardComponent)) == 80
+        assert connection.scalar(select(func.count()).select_from(BaselineResult)) == 7
