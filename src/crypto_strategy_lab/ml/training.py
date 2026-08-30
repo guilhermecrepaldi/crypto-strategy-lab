@@ -85,6 +85,7 @@ class StableBaselinesTrainer:
                     "total_timesteps": total_timesteps,
                     "dataset_hash": env.dataset_hash,
                     "partition": env.partition.model_dump(mode="json"),
+                    "environment": env.configuration_manifest(),
                     "hyperparameters": hyperparameters,
                     "checkpoint_hash": checkpoint_hash,
                     "status": "TRAINED",
@@ -153,6 +154,7 @@ class StableBaselinesTrainer:
                 "total_timesteps": total_timesteps,
                 "dataset_hash": env.dataset_hash,
                 "partition": env.partition.model_dump(mode="json"),
+                "environment": env.configuration_manifest(),
                 "hyperparameters": hyperparameters,
             }
         )[:20]

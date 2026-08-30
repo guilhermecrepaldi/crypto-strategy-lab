@@ -59,10 +59,11 @@ def download_verified_archive(url: str, destination: Path) -> DownloadManifest:
     target = destination / filename
     checksum_bytes = _read_url(f"{url}.CHECKSUM")
     expected = checksum_bytes.decode("ascii").strip().split()[0].lower()
-    if len(expected) != 64:
+    if len(expected) != 64 or any(character not in "0123456789abcdef" for character in expected):
         raise DatasetIntegrityError("invalid checksum document")
 
     if target.exists() and _sha256(target) == expected:
+        (destination / f"{filename}.CHECKSUM").write_bytes(checksum_bytes)
         return DownloadManifest(url, target, expected, target.stat().st_size, datetime.now(UTC))
 
     quarantine = destination / "quarantine"
@@ -114,7 +115,7 @@ def parse_kline_archive(
                     continue
                 try:
                     open_time = epoch_to_utc(row[0])
-                except (ValueError, InvalidOperation):
+                except (ValueError, OverflowError, OSError, InvalidOperation):
                     if row_number == 1:
                         continue
                     raise DatasetIntegrityError(f"invalid timestamp at row {row_number}") from None

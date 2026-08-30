@@ -30,6 +30,20 @@ def test_temporal_provider_blocks_look_ahead(fixture_bundle) -> None:
         )
 
 
+def test_temporal_provider_handles_non_monotonic_availability(fixture_bundle) -> None:
+    candles, _, _ = fixture_bundle
+    btc = [item for item in candles if item.symbol == "BTCUSDT"][:2]
+    delayed = btc[0].model_copy(update={"available_at": btc[1].close_time + timedelta(minutes=10)})
+    provider = TemporalMarketData([delayed, btc[1]])
+    simulated = btc[1].close_time + timedelta(microseconds=1)
+    visible = provider.visible_candles(
+        "BTCUSDT",
+        simulated_time=simulated,
+        available_until=simulated - timedelta(microseconds=1),
+    )
+    assert visible == [btc[1]]
+
+
 def test_aggregation_is_utc_aligned_and_decimal(fixture_bundle) -> None:
     candles, _, _ = fixture_bundle
     btc = [item for item in candles if item.symbol == "BTCUSDT"]

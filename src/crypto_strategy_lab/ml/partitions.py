@@ -76,12 +76,15 @@ class EpisodeSampler:
         for candle in candles:
             by_symbol.setdefault(candle.symbol, set()).add(candle.open_time)
         common_times = set.intersection(*by_symbol.values()) if by_symbol else set()
+        first_common = min(common_times) if common_times else None
         self.valid_starts = sorted(
             time
             for time in common_times
             if time.minute % 15 == 0
             and time.second == 0
-            and time >= partition.start + warmup
+            and time >= partition.start
+            and first_common is not None
+            and time - warmup >= first_common
             and time + duration <= partition.end
             and all(
                 time + duration - timedelta(minutes=5) in values for values in by_symbol.values()

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from bisect import bisect_left, bisect_right
 from collections import defaultdict
 from datetime import datetime, timedelta
+from decimal import Decimal
+from itertools import pairwise
 
 from crypto_strategy_lab.domain import (
     Candle,
@@ -24,6 +27,21 @@ class TemporalMarketData:
             symbol: sorted(values, key=lambda item: item.open_time)
             for symbol, values in grouped.items()
         }
+        self._available_times = {
+            symbol: [item.available_at for item in values]
+            for symbol, values in self._candles.items()
+        }
+        self._available_monotonic = {
+            symbol: all(left.available_at <= right.available_at for left, right in pairwise(values))
+            for symbol, values in self._candles.items()
+        }
+        self._open_times = {
+            symbol: [item.open_time for item in values] for symbol, values in self._candles.items()
+        }
+        self._by_open_time: dict[datetime, dict[str, Candle]] = defaultdict(dict)
+        for symbol, values in self._candles.items():
+            for candle in values:
+                self._by_open_time[candle.open_time][symbol] = candle
 
     @property
     def symbols(self) -> tuple[str, ...]:
@@ -42,13 +60,22 @@ class TemporalMarketData:
         if cutoff > simulated_time:
             raise LookAheadError("cutoff cannot exceed simulated time")
         lower_bound = cutoff - lookback if lookback else None
-        visible: list[Candle] = []
-        for candle in self._candles.get(symbol, []):
-            if candle.available_at > cutoff:
-                continue
-            if lower_bound is not None and candle.open_time < lower_bound:
-                continue
-            visible.append(candle)
+        values = self._candles.get(symbol, [])
+        if self._available_monotonic.get(symbol, True):
+            upper = bisect_right(self._available_times.get(symbol, []), cutoff)
+            lower = (
+                bisect_left(self._open_times.get(symbol, []), lower_bound, hi=upper)
+                if lower_bound is not None
+                else 0
+            )
+            visible = values[lower:upper]
+        else:
+            visible = [
+                candle
+                for candle in values
+                if candle.available_at <= cutoff
+                and (lower_bound is None or candle.open_time >= lower_bound)
+            ]
         if any(item.available_at > cutoff for item in visible):
             raise LookAheadError("temporal provider exposed future data")
         return visible
@@ -58,6 +85,12 @@ class TemporalMarketData:
             (candle for values in self._candles.values() for candle in values),
             key=lambda item: (item.open_time, item.symbol),
         )
+
+    def prices_at(self, open_time: datetime, *, field: str) -> dict[str, Decimal]:
+        if field not in {"open", "close"}:
+            raise ValueError("price field must be open or close")
+        candles = self._by_open_time.get(require_utc(open_time), {})
+        return {symbol: getattr(candle, field) for symbol, candle in candles.items()}
 
 
 class TemporalComplementaryData:

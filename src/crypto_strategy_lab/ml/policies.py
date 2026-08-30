@@ -71,10 +71,9 @@ class MomentumPolicy:
 
 
 class StableBaselinesPolicy:
-    name = "stable-baselines-model"
-
-    def __init__(self, model: Any) -> None:
+    def __init__(self, model: Any, name: str = "stable-baselines-model") -> None:
         self.model = model
+        self.name = name
 
     def predict(self, observation: NDArray[np.float32], info: dict[str, Any]) -> int:
         del info

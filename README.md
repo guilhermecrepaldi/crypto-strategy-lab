@@ -81,6 +81,54 @@ uv run crypto-lab download-month BTCUSDT 2021 12
 uv run crypto-lab validate-archive data/raw/binance/BTCUSDT-5m-2021-12.zip BTCUSDT
 ```
 
+## Dados históricos oficiais e seleção causal
+
+O catálogo histórico consulta apenas diretórios e checksums arquivados no bucket público da
+Binance. Ele nunca usa `exchangeInfo` atual como prova de existência passada. A elegibilidade
+exclui stablecoins, tokens alavancados, símbolos não suportados e séries sem cobertura integral.
+O ranking soma `quote asset volume` exclusivamente no intervalo anterior ao episódio.
+
+Fluxo reproduzível para `2022-01-01`:
+
+```powershell
+uv run crypto-lab history-catalog --effective-at 2022-01-01 --lookback-days 92 `
+  --output data/catalog/historical-catalog-2022-01-01.json
+
+$catalog = Get-Content data/catalog/historical-catalog-2022-01-01.json -Raw | ConvertFrom-Json
+$symbols = ($catalog.entries.symbol) -join ','
+uv run crypto-lab history-download --symbols $symbols --start 2021-10-01 `
+  --end 2022-01-01 --interval 1d --max-workers 32
+uv run crypto-lab history-rank `
+  --catalog data/catalog/historical-catalog-2022-01-01.json
+
+uv run crypto-lab history-download --symbols BTCUSDT,ETHUSDT,SHIBUSDT,BNBUSDT `
+  --start 2021-12-01 --end 2022-07-01 --interval 5m --max-workers 16
+uv run crypto-lab history-verify --symbols BTCUSDT,ETHUSDT,SHIBUSDT,BNBUSDT `
+  --start 2021-12-01 --end 2022-07-01
+uv run crypto-lab history-ingest --symbols BTCUSDT,ETHUSDT,SHIBUSDT,BNBUSDT `
+  --start 2021-12-01 --end 2022-07-01 `
+  --normalized-path data/processed/experiment-2022H1.jsonl.gz `
+  --manifest-path data/manifests/experiment-2022H1.json --gap-policy STOP
+uv run crypto-lab history-smoke --manifest data/manifests/experiment-2022H1.json `
+  --train-start 2022-01-01 --validation-start 2022-04-01 `
+  --validation-end 2022-07-01 --durations 30,90 --seeds 11,29 --timesteps 16
+```
+
+`STOP` interrompe a ingestão ao detectar ausência; `INVALIDATE_EPISODE` registra a cobertura
+como inválida sem preencher o candle. Depois da ingestão, verificação, auditoria e simulação
+funcionam offline sobre o artefato normalizado e seu manifesto.
+
+Para preparar dados (sem executar o episódio final) com warmup mais dois anos de cobertura:
+
+```powershell
+uv run crypto-lab history-download --symbols BTCUSDT,ETHUSDT,SHIBUSDT,BNBUSDT `
+  --start 2021-12-01 --end 2024-01-01 --interval 5m --max-workers 16
+uv run crypto-lab history-ingest --symbols BTCUSDT,ETHUSDT,SHIBUSDT,BNBUSDT `
+  --start 2021-12-01 --end 2024-01-01 `
+  --normalized-path data/processed/two-year-ready.jsonl.gz `
+  --manifest-path data/manifests/two-year-ready.json --gap-policy STOP
+```
+
 ## Validação
 
 ```powershell
@@ -103,6 +151,11 @@ testes unitários e migration em banco limpo.
 - CoinMarketCap, notícias e adaptador de LLM real estão indisponíveis nesta entrega.
 - O treino de fixture é uma prova funcional curta, não tuning, backtest representativo ou
   evidência de lucratividade. `LOCKED_TEST` permanece fechado e sem resultados observados.
+- O catálogo integral usa arquivos 5m para provar presença histórica e arquivos 1d oficiais
+  para um ranking compacto de toda a população; os quatro selecionados são novamente validados
+  em 5m antes do experimento.
+- O runner histórico permanece intencionalmente limitado a 30/90 dias. A preparação de dois
+  anos é suportada, mas a execução longa e otimizações de memória são o próximo gate.
 - Currículo longo, walk-forward, robustez por regime, Monte Carlo e mil simulações são gates
   futuros e comandos explícitos; não rodam no CI.
 - Nenhum resultado histórico libera automaticamente shadow mode, paper trading ou capital real.

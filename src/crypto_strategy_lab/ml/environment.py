@@ -44,6 +44,7 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
         partition: TemporalPartition,
         normalizer: FeatureNormalizer,
         config: EnvironmentConfig | None = None,
+        dataset_hash: str | None = None,
     ) -> None:
         super().__init__()
         gaps = validate_candle_sequence(candles)
@@ -71,7 +72,9 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
             shape=(self.pipeline.observation_size,),
             dtype=np.float32,
         )
-        self.dataset_hash = canonical_hash([item.model_dump(mode="json") for item in candles])
+        self.dataset_hash = dataset_hash or canonical_hash(
+            [item.model_dump(mode="json") for item in candles]
+        )
         self.window: EpisodeWindow | None = None
         self.portfolio: SpotPortfolio | None = None
         self.simulated_time: datetime | None = None
@@ -185,7 +188,17 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
                 "target_symbol": target_symbol or "USDT",
                 "fills": [item.model_dump(mode="json") for item in fills],
                 "failures": failures,
-                "costs_usdt": str(sum((fill.fee for fill in fills), Decimal("0"))),
+                "fee_usdt": str(sum((fill.fee for fill in fills), Decimal("0"))),
+                "spread_cost_usdt": str(sum((fill.spread_cost for fill in fills), Decimal("0"))),
+                "slippage_cost_usdt": str(
+                    sum((fill.slippage_cost for fill in fills), Decimal("0"))
+                ),
+                "costs_usdt": str(
+                    sum(
+                        (fill.fee + fill.spread_cost + fill.slippage_cost for fill in fills),
+                        Decimal("0"),
+                    )
+                ),
                 "turnover": str(turnover),
                 "equity_usdt": str(equity),
                 "drawdown": str(snapshot["drawdown"]),
@@ -212,6 +225,19 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
             "transition_hash": canonical_hash(self.transitions),
         }
 
+    def configuration_manifest(self) -> dict[str, Any]:
+        return {
+            "initial_capital": str(self.config.initial_capital),
+            "max_exposure": str(self.config.max_exposure),
+            "reserve_ratio": str(self.config.reserve_ratio),
+            "ruin_ratio": str(self.config.ruin_ratio),
+            "warmup_seconds": int(self.config.warmup.total_seconds()),
+            "episode_duration_seconds": int(self.config.episode_duration.total_seconds()),
+            "costs": {key: str(value) for key, value in self.config.costs.__dict__.items()},
+            "reward": {key: str(value) for key, value in self.config.reward.__dict__.items()},
+            "normalizer": self.normalizer.manifest(),
+        }
+
     def _state(self) -> tuple[SpotPortfolio, datetime, EpisodeWindow]:
         if self.portfolio is None or self.simulated_time is None or self.window is None:
             raise RuntimeError("reset must be called before step")
@@ -224,10 +250,7 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
         return self.action_symbols.index(portfolio.state.asset_symbol)
 
     def _prices_at(self, open_time: datetime, *, field: str) -> dict[str, Decimal]:
-        prices: dict[str, Decimal] = {}
-        for candle in self.market.all_5m():
-            if candle.open_time == open_time:
-                prices[candle.symbol] = getattr(candle, field)
+        prices = self.market.prices_at(open_time, field=field)
         if set(prices) != set(self.symbols):
             raise ExecutionRejected(f"missing complete price event at {open_time.isoformat()}")
         return prices
