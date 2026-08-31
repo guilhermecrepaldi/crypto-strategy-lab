@@ -13,3 +13,11 @@ htmlcov/
 reports/*.json
 reports/*.md
 !reports/.gitkeep
+!reports/dashboard*.html
+!reports/dashboard*.manifest.json
+!reports/divergence.json
+!reports/turnover-sensitivity.json
+!reports/walk-forward-plan.json
+reports/runs/
+output/
+.playwright-cli/

@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from datetime import timedelta
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
+from crypto_strategy_lab.analytics.dashboard import resolve_run_report, write_dashboard
+from crypto_strategy_lab.analytics.divergence import analyze_divergence
+from crypto_strategy_lab.analytics.experiments import run_turnover_study
+from crypto_strategy_lab.analytics.schemas import ReportProvenance
+from crypto_strategy_lab.analytics.walk_forward import WalkForwardPlan
 from crypto_strategy_lab.config import Settings
 from crypto_strategy_lab.data.binance import (
     download_verified_archive,
@@ -16,9 +22,11 @@ from crypto_strategy_lab.data.binance import (
 from crypto_strategy_lab.data.history import (
     GapPolicy,
     HistoricalCatalogManifest,
+    HistoricalDatasetManifest,
     discover_historical_catalog,
     download_history_period,
     ingest_history_period,
+    load_normalized_history,
     parse_utc_date,
     rank_catalog_by_daily_quote_volume,
     verify_local_archives,
@@ -303,6 +311,119 @@ def history_smoke(
     typer.echo(f"Markdown: {markdown_path}")
 
 
+@app.command("analyze-divergence")
+def analyze_divergence_command(
+    manifest: Annotated[Path, typer.Option(exists=True)],
+    start: Annotated[str, typer.Option(help="Inclusive UTC date")],
+    end: Annotated[str, typer.Option(help="Exclusive UTC date")],
+    timeframe: Annotated[str, typer.Option(help="15m, 30m or 1h")] = "15m",
+    output: Annotated[Path, typer.Option()] = Path("reports/divergence.json"),
+) -> None:
+    """Analyze causal divergence and separate post-event diagnostics offline."""
+    timeframe_minutes = {"15m": 15, "30m": 30, "1h": 60}.get(timeframe.lower())
+    if timeframe_minutes is None:
+        raise typer.BadParameter("timeframe must be 15m, 30m or 1h")
+    parsed = HistoricalDatasetManifest.model_validate_json(manifest.read_text(encoding="utf-8"))
+    if parsed.locked_test_accessed:
+        raise typer.BadParameter("LOCKED_TEST is forbidden")
+    start_at, end_at = parse_utc_date(start), parse_utc_date(end)
+    report = analyze_divergence(
+        load_normalized_history(Path(parsed.normalized_path)),
+        start=start_at,
+        end=end_at,
+        timeframe_minutes=timeframe_minutes,
+        provenance=ReportProvenance(
+            dataset_hash=parsed.dataset_hash,
+            period_start=start_at.isoformat(),
+            period_end=end_at.isoformat(),
+            timeframe=timeframe.lower(),
+            symbols=parsed.symbols,
+            configuration={
+                "strong_move_thresholds": {"15m": "0.005", "1h": "0.01"},
+                "lead_lag_periods": [-6, 6],
+            },
+            seed=None,
+            policy="post-event-diagnostic-not-agent-observation",
+            execution_costs={key: str(value) for key, value in ExecutionCosts().__dict__.items()},
+            code_version=_code_version(),
+            partition="TRAIN" if end_at <= parse_utc_date("2022-04-01") else "VALIDATION",
+        ),
+        costs=ExecutionCosts(),
+    )
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
+        json.dumps(report.model_dump(mode="json"), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    typer.echo(f"Divergence report: {output}")
+
+
+@app.command("turnover-study")
+def turnover_study(
+    manifest: Annotated[Path, typer.Option(exists=True)],
+    start: Annotated[str, typer.Option()] = "2022-01-01",
+    end: Annotated[str, typer.Option()] = "2022-01-31",
+    seeds: Annotated[str, typer.Option()] = "11,29",
+    timesteps: Annotated[int, typer.Option(min=1)] = 16,
+    artifact_dir: Annotated[Path, typer.Option()] = Path("artifacts/turnover-models"),
+    output_dir: Annotated[Path, typer.Option()] = Path("reports"),
+) -> None:
+    """Run the bounded, predefined turnover sensitivity study on TRAIN only."""
+    payload = run_turnover_study(
+        manifest,
+        start=parse_utc_date(start),
+        end=parse_utc_date(end),
+        seeds=_integers(seeds, label="seed"),
+        timesteps=timesteps,
+        artifact_dir=artifact_dir,
+        output_dir=output_dir,
+    )
+    typer.echo(f"Completed {len(payload['runs'])} predefined TRAIN runs")
+    typer.echo(f"Report: {output_dir / 'turnover-sensitivity.json'}")
+
+
+@app.command("dashboard")
+def dashboard(
+    run_id: Annotated[str, typer.Option()],
+    output: Annotated[Path, typer.Option()] = Path("reports/dashboard.html"),
+    reports_dir: Annotated[Path, typer.Option()] = Path("reports"),
+    divergence: Annotated[Path | None, typer.Option()] = None,
+) -> None:
+    """Generate a deterministic, self-contained offline experiment dashboard."""
+    divergence_path = divergence or reports_dir / "divergence.json"
+    manifest = write_dashboard(
+        resolve_run_report(run_id, reports_dir),
+        output,
+        divergence_path=divergence_path if divergence_path.exists() else None,
+    )
+    typer.echo(f"Dashboard: {output} ({manifest.output_sha256})")
+
+
+@app.command("prepare-walk-forward")
+def prepare_walk_forward(
+    start: Annotated[str, typer.Option()] = "2022-01-01",
+    end: Annotated[str, typer.Option()] = "2022-07-01",
+    train_days: Annotated[int, typer.Option(min=1)] = 90,
+    validation_days: Annotated[int, typer.Option(min=1)] = 30,
+    step_days: Annotated[int, typer.Option(min=1)] = 30,
+    output: Annotated[Path, typer.Option()] = Path("reports/walk-forward-plan.json"),
+) -> None:
+    """Prepare and validate a walk-forward plan without executing any episode."""
+    plan = WalkForwardPlan(
+        start=parse_utc_date(start),
+        end=parse_utc_date(end),
+        train_days=train_days,
+        validation_days=validation_days,
+        step_days=step_days,
+    )
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
+        json.dumps(plan.model_dump(mode="json"), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    typer.echo(f"Prepared only; not executed: {output}")
+
+
 @app.command("rl-train")
 def rl_train(
     train_fixture: Annotated[Path, typer.Option(exists=True)] = Path("fixtures/short_market.json"),
@@ -411,6 +532,13 @@ def _run_rl_workflow(
     typer.echo(f"Checkpoint: {result.artifact.checkpoint_path}")
     typer.echo(f"JSON: {json_path}")
     typer.echo(f"Markdown: {markdown_path}")
+
+
+def _code_version() -> str:
+    completed = subprocess.run(
+        ["git", "rev-parse", "HEAD"], capture_output=True, check=False, text=True
+    )
+    return completed.stdout.strip() or "UNKNOWN"
 
 
 if __name__ == "__main__":

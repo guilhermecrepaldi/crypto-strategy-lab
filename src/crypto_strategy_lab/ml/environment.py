@@ -13,6 +13,7 @@ from numpy.typing import NDArray
 from crypto_strategy_lab.data.binance import validate_candle_sequence
 from crypto_strategy_lab.data.temporal import TemporalMarketData
 from crypto_strategy_lab.domain import Candle, Fill, canonical_hash
+from crypto_strategy_lab.ml.controls import TurnoverControlConfig, estimated_rotation_cost_rate
 from crypto_strategy_lab.ml.features import FeatureNormalizer, FeaturePipeline
 from crypto_strategy_lab.ml.partitions import EpisodeSampler, EpisodeWindow, TemporalPartition
 from crypto_strategy_lab.ml.reward import RewardConfig, calculate_reward
@@ -33,6 +34,7 @@ class EnvironmentConfig:
     episode_duration: timedelta = timedelta(minutes=30)
     costs: ExecutionCosts = field(default_factory=ExecutionCosts)
     reward: RewardConfig = field(default_factory=RewardConfig)
+    controls: TurnoverControlConfig = field(default_factory=TurnoverControlConfig)
 
 
 class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
@@ -82,6 +84,7 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
         self.previous_action = 0
         self.time_in_position = 0
         self.transitions: list[dict[str, Any]] = []
+        self.steps_since_trade = self.config.controls.cooldown_steps
 
     def reset(
         self,
@@ -109,6 +112,7 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
         self.previous_action = 0
         self.time_in_position = 0
         self.transitions = []
+        self.steps_since_trade = self.config.controls.cooldown_steps
         observation = self._observation()
         return observation, self._base_info()
 
@@ -121,6 +125,8 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
         failures: list[str] = []
         constraint_violated = False
         current_action = self._current_action()
+        requested_action = action
+        action, avoided_reason = self._effective_action(requested_action)
         target_symbol = self.action_symbols[action]
         try:
             if action == current_action:
@@ -143,6 +149,7 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
                         simulated_time=current_time,
                         costs=self.config.costs,
                         marks=prices,
+                        min_notional=self.config.controls.minimum_notional_usdt,
                     )
                 )
             elif target_symbol is not None and portfolio.state.asset_symbol:
@@ -153,6 +160,7 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
                     allocation_percent=self.config.max_exposure * Decimal("100"),
                     simulated_time=current_time,
                     costs=self.config.costs,
+                    min_notionals={target_symbol: self.config.controls.minimum_notional_usdt},
                 )
                 fills.extend(rotation.fills)
                 failures.extend(rotation.failures)
@@ -171,13 +179,17 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
             equity=equity,
             drawdown=Decimal(str(snapshot["drawdown"])),
             turnover=turnover,
+            rotated=len(fills) == 2,
             constraint_violated=constraint_violated,
             ruined=ruined,
             config=self.config.reward,
         )
         self.simulated_time = next_time
         self.previous_equity = equity
-        self.time_in_position = self.time_in_position + 1 if action == current_action else 0
+        traded = bool(fills)
+        resulting_action = self._current_action()
+        self.time_in_position = self.time_in_position + 1 if resulting_action != 0 else 0
+        self.steps_since_trade = 0 if traded else self.steps_since_trade + 1
         self.previous_action = action
         terminated = ruined
         truncated = next_time >= window.end
@@ -185,6 +197,9 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
         info.update(
             {
                 "action": action,
+                "requested_action": requested_action,
+                "effective_action": action,
+                "avoided_operation_reason": avoided_reason,
                 "target_symbol": target_symbol or "USDT",
                 "fills": [item.model_dump(mode="json") for item in fills],
                 "failures": failures,
@@ -203,6 +218,7 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
                 "equity_usdt": str(equity),
                 "drawdown": str(snapshot["drawdown"]),
                 "portfolio": {key: str(value) for key, value in snapshot.items()},
+                "marked_asset_value_usdt": str(equity - Decimal(str(snapshot["usdt"]))),
                 "reward": reward.as_dict(),
                 "termination_reason": "RUIN" if terminated else "TIME_LIMIT" if truncated else None,
                 "terminated": terminated,
@@ -235,6 +251,10 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
             "episode_duration_seconds": int(self.config.episode_duration.total_seconds()),
             "costs": {key: str(value) for key, value in self.config.costs.__dict__.items()},
             "reward": {key: str(value) for key, value in self.config.reward.__dict__.items()},
+            "controls": {
+                key: str(value) if isinstance(value, Decimal) else value
+                for key, value in self.config.controls.__dict__.items()
+            },
             "normalizer": self.normalizer.manifest(),
         }
 
@@ -285,7 +305,35 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
             },
             "position": portfolio.state.asset_symbol or "USDT",
             "momentum_by_action": self._momentum(),
+            "action_mask": self._action_mask(),
         }
+
+    def _effective_action(self, requested_action: int) -> tuple[int, str | None]:
+        current_action = self._current_action()
+        if requested_action == current_action:
+            return current_action, "REPEATED_CURRENT_POSITION"
+        controls = self.config.controls
+        if not controls.enabled:
+            return requested_action, None
+        if current_action != 0 and self.time_in_position < controls.minimum_hold_steps:
+            return current_action, "MINIMUM_HOLD"
+        if self.steps_since_trade < controls.cooldown_steps:
+            return current_action, "COOLDOWN"
+        if requested_action != 0 and controls.minimum_edge_after_costs > 0:
+            scores = self._momentum()
+            edge = Decimal(str(scores[requested_action] - scores[current_action]))
+            required = controls.minimum_edge_after_costs + estimated_rotation_cost_rate(
+                self.config.costs
+            )
+            if edge <= required:
+                return current_action, "INSUFFICIENT_EDGE_AFTER_COSTS"
+        return requested_action, None
+
+    def _action_mask(self) -> list[bool]:
+        controls = self.config.controls
+        if not controls.enabled or not controls.action_masking:
+            return [True] * 5
+        return [self._effective_action(action)[0] == action for action in range(5)]
 
     def _momentum(self) -> dict[int, float]:
         _, current_time, _ = self._state()

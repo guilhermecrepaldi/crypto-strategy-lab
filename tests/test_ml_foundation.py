@@ -9,6 +9,7 @@ from pydantic import ValidationError
 from stable_baselines3.common.env_checker import check_env
 
 from crypto_strategy_lab.data.temporal import TemporalMarketData
+from crypto_strategy_lab.ml.controls import TurnoverControlConfig
 from crypto_strategy_lab.ml.environment import (
     CryptoRotationEnv,
     EnvironmentConfig,
@@ -166,3 +167,29 @@ def test_ruin_terminates_with_terminal_penalty(fixture_bundle) -> None:
     assert terminated and not truncated
     assert info["termination_reason"] == "RUIN"
     assert Decimal(info["reward"]["terminal_penalty"]) > 0
+
+
+def test_turnover_controls_mask_rotation_and_repeat_is_hold(fixture_bundle) -> None:
+    candles, _, _ = fixture_bundle
+    env = _environment(candles)
+    env.config = EnvironmentConfig(
+        warmup=timedelta(minutes=30),
+        episode_duration=timedelta(minutes=30),
+        controls=TurnoverControlConfig(enabled=True, minimum_hold_steps=4),
+    )
+    env.reset(seed=7)
+    _, _, _, _, bought = env.step(3)
+    assert len(bought["fills"]) == 1
+    _, _, _, truncated, blocked = env.step(4)
+    assert truncated
+    assert blocked["requested_action"] == 4
+    assert blocked["effective_action"] == 3
+    assert blocked["avoided_operation_reason"] == "MINIMUM_HOLD"
+    assert blocked["fills"] == []
+
+    repeated = _environment(candles)
+    repeated.reset(seed=7)
+    repeated.step(3)
+    _, _, _, _, same = repeated.step(3)
+    assert same["fills"] == []
+    assert same["avoided_operation_reason"] == "REPEATED_CURRENT_POSITION"

@@ -68,3 +68,35 @@ class EvaluationRunner:
             RandomPolicy(seed),
         ]
         return [self.run(env_factory(), policy, seed=seed) for policy in policies]
+
+
+def evaluate_action_sequence(
+    env: CryptoRotationEnv,
+    actions: list[int],
+    *,
+    seed: int,
+    episode_start: str,
+) -> EvaluationResult:
+    observation, info = env.reset(seed=seed, options={"episode_start": episode_start})
+    del observation
+    total_reward = Decimal("0")
+    terminated = truncated = False
+    executed: list[int] = []
+    for action in actions:
+        _, reward, terminated, truncated, info = env.step(action)
+        total_reward += Decimal(str(reward))
+        executed.append(action)
+        if terminated or truncated:
+            break
+    return EvaluationResult(
+        policy="costless-action-replay",
+        seed=seed,
+        episode_start=str(info["episode_start"]),
+        episode_end=str(info["episode_end"]),
+        actions=executed,
+        transitions=env.transitions.copy(),
+        final_equity_usdt=Decimal(str(info["equity_usdt"])),
+        total_reward=total_reward,
+        terminated=terminated,
+        truncated=truncated,
+    )

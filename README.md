@@ -1,7 +1,7 @@
 # Crypto Strategy Lab
 
 Laboratório offline-first para pesquisa histórica de rotação Spot com aprendizado por
-reforço. O corte atual usa ADAUSDT, BNBUSDT, BTCUSDT e ETHUSDT mais caixa em USDT, candles
+reforço. O corte histórico usa BTCUSDT, ETHUSDT, SHIBUSDT e BNBUSDT mais caixa em USDT, candles
 canônicos de 5 minutos e decisões a cada 15 minutos. Não existe código para autenticar em
 exchange, usar Testnet ou enviar ordens.
 
@@ -23,8 +23,8 @@ exchange, usar Testnet ou enviar ordens.
 - PPO é o agente primário; DQN, caixa, buy-and-hold por ativo, momentum causal e política
   aleatória são comparadores, não promessas de retorno.
 - CoinMarketCap e notícias são contratos complementares e não participam da fixture.
-- O universo da fixture é explicitamente provisório. A seleção definitiva de 2022 permanece
-  bloqueada até existir evidência histórica suficiente do catálogo Spot.
+- O universo de `2022-01-01` foi selecionado causalmente com arquivos oficiais disponíveis
+  entre `2021-10-01` e o início do episódio, sem consultar o estado atual da exchange.
 
 ## Stack e arquitetura
 
@@ -114,6 +114,31 @@ uv run crypto-lab history-smoke --manifest data/manifests/experiment-2022H1.json
   --validation-end 2022-07-01 --durations 30,90 --seeds 11,29 --timesteps 16
 ```
 
+Diagnóstico de turnover, divergência e dashboard offline do gate atual:
+
+```powershell
+uv run crypto-lab turnover-study --manifest data/manifests/experiment-2022H1.json `
+  --start 2022-01-01 --end 2022-01-31 --seeds 11,29 --timesteps 16
+uv run crypto-lab analyze-divergence --manifest data/manifests/experiment-2022H1.json `
+  --start 2022-01-01 --end 2022-04-01 --timeframe 15m `
+  --output reports/divergence.json
+uv run crypto-lab dashboard --run-id f38da96c5c12d578 `
+  --output reports/dashboard.html
+uv run crypto-lab prepare-walk-forward --start 2022-01-01 --end 2022-07-01 `
+  --train-days 90 --validation-days 30 --step-days 30
+```
+
+O estudo usa somente `TRAIN`, cenários e seeds predefinidos e reporta todos os resultados.
+Os controles versionados incluem penalidade de turnover/rotação, permanência mínima, cooldown,
+edge causal acima dos custos, notional mínimo, action masking e conversão de alocação repetida
+em `HOLD`. O contrafactual sem custos repete as ações efetivamente executadas. PPO permanece
+marcado como smoke insuficientemente treinado. O plano walk-forward é apenas validado e salvo;
+não existe executor longo neste gate.
+
+O dashboard é um único HTML autocontido: CSS, JavaScript, dados e gráficos são embutidos, sem
+CDN, servidor de aplicação ou acesso à internet. `reports/dashboard-original.html` preserva o
+diagnóstico sem controles e `reports/dashboard.html` mostra a configuração com cooldown.
+
 `STOP` interrompe a ingestão ao detectar ausência; `INVALIDATE_EPISODE` registra a cobertura
 como inválida sem preencher o candle. Depois da ingestão, verificação, auditoria e simulação
 funcionam offline sobre o artefato normalizado e seu manifesto.
@@ -145,9 +170,8 @@ testes unitários e migration em banco limpo.
 
 ## Limitações deliberadas
 
-- A fixture não é uma seleção historicamente comprovada dos quatro pares de 2022.
-- Ainda não há importação integral de 2021/2022, validação contra candles nativos ou catálogo
-  histórico confiável; existem contratos e comandos para evoluir essa etapa sem inventar dados.
+- O catálogo, ranking causal e dataset oficial cobrem o experimento de dezembro de 2021 a junho
+  de 2022; isso não equivale à história completa de mercado ou a dois anos finais.
 - CoinMarketCap, notícias e adaptador de LLM real estão indisponíveis nesta entrega.
 - O treino de fixture é uma prova funcional curta, não tuning, backtest representativo ou
   evidência de lucratividade. `LOCKED_TEST` permanece fechado e sem resultados observados.
@@ -156,13 +180,13 @@ testes unitários e migration em banco limpo.
   em 5m antes do experimento.
 - O runner histórico permanece intencionalmente limitado a 30/90 dias. A preparação de dois
   anos é suportada, mas a execução longa e otimizações de memória são o próximo gate.
-- Currículo longo, walk-forward, robustez por regime, Monte Carlo e mil simulações são gates
-  futuros e comandos explícitos; não rodam no CI.
+- O walk-forward está somente preparado em manifesto. Currículo longo, robustez por regime,
+  Monte Carlo e mil simulações permanecem gates futuros e não rodam no CI.
 - Nenhum resultado histórico libera automaticamente shadow mode, paper trading ou capital real.
 
 ## Gates futuros
 
-1. dados históricos integrais, universo comprovado, robustez e walk-forward;
+1. executar walk-forward curto predefinido e robustez por regime sem abrir `LOCKED_TEST`;
 2. shadow mode sem ordens;
 3. paper trading por período suficiente;
 4. revisão humana de risco, chaves, permissões e kill switch;

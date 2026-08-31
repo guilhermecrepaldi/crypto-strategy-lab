@@ -1,0 +1,18 @@
+{
+  "divergence_hash": "4f45b6c09a5051e93155adef4e1352d864ed63ae03044c0c47e40251a4d7ff4c",
+  "external_resources": [],
+  "offline": true,
+  "output_sha256": "5273a332e3df895e392baed2d170b3957cdf21b913d3b5a00f7c601b02a70ec5",
+  "report_hash": "3d73e721ea3a1f431827ff2302b1ee1dd63d10840377adae498775673d61fed2",
+  "run_id": "f38da96c5c12d578",
+  "schema_version": "dashboard-manifest-v1",
+  "sections": [
+    "summary",
+    "equity",
+    "costs",
+    "turnover",
+    "divergence",
+    "integrity"
+  ],
+  "warning": "SMOKE/DIAGNOSTIC ONLY: the policy is insufficiently trained and this report is not evidence of profitability or permission to trade. LOCKED_TEST was not accessed."
+}

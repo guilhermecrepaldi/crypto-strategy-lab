@@ -56,8 +56,9 @@ class RandomPolicy:
         self.random = random.Random(seed)
 
     def predict(self, observation: NDArray[np.float32], info: dict[str, Any]) -> int:
-        del observation, info
-        return self.random.randrange(5)
+        del observation
+        allowed = [index for index, allowed in enumerate(info.get("action_mask", [])) if allowed]
+        return self.random.choice(allowed) if allowed else 0
 
 
 class MomentumPolicy:
@@ -66,6 +67,10 @@ class MomentumPolicy:
     def predict(self, observation: NDArray[np.float32], info: dict[str, Any]) -> int:
         del observation
         scores = {int(key): float(value) for key, value in info["momentum_by_action"].items()}
+        mask = info.get("action_mask", [True] * 5)
+        scores = {action: score for action, score in scores.items() if mask[action]}
+        if not scores:
+            return 0
         best_action, best_score = max(scores.items(), key=lambda item: (item[1], -item[0]))
         return best_action if best_score > 0 else 0
 

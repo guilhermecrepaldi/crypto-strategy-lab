@@ -1,0 +1,9 @@
+{
+  "end": "2022-07-01T00:00:00Z",
+  "execute": false,
+  "schema_version": "walk-forward-plan-v1",
+  "start": "2022-01-01T00:00:00Z",
+  "step_days": 30,
+  "train_days": 90,
+  "validation_days": 30
+}
