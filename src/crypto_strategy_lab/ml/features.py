@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from decimal import Decimal
+from enum import StrEnum
 from typing import cast
 
 import numpy as np
@@ -14,12 +15,22 @@ from crypto_strategy_lab.ml.partitions import PartitionName, TemporalPartition
 FloatArray = NDArray[np.float32]
 
 
+class FeatureVariant(StrEnum):
+    BASE_FEATURES = "BASE_FEATURES"
+    BASE_PLUS_RELATIVE_STRENGTH = "BASE_PLUS_RELATIVE_STRENGTH"
+
+
 @dataclass(frozen=True)
 class FeatureSetSpec:
     name: str = "causal-market-portfolio"
-    version: str = "1.0.0"
+    version: str = "1.1.0"
+    variant: FeatureVariant = FeatureVariant.BASE_FEATURES
     candles_per_window: int = 6
-    features_per_asset: int = 10
+    relative_lookback_minutes: int = 24 * 60
+
+    @property
+    def features_per_asset(self) -> int:
+        return 15 if self.variant == FeatureVariant.BASE_PLUS_RELATIVE_STRENGTH else 10
 
 
 class FeatureNormalizer:
@@ -98,6 +109,7 @@ class FeaturePipeline:
             closes = [float(item.close) for item in candles[-self.spec.candles_per_window :]]
             histories[symbol] = closes
         anchor_returns = _returns(histories[self.symbols[0]])
+        relative = self._relative_features(simulated_time)
         for symbol in self.symbols:
             candles = self.market.visible_candles(
                 symbol,
@@ -107,7 +119,7 @@ class FeaturePipeline:
             )[-self.spec.candles_per_window :]
             closes = histories[symbol]
             if len(candles) < self.spec.candles_per_window:
-                raw.extend([0.0] * 9 + [1.0])
+                raw.extend([0.0] * 9 + [1.0] + relative[symbol])
                 continue
             returns = _returns(closes)
             last = closes[-1]
@@ -133,6 +145,7 @@ class FeaturePipeline:
                     correlation,
                     0.0,
                 ]
+                + relative[symbol]
             )
         position = [1.0 if position_index == index else 0.0 for index in range(5)]
         raw.extend(
@@ -146,6 +159,67 @@ class FeaturePipeline:
             ]
         )
         return np.asarray(raw, dtype=np.float32)
+
+    def manifest(self) -> dict[str, object]:
+        return {
+            "name": self.spec.name,
+            "version": self.spec.version,
+            "variant": self.spec.variant,
+            "candles_per_window": self.spec.candles_per_window,
+            "relative_lookback_minutes": self.spec.relative_lookback_minutes,
+            "features_per_asset": self.spec.features_per_asset,
+        }
+
+    def _relative_features(self, simulated_time: datetime) -> dict[str, list[float]]:
+        if self.spec.variant == FeatureVariant.BASE_FEATURES:
+            return {symbol: [] for symbol in self.symbols}
+        cutoff = simulated_time - timedelta(microseconds=1)
+        lookback = timedelta(minutes=self.spec.relative_lookback_minutes)
+        histories: dict[str, list[float]] = {}
+        for symbol in self.symbols:
+            histories[symbol] = [
+                float(item.close)
+                for item in self.market.visible_candles(
+                    symbol,
+                    simulated_time=simulated_time,
+                    available_until=cutoff,
+                    lookback=lookback,
+                )
+            ]
+        btc_returns = np.asarray(_returns(histories["BTCUSDT"]), dtype=np.float64)
+        trailing_returns = {
+            symbol: values[-1] / values[0] - 1.0 if len(values) > 1 else 0.0
+            for symbol, values in histories.items()
+        }
+        ranking = sorted(self.symbols, key=lambda item: (trailing_returns[item], item))
+        result: dict[str, list[float]] = {}
+        for symbol in self.symbols:
+            asset_returns = np.asarray(_returns(histories[symbol]), dtype=np.float64)
+            size = min(len(btc_returns), len(asset_returns))
+            btc = btc_returns[-size:] if size else np.asarray([], dtype=np.float64)
+            asset = asset_returns[-size:] if size else np.asarray([], dtype=np.float64)
+            variance = float(np.var(btc)) if size else 0.0
+            beta = (
+                float(np.cov(btc, asset, ddof=0)[0, 1] / variance)
+                if size > 1 and variance > 0
+                else 0.0
+            )
+            correlation = (
+                float(np.corrcoef(btc, asset)[0, 1])
+                if size > 1 and np.std(btc) > 0 and np.std(asset) > 0
+                else 0.0
+            )
+            residual = float(asset[-1] - beta * btc[-1]) if size else 0.0
+            rank = ranking.index(symbol) / max(1, len(ranking) - 1)
+            regime = float(np.sign(trailing_returns["BTCUSDT"]))
+            result[symbol] = [
+                correlation,
+                beta,
+                residual,
+                trailing_returns[symbol] - trailing_returns["BTCUSDT"],
+                rank * regime,
+            ]
+        return result
 
 
 def fit_train_normalizer(

@@ -112,9 +112,17 @@ def test_migrations_upgrade_clean_database_and_persist_fixture(fixture_path, tmp
             evaluation=baseline,
             artifact=None,
         )
+    expected_reward_components = sum(
+        len(transition["reward"]) - 1
+        for evaluation in (workflow.evaluation, *workflow.baselines)
+        for transition in evaluation.transitions
+    )
     with engine.connect() as connection:
         assert connection.scalar(select(func.count()).select_from(TrainingRun)) == 1
         assert connection.scalar(select(func.count()).select_from(ExperimentEpisode)) == 8
         assert connection.scalar(select(func.count()).select_from(EpisodeStep)) == 16
-        assert connection.scalar(select(func.count()).select_from(RewardComponent)) == 80
+        assert (
+            connection.scalar(select(func.count()).select_from(RewardComponent))
+            == expected_reward_components
+        )
         assert connection.scalar(select(func.count()).select_from(BaselineResult)) == 7

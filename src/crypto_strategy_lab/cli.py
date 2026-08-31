@@ -4,11 +4,15 @@ import json
 import subprocess
 from datetime import timedelta
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal, cast
 
 import typer
 
-from crypto_strategy_lab.analytics.dashboard import resolve_run_report, write_dashboard
+from crypto_strategy_lab.analytics.dashboard import (
+    resolve_run_report,
+    write_dashboard,
+    write_learning_dashboard,
+)
 from crypto_strategy_lab.analytics.divergence import analyze_divergence
 from crypto_strategy_lab.analytics.experiments import run_turnover_study
 from crypto_strategy_lab.analytics.schemas import ReportProvenance
@@ -38,6 +42,10 @@ from crypto_strategy_lab.data.history_reporting import (
 )
 from crypto_strategy_lab.db.persistence import persist_download_manifest, persist_result
 from crypto_strategy_lab.fixtures import load_fixture
+from crypto_strategy_lab.ml.controlled_workflow import (
+    run_controlled_training,
+    run_controlled_validation,
+)
 from crypto_strategy_lab.ml.historical_reporting import write_historical_smoke
 from crypto_strategy_lab.ml.historical_workflow import run_historical_smoke
 from crypto_strategy_lab.ml.persistence import persist_ml_evaluation
@@ -422,6 +430,69 @@ def prepare_walk_forward(
         encoding="utf-8",
     )
     typer.echo(f"Prepared only; not executed: {output}")
+
+
+@app.command("controlled-train")
+def controlled_train(
+    manifest: Annotated[Path, typer.Option(exists=True)] = Path(
+        "data/manifests/experiment-2022H1.json"
+    ),
+    phase: Annotated[str, typer.Option(help="sanity, development or candidate")] = "sanity",
+    artifact_root: Annotated[Path, typer.Option()] = Path("artifacts/controlled-training"),
+    output: Annotated[Path | None, typer.Option()] = None,
+    max_seconds_per_run: Annotated[int | None, typer.Option(min=1)] = None,
+) -> None:
+    """Train or idempotently resume the frozen historical curriculum."""
+    normalized_phase = phase.lower()
+    if normalized_phase not in {"sanity", "development", "candidate"}:
+        raise typer.BadParameter("phase must be sanity, development or candidate")
+    report = run_controlled_training(
+        manifest,
+        phase=cast(Literal["sanity", "development", "candidate"], normalized_phase),
+        artifact_root=artifact_root,
+        output=output or Path(f"reports/controlled-training-{normalized_phase}.json"),
+        max_seconds_per_run=max_seconds_per_run,
+    )
+    completed = sum(item["status"] == "COMPLETED" for item in report.runs)
+    typer.echo(f"Completed {completed}/{len(report.runs)} controlled runs")
+    for item in report.runs:
+        typer.echo(
+            f"{item['algorithm']} seed={item['seed']} features={item['feature_variant']} "
+            f"config={item['configuration_variant']} steps={item['completed_timesteps']} "
+            f"status={item['status']}"
+        )
+
+
+@app.command("learning-dashboard")
+def learning_dashboard(
+    report: Annotated[Path, typer.Option(exists=True)] = Path(
+        "reports/controlled-training-sanity.json"
+    ),
+    output: Annotated[Path, typer.Option()] = Path("reports/learning-dashboard.html"),
+) -> None:
+    """Render real training telemetry as one self-contained offline HTML file."""
+    digest = write_learning_dashboard(report, output)
+    typer.echo(f"Learning dashboard: {output} ({digest})")
+
+
+@app.command("controlled-evaluate")
+def controlled_evaluate(
+    training_report: Annotated[Path, typer.Option(exists=True)],
+    manifest: Annotated[Path, typer.Option(exists=True)] = Path(
+        "data/manifests/experiment-2022H1.json"
+    ),
+    output: Annotated[Path, typer.Option()] = Path("reports/controlled-validation.json"),
+) -> None:
+    """Open VALIDATION once, only after every frozen training run is complete."""
+    report = run_controlled_validation(
+        manifest,
+        training_report_path=training_report,
+        output=output,
+    )
+    typer.echo(
+        f"VALIDATION observed for {len(report.runs)} frozen runs; "
+        f"classification={report.gates.classification}"
+    )
 
 
 @app.command("rl-train")

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class ReportProvenance(BaseModel):
@@ -94,4 +94,92 @@ class DashboardManifest(BaseModel):
     sections: list[str]
     offline: bool = True
     external_resources: list[str] = Field(default_factory=list)
+    warning: str
+
+
+class LearningGateReport(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    schema_version: str = "learning-gates-v1"
+    technical: str
+    survival: str
+    value: str
+    classification: str
+    reasons: dict[str, list[str]]
+
+
+class ControlledTrainingReport(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    schema_version: str = "controlled-training-report-v1"
+    phase: Literal["sanity", "development", "candidate"]
+    dataset_hash: str
+    partitions: dict[str, Any]
+    action_mapping: dict[str, str]
+    requested_timesteps_per_run: int
+    seeds: list[int]
+    algorithms: list[str]
+    feature_variants: list[str]
+    configuration_variants: list[str]
+    runs: list[dict[str, Any]]
+    internal_train_baselines: list[dict[str, Any]]
+    validation_observed: bool = False
+    locked_test_accessed: bool = False
+    warning: str
+
+    @model_validator(mode="after")
+    def require_every_reported_seed(self) -> ControlledTrainingReport:
+        run_seeds = {int(item["seed"]) for item in self.runs}
+        if run_seeds != set(self.seeds):
+            raise ValueError("all run seeds must be declared; best-seed filtering is forbidden")
+        groups: dict[tuple[str, str, str], set[int]] = {}
+        for item in self.runs:
+            key = (
+                str(item["algorithm"]),
+                str(item["feature_variant"]),
+                str(item["configuration_variant"]),
+            )
+            groups.setdefault(key, set()).add(int(item["seed"]))
+        if any(group_seeds != set(self.seeds) for group_seeds in groups.values()):
+            raise ValueError(
+                "every algorithm/feature/configuration group must report every seed; "
+                "best-seed filtering is forbidden"
+            )
+        identities = [
+            (
+                item["algorithm"],
+                int(item["seed"]),
+                item["feature_variant"],
+                item["configuration_variant"],
+            )
+            for item in self.runs
+        ]
+        if len(identities) != len(set(identities)):
+            raise ValueError("training report cannot contain duplicate run identities")
+        expected_mapping = {
+            "0": "USDT",
+            "1": "BTCUSDT",
+            "2": "ETHUSDT",
+            "3": "SHIBUSDT",
+            "4": "BNBUSDT",
+        }
+        if self.action_mapping != expected_mapping:
+            raise ValueError("controlled report action mapping is immutable")
+        return self
+
+
+class ControlledValidationReport(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    schema_version: str = "controlled-validation-report-v1"
+    source_training_phase: Literal["development", "candidate"]
+    dataset_hash: str
+    frozen_configuration_hash: str
+    partition: dict[str, Any]
+    runs: list[dict[str, Any]]
+    baselines: list[dict[str, Any]]
+    distributions: list[dict[str, Any]]
+    gates: LearningGateReport
+    validation_observed: bool = True
+    locked_test_accessed: bool = False
     warning: str

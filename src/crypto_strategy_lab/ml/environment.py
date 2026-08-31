@@ -14,7 +14,7 @@ from crypto_strategy_lab.data.binance import validate_candle_sequence
 from crypto_strategy_lab.data.temporal import TemporalMarketData
 from crypto_strategy_lab.domain import Candle, Fill, canonical_hash
 from crypto_strategy_lab.ml.controls import TurnoverControlConfig, estimated_rotation_cost_rate
-from crypto_strategy_lab.ml.features import FeatureNormalizer, FeaturePipeline
+from crypto_strategy_lab.ml.features import FeatureNormalizer, FeaturePipeline, FeatureSetSpec
 from crypto_strategy_lab.ml.partitions import EpisodeSampler, EpisodeWindow, TemporalPartition
 from crypto_strategy_lab.ml.reward import RewardConfig, calculate_reward
 from crypto_strategy_lab.simulation.portfolio import (
@@ -47,6 +47,7 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
         normalizer: FeatureNormalizer,
         config: EnvironmentConfig | None = None,
         dataset_hash: str | None = None,
+        feature_spec: FeatureSetSpec | None = None,
     ) -> None:
         super().__init__()
         gaps = validate_candle_sequence(candles)
@@ -55,11 +56,16 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
         self.config = config or EnvironmentConfig()
         self.partition = partition
         self.market = TemporalMarketData(candles)
-        self.symbols = self.market.symbols
-        if len(self.symbols) != 4:
+        if len(self.market.symbols) != 4:
             raise ValueError("Discrete(5) baseline requires four assets plus USDT")
+        historical_symbols = ("BTCUSDT", "ETHUSDT", "SHIBUSDT", "BNBUSDT")
+        self.symbols = (
+            historical_symbols
+            if set(self.market.symbols) == set(historical_symbols)
+            else self.market.symbols
+        )
         self.action_symbols: tuple[str | None, ...] = (None, *self.symbols)
-        self.pipeline = FeaturePipeline(self.market, self.symbols)
+        self.pipeline = FeaturePipeline(self.market, self.symbols, feature_spec)
         self.normalizer = normalizer
         self.sampler = EpisodeSampler(
             candles,
@@ -256,6 +262,7 @@ class CryptoRotationEnv(gym.Env[NDArray[np.float32], int]):
                 for key, value in self.config.controls.__dict__.items()
             },
             "normalizer": self.normalizer.manifest(),
+            "features": self.pipeline.manifest(),
         }
 
     def _state(self) -> tuple[SpotPortfolio, datetime, EpisodeWindow]:

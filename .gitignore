@@ -18,6 +18,9 @@ reports/*.md
 !reports/divergence.json
 !reports/turnover-sensitivity.json
 !reports/walk-forward-plan.json
+!reports/controlled-training-*.json
+!reports/controlled-validation.json
+!reports/learning-dashboard.html
 reports/runs/
 output/
 .playwright-cli/

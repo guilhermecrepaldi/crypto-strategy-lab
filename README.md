@@ -14,8 +14,9 @@ exchange, usar Testnet ou enviar ordens.
 - Dinheiro, preços, quantidades e custos usam `Decimal`/`NUMERIC(38,18)`.
 - Decisões inválidas tornam-se `HOLD`.
 - Ordens, fills, decisões, equity e auditoria possuem tabelas append-only.
-- `CryptoRotationEnv` segue o contrato Gymnasium com `Discrete(5)`: USDT e os quatro pares
-  em ordem lexical estável.
+- `CryptoRotationEnv` segue o contrato Gymnasium com `Discrete(5)`. Fixtures genéricas mantêm
+  ordem lexical estável; o experimento controlado fixa `0=USDT`, `1=BTC`, `2=ETH`, `3=SHIB` e
+  `4=BNB` como parte da identidade reproduzível do run.
 - Features usam somente candles disponíveis antes do relógio simulado. Estatísticas do
   normalizador só podem ser ajustadas em `TRAIN`.
 - Episódios são sorteados por seed somente entre janelas completas, alinhadas e contidas na
@@ -139,6 +140,39 @@ O dashboard é um único HTML autocontido: CSS, JavaScript, dados e gráficos s�
 CDN, servidor de aplicação ou acesso à internet. `reports/dashboard-original.html` preserva o
 diagnóstico sem controles e `reports/dashboard.html` mostra a configuração com cooldown.
 
+## Treinamento controlado
+
+O currículo canônico usa episódios causais de 30, 60 e 90 dias. Atualização e comparação de
+features ocorrem somente em `TRAIN`: `2022-01-01` a `2022-03-31`. O intervalo interno
+`2022-03-02` a `2022-03-31` fica fora da atualização até o checkpoint de 60 mil passos; depois
+da escolha feita nesse holdout, o estágio de estabilidade pode usar todo o `TRAIN`, sem nova
+seleção. O normalizador é ajustado no segmento de atualização de `TRAIN`, nunca em
+`VALIDATION`.
+
+```powershell
+# sanity: PPO/DQN, seed 42, 10 mil passos e ablação curta
+uv run crypto-lab controlled-train --phase sanity `
+  --artifact-root artifacts/controlled-training `
+  --output reports/controlled-training-sanity.json
+
+# development: PPO/DQN, seeds 11/29/42, 100 mil passos, duas features
+uv run crypto-lab controlled-train --phase development `
+  --artifact-root artifacts/controlled-training `
+  --output reports/controlled-training-development.json
+
+# dashboard real, autocontido e offline
+uv run crypto-lab learning-dashboard `
+  --report reports/controlled-training-development.json `
+  --output reports/learning-dashboard.html
+```
+
+Os comandos são idempotentes: cada identidade retoma `latest.zip`, replay buffer do DQN,
+estado dos RNGs e métricas locais. `--max-seconds-per-run` permite uma execução limitada sem
+alterar silenciosamente o orçamento solicitado. O candidate de 300 mil passos rejeita um
+development incompleto. `controlled-evaluate` também falha fechado até todos os runs estarem
+congelados; somente então pode observar `VALIDATION` de `2022-04-01` a `2022-06-30` uma vez para
+essa versão. O `LOCKED_TEST` não participa desse fluxo.
+
 `STOP` interrompe a ingestão ao detectar ausência; `INVALIDATE_EPISODE` registra a cobertura
 como inválida sem preencher o candle. Depois da ingestão, verificação, auditoria e simulação
 funcionam offline sobre o artefato normalizado e seu manifesto.
@@ -173,8 +207,9 @@ testes unitários e migration em banco limpo.
 - O catálogo, ranking causal e dataset oficial cobrem o experimento de dezembro de 2021 a junho
   de 2022; isso não equivale à história completa de mercado ou a dois anos finais.
 - CoinMarketCap, notícias e adaptador de LLM real estão indisponíveis nesta entrega.
-- O treino de fixture é uma prova funcional curta, não tuning, backtest representativo ou
-  evidência de lucratividade. `LOCKED_TEST` permanece fechado e sem resultados observados.
+- Sanity e development controlados ainda não constituem evidência de lucratividade. Somente
+  uma política congelada que generalize cronologicamente em `VALIDATION`, entre seeds e após
+  custos pode avançar o gate de valor. `LOCKED_TEST` permanece fechado e sem resultados.
 - O catálogo integral usa arquivos 5m para provar presença histórica e arquivos 1d oficiais
   para um ranking compacto de toda a população; os quatro selecionados são novamente validados
   em 5m antes do experimento.

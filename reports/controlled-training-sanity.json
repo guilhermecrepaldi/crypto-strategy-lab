@@ -1,0 +1,2452 @@
+{
+  "action_mapping": {
+    "0": "USDT",
+    "1": "BTCUSDT",
+    "2": "ETHUSDT",
+    "3": "SHIBUSDT",
+    "4": "BNBUSDT"
+  },
+  "algorithms": [
+    "DQN",
+    "PPO"
+  ],
+  "configuration_variants": [
+    "ABLATION_NO_CONTROLS",
+    "CONSERVATIVE"
+  ],
+  "dataset_hash": "c69c7d743a07e909948be6c21ebb2f9f12e31c1999ffb3af62cf962b17853021",
+  "feature_variants": [
+    "BASE_FEATURES"
+  ],
+  "internal_train_baselines": [
+    {
+      "action_counts": [
+        2880,
+        0,
+        0,
+        0,
+        0
+      ],
+      "action_distribution": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'CONSERVATIVE', 42)",
+      "configuration_variant": "CONSERVATIVE",
+      "costs_usdt": "0",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "80",
+      "max_drawdown": "0",
+      "operations": 0,
+      "policy": "cash",
+      "position_distribution": {
+        "BNBUSDT": 0.0,
+        "BTCUSDT": 0.0,
+        "ETHUSDT": 0.0,
+        "SHIBUSDT": 0.0,
+        "USDT": 1.0
+      },
+      "position_duration_mean_steps": "0.0",
+      "results_by_position": {
+        "USDT": {
+          "base_reward_mean": "0",
+          "costs_usdt": "0",
+          "net_reward_mean": "0",
+          "steps": 2880,
+          "turnover": "0"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "0",
+          "costs_usdt": "0",
+          "net_reward_mean": "0",
+          "steps": 1390,
+          "turnover": "0"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "0",
+          "costs_usdt": "0",
+          "net_reward_mean": "0",
+          "steps": 1490,
+          "turnover": "0"
+        }
+      },
+      "return_percent": "0",
+      "reward_hacking_flags": [],
+      "reward_mean": "0",
+      "reward_median": "0.000",
+      "rotations": 0,
+      "ruined": false,
+      "seed": 42,
+      "steps": 2880,
+      "time_in_usdt_ratio": "1",
+      "transition_hash": "126a9d086280be450e0b8505566aaa22439602017f74f7d5ac472511f8c52fb4",
+      "turnover": "0"
+    },
+    {
+      "action_counts": [
+        0,
+        2880,
+        0,
+        0,
+        0
+      ],
+      "action_distribution": [
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'CONSERVATIVE', 42)",
+      "configuration_variant": "CONSERVATIVE",
+      "costs_usdt": "0.08390649734112348016818588000",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "81.36632908106292241903181412",
+      "max_drawdown": "0.1259051100088264243463070819",
+      "operations": 1,
+      "policy": "buy-and-hold-1",
+      "position_distribution": {
+        "BNBUSDT": 0.0,
+        "BTCUSDT": 0.9947916666666666,
+        "ETHUSDT": 0.0,
+        "SHIBUSDT": 0.0,
+        "USDT": 0.005208333333333333
+      },
+      "position_duration_mean_steps": "2865",
+      "results_by_position": {
+        "BTCUSDT": {
+          "base_reward_mean": "0.000005910961642594551976738456637",
+          "costs_usdt": "0.08390649734112348016818588000",
+          "net_reward_mean": "-0.0005651178226729073864923853737",
+          "steps": 2865,
+          "turnover": "0.74925074925074915702882350"
+        },
+        "USDT": {
+          "base_reward_mean": "0",
+          "costs_usdt": "0",
+          "net_reward_mean": "0",
+          "steps": 15,
+          "turnover": "0"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "-0.001533260519547041749392819329",
+          "costs_usdt": "0.08390649734112348016818588000",
+          "net_reward_mean": "-0.002112600106507536544765425092",
+          "steps": 1390,
+          "turnover": "0.74925074925074915702882350"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "0.001441722837098269411455956070",
+          "costs_usdt": "0",
+          "net_reward_mean": "0.0008841956953608027751162797199",
+          "steps": 1490,
+          "turnover": "0"
+        }
+      },
+      "return_percent": "1.707911351328653023789767600",
+      "reward_hacking_flags": [],
+      "reward_mean": "-0.0005621745006798193271877375332",
+      "reward_median": "-0.000507515115175255555001993133",
+      "rotations": 0,
+      "ruined": false,
+      "seed": 42,
+      "steps": 2880,
+      "time_in_usdt_ratio": "0.005208333333333333333333333333",
+      "transition_hash": "69abd8478d577adaafa3c8648e404e29d0afce263bb27d94c1768f56cadcb5cb",
+      "turnover": "0.74925074925074915702882350"
+    },
+    {
+      "action_counts": [
+        0,
+        0,
+        2880,
+        0,
+        0
+      ],
+      "action_distribution": [
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'CONSERVATIVE', 42)",
+      "configuration_variant": "CONSERVATIVE",
+      "costs_usdt": "0.08390649734112349049073033600",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "86.78688958596365723693926966",
+      "max_drawdown": "0.1408871377755617207162591881",
+      "operations": 1,
+      "policy": "buy-and-hold-2",
+      "position_distribution": {
+        "BNBUSDT": 0.0,
+        "BTCUSDT": 0.0,
+        "ETHUSDT": 0.9986111111111111,
+        "SHIBUSDT": 0.0,
+        "USDT": 0.001388888888888889
+      },
+      "position_duration_mean_steps": "2876",
+      "results_by_position": {
+        "ETHUSDT": {
+          "base_reward_mean": "0.00002831325937000097008030655525",
+          "costs_usdt": "0.08390649734112349049073033600",
+          "net_reward_mean": "-0.0005403966235541948666001537259",
+          "steps": 2876,
+          "turnover": "0.74925074925074924920492920"
+        },
+        "USDT": {
+          "base_reward_mean": "0",
+          "costs_usdt": "0",
+          "net_reward_mean": "0",
+          "steps": 4,
+          "turnover": "0"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "-0.001592468445880510032253928643",
+          "costs_usdt": "0.08390649734112349049073033600",
+          "net_reward_mean": "-0.002175925431486325933229710915",
+          "steps": 1390,
+          "turnover": "0.74925074925074924920492920"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "0.001540241660216128681063035213",
+          "costs_usdt": "0",
+          "net_reward_mean": "0.0009868158794792809468773530583",
+          "steps": 1490,
+          "turnover": "0"
+        }
+      },
+      "return_percent": "8.483611982454571546174087100",
+      "reward_hacking_flags": [],
+      "reward_mean": "-0.0005396460726881473737298757346",
+      "reward_median": "-0.0005045266374754111024478089625",
+      "rotations": 0,
+      "ruined": false,
+      "seed": 42,
+      "steps": 2880,
+      "time_in_usdt_ratio": "0.001388888888888888888888888889",
+      "transition_hash": "50642efdb423ab708b83f9e45e20b7c6296a02f1ed33cffe03edddb365e94cb2",
+      "turnover": "0.74925074925074924920492920"
+    },
+    {
+      "action_counts": [
+        0,
+        0,
+        0,
+        2880,
+        0
+      ],
+      "action_distribution": [
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'CONSERVATIVE', 42)",
+      "configuration_variant": "CONSERVATIVE",
+      "costs_usdt": "0.08390649734112349066367457833",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "78.53480790036779885738261592",
+      "max_drawdown": "0.1619259662369634592596152853",
+      "operations": 1,
+      "policy": "buy-and-hold-3",
+      "position_distribution": {
+        "BNBUSDT": 0.0,
+        "BTCUSDT": 0.0,
+        "ETHUSDT": 0.0,
+        "SHIBUSDT": 0.9986111111111111,
+        "USDT": 0.001388888888888889
+      },
+      "position_duration_mean_steps": "2876",
+      "results_by_position": {
+        "SHIBUSDT": {
+          "base_reward_mean": "-0.000006427223720570146346950291136",
+          "costs_usdt": "0.08390649734112349066367457833",
+          "net_reward_mean": "-0.0009523654372969357111956357784",
+          "steps": 2876,
+          "turnover": "0.7492507492507492507492506441"
+        },
+        "USDT": {
+          "base_reward_mean": "0",
+          "costs_usdt": "0",
+          "net_reward_mean": "0",
+          "steps": 4,
+          "turnover": "0"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "-0.002000506275017982582023847498",
+          "costs_usdt": "0.08390649734112349066367457833",
+          "net_reward_mean": "-0.002953692897550399046463469328",
+          "steps": 1390,
+          "turnover": "0.7492507492507492507492506441"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "0.001853838273056802716858603345",
+          "costs_usdt": "0",
+          "net_reward_mean": "0.0009172014294825956840171636695",
+          "steps": 1490,
+          "turnover": "0"
+        }
+      },
+      "return_percent": "-1.831490124540251428271730100",
+      "reward_hacking_flags": [],
+      "reward_mean": "-0.0009510427075229121893745307287",
+      "reward_median": "-0.000982160348540850686970811946",
+      "rotations": 0,
+      "ruined": false,
+      "seed": 42,
+      "steps": 2880,
+      "time_in_usdt_ratio": "0.001388888888888888888888888889",
+      "transition_hash": "21b7c1505219209d5a90a3295e4db2e7bcd613db637ac393afc2696d1c74b24b",
+      "turnover": "0.7492507492507492507492506441"
+    },
+    {
+      "action_counts": [
+        0,
+        0,
+        0,
+        0,
+        2880
+      ],
+      "action_distribution": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'CONSERVATIVE', 42)",
+      "configuration_variant": "CONSERVATIVE",
+      "costs_usdt": "0.08390649734112349056307500000",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "82.75460928764442523443692500",
+      "max_drawdown": "0.09873116754386459607109906651",
+      "operations": 1,
+      "policy": "buy-and-hold-4",
+      "position_distribution": {
+        "BNBUSDT": 0.9986111111111111,
+        "BTCUSDT": 0.0,
+        "ETHUSDT": 0.0,
+        "SHIBUSDT": 0.0,
+        "USDT": 0.001388888888888889
+      },
+      "position_duration_mean_steps": "2876",
+      "results_by_position": {
+        "BNBUSDT": {
+          "base_reward_mean": "0.00001177088991421745046818228605",
+          "costs_usdt": "0.08390649734112349056307500000",
+          "net_reward_mean": "-0.0003898300550921038234680742655",
+          "steps": 2876,
+          "turnover": "0.74925074925074924985093750"
+        },
+        "USDT": {
+          "base_reward_mean": "0",
+          "costs_usdt": "0",
+          "net_reward_mean": "0",
+          "steps": 4,
+          "turnover": "0"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "-0.001303788057431512584246081998",
+          "costs_usdt": "0.08390649734112349056307500000",
+          "net_reward_mean": "-0.001717397641947884722918511952",
+          "steps": 1390,
+          "turnover": "0.74925074925074924985093750"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "0.001239005690753752939361440424",
+          "costs_usdt": "0",
+          "net_reward_mean": "0.0008496855596393752809144631046",
+          "steps": 1490,
+          "turnover": "0"
+        }
+      },
+      "return_percent": "3.443261609555531543046156200",
+      "reward_hacking_flags": [],
+      "reward_mean": "-0.0003892886244600314570465908290",
+      "reward_median": "-0.0003144003661620364234055061249",
+      "rotations": 0,
+      "ruined": false,
+      "seed": 42,
+      "steps": 2880,
+      "time_in_usdt_ratio": "0.001388888888888888888888888889",
+      "transition_hash": "9777ed38be66871f530247265c740d11016e883a96cd7f1fc21c191ee08de2fc",
+      "turnover": "0.74925074925074924985093750"
+    },
+    {
+      "action_counts": [
+        2112,
+        102,
+        161,
+        437,
+        68
+      ],
+      "action_distribution": [
+        0.7333333333333333,
+        0.035416666666666666,
+        0.05590277777777778,
+        0.1517361111111111,
+        0.02361111111111111
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'CONSERVATIVE', 42)",
+      "configuration_variant": "CONSERVATIVE",
+      "costs_usdt": "27.19272551160104768141510332",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "50.85116592575333932477083104",
+      "max_drawdown": "0.3965572478737214370643269050",
+      "operations": 386,
+      "policy": "causal-momentum",
+      "position_distribution": {
+        "BNBUSDT": 0.0375,
+        "BTCUSDT": 0.05451388888888889,
+        "ETHUSDT": 0.08298611111111111,
+        "SHIBUSDT": 0.24375,
+        "USDT": 0.58125
+      },
+      "position_duration_mean_steps": "5.742857142857143",
+      "results_by_position": {
+        "BNBUSDT": {
+          "base_reward_mean": "-0.0002567082079965867844356557333",
+          "costs_usdt": "1.793923485515398863471452994",
+          "net_reward_mean": "-0.003608099784383477623137869331",
+          "steps": 108,
+          "turnover": "20.98814657926927693543229373"
+        },
+        "BTCUSDT": {
+          "base_reward_mean": "-0.0001727481266380365111149189255",
+          "costs_usdt": "2.215438276463988185160523660",
+          "net_reward_mean": "-0.003086073425141485214797920921",
+          "steps": 157,
+          "turnover": "24.71777055654935254197225577"
+        },
+        "ETHUSDT": {
+          "base_reward_mean": "-0.0003218880394512345611200232762",
+          "costs_usdt": "3.472145453067340195098322180",
+          "net_reward_mean": "-0.003407248033127389630208680631",
+          "steps": 239,
+          "turnover": "39.70781560046748467747072357"
+        },
+        "SHIBUSDT": {
+          "base_reward_mean": "-0.0001937789271853377789879427688",
+          "costs_usdt": "8.312956439203135942713451815",
+          "net_reward_mean": "-0.003481016626718300325145670613",
+          "steps": 702,
+          "turnover": "97.40638213665057306800456359"
+        },
+        "USDT": {
+          "base_reward_mean": "-0.0001107010711210895660964732292",
+          "costs_usdt": "11.39826185735118449497135264",
+          "net_reward_mean": "-0.002927100228246984511659761258",
+          "steps": 1674,
+          "turnover": "131.8720495490418423714936076"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "-0.0009872714916630000819974770380",
+          "costs_usdt": "13.80982414615132005156119601",
+          "net_reward_mean": "-0.003966977621451853632540264951",
+          "steps": 1390,
+          "turnover": "158.8431775585931597852086744"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "0.0006169018722792690566507935705",
+          "costs_usdt": "13.38290136544972762985390729",
+          "net_reward_mean": "-0.002361114862148790090726020790",
+          "steps": 1490,
+          "turnover": "155.8489868633853698091647696"
+        }
+      },
+      "return_percent": "-36.43604259280832584403646120",
+      "reward_hacking_flags": [],
+      "reward_mean": "-0.003136166680006865897365534465",
+      "reward_median": "-0.002864122549632124254177777092",
+      "rotations": 34,
+      "ruined": false,
+      "seed": 42,
+      "steps": 2880,
+      "time_in_usdt_ratio": "0.58125",
+      "transition_hash": "56825b4f7e71ed36cde67ec374259c4abb72652cf658c60a6dc5ef5524223288",
+      "turnover": "314.6921644219785295943734440"
+    },
+    {
+      "action_counts": [
+        1939,
+        131,
+        215,
+        456,
+        139
+      ],
+      "action_distribution": [
+        0.6732638888888889,
+        0.04548611111111111,
+        0.07465277777777778,
+        0.15833333333333333,
+        0.04826388888888889
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'CONSERVATIVE', 42)",
+      "configuration_variant": "CONSERVATIVE",
+      "costs_usdt": "21.32538674298609675123727915",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "54.03517236483642471989437526",
+      "max_drawdown": "0.3488415603316487807137864130",
+      "operations": 302,
+      "policy": "random",
+      "position_distribution": {
+        "BNBUSDT": 0.04826388888888889,
+        "BTCUSDT": 0.04548611111111111,
+        "ETHUSDT": 0.07465277777777778,
+        "SHIBUSDT": 0.15833333333333333,
+        "USDT": 0.6732638888888889
+      },
+      "position_duration_mean_steps": "5.993630573248407",
+      "results_by_position": {
+        "BNBUSDT": {
+          "base_reward_mean": "-0.0003856875001034427212415687833",
+          "costs_usdt": "1.951197462712829382755705385",
+          "net_reward_mean": "-0.002837385760955472158389900734",
+          "steps": 139,
+          "turnover": "20.97405763817889098249207190"
+        },
+        "BTCUSDT": {
+          "base_reward_mean": "-0.00004315518591821708284937258221",
+          "costs_usdt": "1.706506398722934409209405530",
+          "net_reward_mean": "-0.002258547405518556453734687168",
+          "steps": 131,
+          "turnover": "17.97269035396180915160494077"
+        },
+        "ETHUSDT": {
+          "base_reward_mean": "-0.0003262104508846163303272066626",
+          "costs_usdt": "2.538058969149298537188390835",
+          "net_reward_mean": "-0.002744138740369856014325968682",
+          "steps": 215,
+          "turnover": "27.72094140890993395693070587"
+        },
+        "SHIBUSDT": {
+          "base_reward_mean": "-0.0002446668892323761884827990742",
+          "costs_usdt": "5.265601389912282017830762166",
+          "net_reward_mean": "-0.003134597348811320446610735256",
+          "steps": 456,
+          "turnover": "59.93569916349623938143195938"
+        },
+        "USDT": {
+          "base_reward_mean": "-0.00007809397614755794986158074994",
+          "costs_usdt": "9.864022522488752404253015223",
+          "net_reward_mean": "-0.002344447530701486205097220128",
+          "steps": 1939,
+          "turnover": "108.6652793453104384061124707"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "-0.0007813630738558549467043129669",
+          "costs_usdt": "11.10001064538808459578067545",
+          "net_reward_mean": "-0.003169098485765704663238756698",
+          "steps": 1390,
+          "turnover": "121.3862846180717612251089231"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "0.0004655726259125520013845894432",
+          "costs_usdt": "10.22537609759801215545660370",
+          "net_reward_mean": "-0.001913066723455755008034668982",
+          "steps": 1490,
+          "turnover": "113.8823832917855506534632257"
+        }
+      },
+      "return_percent": "-32.45603454395446910013203092",
+      "reward_hacking_flags": [],
+      "reward_mean": "-0.002519276497626182098567197428",
+      "reward_median": "-0.002174902039067059230527424410",
+      "rotations": 12,
+      "ruined": false,
+      "seed": 42,
+      "steps": 2880,
+      "time_in_usdt_ratio": "0.6732638888888888888888888889",
+      "transition_hash": "fc24e657cfffef844d6f1e89c65bb2e23916997b1967b1bcea975fa1ceaf42e2",
+      "turnover": "235.2686679098573118785721488"
+    },
+    {
+      "action_counts": [
+        918,
+        292,
+        743,
+        544,
+        383
+      ],
+      "action_distribution": [
+        0.31875,
+        0.10138888888888889,
+        0.25798611111111114,
+        0.18888888888888888,
+        0.1329861111111111
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'CONSERVATIVE', 42)",
+      "configuration_variant": "CONSERVATIVE",
+      "costs_usdt": "9.554591856553984250143928904",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "74.06564642436414234338237382",
+      "max_drawdown": "0.08298531916918273364256928566",
+      "operations": 116,
+      "policy": "untrained-ppo",
+      "position_distribution": {
+        "BNBUSDT": 0.0125,
+        "BTCUSDT": 0.009722222222222222,
+        "ETHUSDT": 0.0642361111111111,
+        "SHIBUSDT": 0.05590277777777778,
+        "USDT": 0.8576388888888888
+      },
+      "position_duration_mean_steps": "6.833333333333333",
+      "results_by_position": {
+        "BNBUSDT": {
+          "base_reward_mean": "-0.0005467757917492649771477074786",
+          "costs_usdt": "0.5530366177449769579731181600",
+          "net_reward_mean": "-0.001922825073628800503953671237",
+          "steps": 36,
+          "turnover": "5.240519160184623670656292177"
+        },
+        "BTCUSDT": {
+          "base_reward_mean": "0.0003519376230982423233029783744",
+          "costs_usdt": "0.4028103065286834649809303772",
+          "net_reward_mean": "-0.0006993868056797486453612391659",
+          "steps": 28,
+          "turnover": "3.741487100136995665706137604"
+        },
+        "ETHUSDT": {
+          "base_reward_mean": "0.0001207736892606296497207949918",
+          "costs_usdt": "2.309756543697567789734723784",
+          "net_reward_mean": "-0.0009880607376650708870376230933",
+          "steps": 185,
+          "turnover": "21.72827172827172775627986057"
+        },
+        "SHIBUSDT": {
+          "base_reward_mean": "-0.0001843280624806217443868001775",
+          "costs_usdt": "1.828456481212682421126374851",
+          "net_reward_mean": "-0.001268387088930492411919400496",
+          "steps": 161,
+          "turnover": "17.23276723276723276723276375"
+        },
+        "USDT": {
+          "base_reward_mean": "-0.00002425565193420874062417041403",
+          "costs_usdt": "4.460531907370073616328781734",
+          "net_reward_mean": "-0.0006783804090834765765940799637",
+          "steps": 2470,
+          "turnover": "41.98611408834278279018773746"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "-0.0003271306111400124963131499259",
+          "costs_usdt": "4.556786548653322802566990311",
+          "net_reward_mean": "-0.001046316902603581232379912617",
+          "steps": 1390,
+          "turnover": "42.74419336413364867316706561"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "0.0002534474688622385307119568084",
+          "costs_usdt": "4.997805307900661447576938594",
+          "net_reward_mean": "-0.0004678021522233063112837111316",
+          "steps": 1490,
+          "turnover": "47.18496594556971397689572598"
+        }
+      },
+      "return_percent": "-7.417941969544822070772032720",
+      "reward_hacking_flags": [],
+      "reward_mean": "-0.0007470158685526751100072250429",
+      "reward_median": "-0.0005933555540176303027780244275",
+      "rotations": 4,
+      "ruined": false,
+      "seed": 42,
+      "steps": 2880,
+      "time_in_usdt_ratio": "0.8576388888888888888888888889",
+      "transition_hash": "fceafd99dc5b0402c81b11aee401d53817601551dddc6c2180f99f5fbf5a9da7",
+      "turnover": "89.92915930970336265006279159"
+    },
+    {
+      "action_counts": [
+        2880,
+        0,
+        0,
+        0,
+        0
+      ],
+      "action_distribution": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'ABLATION_NO_CONTROLS', 42)",
+      "configuration_variant": "ABLATION_NO_CONTROLS",
+      "costs_usdt": "0",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "80",
+      "max_drawdown": "0",
+      "operations": 0,
+      "policy": "cash",
+      "position_distribution": {
+        "BNBUSDT": 0.0,
+        "BTCUSDT": 0.0,
+        "ETHUSDT": 0.0,
+        "SHIBUSDT": 0.0,
+        "USDT": 1.0
+      },
+      "position_duration_mean_steps": "0.0",
+      "results_by_position": {
+        "USDT": {
+          "base_reward_mean": "0",
+          "costs_usdt": "0",
+          "net_reward_mean": "0",
+          "steps": 2880,
+          "turnover": "0"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "0",
+          "costs_usdt": "0",
+          "net_reward_mean": "0",
+          "steps": 1390,
+          "turnover": "0"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "0",
+          "costs_usdt": "0",
+          "net_reward_mean": "0",
+          "steps": 1490,
+          "turnover": "0"
+        }
+      },
+      "return_percent": "0",
+      "reward_hacking_flags": [],
+      "reward_mean": "0",
+      "reward_median": "0.00",
+      "rotations": 0,
+      "ruined": false,
+      "seed": 42,
+      "steps": 2880,
+      "time_in_usdt_ratio": "1",
+      "transition_hash": "6f3387c7fc8653a51a7f2907af96448871a4aafff4ec05953c3535f47545f35c",
+      "turnover": "0"
+    },
+    {
+      "action_counts": [
+        0,
+        2880,
+        0,
+        0,
+        0
+      ],
+      "action_distribution": [
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'ABLATION_NO_CONTROLS', 42)",
+      "configuration_variant": "ABLATION_NO_CONTROLS",
+      "costs_usdt": "0.08390649734112343498974144000",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "81.38514463314355157293025856",
+      "max_drawdown": "0.1259147065977213310662153734",
+      "operations": 1,
+      "policy": "buy-and-hold-1",
+      "position_distribution": {
+        "BNBUSDT": 0.0,
+        "BTCUSDT": 1.0,
+        "ETHUSDT": 0.0,
+        "SHIBUSDT": 0.0,
+        "USDT": 0.0
+      },
+      "position_duration_mean_steps": "2880",
+      "results_by_position": {
+        "BTCUSDT": {
+          "base_reward_mean": "0.000005960459484524417945494108927",
+          "costs_usdt": "0.08390649734112343498974144000",
+          "net_reward_mean": "-0.0005614258459713458331045166919",
+          "steps": 2880,
+          "turnover": "0.74925074925074875360376800"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "-0.001544988680815626185367583852",
+          "costs_usdt": "0",
+          "net_reward_mean": "-0.002122353202852167971238429457",
+          "steps": 1390,
+          "turnover": "0"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "0.001452819053455805853250982945",
+          "costs_usdt": "0.08390649734112343498974144000",
+          "net_reward_mean": "0.0008947412856154613964298046123",
+          "steps": 1490,
+          "turnover": "0.74925074925074875360376800"
+        }
+      },
+      "return_percent": "1.731430791429439466162823200",
+      "reward_hacking_flags": [],
+      "reward_mean": "-0.0005614258459713458331045166919",
+      "reward_median": "-0.0005160581221116378201544150355",
+      "rotations": 0,
+      "ruined": false,
+      "seed": 42,
+      "steps": 2880,
+      "time_in_usdt_ratio": "0",
+      "transition_hash": "5af2ee02162656af0a55d889f87940625f754587be76a037c53fa4869d9486ef",
+      "turnover": "0.74925074925074875360376800"
+    },
+    {
+      "action_counts": [
+        0,
+        0,
+        2880,
+        0,
+        0
+      ],
+      "action_distribution": [
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'ABLATION_NO_CONTROLS', 42)",
+      "configuration_variant": "ABLATION_NO_CONTROLS",
+      "costs_usdt": "0.08390649734112348999255204000",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "86.05963048113284807460744796",
+      "max_drawdown": "0.1405078794211112554648060728",
+      "operations": 1,
+      "policy": "buy-and-hold-2",
+      "position_distribution": {
+        "BNBUSDT": 0.0,
+        "BTCUSDT": 0.0,
+        "ETHUSDT": 1.0,
+        "SHIBUSDT": 0.0,
+        "USDT": 0.0
+      },
+      "position_duration_mean_steps": "2880",
+      "results_by_position": {
+        "ETHUSDT": {
+          "base_reward_mean": "0.00002535201353887840313245688581",
+          "costs_usdt": "0.08390649734112348999255204000",
+          "net_reward_mean": "-0.0005401180864394476536563961578",
+          "steps": 2880,
+          "turnover": "0.74925074925074924475640050"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "-0.001595197667842271795025647149",
+          "costs_usdt": "0",
+          "net_reward_mean": "-0.002174825796710514635595433293",
+          "steps": 1390,
+          "turnover": "0"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "0.001537139971337401071212835818",
+          "costs_usdt": "0.08390649734112348999255204000",
+          "net_reward_mean": "0.0009848776969677893294947861360",
+          "steps": 1490,
+          "turnover": "0.74925074925074924475640050"
+        }
+      },
+      "return_percent": "7.574538101416060093259310000",
+      "reward_hacking_flags": [],
+      "reward_mean": "-0.0005401180864394476536563961578",
+      "reward_median": "-0.0005091366473507420605920568485",
+      "rotations": 0,
+      "ruined": false,
+      "seed": 42,
+      "steps": 2880,
+      "time_in_usdt_ratio": "0",
+      "transition_hash": "7996e085b525362577d6548b480cef6781abcdc95a4096632568b1fe122468d4",
+      "turnover": "0.74925074925074924475640050"
+    },
+    {
+      "action_counts": [
+        0,
+        0,
+        0,
+        2880,
+        0
+      ],
+      "action_distribution": [
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'ABLATION_NO_CONTROLS', 42)",
+      "configuration_variant": "ABLATION_NO_CONTROLS",
+      "costs_usdt": "0.08390649734112349066367456079",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "77.08923763522786427446900256",
+      "max_drawdown": "0.16226795490618896015307294",
+      "operations": 1,
+      "policy": "buy-and-hold-3",
+      "position_distribution": {
+        "BNBUSDT": 0.0,
+        "BTCUSDT": 0.0,
+        "ETHUSDT": 0.0,
+        "SHIBUSDT": 1.0,
+        "USDT": 0.0
+      },
+      "position_duration_mean_steps": "2880",
+      "results_by_position": {
+        "SHIBUSDT": {
+          "base_reward_mean": "-0.00001286908108816154518452953016",
+          "costs_usdt": "0.08390649734112349066367456079",
+          "net_reward_mean": "-0.0009643028504726316240049027800",
+          "steps": 2880,
+          "turnover": "0.7492507492507492507492504875"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "-0.002000174785116181547962976632",
+          "costs_usdt": "0",
+          "net_reward_mean": "-0.002958730109743378709549064645",
+          "steps": 1390,
+          "turnover": "0"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "0.001841060401193011477541672800",
+          "costs_usdt": "0.08390649734112349066367456079",
+          "net_reward_mean": "0.0008962702303235686772745502345",
+          "steps": 1490,
+          "turnover": "0.7492507492507492507492504875"
+        }
+      },
+      "return_percent": "-3.638452955965169656913746800",
+      "reward_hacking_flags": [],
+      "reward_mean": "-0.0009643028504726316240049027800",
+      "reward_median": "-0.000991756569934826226797726385",
+      "rotations": 0,
+      "ruined": false,
+      "seed": 42,
+      "steps": 2880,
+      "time_in_usdt_ratio": "0",
+      "transition_hash": "9a32d195a2c145e06a3131ea291ccf671f6e3bacbef67dd2542ddabe6fb57ea2",
+      "turnover": "0.7492507492507492507492504875"
+    },
+    {
+      "action_counts": [
+        0,
+        0,
+        0,
+        0,
+        2880
+      ],
+      "action_distribution": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'ABLATION_NO_CONTROLS', 42)",
+      "configuration_variant": "ABLATION_NO_CONTROLS",
+      "costs_usdt": "0.08390649734112349056335508000",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "82.87744679053191126363664492",
+      "max_drawdown": "0.09877904120840622256235326477",
+      "operations": 1,
+      "policy": "buy-and-hold-4",
+      "position_distribution": {
+        "BNBUSDT": 1.0,
+        "BTCUSDT": 0.0,
+        "ETHUSDT": 0.0,
+        "SHIBUSDT": 0.0,
+        "USDT": 0.0
+      },
+      "position_duration_mean_steps": "2880",
+      "results_by_position": {
+        "BNBUSDT": {
+          "base_reward_mean": "0.00001226956154999277862803812210",
+          "costs_usdt": "0.08390649734112349056335508000",
+          "net_reward_mean": "-0.0003876981337500815200244436071",
+          "steps": 2880,
+          "turnover": "0.74925074925074924985343850"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "-0.001306595113189382104648107694",
+          "costs_usdt": "0",
+          "net_reward_mean": "-0.001717773480672983700111861719",
+          "steps": 1390,
+          "turnover": "0"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "0.001242619828588738475107127172",
+          "costs_usdt": "0.08390649734112349056335508000",
+          "net_reward_mean": "0.0008531104113659144734799263091",
+          "steps": 1490,
+          "turnover": "0.74925074925074924985343850"
+        }
+      },
+      "return_percent": "3.596808488164889079545806200",
+      "reward_hacking_flags": [],
+      "reward_mean": "-0.0003876981337500815200244436071",
+      "reward_median": "-0.0003145431406727012779062262514",
+      "rotations": 0,
+      "ruined": false,
+      "seed": 42,
+      "steps": 2880,
+      "time_in_usdt_ratio": "0",
+      "transition_hash": "662cd5a45528002bb0a7022b214b1c89dbce72fa1bd9efe7aca08ed68eb7faad",
+      "turnover": "0.74925074925074924985343850"
+    },
+    {
+      "action_counts": [
+        424,
+        155,
+        175,
+        308,
+        174
+      ],
+      "action_distribution": [
+        0.343042071197411,
+        0.12540453074433658,
+        0.14158576051779936,
+        0.24919093851132687,
+        0.1407766990291262
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'ABLATION_NO_CONTROLS', 42)",
+      "configuration_variant": "ABLATION_NO_CONTROLS",
+      "costs_usdt": "55.34392709435413065856974297",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "15.98357571106992046795987938",
+      "max_drawdown": "0.8002053036116259941505015078",
+      "operations": 962,
+      "policy": "causal-momentum",
+      "position_distribution": {
+        "BNBUSDT": 0.1407766990291262,
+        "BTCUSDT": 0.12540453074433658,
+        "ETHUSDT": 0.14158576051779936,
+        "SHIBUSDT": 0.24919093851132687,
+        "USDT": 0.343042071197411
+      },
+      "position_duration_mean_steps": "1.2119402985074628",
+      "results_by_position": {
+        "BNBUSDT": {
+          "base_reward_mean": "-0.001630655875857830307856597825",
+          "costs_usdt": "9.782846779550206636743561527",
+          "net_reward_mean": "-0.006685871527133791562641249319",
+          "steps": 174,
+          "turnover": "178.2876041703106136882186145"
+        },
+        "BTCUSDT": {
+          "base_reward_mean": "-0.001318593202581025264521883007",
+          "costs_usdt": "8.173811971067255988908957648",
+          "net_reward_mean": "-0.006736513052163551598239262548",
+          "steps": 155,
+          "turnover": "161.0614529441923585026617688"
+        },
+        "ETHUSDT": {
+          "base_reward_mean": "-0.001300038905447306010679897761",
+          "costs_usdt": "9.021795084570374334595953211",
+          "net_reward_mean": "-0.006420780654481362442839809377",
+          "steps": 175,
+          "turnover": "161.0812338841492507280775343"
+        },
+        "SHIBUSDT": {
+          "base_reward_mean": "-0.001925164069186821950944691333",
+          "costs_usdt": "15.88682726973272440591940199",
+          "net_reward_mean": "-0.006803087915867341958611990448",
+          "steps": 308,
+          "turnover": "283.9287621116319958341800239"
+        },
+        "USDT": {
+          "base_reward_mean": "-0.0007120083659447870543749468758",
+          "costs_usdt": "12.47864598943356929240186854",
+          "net_reward_mean": "-0.005628715821082781154068046779",
+          "steps": 424,
+          "turnover": "218.6655304619923093598278781"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "-0.002575313220228496181267439798",
+          "costs_usdt": "28.58391907479545557660100978",
+          "net_reward_mean": "-0.007533359945755238482266020335",
+          "steps": 610,
+          "turnover": "513.1296089302890875046121027"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "-0.00006313720987755294378550499205",
+          "costs_usdt": "26.76000801955867508196873315",
+          "net_reward_mean": "-0.005140119493061363762809428443",
+          "steps": 626,
+          "turnover": "489.8949746419874406083537163"
+        }
+      },
+      "return_percent": "-80.02053036116259941505015078",
+      "reward_hacking_flags": [
+        "EXCESSIVE_OPERATION_RATE"
+      ],
+      "reward_mean": "-0.006321249489941026852508879134",
+      "reward_median": "-0.006642605748744873481614729715",
+      "rotations": 377,
+      "ruined": true,
+      "seed": 42,
+      "steps": 1236,
+      "time_in_usdt_ratio": "0.3430420711974110032362459547",
+      "transition_hash": "d496f0d9d294fd7b02b3bb9ffda3387b6d8dae04ca8d00f586cad35e89bc764e",
+      "turnover": "1003.024583572276528112965819"
+    },
+    {
+      "action_counts": [
+        214,
+        214,
+        212,
+        228,
+        212
+      ],
+      "action_distribution": [
+        0.19814814814814816,
+        0.19814814814814816,
+        0.1962962962962963,
+        0.2111111111111111,
+        0.1962962962962963
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'ABLATION_NO_CONTROLS', 42)",
+      "configuration_variant": "ABLATION_NO_CONTROLS",
+      "costs_usdt": "57.54188861097666319465636302",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "15.96006963454671172275362562",
+      "max_drawdown": "0.8004991295681661034655796798",
+      "operations": 871,
+      "policy": "random",
+      "position_distribution": {
+        "BNBUSDT": 0.1962962962962963,
+        "BTCUSDT": 0.19814814814814816,
+        "ETHUSDT": 0.1962962962962963,
+        "SHIBUSDT": 0.2111111111111111,
+        "USDT": 0.19814814814814816
+      },
+      "position_duration_mean_steps": "1.237142857142857",
+      "results_by_position": {
+        "BNBUSDT": {
+          "base_reward_mean": "-0.001739071730123389281902541009",
+          "costs_usdt": "12.25615043206796710515611713",
+          "net_reward_mean": "-0.006791952213461873077349068532",
+          "steps": 212,
+          "turnover": "218.7087434950842383225503436"
+        },
+        "BTCUSDT": {
+          "base_reward_mean": "-0.001836274058256169464730990172",
+          "costs_usdt": "12.74181011211332598332220017",
+          "net_reward_mean": "-0.006696088445417190837020042052",
+          "steps": 214,
+          "turnover": "222.4310461935737219647223216"
+        },
+        "ETHUSDT": {
+          "base_reward_mean": "-0.001367323010797983703514173176",
+          "costs_usdt": "12.81553387408028658841381450",
+          "net_reward_mean": "-0.006580949679602570786866318988",
+          "steps": 212,
+          "turnover": "235.9226202482438956430574138"
+        },
+        "SHIBUSDT": {
+          "base_reward_mean": "-0.001676246872181740814868832732",
+          "costs_usdt": "12.70064934625400299984721252",
+          "net_reward_mean": "-0.007100800204000965755049887780",
+          "steps": 228,
+          "turnover": "242.6629599164886681198712132"
+        },
+        "USDT": {
+          "base_reward_mean": "-0.0008328694354921132482617437954",
+          "costs_usdt": "7.027744846461080517917018742",
+          "net_reward_mean": "-0.005722150716836566000558512111",
+          "steps": 214,
+          "turnover": "128.1514264812802099500186468"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "-0.002883911201253109639188483663",
+          "costs_usdt": "28.81073430917742753777439570",
+          "net_reward_mean": "-0.007849446222147652413038248926",
+          "steps": 528,
+          "turnover": "510.0751248666819146945955772"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "-0.0001616513864732945467162372560",
+          "costs_usdt": "28.73115430179923565688196730",
+          "net_reward_mean": "-0.005375060187083742356019296606",
+          "steps": 552,
+          "turnover": "537.8016714679888193056243612"
+        }
+      },
+      "return_percent": "-80.04991295681661034655796798",
+      "reward_hacking_flags": [
+        "EXCESSIVE_OPERATION_RATE"
+      ],
+      "reward_mean": "-0.006584760026448320606117451073",
+      "reward_median": "-0.006954368603310912306958735355",
+      "rotations": 528,
+      "ruined": true,
+      "seed": 42,
+      "steps": 1080,
+      "time_in_usdt_ratio": "0.1981481481481481481481481481",
+      "transition_hash": "8cb0843d90fc1fa7d57305196dc9335cba6b1c074ae0c60ba4e8ae1c746b5c60",
+      "turnover": "1047.876796334670734000219940"
+    },
+    {
+      "action_counts": [
+        318,
+        68,
+        317,
+        302,
+        291
+      ],
+      "action_distribution": [
+        0.24537037037037038,
+        0.05246913580246913,
+        0.24459876543209877,
+        0.2330246913580247,
+        0.22453703703703703
+      ],
+      "baseline_key": "(<FeatureVariant.BASE_FEATURES: 'BASE_FEATURES'>, 'ABLATION_NO_CONTROLS', 42)",
+      "configuration_variant": "ABLATION_NO_CONTROLS",
+      "costs_usdt": "58.97059336428045378542041828",
+      "feature_variant": "BASE_FEATURES",
+      "final_equity_usdt": "15.95450946664760710315583241",
+      "max_drawdown": "0.8005686316669049112105520949",
+      "operations": 930,
+      "policy": "untrained-ppo",
+      "position_distribution": {
+        "BNBUSDT": 0.22453703703703703,
+        "BTCUSDT": 0.05246913580246913,
+        "ETHUSDT": 0.24459876543209877,
+        "SHIBUSDT": 0.2330246913580247,
+        "USDT": 0.24537037037037038
+      },
+      "position_duration_mean_steps": "1.3991416309012876",
+      "results_by_position": {
+        "BNBUSDT": {
+          "base_reward_mean": "-0.001113636531785296969707898112",
+          "costs_usdt": "11.13798036798646816314466638",
+          "net_reward_mean": "-0.006299600581260763529301566841",
+          "steps": 291,
+          "turnover": "208.1796670941818881992825398"
+        },
+        "BTCUSDT": {
+          "base_reward_mean": "-0.001532396627842051668414096673",
+          "costs_usdt": "4.244721221828479495624527824",
+          "net_reward_mean": "-0.005826486545336951551125325311",
+          "steps": 68,
+          "turnover": "68.12761437709707988129254332"
+        },
+        "ETHUSDT": {
+          "base_reward_mean": "-0.001448767088340195959873244878",
+          "costs_usdt": "18.04087644780862560498577238",
+          "net_reward_mean": "-0.006423280263050303349574048165",
+          "steps": 317,
+          "turnover": "322.0866457233068064967367412"
+        },
+        "SHIBUSDT": {
+          "base_reward_mean": "-0.001602028657171085784261560326",
+          "costs_usdt": "15.97982148386888120358973738",
+          "net_reward_mean": "-0.006466376999590699485339362056",
+          "steps": 302,
+          "turnover": "274.8302078885271740570972011"
+        },
+        "USDT": {
+          "base_reward_mean": "-0.0007576795512839673509768057936",
+          "costs_usdt": "9.567193842787999318075714321",
+          "net_reward_mean": "-0.005899966369193639628056209211",
+          "steps": 318,
+          "turnover": "173.2098881209994949187710846"
+        }
+      },
+      "results_by_regime": {
+        "BTC_NEGATIVE": {
+          "base_reward_mean": "-0.002568510520165569992641952232",
+          "costs_usdt": "29.79327515374176716868880200",
+          "net_reward_mean": "-0.007506672727955219663362445307",
+          "steps": 639,
+          "turnover": "517.6184158725386129875820646"
+        },
+        "BTC_POSITIVE": {
+          "base_reward_mean": "0.00004412953145389140018815291463",
+          "costs_usdt": "29.17731821053868661673161626",
+          "net_reward_mean": "-0.005019537265956353631238981216",
+          "steps": 657,
+          "turnover": "528.8156073315738305655980448"
+        }
+      },
+      "return_percent": "-80.05686316669049112105520949",
+      "reward_hacking_flags": [
+        "EXCESSIVE_OPERATION_RATE"
+      ],
+      "reward_mean": "-0.006245833222914127855410966983",
+      "reward_median": "-0.00645868804517337981077982860",
+      "rotations": 467,
+      "ruined": true,
+      "seed": 42,
+      "steps": 1296,
+      "time_in_usdt_ratio": "0.2453703703703703703703703704",
+      "transition_hash": "de30c926d98c7fb6fc1b5d2b9d8f866361e9e6e52f0cab69be645c947264d99d",
+      "turnover": "1046.434023204112443553180110"
+    }
+  ],
+  "locked_test_accessed": false,
+  "partitions": {
+    "TRAIN": {
+      "end": "2022-04-01T00:00:00+00:00",
+      "start": "2022-01-01T00:00:00+00:00"
+    },
+    "TRAIN_INTERNAL_EVALUATION": {
+      "end": "2022-04-01T00:00:00+00:00",
+      "start": "2022-03-02T00:00:00+00:00",
+      "used_after_stage_2": false
+    },
+    "TRAIN_UPDATE_PRE_FREEZE": {
+      "end": "2022-03-02T00:00:00+00:00",
+      "start": "2022-01-01T00:00:00+00:00"
+    },
+    "VALIDATION": {
+      "end": "2022-07-01T00:00:00+00:00",
+      "observed": false,
+      "start": "2022-04-01T00:00:00+00:00"
+    }
+  },
+  "phase": "sanity",
+  "requested_timesteps_per_run": 10000,
+  "runs": [
+    {
+      "algorithm": "PPO",
+      "artifact_dir": "artifacts\\controlled-training\\conservative\\base_features\\32518a37e1238ad17177",
+      "checkpoint_hash": "c223b5e0588ec7e2cb500607711e6eece754555c6a68b813ca3690a6a9833abc",
+      "checkpoint_records": [
+        {
+          "duration_days": 30,
+          "internal_train_evaluation": true,
+          "path": "artifacts\\controlled-training\\conservative\\base_features\\32518a37e1238ad17177\\checkpoint-000010000.zip",
+          "sha256": "c223b5e0588ec7e2cb500607711e6eece754555c6a68b813ca3690a6a9833abc",
+          "stage": "STAGE_1_EXECUTION",
+          "step": 10000
+        }
+      ],
+      "completed_timesteps": 10000,
+      "configuration_hash": "32518a37e1238ad171777cae9c5d00d122b07f40044b5defc94eebb7db44711f",
+      "configuration_variant": "CONSERVATIVE",
+      "elapsed_seconds": 145.23677216718997,
+      "feature_variant": "BASE_FEATURES",
+      "internal_evaluations": [
+        {
+          "action_counts": [
+            1030,
+            490,
+            204,
+            784,
+            372
+          ],
+          "action_distribution": [
+            0.3576388888888889,
+            0.1701388888888889,
+            0.07083333333333333,
+            0.2722222222222222,
+            0.12916666666666668
+          ],
+          "checkpoint_step": 10000,
+          "costs_usdt": "18.99600446127808228435511460",
+          "final_equity_usdt": "50.90917611576207951740010218",
+          "max_drawdown": "0.3640458154533409709037192595",
+          "operations": 271,
+          "policy": "ppo-checkpoint",
+          "position_duration_mean_steps": "6.802816901408451",
+          "return_percent": "-36.36352985529740060324987228",
+          "reward_mean": "-0.002578300236009618633030329521",
+          "reward_median": "-0.002101446767251246437540910506",
+          "rotations": 13,
+          "ruined": false,
+          "seed": 42,
+          "steps": 2880,
+          "time_in_usdt_ratio": "0.6645833333333333333333333333",
+          "transition_hash": "7b968740fdb5d093ca6cf907f2cace19f7fdb2e6059569ada7680491a549e872",
+          "turnover": "212.7649097288669713919219904"
+        }
+      ],
+      "latest_checkpoint": "artifacts\\controlled-training\\conservative\\base_features\\32518a37e1238ad17177\\checkpoint-000010000.zip",
+      "nan_detected": false,
+      "peak_python_memory_mb": 26.440128326416016,
+      "requested_timesteps": 10000,
+      "resume_command": "uv run crypto-lab controlled-train --phase sanity",
+      "resumed": true,
+      "run_id": "32518a37e1238ad17177",
+      "seed": 42,
+      "status": "COMPLETED",
+      "steps_per_second": 68.85308624518628,
+      "training_metrics": [
+        {
+          "action_counts": [
+            207,
+            191,
+            200,
+            206,
+            196
+          ],
+          "costs_usdt": "9.644381013605601373439724263",
+          "entropy_loss": -1.609389171600342,
+          "episode_length_mean": null,
+          "episodes": 0,
+          "epsilon": null,
+          "policy_loss": -0.002104161169403236,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 1000,
+          "td_loss": 0.07405851036310196,
+          "turnover": "89.91719882704481882579806512",
+          "value_loss": 0.22573855876922608
+        },
+        {
+          "action_counts": [
+            428,
+            384,
+            374,
+            405,
+            409
+          ],
+          "costs_usdt": "18.05840934459928610109828783",
+          "entropy_loss": -1.6091194152832031,
+          "episode_length_mean": null,
+          "episodes": 0,
+          "epsilon": null,
+          "policy_loss": -0.0017748730323452122,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 2000,
+          "td_loss": 0.03250771388411522,
+          "turnover": "171.5996842922260601361559523",
+          "value_loss": 0.09016205936670303
+        },
+        {
+          "action_counts": [
+            626,
+            584,
+            579,
+            609,
+            602
+          ],
+          "costs_usdt": "24.29595915509240921991316730",
+          "entropy_loss": -1.6087164735794068,
+          "episode_length_mean": null,
+          "episodes": 1,
+          "epsilon": null,
+          "policy_loss": -0.0015625424242869457,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 3000,
+          "td_loss": 0.010341293178498745,
+          "turnover": "236.0495195851886596260295103",
+          "value_loss": 0.045633521527051926
+        },
+        {
+          "action_counts": [
+            848,
+            789,
+            759,
+            800,
+            804
+          ],
+          "costs_usdt": "33.32866277515207052849948493",
+          "entropy_loss": -1.6082062435150146,
+          "episode_length_mean": null,
+          "episodes": 1,
+          "epsilon": null,
+          "policy_loss": -0.0019877207923884297,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 4000,
+          "td_loss": 0.005543708335608244,
+          "turnover": "322.2088108605889290581564452",
+          "value_loss": 0.03548217080533504
+        },
+        {
+          "action_counts": [
+            1038,
+            987,
+            962,
+            1007,
+            1006
+          ],
+          "costs_usdt": "39.07295690437053442937924382",
+          "entropy_loss": -1.6079860210418702,
+          "episode_length_mean": null,
+          "episodes": 1,
+          "epsilon": null,
+          "policy_loss": -0.0020368365533184195,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 5000,
+          "td_loss": 0.003189750947058201,
+          "turnover": "384.3954930579609255270608224",
+          "value_loss": 0.022583063170313836
+        },
+        {
+          "action_counts": [
+            1222,
+            1201,
+            1132,
+            1234,
+            1211
+          ],
+          "costs_usdt": "47.31363868247450594706183270",
+          "entropy_loss": -1.6076218700408935,
+          "episode_length_mean": null,
+          "episodes": 2,
+          "epsilon": null,
+          "policy_loss": -0.0023078665234380936,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 6000,
+          "td_loss": 0.0036879684776067734,
+          "turnover": "474.3436772530933730815065932",
+          "value_loss": 0.02278947539627552
+        },
+        {
+          "action_counts": [
+            1449,
+            1394,
+            1320,
+            1443,
+            1394
+          ],
+          "costs_usdt": "55.68460582066401787584252168",
+          "entropy_loss": -1.6072391557693482,
+          "episode_length_mean": null,
+          "episodes": 2,
+          "epsilon": null,
+          "policy_loss": -0.0023225655348680617,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 7000,
+          "td_loss": 0.0011674044653773308,
+          "turnover": "547.0085914551931353405330678",
+          "value_loss": 0.02053172867745161
+        },
+        {
+          "action_counts": [
+            1646,
+            1584,
+            1512,
+            1651,
+            1607
+          ],
+          "costs_usdt": "65.25201311624885110394120101",
+          "entropy_loss": -1.607180404663086,
+          "episode_length_mean": null,
+          "episodes": 2,
+          "epsilon": null,
+          "policy_loss": -0.0034759569392190316,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 8000,
+          "td_loss": -0.002337360754609108,
+          "turnover": "643.6841958948704460107637728",
+          "value_loss": 0.01977222613990307
+        },
+        {
+          "action_counts": [
+            1827,
+            1809,
+            1702,
+            1858,
+            1804
+          ],
+          "costs_usdt": "71.34226492363522620149040482",
+          "entropy_loss": -1.6070125770568848,
+          "episode_length_mean": null,
+          "episodes": 3,
+          "epsilon": null,
+          "policy_loss": -0.0013389979054918655,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 9000,
+          "td_loss": 0.0008791997097432613,
+          "turnover": "704.3775236355972116680158389",
+          "value_loss": 0.015186957865953445
+        },
+        {
+          "action_counts": [
+            2033,
+            2019,
+            1893,
+            2070,
+            1985
+          ],
+          "costs_usdt": "79.12514374794763339666687531",
+          "entropy_loss": -1.6064224195480348,
+          "episode_length_mean": null,
+          "episodes": 3,
+          "epsilon": null,
+          "policy_loss": -0.0027287276715156493,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 10000,
+          "td_loss": -0.000676310621201992,
+          "turnover": "780.7955568378942813225836628",
+          "value_loss": 0.01088278479874134
+        }
+      ]
+    },
+    {
+      "algorithm": "PPO",
+      "artifact_dir": "artifacts\\controlled-training\\ablation_no_controls\\base_features\\ece160afd9001529c08d",
+      "checkpoint_hash": "bfdf99cd09fa9c3f5d9a815932b99fb02f52708295ba385366895991d3968a75",
+      "checkpoint_records": [
+        {
+          "duration_days": 30,
+          "internal_train_evaluation": true,
+          "path": "artifacts\\controlled-training\\ablation_no_controls\\base_features\\ece160afd9001529c08d\\checkpoint-000010000.zip",
+          "sha256": "bfdf99cd09fa9c3f5d9a815932b99fb02f52708295ba385366895991d3968a75",
+          "stage": "STAGE_1_EXECUTION",
+          "step": 10000
+        }
+      ],
+      "completed_timesteps": 10000,
+      "configuration_hash": "ece160afd9001529c08de9b6a9c7bb288362bd592eb70a1bf2a9d625ca1568c4",
+      "configuration_variant": "ABLATION_NO_CONTROLS",
+      "elapsed_seconds": 86.0630000000001,
+      "feature_variant": "BASE_FEATURES",
+      "internal_evaluations": [
+        {
+          "action_counts": [
+            612,
+            11,
+            8,
+            611,
+            391
+          ],
+          "action_distribution": [
+            0.3747703612982241,
+            0.006736068585425597,
+            0.004898958971218616,
+            0.3741579914268218,
+            0.23943661971830985
+          ],
+          "checkpoint_step": 10000,
+          "costs_usdt": "56.96340138032560282424182231",
+          "final_equity_usdt": "15.99745156144098690476614238",
+          "max_drawdown": "0.8000318554819876636904232202",
+          "operations": 1139,
+          "policy": "ppo-checkpoint",
+          "position_duration_mean_steps": "1.394808743169399",
+          "return_percent": "-80.00318554819876636904232202",
+          "reward_mean": "-0.006365263162733297908726239695",
+          "reward_median": "-0.006753184440026173506012395475",
+          "rotations": 324,
+          "ruined": true,
+          "seed": 42,
+          "steps": 1633,
+          "time_in_usdt_ratio": "0.3747703612982241273729332517",
+          "transition_hash": "256fae58db18f65e70dfce5e6b8aee20f1f183aef6ebcbf02e1169e537152fa2",
+          "turnover": "1096.024642081304403957400706"
+        }
+      ],
+      "latest_checkpoint": "artifacts\\controlled-training\\ablation_no_controls\\base_features\\ece160afd9001529c08d\\checkpoint-000010000.zip",
+      "nan_detected": false,
+      "peak_python_memory_mb": 14.958508491516113,
+      "requested_timesteps": 10000,
+      "resume_command": "uv run crypto-lab controlled-train --phase sanity",
+      "resumed": true,
+      "run_id": "ece160afd9001529c08d",
+      "seed": 42,
+      "status": "COMPLETED",
+      "steps_per_second": 116.19395094291377,
+      "training_metrics": [
+        {
+          "action_counts": [
+            206,
+            190,
+            200,
+            207,
+            197
+          ],
+          "costs_usdt": "64.54946327618916173882945906",
+          "entropy_loss": -1.6093632936477662,
+          "episode_length_mean": null,
+          "episodes": 0,
+          "epsilon": null,
+          "policy_loss": -0.0023227493932703423,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 1000,
+          "td_loss": 0.06590992212295532,
+          "turnover": "934.1041024103857332989381737",
+          "value_loss": 0.20089921951293946
+        },
+        {
+          "action_counts": [
+            425,
+            381,
+            381,
+            408,
+            405
+          ],
+          "costs_usdt": "118.7775927066536819236506044",
+          "entropy_loss": -1.6090523862838746,
+          "episode_length_mean": null,
+          "episodes": 1,
+          "epsilon": null,
+          "policy_loss": -0.001626422953499045,
+          "reward_mean": null,
+          "ruins": 1,
+          "step": 2000,
+          "td_loss": 0.03460992872714996,
+          "turnover": "1875.688071880725731364844183",
+          "value_loss": 0.09010414078831673
+        },
+        {
+          "action_counts": [
+            626,
+            578,
+            587,
+            604,
+            605
+          ],
+          "costs_usdt": "173.7568727852814645401507724",
+          "entropy_loss": -1.608803014755249,
+          "episode_length_mean": null,
+          "episodes": 2,
+          "epsilon": null,
+          "policy_loss": -0.0015896107509688307,
+          "reward_mean": null,
+          "ruins": 2,
+          "step": 3000,
+          "td_loss": 0.01701425202190876,
+          "turnover": "2844.199283235454944624199102",
+          "value_loss": 0.06055629849433899
+        },
+        {
+          "action_counts": [
+            846,
+            780,
+            774,
+            786,
+            814
+          ],
+          "costs_usdt": "226.6360834261704347357291770",
+          "entropy_loss": -1.6082905912399292,
+          "episode_length_mean": null,
+          "episodes": 3,
+          "epsilon": null,
+          "policy_loss": -0.0018934403627186925,
+          "reward_mean": null,
+          "ruins": 3,
+          "step": 4000,
+          "td_loss": 0.013202916830778122,
+          "turnover": "3790.964771358572741031994869",
+          "value_loss": 0.03978776939213276
+        },
+        {
+          "action_counts": [
+            1040,
+            972,
+            980,
+            990,
+            1018
+          ],
+          "costs_usdt": "271.5654260949687321339684672",
+          "entropy_loss": -1.6067574214935303,
+          "episode_length_mean": null,
+          "episodes": 4,
+          "epsilon": null,
+          "policy_loss": -0.0019617371462460655,
+          "reward_mean": null,
+          "ruins": 4,
+          "step": 5000,
+          "td_loss": 0.007278434932231903,
+          "turnover": "4751.247810737348811641857445",
+          "value_loss": 0.029301392659544945
+        },
+        {
+          "action_counts": [
+            1234,
+            1188,
+            1147,
+            1207,
+            1224
+          ],
+          "costs_usdt": "328.5286902972212728832066001",
+          "entropy_loss": -1.6045598888397217,
+          "episode_length_mean": null,
+          "episodes": 4,
+          "epsilon": null,
+          "policy_loss": -0.002273469882283834,
+          "reward_mean": null,
+          "ruins": 4,
+          "step": 6000,
+          "td_loss": 0.005307384300976992,
+          "turnover": "5737.005209803376846569736604",
+          "value_loss": 0.023311552926898002
+        },
+        {
+          "action_counts": [
+            1463,
+            1388,
+            1328,
+            1415,
+            1406
+          ],
+          "costs_usdt": "386.4570600124363939398404936",
+          "entropy_loss": -1.6008390855789185,
+          "episode_length_mean": null,
+          "episodes": 5,
+          "epsilon": null,
+          "policy_loss": -0.0029140696315909766,
+          "reward_mean": null,
+          "ruins": 5,
+          "step": 7000,
+          "td_loss": 0.002788781188428402,
+          "turnover": "6677.035726549679560245237329",
+          "value_loss": 0.028620966747403144
+        },
+        {
+          "action_counts": [
+            1669,
+            1576,
+            1514,
+            1630,
+            1611
+          ],
+          "costs_usdt": "439.8523599091970647222531492",
+          "entropy_loss": -1.599692597389221,
+          "episode_length_mean": null,
+          "episodes": 6,
+          "epsilon": null,
+          "policy_loss": -0.001945672240457501,
+          "reward_mean": null,
+          "ruins": 6,
+          "step": 8000,
+          "td_loss": 0.012197250500321388,
+          "turnover": "7621.638380470080768698320735",
+          "value_loss": 0.02934987410902977
+        },
+        {
+          "action_counts": [
+            1855,
+            1803,
+            1699,
+            1837,
+            1806
+          ],
+          "costs_usdt": "497.7715525894970989103440123",
+          "entropy_loss": -1.5959945249557494,
+          "episode_length_mean": null,
+          "episodes": 7,
+          "epsilon": null,
+          "policy_loss": -0.0027862785813398717,
+          "reward_mean": null,
+          "ruins": 7,
+          "step": 9000,
+          "td_loss": -0.002763967029750347,
+          "turnover": "8594.639478649481155247631019",
+          "value_loss": 0.01661151248961687
+        },
+        {
+          "action_counts": [
+            2077,
+            2014,
+            1889,
+            2032,
+            1988
+          ],
+          "costs_usdt": "540.7746316396887647017590226",
+          "entropy_loss": -1.5919229984283447,
+          "episode_length_mean": null,
+          "episodes": 8,
+          "epsilon": null,
+          "policy_loss": -0.00274502070175366,
+          "reward_mean": null,
+          "ruins": 8,
+          "step": 10000,
+          "td_loss": 0.0027164495550096035,
+          "turnover": "9503.246147218476030876904072",
+          "value_loss": 0.014237977899610996
+        }
+      ]
+    },
+    {
+      "algorithm": "DQN",
+      "artifact_dir": "artifacts\\controlled-training\\conservative\\base_features\\fbd9ea97cc9453a3f4a5",
+      "checkpoint_hash": "9f1cb017beee1fd7d442391cad554cb7b3472b71cc391b64834cbd2c7ddb1774",
+      "checkpoint_records": [
+        {
+          "duration_days": 30,
+          "internal_train_evaluation": true,
+          "path": "artifacts\\controlled-training\\conservative\\base_features\\fbd9ea97cc9453a3f4a5\\checkpoint-000010000.zip",
+          "sha256": "9f1cb017beee1fd7d442391cad554cb7b3472b71cc391b64834cbd2c7ddb1774",
+          "stage": "STAGE_1_EXECUTION",
+          "step": 10000
+        }
+      ],
+      "completed_timesteps": 10000,
+      "configuration_hash": "fbd9ea97cc9453a3f4a5d1e623e473fdc85a491d6f23f516c11368dd2194163b",
+      "configuration_variant": "CONSERVATIVE",
+      "elapsed_seconds": 149.92515944292595,
+      "feature_variant": "BASE_FEATURES",
+      "internal_evaluations": [
+        {
+          "action_counts": [
+            305,
+            1125,
+            262,
+            952,
+            236
+          ],
+          "action_distribution": [
+            0.10590277777777778,
+            0.390625,
+            0.09097222222222222,
+            0.33055555555555555,
+            0.08194444444444444
+          ],
+          "checkpoint_step": 10000,
+          "costs_usdt": "20.27281800888445626742931545",
+          "final_equity_usdt": "65.47292254398113573117873570",
+          "max_drawdown": "0.2008782514600748159896306842",
+          "operations": 226,
+          "policy": "dqn-checkpoint",
+          "position_duration_mean_steps": "11.028985507246377",
+          "return_percent": "-18.15884682002358033602658038",
+          "reward_mean": "-0.001869372448491491915472612499",
+          "reward_median": "-0.001643252430755228798261958587",
+          "rotations": 50,
+          "ruined": false,
+          "seed": 42,
+          "steps": 2880,
+          "time_in_usdt_ratio": "0.4715277777777777777777777778",
+          "transition_hash": "bff4da58efec6e3cab6efcfd1f596b9bd607aea9fe5d0d611ccff55c4131078b",
+          "turnover": "206.7987181161867143908013012"
+        }
+      ],
+      "latest_checkpoint": "artifacts\\controlled-training\\conservative\\base_features\\fbd9ea97cc9453a3f4a5\\checkpoint-000010000.zip",
+      "nan_detected": false,
+      "peak_python_memory_mb": 30.941926956176758,
+      "requested_timesteps": 10000,
+      "resume_command": "uv run crypto-lab controlled-train --phase sanity",
+      "resumed": true,
+      "run_id": "fbd9ea97cc9453a3f4a5",
+      "seed": 42,
+      "status": "COMPLETED",
+      "steps_per_second": 66.69994574064026,
+      "training_metrics": [
+        {
+          "action_counts": [
+            213,
+            163,
+            220,
+            208,
+            196
+          ],
+          "costs_usdt": "10.73343217297636072943922517",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 0,
+          "epsilon": 0.5254750000000001,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 1000,
+          "td_loss": null,
+          "turnover": "95.17543046048408453319400476",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            525,
+            642,
+            277,
+            299,
+            257
+          ],
+          "costs_usdt": "17.56101844925842331710732566",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 0,
+          "epsilon": 0.05047500000000027,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 2000,
+          "td_loss": 0.0071239173412323,
+          "turnover": "157.3833009372306137405793386",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            632,
+            1273,
+            294,
+            522,
+            279
+          ],
+          "costs_usdt": "24.81223191739368331905953235",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 1,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 3000,
+          "td_loss": 0.0034147838596254587,
+          "turnover": "227.8165846281807710775522116",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            725,
+            1697,
+            424,
+            756,
+            398
+          ],
+          "costs_usdt": "33.56957673698225269076070265",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 1,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 4000,
+          "td_loss": 0.002073818352073431,
+          "turnover": "302.7755430915731247346937437",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            801,
+            2165,
+            537,
+            1000,
+            497
+          ],
+          "costs_usdt": "43.27295165551555764661137679",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 1,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 5000,
+          "td_loss": 0.002036214806139469,
+          "turnover": "391.1630039498119556368059671",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            867,
+            2548,
+            684,
+            1314,
+            587
+          ],
+          "costs_usdt": "53.37312934696737746096929982",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 2,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 6000,
+          "td_loss": 0.003204468172043562,
+          "turnover": "487.0830139672808047114095115",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            946,
+            3042,
+            784,
+            1569,
+            659
+          ],
+          "costs_usdt": "60.75327710153568223067401924",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 2,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 7000,
+          "td_loss": 0.001005031168460846,
+          "turnover": "555.2248032708613054484846357",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            1042,
+            3426,
+            911,
+            1883,
+            738
+          ],
+          "costs_usdt": "69.21381828466295515040204830",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 2,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 8000,
+          "td_loss": 0.0017734896391630173,
+          "turnover": "651.8873530674834760179436020",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            1126,
+            3815,
+            1050,
+            2145,
+            864
+          ],
+          "costs_usdt": "74.88154619374759097860132422",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 3,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 9000,
+          "td_loss": 0.0007349990773946047,
+          "turnover": "711.8833906366276298395380145",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            1209,
+            4288,
+            1112,
+            2445,
+            946
+          ],
+          "costs_usdt": "82.47549778562149878221746433",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 3,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 10000,
+          "td_loss": 0.0004455898597370833,
+          "turnover": "786.0778700592324650183670481",
+          "value_loss": null
+        }
+      ]
+    },
+    {
+      "algorithm": "DQN",
+      "artifact_dir": "artifacts\\controlled-training\\ablation_no_controls\\base_features\\e24482b218269cc23633",
+      "checkpoint_hash": "c2bfdf87f391b32b6dc49715f200a301654deef2e90c1162945010f15b6c4ee7",
+      "checkpoint_records": [
+        {
+          "duration_days": 30,
+          "internal_train_evaluation": true,
+          "path": "artifacts\\controlled-training\\ablation_no_controls\\base_features\\e24482b218269cc23633\\checkpoint-000010000.zip",
+          "sha256": "c2bfdf87f391b32b6dc49715f200a301654deef2e90c1162945010f15b6c4ee7",
+          "stage": "STAGE_1_EXECUTION",
+          "step": 10000
+        }
+      ],
+      "completed_timesteps": 10000,
+      "configuration_hash": "e24482b218269cc236334ec9c7e528e01c5356b60fda1bae03dc1aa11e576998",
+      "configuration_variant": "ABLATION_NO_CONTROLS",
+      "elapsed_seconds": 95.86000000000058,
+      "feature_variant": "BASE_FEATURES",
+      "internal_evaluations": [
+        {
+          "action_counts": [
+            95,
+            555,
+            131,
+            264,
+            147
+          ],
+          "action_distribution": [
+            0.0796979865771812,
+            0.46560402684563756,
+            0.1098993288590604,
+            0.2214765100671141,
+            0.12332214765100671
+          ],
+          "checkpoint_step": 10000,
+          "costs_usdt": "57.21674064683385970261585672",
+          "final_equity_usdt": "15.98898122330744533847168293",
+          "max_drawdown": "0.8004894949003218963929552087",
+          "operations": 800,
+          "policy": "dqn-checkpoint",
+          "position_duration_mean_steps": "1.5428973277074542",
+          "return_percent": "-80.01377347086569332691039634",
+          "reward_mean": "-0.006322042479030406022688869326",
+          "reward_median": "-0.00662078058266322818658087936",
+          "rotations": 621,
+          "ruined": true,
+          "seed": 42,
+          "steps": 1192,
+          "time_in_usdt_ratio": "0.07969798657718120805369127517",
+          "transition_hash": "21b4370c589d2895112b112789e4490c2645663f4130db735984079d9b21c1d7",
+          "turnover": "1064.291901160691164601839554"
+        }
+      ],
+      "latest_checkpoint": "artifacts\\controlled-training\\ablation_no_controls\\base_features\\e24482b218269cc23633\\checkpoint-000010000.zip",
+      "nan_detected": false,
+      "peak_python_memory_mb": 14.820779800415039,
+      "requested_timesteps": 10000,
+      "resume_command": "uv run crypto-lab controlled-train --phase sanity",
+      "resumed": true,
+      "run_id": "e24482b218269cc23633",
+      "seed": 42,
+      "status": "COMPLETED",
+      "steps_per_second": 104.31879824744355,
+      "training_metrics": [
+        {
+          "action_counts": [
+            213,
+            163,
+            220,
+            208,
+            196
+          ],
+          "costs_usdt": "65.23111671686305192972607765",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 0,
+          "epsilon": 0.5254750000000001,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 0,
+          "step": 1000,
+          "td_loss": null,
+          "turnover": "926.6375412042724990676222328",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            534,
+            610,
+            277,
+            322,
+            257
+          ],
+          "costs_usdt": "100.8037803513706671961868073",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 1,
+          "epsilon": 0.05047500000000027,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 1,
+          "step": 2000,
+          "td_loss": 0.007336091250181198,
+          "turnover": "1583.611473502656626594730923",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            679,
+            1172,
+            327,
+            526,
+            296
+          ],
+          "costs_usdt": "138.8488272946823435672329813",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 1,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 1,
+          "step": 3000,
+          "td_loss": 0.003463003085926175,
+          "turnover": "2326.708983886659737014558885",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            738,
+            1651,
+            426,
+            772,
+            413
+          ],
+          "costs_usdt": "197.5567830468803602206738111",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 2,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 2,
+          "step": 4000,
+          "td_loss": 0.0027410450857132673,
+          "turnover": "3269.703181114826296886686725",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            783,
+            2132,
+            577,
+            977,
+            531
+          ],
+          "costs_usdt": "254.0294021594329141091592237",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 3,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 3,
+          "step": 5000,
+          "td_loss": 0.0017195865511894226,
+          "turnover": "4263.540140148289864618091681",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            830,
+            2557,
+            727,
+            1263,
+            623
+          ],
+          "costs_usdt": "306.7299377570575442474372606",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 4,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 4,
+          "step": 6000,
+          "td_loss": 0.0033209428656846285,
+          "turnover": "5245.467025803575044998187463",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            891,
+            2945,
+            866,
+            1523,
+            775
+          ],
+          "costs_usdt": "352.7154857348817609843283977",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 5,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 5,
+          "step": 7000,
+          "td_loss": 0.0008799296338111162,
+          "turnover": "6219.923655118764227547919831",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            943,
+            3406,
+            1002,
+            1791,
+            858
+          ],
+          "costs_usdt": "399.3121465672340514042820161",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 5,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 5,
+          "step": 8000,
+          "td_loss": 0.0012006396427750587,
+          "turnover": "7120.170462061834130531416017",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            1005,
+            3884,
+            1090,
+            2068,
+            953
+          ],
+          "costs_usdt": "457.3683384324534746831366713",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 6,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 6,
+          "step": 9000,
+          "td_loss": 0.0007389351376332343,
+          "turnover": "8046.673061042118028084953002",
+          "value_loss": null
+        },
+        {
+          "action_counts": [
+            1067,
+            4282,
+            1226,
+            2372,
+            1053
+          ],
+          "costs_usdt": "515.3530100112689328683496680",
+          "entropy_loss": null,
+          "episode_length_mean": null,
+          "episodes": 7,
+          "epsilon": 0.05,
+          "policy_loss": null,
+          "reward_mean": null,
+          "ruins": 7,
+          "step": 10000,
+          "td_loss": 0.0006878534331917763,
+          "turnover": "9031.553489171127734052408697",
+          "value_loss": null
+        }
+      ]
+    }
+  ],
+  "schema_version": "controlled-training-report-v1",
+  "seeds": [
+    42
+  ],
+  "validation_observed": false,
+  "warning": "Historical simulation only. Internal evaluation is TRAIN-only; VALIDATION and LOCKED_TEST were not observed. No profitability claim."
+}
