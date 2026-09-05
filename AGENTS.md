@@ -1,0 +1,64 @@
+# Crypto Strategy Lab — instruções do repositório
+
+Estas instruções especializam as regras globais para o repositório
+`guilhermecrepaldi/crypto-strategy-lab`. Dentro deste diretório, a autoridade canônica é este
+projeto; a prioridade global do KNOTEN permanece inalterada fora dele.
+
+## Canônica e continuidade
+
+- Preserve uma única implementação por responsabilidade. Corrija a autoridade existente em vez
+  de criar variantes permanentes, worktrees ou pipelines paralelos.
+- Antes de mudanças estruturais, confirme diretório, Git root, remote, branch, HEAD, status,
+  processos e a identidade experimental afetada.
+- Estados físicos, checkpoints e manifests são a autoridade da campanha; relatórios derivados
+  devem ser reconciliados com eles.
+- Nunca altere silenciosamente uma campanha após observar resultados. Hipóteses novas recebem
+  identidade experimental nova.
+- Preserve alterações locais e artifacts. Não use reset, checkout, clean ou stash para contornar
+  trabalho existente.
+
+## Divisão de responsabilidade
+
+### GPT-6 Astra — autoridade científica
+
+Use explicitamente `gpt-6-astra` para formular hipóteses, definir experimentos e métricas,
+projetar ou revisar lógica que muda o significado experimental, investigar perdas e falhas,
+distinguir bugs de resultados legítimos, interpretar evidências e decidir o próximo experimento.
+Cálculos continuam sendo feitos por código verificável. Não delegue decisões científicas ao
+executor econômico.
+
+### GPT-5.6 Luna — execução delimitada
+
+Prefira `gpt-5.6-luna`, quando disponível e adequado, para implementação mecânica já
+especificada, comandos e testes definidos, acompanhamento de processos, coleta de logs,
+formatação e pequenas correções operacionais. Ele deve devolver fatos verificáveis e não pode
+mudar reward, features, hiperparâmetros, partições, critérios de sucesso ou estratégia.
+
+### Python e ferramentas do projeto — execução experimental
+
+Use Python e os comandos existentes para simulações, treinamento PPO/DQN, candles, features,
+seeds, checkpoints, replay buffers, métricas, baselines e relatórios. Não chame LLM por candle,
+operação, timestep, episódio ou reset. Não crie um harness novo apenas para alternar modelos.
+
+## Ciclo de trabalho
+
+1. Astra define ou revisa a hipótese e o protocolo.
+2. Trabalho mecânico delimitado pode ser delegado ao Luna.
+3. A implementação é conferida contra a especificação.
+4. Python executa a configuração identificada e preservada.
+5. Python produz métricas e evidências completas nos artifacts.
+6. Astra interpreta resultados e decide o próximo passo.
+
+Use agentes somente quando o bloco for independente e o ganho superar o custo de coordenação.
+Informe quais modelos foram realmente usados; não alegue troca de modelo que não ocorreu.
+
+## Segurança experimental
+
+- `VALIDATION` e `LOCKED_TEST` permanecem fechados até seus gates explícitos.
+- Não acessar conta Binance, Testnet ou live; não solicitar chaves nem enviar ordens.
+- Não fazer push ou deploy sem autorização específica.
+- Não iniciar um segundo trainer se existir um trainer canônico ativo.
+- Bugs técnicos não são perdas legítimas. Preserve o artifact, invalide somente o escopo
+  comprovadamente afetado, corrija com teste e registre a decisão.
+- Resultados positivos, negativos, falhas e invalidações devem permanecer rastreáveis aos
+  artifacts originais; destaque eventos somente por critérios explícitos e reproduzíveis.

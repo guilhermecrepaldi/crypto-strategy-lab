@@ -1,0 +1,32 @@
+{
+  "attempt_revision": "callback-transition-loss",
+  "campaign": "controlled-development",
+  "configuration_changed": false,
+  "decision": "REEXECUTE_FROM_SEED",
+  "destination": "artifacts/controlled-training-invalidated/20260905-callback-transition-loss",
+  "evidence": {
+    "dqn": "Each replay buffer contained completed_timesteps - 1 transitions.",
+    "ppo": "Completed 100000-step models had 945 or 950 updates instead of 1000; the 30000-step model had 280 instead of 300.",
+    "root_cause": "The Stable-Baselines3 callback returned false after env.step but before transition storage and PPO rollout training."
+  },
+  "head_at_invalidation": "9bb34bdcf22f1882abb2a904e58fff091bf8fad2",
+  "invalidated_runs": [
+    "32518a37e1238ad17177",
+    "a715ab4390657f1cfb08",
+    "a7d42587ee55c863651a",
+    "b697fe246c2c6dbf88c4",
+    "ccfe6e41a17405efabe1",
+    "fbd9ea97cc9453a3f4a5",
+    "0ba37f2c0db3b681da46",
+    "47a9efeb55759b9c8dc3",
+    "7bc5aa150d9275ae8905",
+    "7e5bf99bdd4490b7aa23",
+    "b84c526eb549d9cb80bd",
+    "ebf4fa0731d1c500b9e8"
+  ],
+  "preserved_as_diagnostic_evidence": true,
+  "recorded_completed_runs": 5,
+  "recorded_timesteps": 564586,
+  "scientific_identity_preserved": true,
+  "total_runs": 12
+}

@@ -42,6 +42,7 @@ from crypto_strategy_lab.data.history_reporting import (
 )
 from crypto_strategy_lab.db.persistence import persist_download_manifest, persist_result
 from crypto_strategy_lab.fixtures import load_fixture
+from crypto_strategy_lab.ml.candidate_workflow import run_candidate_strategy
 from crypto_strategy_lab.ml.controlled_workflow import (
     run_controlled_training,
     run_controlled_validation,
@@ -473,6 +474,30 @@ def learning_dashboard(
     """Render real training telemetry as one self-contained offline HTML file."""
     digest = write_learning_dashboard(report, output)
     typer.echo(f"Learning dashboard: {output} ({digest})")
+
+
+@app.command("candidate-strategy-evaluate")
+def candidate_strategy_evaluate(
+    manifest: Annotated[Path, typer.Option(exists=True)] = Path(
+        "data/manifests/experiment-2022H1.json"
+    ),
+    development_report: Annotated[Path, typer.Option(exists=True)] = Path(
+        "reports/controlled-training-development.json"
+    ),
+    artifact_root: Annotated[Path, typer.Option()] = Path("artifacts/strategy-candidates"),
+    output: Annotated[Path, typer.Option()] = Path("reports/strategy-candidate-momentum-24h.json"),
+) -> None:
+    """Evaluate the frozen strategy candidate on TRAIN only."""
+    report = run_candidate_strategy(
+        manifest,
+        development_report_path=development_report,
+        artifact_root=artifact_root,
+        output=output,
+    )
+    typer.echo(
+        f"Candidate TRAIN evaluation: {len(report['results'])} runs; "
+        f"edge_demonstrated={report['decision']['edge_demonstrated']}"
+    )
 
 
 @app.command("controlled-evaluate")

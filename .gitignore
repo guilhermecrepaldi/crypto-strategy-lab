@@ -20,6 +20,7 @@ reports/*.md
 !reports/walk-forward-plan.json
 !reports/controlled-training-*.json
 !reports/controlled-validation.json
+!reports/strategy-candidate-*.json
 !reports/learning-dashboard.html
 reports/runs/
 output/

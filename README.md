@@ -164,6 +164,13 @@ uv run crypto-lab controlled-train --phase development `
 uv run crypto-lab learning-dashboard `
   --report reports/controlled-training-development.json `
   --output reports/learning-dashboard.html
+
+# candidata determinística, somente em TRAIN, após development 12/12
+uv run crypto-lab candidate-strategy-evaluate `
+  --manifest data/manifests/experiment-2022H1.json `
+  --development-report reports/controlled-training-development.json `
+  --artifact-root artifacts/strategy-candidates `
+  --output reports/strategy-candidate-momentum-24h.json
 ```
 
 Os comandos são idempotentes: cada identidade retoma `latest.zip`, replay buffer do DQN,
@@ -176,6 +183,12 @@ essa versão. O `LOCKED_TEST` não participa desse fluxo.
 `STOP` interrompe a ingestão ao detectar ausência; `INVALIDATE_EPISODE` registra a cobertura
 como inválida sem preencher o candle. Depois da ingestão, verificação, auditoria e simulação
 funcionam offline sobre o artefato normalizado e seu manifesto.
+
+A primeira candidata auditável usa momentum de 24 horas com barreira fixa de custos e decisões a
+cada quatro horas. Em três janelas mensais TRAIN não sobrepostas, ela sobreviveu, mas teve retorno
+mediano de `-2,56%`, abaixo de caixa (`0%`) e do melhor baseline, buy-and-hold de ETH (`+8,48%`).
+Sua promoção foi rejeitada sem ajuste retrospectivo. Regras, identidade, resultados e próximo
+diagnóstico estão em `docs/strategy-candidate-momentum-24h.md`.
 
 Para preparar dados (sem executar o episódio final) com warmup mais dois anos de cobertura:
 

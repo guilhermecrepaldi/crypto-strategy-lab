@@ -13,6 +13,8 @@ from crypto_strategy_lab.analytics.learning import SURVIVAL_NO_EDGE, classify_le
 from crypto_strategy_lab.analytics.schemas import ControlledTrainingReport
 from crypto_strategy_lab.data.temporal import TemporalMarketData
 from crypto_strategy_lab.ml.controlled_workflow import (
+    TrainingJobSpec,
+    _reconcile_training_progress,
     require_validation_ready,
     summarize_evaluation,
 )
@@ -28,9 +30,78 @@ from crypto_strategy_lab.ml.partitions import PartitionName, TemporalPartition
 from crypto_strategy_lab.ml.policies import StableBaselinesPolicy
 from crypto_strategy_lab.ml.training import (
     CONTROLLED_CURRICULUM,
+    ControlledTrainingResult,
     ResumableCurriculumTrainer,
     StableBaselinesTrainer,
 )
+
+
+def test_training_payload_uses_persisted_state_as_authority(tmp_path) -> None:
+    artifact_dir = tmp_path / "run"
+    artifact_dir.mkdir()
+    (artifact_dir / "training-state.json").write_text(
+        '{"completed_timesteps": 100000, "status": "COMPLETED", '
+        '"checkpoint_records": [], "training_metrics": [], "internal_evaluations": [], '
+        '"elapsed_seconds": 2.0, "steps_per_second": 50000.0, '
+        '"peak_python_memory_mb": 1.0, "latest_checkpoint": "latest.zip", '
+        '"latest_checkpoint_hash": "physical", "configuration_hash": "cfg"}',
+        encoding="utf-8",
+    )
+    result = ControlledTrainingResult(
+        run_id="run",
+        configuration_hash="stale",
+        algorithm="PPO",
+        seed=11,
+        requested_timesteps=100000,
+        completed_timesteps=10,
+        status="TIME_LIMIT",
+        artifact_dir=artifact_dir,
+        latest_checkpoint=artifact_dir / "old.zip",
+        checkpoint_hash="stale",
+        elapsed_seconds=1.0,
+        steps_per_second=10.0,
+        peak_python_memory_mb=1.0,
+        resumed=True,
+        checkpoint_records=[],
+        training_metrics=[],
+        internal_evaluations=[],
+        model=None,
+    )
+    from crypto_strategy_lab.ml.controlled_workflow import _training_payload
+
+    payload = _training_payload(
+        result,
+        TrainingJobSpec("PPO", 11, FeatureVariant.BASE_FEATURES, "CONSERVATIVE"),
+    )
+    assert payload["completed_timesteps"] == 100000
+    assert payload["status"] == "COMPLETED"
+    assert payload["checkpoint_hash"] == "physical"
+    assert payload["latest_checkpoint"] == "latest.zip"
+
+
+def test_existing_report_is_reconciled_after_each_resumed_job(tmp_path) -> None:
+    report = _minimal_report(status="TIME_LIMIT")
+    output = tmp_path / "development.json"
+    output.write_text(report.model_dump_json(), encoding="utf-8")
+    fresh = {
+        **report.runs[0],
+        "status": "COMPLETED",
+        "completed_timesteps": 100_000,
+        "checkpoint_hash": "c" * 64,
+    }
+
+    _reconcile_training_progress(
+        output,
+        phase="development",
+        dataset_hash=report.dataset_hash,
+        fresh_runs=[fresh],
+        fresh_baselines=[],
+    )
+
+    reconciled = ControlledTrainingReport.model_validate_json(output.read_text())
+    assert reconciled.runs[0]["status"] == "COMPLETED"
+    assert reconciled.runs[0]["completed_timesteps"] == 100_000
+    assert reconciled.runs[0]["checkpoint_hash"] == "c" * 64
 
 
 def _environment(candles) -> CryptoRotationEnv:
@@ -87,6 +158,62 @@ def test_checkpoint_resume_and_idempotent_target(fixture_bundle, tmp_path) -> No
     assert projected.status == "COMPLETED"
     assert projected.completed_timesteps == 16
     assert projected.checkpoint_hash == first.checkpoint_hash
+
+
+@pytest.mark.parametrize(
+    ("algorithm", "target", "expected_updates"),
+    [("PPO", 500, 5), ("DQN", 1_004, 1)],
+)
+def test_controlled_training_completes_learning_unit_before_checkpoint(
+    algorithm, target, expected_updates, fixture_bundle, tmp_path
+) -> None:
+    candles, _, _ = fixture_bundle
+    cache = {30: _environment(candles)}
+    trainer = ResumableCurriculumTrainer(algorithm)
+    kwargs = {
+        "env_factory": lambda duration: cache[30],
+        "internal_evaluator": lambda model, step: None,
+        "dataset_hash": cache[30].dataset_hash,
+        "feature_manifest": cache[30].pipeline.manifest(),
+        "controls_manifest": cache[30].config.controls.__dict__,
+        "seed": 73,
+        "artifact_root": tmp_path / algorithm.lower(),
+        "checkpoint_interval": target,
+    }
+
+    result = trainer.train_to_target(target_timesteps=target, **kwargs)
+
+    assert result.completed_timesteps == target
+    assert result.status == "COMPLETED"
+    assert result.model._n_updates == expected_updates
+    if algorithm == "PPO":
+        assert result.model.rollout_buffer.pos == target
+    else:
+        assert result.model.replay_buffer.size() == target
+
+
+@pytest.mark.parametrize(
+    ("algorithm", "target", "checkpoint_interval"),
+    [("PPO", 13, 500), ("PPO", 500, 13), ("DQN", 21, 8)],
+)
+def test_controlled_training_rejects_partial_learning_units(
+    algorithm, target, checkpoint_interval, fixture_bundle, tmp_path
+) -> None:
+    candles, _, _ = fixture_bundle
+    env = _environment(candles)
+
+    with pytest.raises(ValueError, match="complete training units"):
+        ResumableCurriculumTrainer(algorithm).train_to_target(
+            env_factory=lambda duration: env,
+            internal_evaluator=lambda model, step: None,
+            dataset_hash=env.dataset_hash,
+            feature_manifest=env.pipeline.manifest(),
+            controls_manifest=env.config.controls.__dict__,
+            seed=73,
+            target_timesteps=target,
+            artifact_root=tmp_path / algorithm.lower(),
+            checkpoint_interval=checkpoint_interval,
+        )
 
 
 def test_same_seed_and_configuration_reproduce_short_training(fixture_bundle, tmp_path) -> None:

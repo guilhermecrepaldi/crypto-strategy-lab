@@ -280,9 +280,8 @@ class ControlledTrainingResult:
 
 
 class TrainingTelemetryCallback(BaseCallback):
-    def __init__(self, *, deadline: float | None = None) -> None:
+    def __init__(self) -> None:
         super().__init__(verbose=0)
-        self.deadline = deadline
         self.action_counts = [0, 0, 0, 0, 0]
         self.ruin_count = 0
         self.episode_count = 0
@@ -329,7 +328,10 @@ class TrainingTelemetryCallback(BaseCallback):
                     "ruins": self.ruin_count,
                 }
             )
-        return self.deadline is None or time.monotonic() < self.deadline
+        # Stable-Baselines3 invokes callbacks after env.step() but before storing the
+        # transition (and, for PPO, before training the completed rollout). Stopping here
+        # would make the timestep counter disagree with the data the agent learned from.
+        return True
 
 
 class ResumableCurriculumTrainer:
@@ -356,6 +358,19 @@ class ResumableCurriculumTrainer:
         if target_timesteps <= 0 or checkpoint_interval <= 0:
             raise ValueError("training target and checkpoint interval must be positive")
         hyperparameters = self.base._hyperparameters()
+        training_granularity = int(
+            hyperparameters["n_steps"] if self.algorithm == "PPO" else hyperparameters["train_freq"]
+        )
+        if target_timesteps % training_granularity:
+            raise ValueError(
+                f"{self.algorithm} target_timesteps must be divisible by "
+                f"{training_granularity} to preserve complete training units"
+            )
+        if checkpoint_interval % training_granularity:
+            raise ValueError(
+                f"{self.algorithm} checkpoint_interval must be divisible by "
+                f"{training_granularity} to preserve complete training units"
+            )
         identity = {
             "schema_version": "controlled-training-v1",
             "algorithm": self.algorithm,
@@ -427,9 +442,7 @@ class ResumableCurriculumTrainer:
             )
             env = env_factory(stage.duration_days)
             model.set_env(env)
-            callback = TrainingTelemetryCallback(
-                deadline=started + max_seconds if max_seconds is not None else None
-            )
+            callback = TrainingTelemetryCallback()
             chunk = next_checkpoint - completed
             model.learn(
                 total_timesteps=chunk,

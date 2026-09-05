@@ -160,6 +160,13 @@ def run_controlled_training(
                     INTERNAL_START,
                 )
             )
+        _reconcile_training_progress(
+            output,
+            phase=phase,
+            dataset_hash=manifest.dataset_hash,
+            fresh_runs=runs,
+            fresh_baselines=baselines,
+        )
     report = ControlledTrainingReport(
         phase=phase,
         dataset_hash=manifest.dataset_hash,
@@ -580,6 +587,11 @@ def _baselines(
 
 
 def _training_payload(result: ControlledTrainingResult, job: TrainingJobSpec) -> dict[str, Any]:
+    # The persisted state is the campaign authority.  A resumed trainer can
+    # return a stale in-memory view after an interruption, so read the state
+    # written by ResumableCurriculumTrainer before serializing the report.
+    state_path = result.artifact_dir / "training-state.json"
+    state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
     payload = {
         "run_id": result.run_id,
         "configuration_hash": result.configuration_hash,
@@ -599,8 +611,29 @@ def _training_payload(result: ControlledTrainingResult, job: TrainingJobSpec) ->
     }
     payload.update(
         {
+            key: state[key]
+            for key in (
+                "configuration_hash",
+                "completed_timesteps",
+                "status",
+                "checkpoint_records",
+                "training_metrics",
+                "internal_evaluations",
+                "elapsed_seconds",
+                "steps_per_second",
+                "peak_python_memory_mb",
+                "latest_checkpoint",
+                "latest_checkpoint_hash",
+            )
+            if key in state
+        }
+    )
+    if "latest_checkpoint_hash" in state:
+        payload["checkpoint_hash"] = state["latest_checkpoint_hash"]
+    payload.update(
+        {
             "artifact_dir": str(result.artifact_dir),
-            "latest_checkpoint": str(result.latest_checkpoint),
+            "latest_checkpoint": str(state.get("latest_checkpoint", result.latest_checkpoint)),
             "feature_variant": job.feature_variant,
             "configuration_variant": job.configuration_variant,
             "resume_command": (
@@ -611,6 +644,57 @@ def _training_payload(result: ControlledTrainingResult, job: TrainingJobSpec) ->
         }
     )
     return payload
+
+
+def _reconcile_training_progress(
+    output: Path,
+    *,
+    phase: str,
+    dataset_hash: str,
+    fresh_runs: list[dict[str, Any]],
+    fresh_baselines: list[dict[str, Any]],
+) -> None:
+    """Refresh an existing complete report after each resumed physical job."""
+    if not output.exists():
+        return
+    try:
+        payload = json.loads(output.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return
+    if payload.get("phase") != phase or payload.get("dataset_hash") != dataset_hash:
+        return
+
+    def run_key(item: dict[str, Any]) -> tuple[str, int, str, str]:
+        return (
+            str(item["algorithm"]),
+            int(item["seed"]),
+            str(item["feature_variant"]),
+            str(item["configuration_variant"]),
+        )
+
+    fresh_by_key = {run_key(item): item for item in fresh_runs}
+    existing_runs = list(payload.get("runs", []))
+    payload["runs"] = [fresh_by_key.get(run_key(item), item) for item in existing_runs]
+    represented = {run_key(item) for item in existing_runs}
+    payload["runs"].extend(item for key, item in fresh_by_key.items() if key not in represented)
+
+    def baseline_key(item: dict[str, Any]) -> tuple[str, str]:
+        return str(item["baseline_key"]), str(item["policy"])
+
+    fresh_baselines_by_key = {baseline_key(item): item for item in fresh_baselines}
+    existing_baselines = list(payload.get("internal_train_baselines", []))
+    payload["internal_train_baselines"] = [
+        fresh_baselines_by_key.get(baseline_key(item), item) for item in existing_baselines
+    ]
+    represented_baselines = {baseline_key(item) for item in existing_baselines}
+    payload["internal_train_baselines"].extend(
+        item for key, item in fresh_baselines_by_key.items() if key not in represented_baselines
+    )
+    reconciled = ControlledTrainingReport.model_validate(payload)
+    output.write_text(
+        json.dumps(reconciled.model_dump(mode="json"), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
 
 def _contains_nan(metrics: list[dict[str, Any]]) -> bool:
