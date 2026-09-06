@@ -347,3 +347,92 @@ M007 and M008 were already registered before the evolutionary-development gate. 
 records are preserved, but `CREATED` means reserved identity rather than scientific authorization.
 After the M006 autopsy, each configuration must either receive an explicit evidence-linked
 authorization or remain unexecuted; registration order alone cannot determine the next model.
+
+## M006 autopsy — hourly flat-state reselection
+
+Identity and scope:
+
+```text
+MODEL=M006
+PARENT=M005
+MODEL_HASH=dc63c807b874044fd9849459d7da0aabd9b99465b8a4fdd3a450160e96311980
+SCENARIO=PRICE_PATH_HISTORICAL_TICK_ZERO_FEE_V2
+RUN_HASH=3a020356445b362837da892715313d1d879a28823a2ea7b2646cd4ed8fbea2ff
+START=2026-01-01T00:00:00Z
+END_EXCLUSIVE=2026-09-05T23:59:59.783644Z
+STATUS=EVALUATED
+```
+
+The canonical replay reused the verified tape
+`505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c` and completed alone.
+The earlier interrupted run remains separate and inconclusive. M006 made 312,163 completed
+cycles and compounded 100 USDT to marked mathematical equity 100,820,881,986.6700296 USDT in
+the same zero-fee, unlimited-capacity price-path scenario as M005. It made 191 flat-state
+reselections, 65 of which reversed within 24 hours, and 5,295 further checks were blocked while
+inventory was open.
+
+The change recovered meaningful activity after the M005 collapse: 116,194 cycles (37.22%)
+completed after February, versus 63 for M005. Complete-month cycle counts were 169,099 in
+January, 26,870 in February, zero in March and April, 841 in May, 49,858 in June, 46,669 in July
+and 18,826 in August. The best day was `2026-01-31` with 43,922 cycles, the best ISO week was
+week 05 with 106,684, and January was the best month by cycles. The most productive UTC hours
+were 20, 11, 17, 18 and 14. The most frequently completed level was
+`1.00120 -> 1.00130` with 93,661 cycles; every selected distance remained one exchange tick at
+selection time.
+
+Temporal concentration improved but did not disappear. Of 248 observed days, 193 had zero
+cycles and 28 reached 2,000. Complete-day p10 and p50 were zero and p90 was 2,660. The best day
+provided 24.98% of positive daily MTM contributions, the top five 49.52%, and the best month
+30.90%; the frozen concentration warning therefore remains active. The temporal-stability score
+rose from 18.2146 to 19.6153. Hourly classification found 399 HOT, 3,680 COLD, 1,872 FAILURE and
+one UNKNOWN hour. HOT hours had a median 18,944 events and 316 cycles per hour; the COLD and
+FAILURE medians had zero cycles despite substantial observed trade flow.
+
+The dominant bottleneck remains capital lock. Flat idle fell by 205.96 hours to 648.32 hours,
+but open-position time rose by the same amount to 5,303.68 hours (89.11% of elapsed time). The
+longest completed hold was 111.28 days and the terminal open position was censored after 19.37
+days. There were 34 cycles crossing day boundaries and 14 crossing week boundaries. These are
+throughput and risk observations, not time-stop authorization.
+
+Python recomputed exact event-level maximum drawdown from all 109,053,867 replay events using
+integer fixed-point cash and inventory reconciliation. M006 drawdown was 0.26851667%, from
+31,611,268,969.729246 to 31,526,387,442.9489046 at
+`2026-04-14T14:41:11.931810Z`, versus 0.30778732% for M005. Daily endpoint drawdown is not used
+because it hides intraday paths. Against M005, M006 increased final marked equity by
+80,076,181,373.8768630 USDT (4.8601x), added 120,466 cycles, reduced zero-cycle days by one and
+increased days with at least 2,000 cycles by ten. Verified complete-month MTM deltas were
+nonnegative in seven of eight months; April was the only negative month. The frozen
+monthly-return comparison is a different normalized measure: M006 met it in six of eight
+complete months. It must not be conflated with the seven-of-eight count for absolute MTM
+contribution deltas; both pass the preregistered minimum of half the complete months.
+
+Scientific decision:
+
+```text
+HYPOTHESIS_RESULT=PARTIAL
+DECISION=PROMOTE_DEVELOPMENT
+CURRENT_CHAMPION=M006
+EXECUTABLE_EDGE=NOT_DEMONSTRATED
+CURRENT_BOTTLENECK=LONG_HOLD
+```
+
+Hourly flat-only reselection improved access to migrated activity, idle, cycles, concentration
+and exact drawdown. It did not materially improve the zero-day median or release an open lot,
+and the enormous mathematical capital remains unsupported by queue, depth, partial-fill,
+latency, fee or capacity evidence. Promotion therefore means DEVELOPMENT champion only.
+
+## M007 preregistration
+
+```text
+PARENT_MODEL=M006
+OBSERVATION=648.32 flat idle hours remain and hourly decisions may react late to level migration
+ROOT_CAUSE_HYPOTHESIS=the one-hour flat decision interval misses useful intrahour recurrence
+PROPOSED_CHANGE=reduce only the flat ALWAYS_BEST decision interval from 60 minutes to 1 minute
+EXPECTED_EFFECT=reduce residual flat idle and increase completed cycles
+RISKS_OF_CHANGE=more reselections, short-horizon reversals and unmodeled cancel/queue-priority cost
+```
+
+M007 is authorized as the next single-variable DEVELOPMENT ablation on the same dataset,
+scenario and cutoff. It is not expected to solve `LONG_HOLD`, because selection remains frozen
+while a lot is open. M008 remains unexecuted and unauthorized until the M007 autopsy determines
+whether its preregistered anti-thrashing mechanism attacks an observed problem.

@@ -21,12 +21,24 @@ fill result.
 - M005's mathematical compounding result is not executable evidence: fill probability, queue,
   book depth, capacity and latency remain unknown, while its reference scenario has zero fees
   and no capacity cap.
+- M006's hourly flat-only reselection partially confirmed the level-migration hypothesis. It
+  completed 312,163 cycles, including 116,194 after February, reduced idle by 205.96 hours and
+  improved exact maximum drawdown from 0.30778732% to 0.26851667% relative to M005.
+- M006 improved temporal concentration, but 193 of 248 days still had zero cycles and complete-day
+  p50 remained zero. Seven of eight complete months improved their MTM contribution over M005;
+  April was the exception. The separate normalized monthly-return criterion passed in six of
+  eight months; the two measures must not be conflated.
+- M006 is the current DEVELOPMENT champion. This is not final validation or executable edge:
+  its 100,820,881,986.6700296 USDT marked result still assumes zero fees, unlimited capacity,
+  counterfactual zero latency and price-path fills without queue or book evidence.
+- Flat-only reselection cannot repair an existing open lot. M006 was holding inventory for 89.11%
+  of elapsed time, so `LONG_HOLD` remains the dominant observed bottleneck and does not authorize
+  a time stop.
 
 ## Likely
 
-- Flat-only causal reselection is a justified next ablation because it can avoid future entries
-  at an inactive frozen level. It cannot free inventory already waiting for HIGH, so it may not
-  solve the dominant long-hold bottleneck.
+- One-minute flat-only reselection is a justified M007 ablation for the remaining 648.32 idle
+  hours. It may improve intrahour access, but it risks more switching and cannot fix `LONG_HOLD`.
 
 ## Refuted
 

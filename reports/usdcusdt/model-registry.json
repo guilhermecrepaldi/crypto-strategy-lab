@@ -971,6 +971,424 @@
         "reason": "OWNER_PROTOCOL_CHANGE: autopsy gate required after M005; partial M006 run excluded from scientific evidence",
         "to": "INCONCLUSIVE"
       }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-06T20:45:41.774173+00:00",
+      "payload": {
+        "MODEL_HASH": "dc63c807b874044fd9849459d7da0aabd9b99465b8a4fdd3a450160e96311980",
+        "RUN_HASH": "3a020356445b362837da892715313d1d879a28823a2ea7b2646cd4ed8fbea2ff",
+        "SCENARIO_HASH": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M006\\runs\\3a020356445b362837da892715313d1d879a28823a2ea7b2646cd4ed8fbea2ff",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9",
+        "code_commit": "178be9b4d8b6fc1c2968e7b11059f84c3ddcf3cf",
+        "dataset_hash": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+        "interval": {
+          "early_stop": "TECHNICAL_INVALIDITY_ONLY",
+          "end_exclusive": "2026-09-05T23:59:59.783644+00:00",
+          "full_replay": true,
+          "start": "2026-01-01T00:00:00+00:00"
+        },
+        "model_id": "M006",
+        "run": {
+          "execution_class": "PRICE_PATH_NOT_FILL_EVIDENCE",
+          "live_accessed": false,
+          "locked_test_accessed": false,
+          "manifest": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+          "tape_cache": {
+            "cache_key": "22307d010fe179b2b834931f839376014423bde9a7751b4f453463de16bdcf18",
+            "schema_version": "usdcusdt-market-tape-v2",
+            "tape_hash": "505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c"
+          },
+          "testnet_accessed": false,
+          "validation_accessed": false
+        },
+        "technical_revision": "full-replay-historical-tick-temporal-regimes-v2"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-06T20:45:41.803468+00:00",
+      "payload": {
+        "from": "INCONCLUSIVE",
+        "model_id": "M006",
+        "reason": "resuming canonical full DEVELOPMENT replay after inconclusive run",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-06T20:53:29.141131+00:00",
+      "payload": {
+        "EVALUATION_HASH": "089be26275adb275e3592dec1d6fb30f6e94d8c66a25b29442a12277b3048460",
+        "EVIDENCE_HASH": "09bf2c1068e48462875b228d44d5cce4b0137c252b00fde216132cbff7d654bf",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M006\\runs\\3a020356445b362837da892715313d1d879a28823a2ea7b2646cd4ed8fbea2ff\\evaluations\\089be26275adb275e3592dec1d6fb30f6e94d8c66a25b29442a12277b3048460",
+        "campaign_snapshot_id": "b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9",
+        "comparison": {
+          "model_ladder": "M005_TO_M008",
+          "same_dataset_scenario_cutoff_required": true
+        },
+        "criteria": {
+          "early_stop_economic": false,
+          "promotion_guardrail": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md",
+          "temporal_metrics_are_diagnostic_only": true
+        },
+        "decision": {
+          "campaign_snapshot_id": "b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9",
+          "comparison": {
+            "model_ladder": "M005_TO_M008",
+            "same_dataset_scenario_cutoff_required": true
+          },
+          "criteria": {
+            "early_stop_economic": false,
+            "promotion_guardrail": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md",
+            "temporal_metrics_are_diagnostic_only": true
+          },
+          "early_stop": false,
+          "execution_evidence": "INCONCLUSIVE_PRICE_PATH_ONLY",
+          "full_replay_completed": true,
+          "run_hash": "3a020356445b362837da892715313d1d879a28823a2ea7b2646cd4ed8fbea2ff",
+          "scenario_hash": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8",
+          "status": "PENDING_SCIENTIFIC_REVIEW"
+        },
+        "metrics": {
+          "completed_cycles": 312163,
+          "concentration": {
+            "PROFIT_CONCENTRATION_WARNING": "YES",
+            "daily": {
+              "all_periods": {
+                "best_share": "0.2497807287038999781802398994",
+                "gross_losses": "572142390.7354371",
+                "gross_positive": "101393024277.4054667",
+                "net": "100820881886.6700296",
+                "net_profit_status": "POSITIVE",
+                "top10_share": "0.6672880466572331533747219351",
+                "top5_share": "0.4952369605316719041402895262"
+              },
+              "complete_period_count": 247,
+              "complete_periods": {
+                "best_share": "0.2498254511384399922843747612",
+                "gross_losses": "572142390.7354371",
+                "gross_positive": "101374873433.0043191",
+                "net": "100802731042.2688820",
+                "net_profit_status": "POSITIVE",
+                "top10_share": "0.6674075224316086007553700364",
+                "top5_share": "0.4953256311135222301774082806"
+              },
+              "granularity": "day",
+              "period_count": 248
+            },
+            "monthly": {
+              "all_periods": {
+                "best_share": "0.3089780930426725523710027194",
+                "gross_losses": "56174191.3582044",
+                "gross_positive": "100877056078.0282340",
+                "net": "100820881886.6700296",
+                "net_profit_status": "POSITIVE",
+                "top10_share": "1",
+                "top5_share": "0.9966560987165175370682949942"
+              },
+              "complete_period_count": 8,
+              "complete_periods": {
+                "best_share": "0.3089780930426725523710027194",
+                "gross_losses": "14830601.3333682",
+                "gross_positive": "100877056078.0282340",
+                "net": "100862225476.6948658",
+                "net_profit_status": "POSITIVE",
+                "top10_share": "1",
+                "top5_share": "0.9966560987165175370682949942"
+              },
+              "granularity": "month",
+              "period_count": 9
+            },
+            "weekly": {
+              "all_periods": {
+                "best_share": "0.2914155700235964330476860233",
+                "gross_losses": "89558564.9600276",
+                "gross_positive": "100910440451.6300572",
+                "net": "100820881886.6700296",
+                "net_profit_status": "POSITIVE",
+                "top10_share": "0.9895962488927914912237340572",
+                "top5_share": "0.8334005663779774990199391193"
+              },
+              "complete_period_count": 34,
+              "complete_periods": {
+                "best_share": "0.2914155702307673367615949962",
+                "gross_losses": "69390960.0698636",
+                "gross_positive": "100910440379.8915872",
+                "net": "100841049419.8217236",
+                "net_profit_status": "POSITIVE",
+                "top10_share": "0.9895962495963076045817592792",
+                "top5_share": "0.8334005669704521855242631361"
+              },
+              "granularity": "week",
+              "period_count": 36
+            }
+          },
+          "data_support": {
+            "book_depth": "UNKNOWN",
+            "executable_capacity": "UNKNOWN",
+            "fills_partial_fills": "UNKNOWN_PRICE_PATH_ONLY",
+            "gross_trade_volume": "OBSERVED_TRADES",
+            "latency": "COUNTERFACTUAL_ZERO",
+            "mid": "UNKNOWN",
+            "price": "OBSERVED_TRADES",
+            "queue_ahead": "UNKNOWN",
+            "spread_bid_ask": "UNKNOWN",
+            "trade_intensity": "OBSERVED_TRADES"
+          },
+          "fees_quote": "0E-7",
+          "final_marked_equity": "100820881986.6700296",
+          "initial_quote": "100",
+          "open_cycle_censored": true,
+          "productivity_distribution": {
+            "daily": {
+              "best": "2026-01-31 00:00:00+00:00",
+              "capital_hour_return": {
+                "max": "0.1527772085300728057090674859",
+                "min": "-0.00004162949462941655395041097257",
+                "p10": "-0.000007499222717864373073918947428",
+                "p50": "0.000001667246040758095989634369791",
+                "p90": "0.001242959530472074351650971511"
+              },
+              "complete_periods": 247,
+              "cycles": {
+                "max": 43922,
+                "min": 0,
+                "p10": 0,
+                "p50": 0,
+                "p90": 2660
+              },
+              "worst": "2026-01-02 00:00:00+00:00"
+            },
+            "monthly": {
+              "best": "2026-01-01 00:00:00+00:00",
+              "capital_hour_return": {
+                "max": "0.1519988817727897694790435219",
+                "min": "-6.529288675115322513632484388E-7",
+                "p10": "8.063892891006992189896864926E-7",
+                "p50": "0.0006974297786860666761670305085",
+                "p90": "0.001639178337080602972473510730"
+              },
+              "complete_periods": 8,
+              "cycles": {
+                "max": 169099,
+                "min": 0,
+                "p10": 0,
+                "p50": 26870,
+                "p90": 49858
+              },
+              "worst": "2026-03-01 00:00:00+00:00"
+            },
+            "weekly": {
+              "best": "2026-01-26 00:00:00+00:00",
+              "capital_hour_return": {
+                "max": "0.05848857927637785442828351637",
+                "min": "-0.000002976764840245686700045919360",
+                "p10": "-0.000001546700775181561412665288991",
+                "p50": "0.000003509454959580179394740345566",
+                "p90": "0.004299647384559964271860415648"
+              },
+              "complete_periods": 34,
+              "cycles": {
+                "max": 106684,
+                "min": 0,
+                "p10": 0,
+                "p50": 0,
+                "p90": 30777
+              },
+              "worst": "2026-02-09 00:00:00+00:00"
+            }
+          },
+          "productivity_fingerprint": {
+            "BEST_1D_CYCLES": 43922,
+            "BEST_30D_CYCLES": 125177,
+            "BEST_7D_CYCLES": 106200,
+            "BEST_MONTH": "2026-07",
+            "BEST_REGIME": "HOT",
+            "HOT_PERIOD_COUNT": 55,
+            "LONGEST_COLD_STREAK": 7,
+            "LONGEST_HOT_STREAK": 15,
+            "WORST_MONTH": "2026-04"
+          },
+          "realized_profit": "100932812093.8104398",
+          "return_fraction": "1008208818.866700296",
+          "temporal_stability": {
+            "aggregate": "19.61530765899744660047953618",
+            "horizons": {
+              "12h": {
+                "failure_fraction": "0.3232323232323232323232323232",
+                "mad": "0E+7",
+                "median_absolute_productivity": "0",
+                "profitable_fraction": "0.1939393939393939393939393939",
+                "relative_variability": "0E+19",
+                "score": "13.12519130700948882767064585"
+              },
+              "168h": {
+                "failure_fraction": "0.2285714285714285714285714286",
+                "mad": "0E+6",
+                "median_absolute_productivity": "0",
+                "profitable_fraction": "0.4571428571428571428571428571",
+                "relative_variability": "0E+18",
+                "score": "35.26530612244897959183673469"
+              },
+              "1h": {
+                "failure_fraction": "0.3145689800033607797008906066",
+                "mad": "0E+7",
+                "median_absolute_productivity": "0",
+                "profitable_fraction": "0.06755167198790119307679381617",
+                "relative_variability": "0E+19",
+                "score": "4.630201143314551614186556481"
+              },
+              "24h": {
+                "failure_fraction": "0.3562753036437246963562753036",
+                "mad": "0E+7",
+                "median_absolute_productivity": "0",
+                "profitable_fraction": "0.2226720647773279352226720648",
+                "relative_variability": "0E+19",
+                "score": "14.33395072858102902850399122"
+              },
+              "336h": {
+                "failure_fraction": "0.1764705882352941176470588235",
+                "mad": "0.00008213534898210049007235059344",
+                "median_absolute_productivity": "0.00008213534898210049007235059344",
+                "profitable_fraction": "0.5882352941176470588235294118",
+                "relative_variability": "0.4999999969562435470676149147",
+                "score": "24.22145343464564131852384497"
+              },
+              "4h": {
+                "failure_fraction": "0.3194351042367182246133154001",
+                "mad": "0E+7",
+                "median_absolute_productivity": "0",
+                "profitable_fraction": "0.1271015467383994620040349697",
+                "relative_variability": "0E+19",
+                "score": "8.650085090737071657571176149"
+              },
+              "720h": {
+                "failure_fraction": "0.125",
+                "mad": "0.0005019307418955649108747129475",
+                "median_absolute_productivity": "0.000507855380813915529481929993",
+                "profitable_fraction": "0.75",
+                "relative_variability": "0.4970663887236901853488265635",
+                "score": "33.00501824000783158648325677"
+              },
+              "72h": {
+                "failure_fraction": "0.2804878048780487804878048780",
+                "mad": "0E+7",
+                "median_absolute_productivity": "0",
+                "profitable_fraction": "0.3292682926829268292682926829",
+                "relative_variability": "0E+19",
+                "score": "23.69125520523497917906008328"
+              }
+            },
+            "reason": "DESCRIPTIVE_ONLY"
+          },
+          "unrealized_profit": "-111930207.1404102"
+        },
+        "model_id": "M006",
+        "run_hash": "3a020356445b362837da892715313d1d879a28823a2ea7b2646cd4ed8fbea2ff",
+        "scenario_hash": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-06T20:53:34.185831+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M006",
+        "reason": "full physical interval completed; scientific decision pending",
+        "to": "EVALUATED"
+      }
+    },
+    {
+      "event_type": "PROMOTION_RECORDED",
+      "occurred_at": "2026-09-06T21:07:08.792540+00:00",
+      "payload": {
+        "decision": {
+          "campaign_snapshot_id": "b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9",
+          "comparison": {
+            "absolute_mtm_delta_months_nonnegative": "7/8",
+            "completed_cycles_delta": 120466,
+            "days_ge_2000_delta": 10,
+            "final_marked_equity_delta": "80076181373.8768630",
+            "final_marked_equity_ratio": "4.8600789",
+            "idle_hours_delta": "-205.9645",
+            "normalized_monthly_return_gate": "6/8",
+            "parent_model_id": "M005",
+            "parent_run_hash": "16487d8f1c68966198cfbe7026c45cc246da67431e06b805e41f63c9e0c8c751",
+            "same_dataset_scenario_cutoff": true,
+            "zero_cycle_days_delta": -1
+          },
+          "criteria": {
+            "anti_thrash_gate": "NOT_APPLICABLE",
+            "capital_gate": "PASS",
+            "current_bottleneck": "LONG_HOLD",
+            "daily_median_gate": "PASS_UNINFORMATIVE",
+            "exact_max_drawdown_m005": "0.00307787317967112",
+            "exact_max_drawdown_m006": "0.0026851666999394563",
+            "executable_edge": "NOT_DEMONSTRATED",
+            "hypothesis_result": "PARTIAL",
+            "idle_zero_day_gate": "PASS",
+            "monthly_return_gate": "PASS",
+            "scientific_decision": "PROMOTE_DEVELOPMENT"
+          },
+          "run_hash": "3a020356445b362837da892715313d1d879a28823a2ea7b2646cd4ed8fbea2ff",
+          "scenario_hash": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"
+        },
+        "model_id": "M006",
+        "previous_model_id": null,
+        "to": "PROMOTED"
+      }
+    },
+    {
+      "event_type": "CHAMPION_RECORDED",
+      "occurred_at": "2026-09-06T21:07:08.793861+00:00",
+      "payload": {
+        "decision": {
+          "campaign_snapshot_id": "b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9",
+          "comparison": {
+            "absolute_mtm_delta_months_nonnegative": "7/8",
+            "completed_cycles_delta": 120466,
+            "days_ge_2000_delta": 10,
+            "final_marked_equity_delta": "80076181373.8768630",
+            "final_marked_equity_ratio": "4.8600789",
+            "idle_hours_delta": "-205.9645",
+            "normalized_monthly_return_gate": "6/8",
+            "parent_model_id": "M005",
+            "parent_run_hash": "16487d8f1c68966198cfbe7026c45cc246da67431e06b805e41f63c9e0c8c751",
+            "same_dataset_scenario_cutoff": true,
+            "zero_cycle_days_delta": -1
+          },
+          "criteria": {
+            "anti_thrash_gate": "NOT_APPLICABLE",
+            "capital_gate": "PASS",
+            "current_bottleneck": "LONG_HOLD",
+            "daily_median_gate": "PASS_UNINFORMATIVE",
+            "exact_max_drawdown_m005": "0.00307787317967112",
+            "exact_max_drawdown_m006": "0.0026851666999394563",
+            "executable_edge": "NOT_DEMONSTRATED",
+            "hypothesis_result": "PARTIAL",
+            "idle_zero_day_gate": "PASS",
+            "monthly_return_gate": "PASS",
+            "scientific_decision": "PROMOTE_DEVELOPMENT"
+          },
+          "run_hash": "3a020356445b362837da892715313d1d879a28823a2ea7b2646cd4ed8fbea2ff",
+          "scenario_hash": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"
+        },
+        "model_id": "M006",
+        "previous_model_id": null,
+        "to": "PROMOTED"
+      }
     }
   ],
   "models": [
@@ -1291,15 +1709,15 @@
       "status": "EVALUATED"
     },
     {
-      "BEST_1D_CYCLES": null,
-      "BEST_30D_CYCLES": null,
-      "BEST_7D_CYCLES": null,
-      "BEST_MONTH": null,
-      "BEST_REGIME": null,
-      "HOT_PERIOD_COUNT": null,
-      "LONGEST_COLD_STREAK": null,
-      "LONGEST_HOT_STREAK": null,
-      "WORST_MONTH": null,
+      "BEST_1D_CYCLES": 43922,
+      "BEST_30D_CYCLES": 125177,
+      "BEST_7D_CYCLES": 106200,
+      "BEST_MONTH": "2026-07",
+      "BEST_REGIME": "HOT",
+      "HOT_PERIOD_COUNT": 55,
+      "LONGEST_COLD_STREAK": 7,
+      "LONGEST_HOT_STREAK": 15,
+      "WORST_MONTH": "2026-04",
       "artifacts": {
         "config": "artifacts\\usdcusdt\\models\\M006\\config.json",
         "daily": null,
@@ -1357,7 +1775,7 @@
       "model_id": "M006",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "INCONCLUSIVE"
+      "status": "PROMOTED"
     },
     {
       "BEST_1D_CYCLES": null,
