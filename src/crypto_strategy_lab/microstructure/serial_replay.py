@@ -1083,9 +1083,12 @@ def _select(
     *,
     eligible_distances: tuple[int, ...] | None = None,
     grid_multiple: int | None = None,
+    excluded_candidate: tuple[int, int] | None = None,
 ) -> tuple[int, int] | None:
     ranked: list[tuple[Decimal, int, int, int]] = []
     for candidate, timeline in timelines.items():
+        if excluded_candidate is not None and candidate == excluded_candidate:
+            continue
         if eligible_distances is not None and candidate[1] not in eligible_distances:
             continue
         if grid_multiple is not None and (

@@ -61,6 +61,7 @@ from crypto_strategy_lab.microstructure.data import (
     slice_history_manifest,
     verify_history_manifest,
 )
+from crypto_strategy_lab.microstructure.evolution_diagnostics import diagnose_evolution
 from crypto_strategy_lab.microstructure.level_scanner import (
     scan_campaign,
     write_scanner_reports,
@@ -631,6 +632,35 @@ def microstructure_full_replay(
     )
     for record in records:
         typer.echo(json.dumps(record, sort_keys=True))
+
+
+@app.command("microstructure-evolution-diagnostic")
+def microstructure_evolution_diagnostic(
+    parent_model: Annotated[str, typer.Option("--parent-model", help="Evaluated parent model ID")],
+    challenger_model: Annotated[
+        str, typer.Option("--challenger-model", help="Evaluated challenger model ID")
+    ],
+    artifact_root: Annotated[Path, typer.Option()] = Path("artifacts"),
+    report_root: Annotated[Path, typer.Option()] = Path("reports"),
+) -> None:
+    """Build an offline causal diagnostic from two evaluated model artifacts."""
+    result = diagnose_evolution(
+        parent_model_id=parent_model.strip().upper(),
+        challenger_model_id=challenger_model.strip().upper(),
+        artifact_root=artifact_root,
+        report_root=report_root,
+    )
+    typer.echo(
+        json.dumps(
+            {
+                "status": result.summary.get("status"),
+                "artifact_id": result.artifact_id,
+                "artifact_dir": str(result.artifact_dir),
+                "report": str(result.report_path),
+            },
+            sort_keys=True,
+        )
+    )
 
 
 @app.command("microstructure-build-tape")
