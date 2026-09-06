@@ -686,3 +686,58 @@ position, attach only pre-entry causal context (selection age, time since HIGH, 
 lookback cycles and score, best alternative, tick regime), and compare these with all other
 entries rather than selected anecdotes. This is exploratory DEVELOPMENT analysis. It cannot add
 a timeout, move an open HIGH or authorize M010 until an interpretable causal signal is found.
+
+## M007/M009 causal composition and long-hold diagnostic
+
+The immutable diagnostic artifact
+`63dce839c6983021bbc33603faf5c8aec22ede775dca3195a9f7d3779afce0e6` consumed the existing
+M007/M009 replays and their shared READY tape. It evaluated all 344,704 M007 entries and all
+327,460 M009 entries without rerunning either model. Exact cycle-log plus terminal-log
+reconciliation errors were `4.3E-25` and `1.25E-24`, respectively. The terminal marked component
+was practically identical; rounding residue did not explain the result gap.
+
+The difference in `ln(marked_equity / 100)` was `1.4607775303182`. January accounted for 65.20%
+and February for 32.81% of that difference. The old `0.0001` tick regime accounted for 98.01%,
+where M009 completed 14,336 fewer cycles. The three largest positive M007-minus-M009 level
+contributions were `1.00110 -> 1.00120` (48.25%), `1.00120 -> 1.00130` (25.56%) and
+`1.00180 -> 1.00190` (16.41%). These are accounting decompositions of realized paths, not a
+counterfactual valuation of isolated skipped cycles.
+
+Each model had thirteen completed holds of at least 24 hours plus one terminal censored hold;
+eleven completed holds and the terminal entry were shared events. The 111.28-day hold entered
+only 0.000331 second after the previous HIGH touch and followed 43,132 completed lookback cycles.
+All five long entries in the old tick regime followed 28,009--55,966 lookback cycles. Selection
+age, last-HIGH age and raw score therefore do not justify an admission gate: raw score also mixes
+a tenfold tick-edge change with activity. No timeout, forced close or M010 is authorized.
+
+Scientific decision:
+
+```text
+SCIENTIFIC_REVIEW=COMPLETE
+CURRENT_CHAMPION=M007
+M009_STATUS=REJECTED
+M010_AUTHORIZED=NO
+NEXT_STEP=ONE_PREREGISTERED_CAUSAL_ACTIVITY_DIAGNOSTIC
+PLATEAU_DEMONSTRATED=NO
+EXECUTABLE_EDGE=NOT_DEMONSTRATED
+```
+
+## Preregistered causal activity-contraction diagnostic
+
+Before any M010 design, Python will calculate exactly one fixed signal for every M007 entry:
+
+```text
+R(t) = 24 * C_1h(t) / C_24h(t)
+C_wh(t) = completed cycles of the same absolute LOW/HIGH in [t-wh, t)
+C_24h(t) = 0 => UNKNOWN
+SIGNAL = CONTRACTING when R(t) < 1, otherwise NOT_CONTRACTING
+```
+
+The one-hour and 24-hour windows and threshold one are frozen before calculation; there is no
+threshold search. Results must count completed long holds and all other entries by signal,
+entry month and selection tick, publish capture rate, fraction of other entries signalled and
+historical cycle-log sums, and list the signal for each of the thirteen M007 long holds. The
+terminal position remains censored and separate. M009 is only a dependent verification, with
+shared entry events explicitly counted rather than treated as independent evidence. Associated
+historical log return is descriptive and is not PnL of a hypothetical filter. Only a signal that
+discriminates beyond one isolated episode/regime may support a separately preregistered M010.

@@ -28,7 +28,8 @@ fill result.
   p50 remained zero. Seven of eight complete months improved their MTM contribution over M005;
   April was the exception. The separate normalized monthly-return criterion passed in six of
   eight months; the two measures must not be conflated.
-- M006 is the current DEVELOPMENT champion. This is not final validation or executable edge:
+- M006 was promoted and later superseded by M007. Its result was not final validation or
+  executable edge:
   its 100,820,881,986.6700296 USDT marked result still assumes zero fees, unlimited capacity,
   counterfactual zero latency and price-path fills without queue or book evidence.
 - Flat-only reselection cannot repair an existing open lot. M006 was holding inventory for 89.11%
@@ -56,13 +57,20 @@ fill result.
   not preserve the development result; it does not establish the executable cost or value of a
   switch because queue, latency and cancellation effects remain unmodeled.
 - A 76.79% equity reduction from a 5.00% cycle reduction demonstrates path-sensitive compounding.
-  Exact per-cycle contribution and long-hold entry context must be decomposed before another
-  admission rule is scientifically justified.
+  Exact decomposition attributes 98.01% of the log-equity difference to the old `0.0001` tick
+  regime, chiefly in January and February; it is not an accounting or rounding discrepancy.
+- M007 and M009 each had thirteen completed holds of at least 24 hours; eleven were shared entry
+  and exit events, and their terminal censored entry was also shared. These are dependent paths,
+  not 26 independent long-hold observations.
+- Neither selection age, last-HIGH age nor raw lookback score presently distinguishes long holds
+  robustly. The 111.28-day hold began 0.000331 second after a HIGH touch and after 43,132 lookback
+  cycles; the old-tick long holds all followed substantial activity.
 
 ## Likely
 
-- Causal context at entries that led to holds of at least 24 hours may reveal an interpretable
-  admission signal, but it must be compared with every other entry before becoming a model rule.
+- A preregistered relative activity signal `24 * C_1h / C_24h < 1` may reveal contraction without
+  mixing the two tick grids, but it must be calculated for every M007 entry before it can motivate
+  a new model.
 
 ## Refuted
 

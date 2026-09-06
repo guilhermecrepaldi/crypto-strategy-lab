@@ -1,0 +1,223 @@
+{
+  "artifact_id": "63dce839c6983021bbc33603faf5c8aec22ede775dca3195a9f7d3779afce0e6",
+  "cohorts": {
+    "M007": {
+      "LONG_HOLD": {
+        "count": 13,
+        "signals": {
+          "canonical_lookback_cycles": {
+            "p10": "5549.8",
+            "p50": "6277.0",
+            "p90": "48599.2"
+          },
+          "canonical_lookback_score": {
+            "p10": "0.0554471248810857498736847856",
+            "p50": "0.0626953924829452950988307790",
+            "p90": "4.853579051115901883999948575"
+          },
+          "prior_high_age_seconds": {
+            "p10": "0.0014826",
+            "p50": "0.0640800",
+            "p90": "0.309396"
+          },
+          "selection_age_seconds": {
+            "p10": "631.9327584",
+            "p50": "9200.6994150",
+            "p90": "29552.8357712"
+          }
+        }
+      },
+      "OTHER": {
+        "count": 344691,
+        "signals": {
+          "canonical_lookback_cycles": {
+            "p10": "6161.0",
+            "p50": "26933.0",
+            "p90": "48563.0"
+          },
+          "canonical_lookback_score": {
+            "p10": "0.0615578265951389097012018480",
+            "p50": "2.689858255140746656019160117",
+            "p90": "4.850294616997902726455596564"
+          },
+          "prior_high_age_seconds": {
+            "p10": "0.0046290",
+            "p50": "0.1331090",
+            "p90": "0.7099030"
+          },
+          "selection_age_seconds": {
+            "p10": "988.3849280",
+            "p50": "10707.8290020",
+            "p90": "53210.8654750"
+          }
+        }
+      }
+    },
+    "M009": {
+      "LONG_HOLD": {
+        "count": 13,
+        "signals": {
+          "canonical_lookback_cycles": {
+            "p10": "5283.0",
+            "p50": "6253.0",
+            "p90": "48599.2"
+          },
+          "canonical_lookback_score": {
+            "p10": "0.0527819903904959037793143970",
+            "p50": "0.0624712769996203568645473560",
+            "p90": "4.853579051115901883999948575"
+          },
+          "prior_high_age_seconds": {
+            "p10": "0.0014826",
+            "p50": "0.0734140",
+            "p90": "0.3017246"
+          },
+          "selection_age_seconds": {
+            "p10": "674.2150856",
+            "p50": "7640.6994150",
+            "p90": "25524.8810760"
+          }
+        }
+      },
+      "OTHER": {
+        "count": 327447,
+        "signals": {
+          "canonical_lookback_cycles": {
+            "p10": "6196.0",
+            "p50": "27208.0",
+            "p90": "48844.0"
+          },
+          "canonical_lookback_score": {
+            "p10": "0.0619057131442269276867755520",
+            "p50": "2.717310957946259114973517083",
+            "p90": "4.878350844661029754407574048"
+          },
+          "prior_high_age_seconds": {
+            "p10": "0.0045210",
+            "p50": "0.1325440",
+            "p90": "0.7154262"
+          },
+          "selection_age_seconds": {
+            "p10": "1476.1206900",
+            "p50": "13364.7940970",
+            "p90": "58082.7645568"
+          }
+        }
+      }
+    }
+  },
+  "identity": {
+    "campaign_snapshot_id": "b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9",
+    "challenger_evaluation_hash": "3f933e550c36c1b7ea21de0da180b8f5244d339db8a64b4195e847b256479701",
+    "challenger_model_hash": "1bc2e893ff54a05d79e3035b1820a9cb62cae6d197d5b97e2ed1a20f9d5570ed",
+    "challenger_model_id": "M009",
+    "challenger_run_hash": "8829762ac9fb0e6b2f842054d5b3e966f535c35f5b6691ecfcc0de1050cabe3c",
+    "dataset_hash": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+    "interval": {
+      "end_exclusive": "2026-09-05T23:59:59.783644+00:00",
+      "start": "2026-01-01T00:00:00+00:00"
+    },
+    "parent_evaluation_hash": "f46a51ecbd3002f54a46c47d350bc20d14e408a2e53f520111524c0caf7f0b82",
+    "parent_model_hash": "2cb6c755cad4b805eb6b79e7b7e04fd271e660f285a8c1d6aca4c643dded934f",
+    "parent_model_id": "M007",
+    "parent_run_hash": "f622acb767d0dbaa39edfb7c90e6ef349dfaf6d694ee17dcde29f22a3d740d21",
+    "protections": {
+      "binance_live_accessed": false,
+      "locked_test_accessed": false,
+      "testnet_accessed": false,
+      "validation_accessed": false
+    },
+    "scenario_hash": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8",
+    "tape_cache_key": "22307d010fe179b2b834931f839376014423bde9a7751b4f453463de16bdcf18",
+    "tape_content_hash": "62f86175c21fb3efa05013f26fd6b572238053f01941d73bb28521fa022d62b0",
+    "tape_hash": "505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c"
+  },
+  "models": {
+    "M007": {
+      "all_entries_evaluated": 344704,
+      "completed_cycles": 344704,
+      "final_marked_equity": "900637402983.4181046",
+      "initial_quote": "100",
+      "long_hold_count": 13,
+      "realized_total": "901637280379.9040993",
+      "terminal": {
+        "causal_entry": {
+          "alternative_high": "1.00096",
+          "alternative_low": "1.00095",
+          "alternative_score": "0.052919726260052949697789395",
+          "canonical_lookback_cycles": 7732,
+          "canonical_lookback_score": "0.077247387455791555937418864",
+          "entry_event": 7319465575427125248,
+          "entry_tick_regime": "0.00001",
+          "entry_timestamp": "2026-08-17T15:01:40.250763+00:00",
+          "high": "1.00095",
+          "low": "1.00094",
+          "prior_high_age_seconds": "0.08609",
+          "selection_age_seconds": "50287.822022",
+          "selection_tick_regime": "0.00001",
+          "selection_timestamp": "2026-08-17T01:03:32.428741+00:00",
+          "tick_at_entry": "0.00001",
+          "tick_at_selection": "0.00001"
+        },
+        "completed_duration_seconds": null,
+        "last_flat_cash": "901637280479.9040993",
+        "ln_last_flat_over_initial": "22.92230796207470874269684513",
+        "ln_marked_over_initial": "22.92119838914640457667545591",
+        "log_reconciliation_error": "4.3E-25",
+        "observed_censor_age_seconds": "1673899.532881000079214572906494140625",
+        "open_cycle_censored": true,
+        "open_entry_timestamp": "2026-08-17T15:01:40.250763Z",
+        "open_holding_seconds": "1673899.532881000079214572906494140625",
+        "sum_cycle_logs": "22.92230796207470874269684557",
+        "terminal_final_cash": "0.0018155",
+        "terminal_log": "-0.001109572928304166021389225635",
+        "terminal_marked_equity": "900637402983.4181046",
+        "terminal_marked_ratio": "0.9988910424201250846554745153"
+      }
+    },
+    "M009": {
+      "all_entries_evaluated": 327460,
+      "completed_cycles": 327460,
+      "final_marked_equity": "208998109792.7031495",
+      "initial_quote": "100",
+      "long_hold_count": 13,
+      "realized_total": "209230137039.2219579",
+      "terminal": {
+        "causal_entry": {
+          "alternative_high": "1.00096",
+          "alternative_low": "1.00095",
+          "alternative_score": "0.052919726260052949697789395",
+          "canonical_lookback_cycles": 7732,
+          "canonical_lookback_score": "0.077247387455791555937418864",
+          "entry_event": 7319465575427125248,
+          "entry_tick_regime": "0.00001",
+          "entry_timestamp": "2026-08-17T15:01:40.250763+00:00",
+          "high": "1.00095",
+          "low": "1.00094",
+          "prior_high_age_seconds": "0.08609",
+          "selection_age_seconds": "50287.822022",
+          "selection_tick_regime": "0.00001",
+          "selection_timestamp": "2026-08-17T01:03:32.428741+00:00",
+          "tick_at_entry": "0.00001",
+          "tick_at_selection": "0.00001"
+        },
+        "completed_duration_seconds": null,
+        "last_flat_cash": "209230137139.2219579",
+        "ln_last_flat_over_initial": "21.46153043175648533934885782",
+        "ln_marked_over_initial": "21.46042085882818117249443092",
+        "log_reconciliation_error": "1.25E-24",
+        "observed_censor_age_seconds": "1673899.532881000079214572906494140625",
+        "open_cycle_censored": true,
+        "open_entry_timestamp": "2026-08-17T15:01:40.250763Z",
+        "open_holding_seconds": "1673899.532881000079214572906494140625",
+        "sum_cycle_logs": "21.46153043175648533934885907",
+        "terminal_final_cash": "0.0002643",
+        "terminal_log": "-0.001109572928304166854426899778",
+        "terminal_marked_equity": "208998109792.7031495",
+        "terminal_marked_ratio": "0.9988910424201250838233606446"
+      }
+    }
+  },
+  "schema_version": "usdcusdt-evolution-diagnostic-v1",
+  "status": "READY"
+}
