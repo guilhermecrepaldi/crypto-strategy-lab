@@ -29,6 +29,7 @@ class MicrostructureIntegrityError(ValueError):
 
 
 TimestampUnit = Literal["milliseconds", "microseconds"]
+ArchiveCadence = Literal["daily", "monthly"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,6 +67,10 @@ class MicrostructureManifest(BaseModel):
     # Default keeps historical manifests readable; newly built manifests always set it
     # from the raw archive rather than relying on this compatibility value.
     timestamp_unit: TimestampUnit = "milliseconds"
+    # ``None`` is intentional for manifests written before coverage was added.
+    coverage_start: datetime | None = None
+    coverage_end: datetime | None = None
+    cadence: ArchiveCadence = "daily"
     first_event_offset_seconds: Decimal
     last_event_before_day_end_seconds: Decimal
     # Keep parse_status for manifests produced before integrity_status was added.
@@ -93,6 +98,8 @@ class HistoryManifest(BaseModel):
     missing_date_ranges: tuple[tuple[date, date], ...] = ()
     cross_archive_gaps: tuple[tuple[int, int], ...]
     cross_archive_overlaps: tuple[tuple[int, int], ...]
+    cross_archive_timestamp_gaps: tuple[tuple[datetime, datetime], ...] = ()
+    cross_archive_timestamp_overlaps: tuple[tuple[datetime, datetime], ...] = ()
     invalidity_reasons: tuple[str, ...] = ()
     total_records: int
     total_size_bytes: int
@@ -243,21 +250,41 @@ def download_archive(url: str, destination: str | Path) -> Path:
     if checksum_match is None:
         raise MicrostructureIntegrityError("invalid SHA256 checksum")
     checksum = checksum_match.group(1).lower()
-    if destination.exists() and hashlib.sha256(destination.read_bytes()).hexdigest() == checksum:
+    if destination.exists() and _sha256_file(destination) == checksum:
         checksum_path.write_bytes(checksum_bytes)
         return destination
     destination.parent.mkdir(parents=True, exist_ok=True)
-    data = _read_url(url)
-    if hashlib.sha256(data).hexdigest() != checksum:
+    temporary: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            dir=destination.parent, prefix=f".{destination.name}.", delete=False
+        ) as handle:
+            temporary = Path(handle.name)
+            digest = hashlib.sha256()
+            request = urllib.request.Request(url, headers={"User-Agent": "crypto-strategy-lab/0.1"})
+            with urllib.request.urlopen(request, timeout=120) as response:
+                while chunk := response.read(1024 * 1024):
+                    digest.update(chunk)
+                    handle.write(chunk)
+    except Exception:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+        raise
+    assert temporary is not None
+    if digest.hexdigest() != checksum:
+        temporary.unlink(missing_ok=True)
         raise MicrostructureIntegrityError("download checksum mismatch")
-    with tempfile.NamedTemporaryFile(
-        dir=destination.parent, prefix=f".{destination.name}.", delete=False
-    ) as handle:
-        temporary = Path(handle.name)
-        handle.write(data)
     temporary.replace(destination)
     checksum_path.write_bytes(checksum_bytes)
     return destination
+
+
+def _sha256_file(path: Path, *, chunk_size: int = 1024 * 1024) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(chunk_size), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _read_url(url: str) -> bytes:
@@ -275,6 +302,7 @@ def manifest_for(
     symbol: str = "USDCUSDT",
     kind: Literal["trades", "aggTrades"] = "aggTrades",
     timestamp_unit: TimestampUnit | None = None,
+    cadence: ArchiveCadence = "daily",
 ) -> MicrostructureManifest:
     if not events:
         raise MicrostructureIntegrityError("archive contains no trade events")
@@ -282,18 +310,29 @@ def manifest_for(
     archive_path = Path(path)
     archive_timestamp_unit = timestamp_unit or timestamp_unit_for_archive(archive_path, kind)
     try:
-        utc_date = date.fromisoformat(period)
-    except ValueError:
-        # Offline fixtures may use a descriptive period label; derive the
-        # represented UTC day from the parsed events while retaining the
-        # strict single-day integrity check below.
+        if cadence == "monthly":
+            year, month = (int(part) for part in period.split("-"))
+            utc_date = date(year, month, 1)
+            coverage_start, coverage_end = _month_bounds(utc_date)
+        else:
+            utc_date = date.fromisoformat(period)
+            coverage_start = datetime.combine(utc_date, time.min, tzinfo=UTC)
+            coverage_end = datetime.combine(utc_date, time.max, tzinfo=UTC)
+    except (ValueError, TypeError) as exc:
+        # Offline fixtures may use a descriptive daily period label; derive the
+        # represented UTC day while retaining strict validation.
+        if cadence == "monthly":
+            raise MicrostructureIntegrityError(f"invalid monthly period: {period!r}") from exc
         utc_date = events[0].timestamp.date()
-    if any(event.timestamp.date() != utc_date for event in events):
+        coverage_start = datetime.combine(utc_date, time.min, tzinfo=UTC)
+        coverage_end = datetime.combine(utc_date, time.max, tzinfo=UTC)
+    if any(
+        not (coverage_start.date() <= event.timestamp.date() <= coverage_end.date())
+        for event in events
+    ):
         raise MicrostructureIntegrityError(
-            f"archive {archive_path} contains timestamps outside {utc_date.isoformat()}"
+            f"archive {archive_path} contains timestamps outside {period}"
         )
-    day_start = datetime.combine(utc_date, time.min, tzinfo=UTC)
-    day_end = datetime.combine(utc_date, time.max, tzinfo=UTC)
     archive_integrity: Literal["VALID", "INVALID"] = (
         "VALID" if not gaps and not duplicates else "INVALID"
     )
@@ -305,7 +344,7 @@ def manifest_for(
         local_path=str(archive_path),
         size_bytes=archive_path.stat().st_size,
         origin=origin,
-        sha256=hashlib.sha256(archive_path.read_bytes()).hexdigest(),
+        sha256=_sha256_file(archive_path),
         record_count=len(events),
         first_timestamp=events[0].timestamp,
         last_timestamp=events[-1].timestamp,
@@ -314,8 +353,111 @@ def manifest_for(
         gaps=gaps,
         duplicates=duplicates,
         timestamp_unit=archive_timestamp_unit,
-        first_event_offset_seconds=_seconds(events[0].timestamp - day_start),
-        last_event_before_day_end_seconds=_seconds(day_end - events[-1].timestamp),
+        first_event_offset_seconds=_seconds(events[0].timestamp - coverage_start),
+        last_event_before_day_end_seconds=_seconds(coverage_end - events[-1].timestamp),
+        coverage_start=coverage_start,
+        coverage_end=coverage_end,
+        cadence=cadence,
+        parse_status=archive_integrity,
+        integrity_status=archive_integrity,
+    )
+
+
+def manifest_from_archive(
+    path: str | Path,
+    *,
+    origin: str,
+    period: str,
+    symbol: str = "USDCUSDT",
+    kind: Literal["trades", "aggTrades"] = "trades",
+    cadence: ArchiveCadence = "daily",
+    timestamp_unit: TimestampUnit | None = None,
+) -> MicrostructureManifest:
+    """Build one archive manifest without materializing its decoded events."""
+    archive_path = Path(path)
+    declared_date: date | None = None
+    coverage_start: datetime | None = None
+    coverage_end: datetime | None = None
+    if cadence == "monthly":
+        try:
+            year, month = (int(part) for part in period.split("-"))
+            declared_date = date(year, month, 1)
+        except (TypeError, ValueError) as exc:
+            raise MicrostructureIntegrityError(f"invalid monthly period: {period!r}") from exc
+        coverage_start, coverage_end = _month_bounds(declared_date)
+    else:
+        try:
+            declared_date = date.fromisoformat(period)
+            coverage_start = datetime.combine(declared_date, time.min, tzinfo=UTC)
+            coverage_end = datetime.combine(declared_date, time.max, tzinfo=UTC)
+        except ValueError:
+            # Daily fixture labels may be descriptive; derive the date from row one.
+            declared_date = None
+
+    first: ArchiveTrade | None = None
+    previous: ArchiveTrade | None = None
+    record_count = 0
+    gaps: list[tuple[int, int]] = []
+    duplicates: list[int] = []
+    units: set[TimestampUnit] = set()
+    for record in iter_archive(archive_path, kind):
+        if declared_date is None:
+            declared_date = record.timestamp.date()
+            coverage_start = datetime.combine(declared_date, time.min, tzinfo=UTC)
+            coverage_end = datetime.combine(declared_date, time.max, tzinfo=UTC)
+        assert coverage_start is not None and coverage_end is not None
+        if not (coverage_start.date() <= record.timestamp.date() <= coverage_end.date()):
+            raise MicrostructureIntegrityError(
+                f"archive {archive_path} contains timestamps outside {period}"
+            )
+        units.add(record.timestamp_unit)
+        if previous is not None:
+            if record.trade_id < previous.trade_id:
+                raise MicrostructureIntegrityError("event IDs are not monotonic")
+            if record.trade_id == previous.trade_id:
+                duplicates.append(record.trade_id)
+            if record.trade_id > previous.trade_id + 1:
+                gaps.append((previous.trade_id, record.trade_id))
+            if record.timestamp < previous.timestamp:
+                raise MicrostructureIntegrityError("timestamps are not monotonic")
+        first = first or record
+        previous = record
+        record_count += 1
+    if first is None or previous is None:
+        raise MicrostructureIntegrityError("archive contains no trade events")
+    assert declared_date is not None and coverage_start is not None and coverage_end is not None
+    if len(units) != 1:
+        raise MicrostructureIntegrityError(
+            f"archive {archive_path} has no single timestamp unit: {sorted(units)!r}"
+        )
+    archive_timestamp_unit: TimestampUnit = (
+        timestamp_unit if timestamp_unit is not None else next(iter(units))
+    )
+    archive_integrity: Literal["VALID", "INVALID"] = (
+        "VALID" if not gaps and not duplicates else "INVALID"
+    )
+    return MicrostructureManifest(
+        symbol=symbol.upper(),
+        kind=kind,
+        utc_date=declared_date,
+        downloaded_at=datetime.fromtimestamp(archive_path.stat().st_mtime, tz=UTC),
+        local_path=str(archive_path),
+        size_bytes=archive_path.stat().st_size,
+        origin=origin,
+        sha256=_sha256_file(archive_path),
+        record_count=record_count,
+        first_timestamp=first.timestamp,
+        last_timestamp=previous.timestamp,
+        first_trade_id=first.trade_id,
+        last_trade_id=previous.trade_id,
+        gaps=gaps,
+        duplicates=duplicates,
+        timestamp_unit=archive_timestamp_unit,
+        first_event_offset_seconds=_seconds(first.timestamp - coverage_start),
+        last_event_before_day_end_seconds=_seconds(coverage_end - previous.timestamp),
+        coverage_start=coverage_start,
+        coverage_end=coverage_end,
+        cadence=cadence,
         parse_status=archive_integrity,
         integrity_status=archive_integrity,
     )
@@ -356,6 +498,88 @@ def list_daily_archives(
             return sorted(result)
 
 
+def list_monthly_archives(
+    symbol: str, kind: Literal["trades", "aggTrades"] = "trades"
+) -> list[tuple[str, str]]:
+    """List official monthly archive keys, following the same offline-testable S3 path."""
+    prefix = f"data/spot/monthly/{kind}/{symbol.strip().upper()}/"
+    endpoint = "https://s3-ap-northeast-1.amazonaws.com/data.binance.vision"
+    token = ""
+    result: list[tuple[str, str]] = []
+    while True:
+        parameters = {"list-type": "2", "prefix": prefix, "max-keys": "1000"}
+        if token:
+            parameters["continuation-token"] = token
+        root = ET.fromstring(_read_url(f"{endpoint}?{urllib.parse.urlencode(parameters)}"))
+        for node in root.findall(".//{*}Contents"):
+            key = node.findtext("{*}Key", "")
+            if key.endswith(".zip"):
+                result.append((key, "https://data.binance.vision/" + key))
+        truncated = root.findtext("{*}IsTruncated", "false").lower() == "true"
+        token = root.findtext("{*}NextContinuationToken", "")
+        if not truncated:
+            return sorted(result)
+
+
+def reconcile_history_manifest(
+    daily_manifest: HistoryManifest,
+    destination: str | Path,
+) -> HistoryManifest:
+    """Fill incomplete USDCUSDT months with their complete official monthly archive.
+
+    This function only consults the monthly catalog and local checksum-aware downloader;
+    callers can inject both for fully offline verification.  Every daily archive in a
+    month replaced by a monthly archive is omitted from the resulting manifest.
+    """
+    if daily_manifest.symbol.upper() != "USDCUSDT" or daily_manifest.kind != "trades":
+        raise ValueError("monthly reconciliation is restricted to USDCUSDT trades")
+    missing_months = sorted({(item.year, item.month) for item in daily_manifest.missing_dates})
+    if not missing_months:
+        return daily_manifest
+    entries = list_monthly_archives("USDCUSDT", "trades")
+    by_month: dict[tuple[int, int], tuple[str, str]] = {}
+    for key, url in entries:
+        archive_month = _archive_month(key)
+        by_month[archive_month] = (key, url)
+    root = Path(destination)
+    monthly: list[MicrostructureManifest] = []
+    for year, month in missing_months:
+        key_url = by_month.get((year, month))
+        if key_url is None:
+            raise MicrostructureIntegrityError(
+                f"official monthly trades archive is missing for {year:04d}-{month:02d}"
+            )
+        key, url = key_url
+        try:
+            path = download_archive(url, root / key.rsplit("/", 1)[-1])
+            monthly.append(
+                manifest_from_archive(
+                    path,
+                    origin=url,
+                    period=f"{year:04d}-{month:02d}",
+                    symbol="USDCUSDT",
+                    kind="trades",
+                    cadence="monthly",
+                )
+            )
+        except (OSError, ValueError, zipfile.BadZipFile) as exc:
+            raise MicrostructureIntegrityError(
+                f"monthly trades archive is absent or corrupt for {year:04d}-{month:02d}"
+            ) from exc
+    replaced = set(missing_months)
+    retained = [item for item in daily_manifest.archives if _coverage_month(item) not in replaced]
+    return _build_history_manifest(
+        [*retained, *monthly],
+        symbol=daily_manifest.symbol,
+        kind=daily_manifest.kind,
+        requested_start=daily_manifest.requested_start,
+        requested_end=daily_manifest.requested_end,
+        all_available=daily_manifest.all_available,
+        discovered_start=daily_manifest.discovered_first_date,
+        discovered_end=daily_manifest.discovered_last_date,
+    )
+
+
 def download_history_range(
     symbol: str,
     destination: str | Path,
@@ -391,10 +615,8 @@ def download_history_range(
     def obtain(item: tuple[date, str, str]) -> MicrostructureManifest:
         utc_date, key, url = item
         path = download_archive(url, root / key.rsplit("/", 1)[-1])
-        events = parse_archive(path, kind)
-        return manifest_for(
+        return manifest_from_archive(
             path,
-            events,
             origin=url,
             period=utc_date.isoformat(),
             symbol=symbol,
@@ -426,7 +648,11 @@ def slice_history_manifest(
         raise ValueError("start cannot exceed end")
     if start < manifest.requested_start or end > manifest.requested_end:
         raise ValueError("slice must stay inside the parent manifest request")
-    selected = tuple(item for item in manifest.archives if start <= item.utc_date <= end)
+    selected = tuple(
+        item
+        for item in manifest.archives
+        if _coverage_start(item).date() <= end and _coverage_end(item).date() >= start
+    )
     if not selected:
         raise MicrostructureIntegrityError("requested slice has no local archives")
     return _build_history_manifest(
@@ -454,21 +680,35 @@ def _build_history_manifest(
 ) -> HistoryManifest:
     if not manifests:
         raise MicrostructureIntegrityError("history manifest requires at least one archive")
-    ordered = tuple(sorted(manifests, key=lambda item: item.utc_date))
+    ordered = tuple(sorted(manifests, key=_coverage_start))
     expected_dates = {
         requested_start + timedelta(days=offset)
         for offset in range((requested_end - requested_start).days + 1)
     }
-    present_dates = {item.utc_date for item in ordered}
+    present_dates: set[date] = set()
+    for item in ordered:
+        coverage_start = max(_coverage_start(item).date(), requested_start)
+        coverage_end = min(_coverage_end(item).date(), requested_end)
+        if coverage_start <= coverage_end:
+            present_dates.update(
+                coverage_start + timedelta(days=offset)
+                for offset in range((coverage_end - coverage_start).days + 1)
+            )
     missing_dates = tuple(sorted(expected_dates - present_dates))
     missing_date_ranges = _date_ranges(missing_dates)
     cross_gaps: list[tuple[int, int]] = []
     overlaps: list[tuple[int, int]] = []
+    timestamp_gaps: list[tuple[datetime, datetime]] = []
+    timestamp_overlaps: list[tuple[datetime, datetime]] = []
     for previous, current in pairwise(ordered):
         if current.first_trade_id <= previous.last_trade_id:
             overlaps.append((previous.last_trade_id, current.first_trade_id))
         elif current.first_trade_id > previous.last_trade_id + 1:
             cross_gaps.append((previous.last_trade_id, current.first_trade_id))
+        if _coverage_start(current) > _coverage_end(previous) + timedelta(microseconds=1):
+            timestamp_gaps.append((_coverage_end(previous), _coverage_start(current)))
+        if current.first_timestamp <= previous.last_timestamp:
+            timestamp_overlaps.append((previous.last_timestamp, current.first_timestamp))
     invalidity_reasons: list[str] = []
     if missing_dates:
         invalidity_reasons.append("missing_requested_dates")
@@ -476,21 +716,30 @@ def _build_history_manifest(
         invalidity_reasons.append("cross_archive_id_gaps")
     if overlaps:
         invalidity_reasons.append("cross_archive_id_overlaps")
+    if timestamp_overlaps:
+        invalidity_reasons.append("cross_archive_timestamp_overlaps")
     if any(item.gaps for item in ordered):
         invalidity_reasons.append("within_archive_id_gaps")
     if any(item.duplicates for item in ordered):
         invalidity_reasons.append("within_archive_duplicate_ids")
     integrity: Literal["VALID", "INVALID"] = "VALID" if not invalidity_reasons else "INVALID"
-    dataset_hash = canonical_hash(
-        [
-            {
-                "utc_date": item.utc_date,
-                "sha256": item.sha256,
-                "record_count": item.record_count,
-            }
-            for item in ordered
-        ]
-    )
+    dataset_entries: list[dict[str, object]] = []
+    for item in ordered:
+        entry: dict[str, object] = {
+            "utc_date": item.utc_date,
+            "sha256": item.sha256,
+            "record_count": item.record_count,
+        }
+        if item.cadence != "daily" or item.coverage_start is not None:
+            entry.update(
+                {
+                    "cadence": item.cadence,
+                    "coverage_start": _coverage_start(item),
+                    "coverage_end": _coverage_end(item),
+                }
+            )
+        dataset_entries.append(entry)
+    dataset_hash = canonical_hash(dataset_entries)
     return HistoryManifest(
         symbol=symbol.upper(),
         kind=kind,
@@ -504,6 +753,8 @@ def _build_history_manifest(
         missing_date_ranges=missing_date_ranges,
         cross_archive_gaps=tuple(cross_gaps),
         cross_archive_overlaps=tuple(overlaps),
+        cross_archive_timestamp_gaps=tuple(timestamp_gaps),
+        cross_archive_timestamp_overlaps=tuple(timestamp_overlaps),
         invalidity_reasons=tuple(invalidity_reasons),
         total_records=sum(item.record_count for item in ordered),
         total_size_bytes=sum(item.size_bytes for item in ordered),
@@ -530,21 +781,23 @@ def verify_history_manifest(manifest: HistoryManifest) -> None:
             raise MicrostructureIntegrityError(f"missing local archive: {path}")
         if path.stat().st_size != expected.size_bytes:
             raise MicrostructureIntegrityError(f"size changed for {path}")
-        if hashlib.sha256(path.read_bytes()).hexdigest() != expected.sha256:
-            raise MicrostructureIntegrityError(f"hash changed for {path}")
-        events = parse_archive(path, manifest.kind)
-        actual = manifest_for(
+        actual = manifest_from_archive(
             path,
-            events,
             origin=expected.origin,
-            period=expected.utc_date.isoformat(),
+            period=(
+                f"{expected.utc_date.year:04d}-{expected.utc_date.month:02d}"
+                if expected.cadence == "monthly"
+                else expected.utc_date.isoformat()
+            ),
             symbol=manifest.symbol,
             kind=manifest.kind,
+            cadence=expected.cadence,
         )
         comparable_fields = [
             "symbol",
             "kind",
             "utc_date",
+            "sha256",
             "record_count",
             "first_timestamp",
             "last_timestamp",
@@ -558,6 +811,10 @@ def verify_history_manifest(manifest: HistoryManifest) -> None:
         # to be re-read and verified.
         if "timestamp_unit" in expected.model_fields_set:
             comparable_fields.append("timestamp_unit")
+        if "coverage_start" in expected.model_fields_set:
+            comparable_fields.extend(["coverage_start", "coverage_end"])
+        if "cadence" in expected.model_fields_set:
+            comparable_fields.append("cadence")
         if "integrity_status" in expected.model_fields_set:
             comparable_fields.append("integrity_status")
         if any(getattr(actual, field) != getattr(expected, field) for field in comparable_fields):
@@ -569,13 +826,20 @@ def verify_history_manifest(manifest: HistoryManifest) -> None:
                 raise MicrostructureIntegrityError("cross-archive ID gap")
             if actual.first_timestamp <= previous.last_timestamp:
                 raise MicrostructureIntegrityError("cross-archive timestamp overlap")
-        rebuilt.append(
-            {
-                "utc_date": actual.utc_date,
-                "sha256": actual.sha256,
-                "record_count": actual.record_count,
-            }
-        )
+        rebuilt_entry: dict[str, object] = {
+            "utc_date": actual.utc_date,
+            "sha256": actual.sha256,
+            "record_count": actual.record_count,
+        }
+        if expected.cadence != "daily" or "coverage_start" in expected.model_fields_set:
+            rebuilt_entry.update(
+                {
+                    "cadence": actual.cadence,
+                    "coverage_start": _coverage_start(actual),
+                    "coverage_end": _coverage_end(actual),
+                }
+            )
+        rebuilt.append(rebuilt_entry)
         previous = actual
     if canonical_hash(rebuilt) != manifest.dataset_hash:
         raise MicrostructureIntegrityError("consolidated dataset hash mismatch")
@@ -583,7 +847,15 @@ def verify_history_manifest(manifest: HistoryManifest) -> None:
         manifest.requested_start + timedelta(days=offset)
         for offset in range((manifest.requested_end - manifest.requested_start).days + 1)
     }
-    present_dates = {item.utc_date for item in manifest.archives}
+    present_dates: set[date] = set()
+    for item in manifest.archives:
+        coverage_start = max(_coverage_start(item).date(), manifest.requested_start)
+        coverage_end = min(_coverage_end(item).date(), manifest.requested_end)
+        if coverage_start <= coverage_end:
+            present_dates.update(
+                coverage_start + timedelta(days=offset)
+                for offset in range((coverage_end - coverage_start).days + 1)
+            )
     missing_dates = tuple(sorted(expected_dates - present_dates))
     if missing_dates != manifest.missing_dates:
         raise MicrostructureIntegrityError("missing date metadata changed")
@@ -592,8 +864,59 @@ def verify_history_manifest(manifest: HistoryManifest) -> None:
         and _date_ranges(missing_dates) != manifest.missing_date_ranges
     ):
         raise MicrostructureIntegrityError("missing date range metadata changed")
+    rebuilt_history = _build_history_manifest(
+        manifest.archives,
+        symbol=manifest.symbol,
+        kind=manifest.kind,
+        requested_start=manifest.requested_start,
+        requested_end=manifest.requested_end,
+        all_available=manifest.all_available,
+        discovered_start=manifest.discovered_first_date,
+        discovered_end=manifest.discovered_last_date,
+    )
+    if rebuilt_history.cross_archive_gaps != manifest.cross_archive_gaps:
+        raise MicrostructureIntegrityError("cross-archive ID gap metadata changed")
+    if rebuilt_history.cross_archive_overlaps != manifest.cross_archive_overlaps:
+        raise MicrostructureIntegrityError("cross-archive ID overlap metadata changed")
+    if "cross_archive_timestamp_gaps" in manifest.model_fields_set and (
+        rebuilt_history.cross_archive_timestamp_gaps != manifest.cross_archive_timestamp_gaps
+    ):
+        raise MicrostructureIntegrityError("timestamp gap metadata changed")
+    if "cross_archive_timestamp_overlaps" in manifest.model_fields_set and (
+        rebuilt_history.cross_archive_timestamp_overlaps
+        != manifest.cross_archive_timestamp_overlaps
+    ):
+        raise MicrostructureIntegrityError("timestamp overlap metadata changed")
     if manifest.integrity_status != "VALID":
         raise MicrostructureIntegrityError("history manifest is not valid")
+
+
+def _coverage_start(item: MicrostructureManifest) -> datetime:
+    if item.coverage_start is not None:
+        return item.coverage_start
+    return datetime.combine(item.utc_date, time.min, tzinfo=UTC)
+
+
+def _coverage_end(item: MicrostructureManifest) -> datetime:
+    if item.coverage_end is not None:
+        return item.coverage_end
+    return datetime.combine(item.utc_date, time.max, tzinfo=UTC)
+
+
+def _coverage_month(item: MicrostructureManifest) -> tuple[int, int]:
+    start = _coverage_start(item)
+    return start.year, start.month
+
+
+def _month_bounds(first_day: date) -> tuple[datetime, datetime]:
+    if first_day.month == 12:
+        next_month = date(first_day.year + 1, 1, 1)
+    else:
+        next_month = date(first_day.year, first_day.month + 1, 1)
+    return (
+        datetime.combine(first_day, time.min, tzinfo=UTC),
+        datetime.combine(next_month, time.min, tzinfo=UTC) - timedelta(microseconds=1),
+    )
 
 
 def _archive_date(key: str) -> date:
@@ -601,6 +924,16 @@ def _archive_date(key: str) -> date:
     if match is None:
         raise MicrostructureIntegrityError(f"unrecognized daily archive key {key}")
     return date.fromisoformat(match.group(1))
+
+
+def _archive_month(key: str) -> tuple[int, int]:
+    match = re.search(r"(\d{4})-(\d{2})\.zip$", key)
+    if match is None:
+        raise MicrostructureIntegrityError(f"unrecognized monthly archive key {key}")
+    month = int(match.group(2))
+    if month < 1 or month > 12:
+        raise MicrostructureIntegrityError(f"unrecognized monthly archive key {key}")
+    return int(match.group(1)), month
 
 
 def _seconds(delta: timedelta) -> Decimal:

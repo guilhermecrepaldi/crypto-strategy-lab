@@ -102,10 +102,17 @@ def test_download_checksum_and_idempotency(tmp_path, monkeypatch):
     class Response:
         def __init__(self, value):
             self.value = value
+            self.offset = 0
 
-        def read(self):
+        def read(self, size=-1):
             calls.append(1)
-            return self.value
+            if size < 0:
+                chunk = self.value[self.offset :]
+                self.offset = len(self.value)
+                return chunk
+            chunk = self.value[self.offset : self.offset + size]
+            self.offset += len(chunk)
+            return chunk
 
         def __enter__(self):
             return self
@@ -122,16 +129,23 @@ def test_download_checksum_and_idempotency(tmp_path, monkeypatch):
     dest = tmp_path / "x.zip"
     assert download_archive("https://example/x.zip", dest) == dest
     assert download_archive("https://example/x.zip", dest) == dest
-    assert len(calls) == 3
+    assert len(calls) == 4
 
 
 def test_checksum_mismatch(tmp_path, monkeypatch):
     class Response:
         def __init__(self, value):
             self.value = value
+            self.offset = 0
 
-        def read(self):
-            return self.value
+        def read(self, size=-1):
+            if size < 0:
+                chunk = self.value[self.offset :]
+                self.offset = len(self.value)
+                return chunk
+            chunk = self.value[self.offset : self.offset + size]
+            self.offset += len(chunk)
+            return chunk
 
         def __enter__(self):
             return self

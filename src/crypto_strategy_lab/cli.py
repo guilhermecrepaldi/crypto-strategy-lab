@@ -56,6 +56,7 @@ from crypto_strategy_lab.microstructure.data import (
     iter_archive,
     manifest_for,
     parse_archive,
+    reconcile_history_manifest,
     slice_history_manifest,
     verify_history_manifest,
 )
@@ -685,6 +686,26 @@ def microstructure_history_verify(
         f"Verified offline: {len(parsed.archives)} archives, {parsed.total_records} records, "
         f"dataset={parsed.dataset_hash}"
     )
+
+
+@app.command("microstructure-history-reconcile")
+def microstructure_history_reconcile(
+    manifest: Annotated[Path, typer.Option(exists=True)] = DEFAULT_MICROSTRUCTURE_MANIFEST,
+    destination: Annotated[Path, typer.Option()] = Path("data/raw/binance-microstructure"),
+    output: Annotated[Path, typer.Option()] = Path(
+        "data/manifests/usdcusdt-trades-reconciled-history.json"
+    ),
+) -> None:
+    """Replace incomplete USDCUSDT months with complete official monthly trades archives."""
+    daily = HistoryManifest.model_validate_json(manifest.read_text(encoding="utf-8"))
+    _require_active_microstructure_symbol(daily.symbol)
+    reconciled = reconcile_history_manifest(daily, destination / "USDCUSDT" / "trades")
+    write_artifact(reconciled, output)
+    typer.echo(
+        f"Reconciled: {len(reconciled.archives)} archives; records={reconciled.total_records}; "
+        f"integrity={reconciled.integrity_status}"
+    )
+    typer.echo(f"Manifest: {output} ({reconciled.dataset_hash})")
 
 
 @app.command("microstructure-history-slice")

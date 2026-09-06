@@ -3,9 +3,9 @@ from __future__ import annotations
 from array import array
 from bisect import bisect_left, bisect_right
 from collections import Counter
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from decimal import ROUND_DOWN, Decimal
 from enum import StrEnum
 from pathlib import Path
@@ -13,7 +13,11 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from crypto_strategy_lab.domain import canonical_hash, require_utc
-from crypto_strategy_lab.microstructure.data import HistoryManifest, iter_archive
+from crypto_strategy_lab.microstructure.data import (
+    HistoryManifest,
+    MicrostructureManifest,
+    iter_archive,
+)
 
 EVENT_ORDER_SCALE = 4096
 MICROS_PER_SECOND = 1_000_000
@@ -344,13 +348,48 @@ def load_serial_tape(
     )
     if not selected:
         raise ValueError("requested tape interval has no archives")
-    events = (
-        (event.timestamp, event.price)
-        for item in selected
-        for event in iter_archive(Path(item.local_path), manifest.kind)
-        if start <= event.timestamp < end_exclusive
-    )
-    return SerialTape.from_events(events, tick_size=tick_size)
+
+    # A reconciled manifest already excludes replaced daily archives.  Apply the
+    # same authority rule at load time so an older/mixed manifest cannot double-count
+    # a day when a complete monthly archive is present.
+    monthly = tuple(item for item in selected if item.cadence == "monthly")
+    if monthly:
+        selected = tuple(
+            item
+            for item in selected
+            if item.cadence == "monthly"
+            or not any(_archive_coverage_overlaps(item, replacement) for replacement in monthly)
+        )
+    selected = tuple(sorted(selected, key=_archive_coverage_start))
+
+    def events() -> Iterator[tuple[datetime, Decimal]]:
+        for item in selected:
+            for event in iter_archive(Path(item.local_path), manifest.kind):
+                if not start <= event.timestamp < end_exclusive:
+                    continue
+                yield event.timestamp, event.price
+
+    return SerialTape.from_events(events(), tick_size=tick_size)
+
+
+def _archive_coverage_start(item: MicrostructureManifest) -> datetime:
+    coverage_start = item.coverage_start
+    if coverage_start is not None:
+        return coverage_start
+    return datetime.combine(item.utc_date, time.min, tzinfo=UTC)
+
+
+def _archive_coverage_end(item: MicrostructureManifest) -> datetime:
+    coverage_end = item.coverage_end
+    if coverage_end is not None:
+        return coverage_end
+    return datetime.combine(item.utc_date, time.max, tzinfo=UTC)
+
+
+def _archive_coverage_overlaps(left: MicrostructureManifest, right: MicrostructureManifest) -> bool:
+    left_start = _archive_coverage_start(left)
+    right_start = _archive_coverage_start(right)
+    return left_start <= _archive_coverage_end(right) and right_start <= _archive_coverage_end(left)
 
 
 @dataclass

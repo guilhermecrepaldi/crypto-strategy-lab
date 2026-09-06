@@ -1,4 +1,5 @@
 from crypto_strategy_lab.microstructure.data import (
+    ArchiveCadence,
     ArchiveTrade,
     HistoryManifest,
     MicrostructureIntegrityError,
@@ -7,7 +8,9 @@ from crypto_strategy_lab.microstructure.data import (
     download_archive,
     iter_archive,
     manifest_for,
+    manifest_from_archive,
     parse_archive,
+    reconcile_history_manifest,
     slice_history_manifest,
     timestamp_unit_for_archive,
     validate_events,
@@ -15,6 +18,7 @@ from crypto_strategy_lab.microstructure.data import (
 from crypto_strategy_lab.microstructure.models import TradeEvent
 
 __all__ = [
+    "ArchiveCadence",
     "ArchiveTrade",
     "HistoryManifest",
     "MicrostructureIntegrityError",
@@ -24,7 +28,9 @@ __all__ = [
     "download_archive",
     "iter_archive",
     "manifest_for",
+    "manifest_from_archive",
     "parse_archive",
+    "reconcile_history_manifest",
     "slice_history_manifest",
     "timestamp_unit_for_archive",
     "validate_events",
