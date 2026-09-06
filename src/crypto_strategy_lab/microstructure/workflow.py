@@ -50,7 +50,7 @@ class S0FixtureArtifact(BaseModel):
 class LevelFrequencyAudit(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    schema_version: str = "fdusdusdc-level-frequency-v1"
+    schema_version: str = "microstructure-level-frequency-v1"
     run_id: str
     dataset: MicrostructureManifest
     lower: Decimal
@@ -105,11 +105,19 @@ def audit_trade_levels(
     kind: Literal["trades", "aggTrades"],
     source_url: str,
     period: str,
+    symbol: str = "USDCUSDT",
     lower: Decimal,
     upper: Decimal,
 ) -> LevelFrequencyAudit:
     events = parse_archive(archive, kind)
-    manifest = manifest_for(archive, events, origin=source_url, period=period)
+    manifest = manifest_for(
+        archive,
+        events,
+        origin=source_url,
+        period=period,
+        symbol=symbol,
+        kind=kind,
+    )
     lower_events = [event for event in events if event.price == lower]
     upper_events = [event for event in events if event.price == upper]
     low_high_durations = _transition_durations(events, start=lower, end=upper)

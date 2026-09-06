@@ -62,3 +62,27 @@ Informe quais modelos foram realmente usados; não alegue troca de modelo que n�
   comprovadamente afetado, corrija com teste e registre a decisão.
 - Resultados positivos, negativos, falhas e invalidações devem permanecer rastreáveis aos
   artifacts originais; destaque eventos somente por critérios explícitos e reproduzíveis.
+
+## Escopo científico ativo
+
+- A única campanha operacional e experimental desta linha de pesquisa é
+  `USDCUSDT_EXHAUSTIVE`, no par `USDCUSDT`.
+- `FDUSDUSDC` é exclusivamente `LEGACY_EVIDENCE` / `ARCHIVED_EXPERIMENT`: preserve seus
+  artifacts existentes, mas não baixe novos dados, não execute scanners ou backtests, não crie
+  modelos, não use como controle e não faça novas comparações com ele.
+- A estratégia ativa preserva uma banca, um lote, um LOW, um HIGH e um único ciclo serial. Não
+  introduza grid, múltiplos lotes, alavancagem, martingale, DCA, RL ou LLM por evento.
+
+## Aceleração GPU opcional
+
+- CPU é o backend canônico. GPU é somente acelerador opcional para scanners e cálculos em lote;
+  backend não cria novo `MODEL_ID` e nunca altera decisão científica.
+- Mantenha download, ZIP, parsing, SHA256, manifest, persistência, a state machine serial e a
+  contabilidade financeira exata na CPU, salvo benchmark específico que demonstre o contrário.
+- Use integer ticks para LOW/HIGH e preserve `Decimal`/fixed-point no ledger. Não permita que
+  float32 altere seleção, ciclos, eventos, fees, capital ou decisão de promoção.
+- CUDA só pode entrar na campanha após fixtures e amostras reais comprovarem
+  `CPU_RESULT == GPU_RESULT` e benchmark end-to-end, incluindo transferências, mostrar speedup
+  material (limiar inicial de 2x). Falha ou OOM deve cair explicitamente para CPU.
+- Não instalar Ollama, LLM local, driver, CUDA Toolkit global, firmware nem mudar BIOS, clock,
+  voltagem ou power limit. Dependências Python GPU devem ser opcionais e reproduzíveis.

@@ -1,0 +1,56 @@
+{
+  "audit_time_local": "2026-09-06T12:56:03-03:00",
+  "cpu_backend_canonical": true,
+  "cupy": {
+    "cuda_device_count": 1,
+    "cuda_driver_runtime": 13030,
+    "cuda_runtime": 13020,
+    "installed": true,
+    "status": "AVAILABLE_OPTIONAL_ACCELERATOR",
+    "version": "14.2.0"
+  },
+  "driver": {
+    "cuda_umd_version": "13.3",
+    "driver_version": "610.74",
+    "driver_version_windows": "32.0.16.1074",
+    "model": "WDDM"
+  },
+  "gpu": {
+    "compute_capability_reported_by_nvidia_smi": "12.0",
+    "display_active": true,
+    "free_vram_mib_query": 6610,
+    "memory_used_mib_snapshot": 1204,
+    "name": "NVIDIA GeForce RTX 5060",
+    "total_vram_mib": 8151,
+    "utilization_percent_snapshot": 3
+  },
+  "gpu_processes": "WINDOWS_GRAPHICS_PROCESSES_ONLY_AT_AUDIT; NO_PROJECT_COMPUTE_PROCESS",
+  "numba": {
+    "installed": false
+  },
+  "python": {
+    "executable": "D:\\projetos\\crypto change\\.venv\\Scripts\\python.exe",
+    "version": "3.12.13",
+    "virtual_environment": "D:\\projetos\\crypto change\\.venv"
+  },
+  "pytorch": {
+    "cuda_available": false,
+    "cuda_runtime": null,
+    "hip_runtime": null,
+    "installed": true,
+    "version": "2.13.0+cpu"
+  },
+  "restrictions": {
+    "bios_changes": false,
+    "driver_changes": false,
+    "global_cuda_toolkit_install": false,
+    "ollama_or_local_llm": false,
+    "overclock_or_power_changes": false
+  },
+  "rocm": {
+    "available": false
+  },
+  "selected_mode": "CPU_ORACLE_SPEEDUP_BELOW_2X_GATE",
+  "system_install_required": false,
+  "uv": "0.11.26"
+}

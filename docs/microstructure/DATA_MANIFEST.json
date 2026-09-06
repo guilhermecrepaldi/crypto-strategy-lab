@@ -1,5 +1,6 @@
 {
   "schema_version": "fdusdusdc-data-manifest-v1",
+  "status": "LEGACY_EVIDENCE_ARCHIVED_EXPERIMENT",
   "source": "BINANCE_PUBLIC_DATA_SPOT_DAILY_AGGTRADES",
   "retrieved_at_utc": "2026-09-06T00:00:00Z",
   "symbol": "FDUSDUSDC",

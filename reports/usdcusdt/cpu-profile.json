@@ -1,0 +1,35 @@
+{
+  "dataset": {
+    "archive": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2021-05-19.zip",
+    "archive_sha256": "55f5893789989867daf9b04d4410eaf0de7c9c4b4e1ab9f28282099beecf3ac6",
+    "events": 196022,
+    "kind": "trades",
+    "symbol": "USDCUSDT"
+  },
+  "measurements_seconds": {
+    "oracle_best_of_three": "0.1769211000064388",
+    "parse": "1.6981609000067692",
+    "tape_build": "0.5452136999811046",
+    "total_using_best_oracle": "2.4202954000143126"
+  },
+  "oracle": {
+    "candidate_combinations": 1476,
+    "candidate_combinations_per_second": "8342.701923181109",
+    "distances_ticks": [1, 2, 3, 4, 5, 10],
+    "events_per_second": "1107962.815022437"
+  },
+  "profile_conclusion": {
+    "first_gpu_candidate": "INTEGER_TICK_LOW_HIGH_ORACLE_REUSED_TAPE_SWEEPS",
+    "single_pass_oracle_share_fraction": "0.073099",
+    "single_pass_primary_hotspot": "CPU_ZIP_PARSE",
+    "tasks_kept_on_cpu": [
+      "DOWNLOAD",
+      "ZIP_PARSE",
+      "SHA256",
+      "MANIFEST",
+      "SERIAL_STATE_MACHINE",
+      "EXACT_FINANCIAL_LEDGER"
+    ]
+  },
+  "schema_version": "usdcusdt-cpu-profile-v1"
+}

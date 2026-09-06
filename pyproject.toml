@@ -18,6 +18,11 @@ dependencies = [
   "typer>=0.15,<1",
 ]
 
+[project.optional-dependencies]
+gpu = [
+  "cupy-cuda13x[ctk]>=14.2,<15",
+]
+
 [project.scripts]
 crypto-lab = "crypto_strategy_lab.cli:app"
 

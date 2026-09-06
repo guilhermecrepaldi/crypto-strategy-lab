@@ -1,0 +1,337 @@
+config,cycles,marked_return,open_position
+"{""distances"": [1], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",7773,1.164473727,True
+"{""distances"": [1], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",7773,1.164473727,True
+"{""distances"": [2], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",225,0.040286775,True
+"{""distances"": [2], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",225,0.040286775,True
+"{""distances"": [3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",43,0.009536333,True
+"{""distances"": [3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",43,0.009536333,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",7770,1.163827311,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",7759,1.162313478,True
+"{""distances"": [1], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",7014,1.006036791,True
+"{""distances"": [1], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",7014,1.006036791,True
+"{""distances"": [2], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",220,0.039143104,True
+"{""distances"": [2], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",220,0.039143104,True
+"{""distances"": [3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",39,0.008327496,True
+"{""distances"": [3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",39,0.008327496,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",7006,1.004439559,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",7006,1.004439559,True
+"{""distances"": [1], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",5609,0.743065759,True
+"{""distances"": [1], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",5609,0.743065759,True
+"{""distances"": [2], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",190,0.032913826,True
+"{""distances"": [2], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",190,0.032913826,True
+"{""distances"": [3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",30,0.005610125,True
+"{""distances"": [3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",30,0.005610125,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",5609,0.743065759,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",5609,0.743065759,True
+"{""distances"": [1], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",8601,1.356398096,True
+"{""distances"": [1], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",8601,1.356398096,True
+"{""distances"": [2], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",386,0.076534574,True
+"{""distances"": [2], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",386,0.076534574,True
+"{""distances"": [3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",15,0.001093912,True
+"{""distances"": [3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",15,0.001093912,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",8432,1.322482989,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",8360,1.307660305,True
+"{""distances"": [1], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",6577,0.92424866,True
+"{""distances"": [1], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",6577,0.92424866,True
+"{""distances"": [2], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",333,0.065188384,True
+"{""distances"": [2], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",333,0.065188384,True
+"{""distances"": [3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",15,0.001094521,True
+"{""distances"": [3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",15,0.001094521,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",6551,0.920016723,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",6471,0.906422587,True
+"{""distances"": [1], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",10206,1.773351573,True
+"{""distances"": [1], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",10206,1.773351573,True
+"{""distances"": [2], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",319,0.06275171,True
+"{""distances"": [2], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",319,0.06275171,True
+"{""distances"": [3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",23,0.006920439,False
+"{""distances"": [3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",23,0.006920439,False
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",8968,1.453779347,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 30, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",8891,1.437890689,True
+"{""distances"": [1], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",6424,0.89131241,True
+"{""distances"": [1], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",6424,0.89131241,True
+"{""distances"": [2], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",190,0.033039344,True
+"{""distances"": [2], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",190,0.033039344,True
+"{""distances"": [3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",82,0.023658102,True
+"{""distances"": [3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",82,0.023658102,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",6419,0.890371072,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",6419,0.890371186,True
+"{""distances"": [1], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",5518,0.727242,True
+"{""distances"": [1], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",5518,0.727242,True
+"{""distances"": [2], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",164,0.027583258,True
+"{""distances"": [2], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",164,0.027583258,True
+"{""distances"": [3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",73,0.020901744,True
+"{""distances"": [3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",73,0.020901744,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",5518,0.727242,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",5514,0.726726234,True
+"{""distances"": [1], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",4673,0.587238114,True
+"{""distances"": [1], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",4673,0.587238114,True
+"{""distances"": [2], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",301,0.059692856,True
+"{""distances"": [2], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",301,0.059692856,True
+"{""distances"": [3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",72,0.020596887,True
+"{""distances"": [3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",72,0.020596887,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",4673,0.587238114,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",6068,0.834548027,True
+"{""distances"": [1], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",6731,0.954376737,True
+"{""distances"": [1], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",6731,0.954376737,True
+"{""distances"": [2], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",275,0.054217602,True
+"{""distances"": [2], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",275,0.054217602,True
+"{""distances"": [3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",9,-0.00268983,True
+"{""distances"": [3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",9,-0.00268983,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",6731,0.954376737,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",6684,0.949305897,True
+"{""distances"": [1], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",6428,0.896055743,True
+"{""distances"": [1], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",6428,0.896055743,True
+"{""distances"": [2], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",323,0.064816244,True
+"{""distances"": [2], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",323,0.064816244,True
+"{""distances"": [3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",15,-0.00089472,True
+"{""distances"": [3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",15,-0.00089472,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",6428,0.896055743,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",6255,0.865001443,True
+"{""distances"": [1], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",9540,1.591460766,True
+"{""distances"": [1], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",9540,1.591460766,True
+"{""distances"": [2], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",401,0.081589002,True
+"{""distances"": [2], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",401,0.081589002,True
+"{""distances"": [3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",3,-0.004481574,True
+"{""distances"": [3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",3,-0.004481574,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",9489,1.578538017,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 60, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",9276,1.53249439,True
+"{""distances"": [1], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",6284,0.864896957,True
+"{""distances"": [1], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",6284,0.864896957,True
+"{""distances"": [2], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",197,0.03448162,True
+"{""distances"": [2], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",197,0.03448162,True
+"{""distances"": [3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",64,0.015915491,True
+"{""distances"": [3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",64,0.015915491,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",6284,0.864896957,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",6284,0.864896957,True
+"{""distances"": [1], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",7283,1.060927507,True
+"{""distances"": [1], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",7283,1.060927507,True
+"{""distances"": [2], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",176,0.030139211,True
+"{""distances"": [2], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",176,0.030139211,True
+"{""distances"": [3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",62,0.015306153,True
+"{""distances"": [3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",62,0.015306153,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",7283,1.060927507,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",7283,1.060927507,True
+"{""distances"": [1], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",7922,1.201576903,True
+"{""distances"": [1], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",7922,1.201576903,True
+"{""distances"": [2], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",343,0.06906222,True
+"{""distances"": [2], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",343,0.06906222,True
+"{""distances"": [3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",60,0.015817254,True
+"{""distances"": [3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",60,0.015817254,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",7847,1.187585079,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",7772,1.173199662,True
+"{""distances"": [1], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",7245,1.057361659,True
+"{""distances"": [1], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",7245,1.057361659,True
+"{""distances"": [2], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",293,0.058434104,True
+"{""distances"": [2], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",293,0.058434104,True
+"{""distances"": [3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",16,-0.00059412,True
+"{""distances"": [3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",16,-0.00059412,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",7242,1.056744646,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",7215,1.052432296,True
+"{""distances"": [1], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",8553,1.345212174,True
+"{""distances"": [1], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",8553,1.345212174,True
+"{""distances"": [2], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",264,0.051274654,True
+"{""distances"": [2], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",264,0.051274654,True
+"{""distances"": [3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",19,0.00030507,True
+"{""distances"": [3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",19,0.00030507,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",8448,1.322112734,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",8278,1.284768082,True
+"{""distances"": [1], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",8323,1.292571044,True
+"{""distances"": [1], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",8323,1.292571044,True
+"{""distances"": [2], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",264,0.05118175,True
+"{""distances"": [2], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",264,0.05118175,True
+"{""distances"": [3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",8,-0.002986824,True
+"{""distances"": [3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",8,-0.002986824,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",8209,1.268175149,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 120, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",7953,1.214990784,True
+"{""distances"": [1], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",6512,0.91190988,True
+"{""distances"": [1], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",6512,0.91190988,True
+"{""distances"": [2], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",431,0.088043328,True
+"{""distances"": [2], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",431,0.088043328,True
+"{""distances"": [3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",67,0.017336426,True
+"{""distances"": [3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",67,0.017336426,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",6512,0.91190988,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",6417,0.896727992,True
+"{""distances"": [1], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",6344,0.880036273,True
+"{""distances"": [1], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",6344,0.880036273,True
+"{""distances"": [2], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",412,0.083916684,True
+"{""distances"": [2], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",412,0.083916684,True
+"{""distances"": [3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",63,0.016116267,True
+"{""distances"": [3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",63,0.016116267,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",6344,0.880036273,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",6235,0.862514255,True
+"{""distances"": [1], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",5390,0.708941817,True
+"{""distances"": [1], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",5390,0.708941817,True
+"{""distances"": [2], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",339,0.068207754,True
+"{""distances"": [2], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",339,0.068207754,True
+"{""distances"": [3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",51,0.012469159,True
+"{""distances"": [3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",51,0.012469159,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",5390,0.708941817,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",5366,0.707575905,True
+"{""distances"": [1], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",5127,0.664542089,True
+"{""distances"": [1], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",5127,0.664542089,True
+"{""distances"": [2], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",306,0.061185738,True
+"{""distances"": [2], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",306,0.061185738,True
+"{""distances"": [3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",46,0.010955246,True
+"{""distances"": [3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",46,0.010955246,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",5127,0.664542089,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",5116,0.663544152,True
+"{""distances"": [1], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",6534,0.91602027,True
+"{""distances"": [1], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",6534,0.91602027,True
+"{""distances"": [2], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",127,0.020801372,True
+"{""distances"": [2], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",127,0.020801372,True
+"{""distances"": [3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",42,0.009738472,True
+"{""distances"": [3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",42,0.009738472,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",6534,0.91602027,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",6311,0.874467867,True
+"{""distances"": [1], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",8816,1.407618175,True
+"{""distances"": [1], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",8816,1.407618175,True
+"{""distances"": [2], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",114,0.018161888,True
+"{""distances"": [2], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",114,0.018161888,True
+"{""distances"": [3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",51,0.013279587,True
+"{""distances"": [3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",51,0.013279587,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",8816,1.407618175,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 240, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",8577,1.351634763,True
+"{""distances"": [1], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",5017,0.643963917,True
+"{""distances"": [1], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",5017,0.643963917,True
+"{""distances"": [2], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",425,0.086735686,True
+"{""distances"": [2], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",425,0.086735686,True
+"{""distances"": [3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",65,0.016727368,True
+"{""distances"": [3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",65,0.016727368,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",5017,0.643963917,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",6367,0.884464827,True
+"{""distances"": [1], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",4722,0.596182974,True
+"{""distances"": [1], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",4722,0.596182974,True
+"{""distances"": [2], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",405,0.0823974,True
+"{""distances"": [2], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",405,0.0823974,True
+"{""distances"": [3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",62,0.015812847,True
+"{""distances"": [3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",62,0.015812847,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",4722,0.596182974,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",4722,0.596182974,True
+"{""distances"": [1], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",7891,1.194505114,True
+"{""distances"": [1], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",7891,1.194505114,True
+"{""distances"": [2], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",322,0.0645803,True
+"{""distances"": [2], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",322,0.0645803,True
+"{""distances"": [3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",45,0.010646669,True
+"{""distances"": [3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",45,0.010646669,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",7891,1.194505114,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",7891,1.194505114,True
+"{""distances"": [1], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",5306,0.694327164,True
+"{""distances"": [1], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",5306,0.694327164,True
+"{""distances"": [2], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",314,0.062884008,True
+"{""distances"": [2], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",314,0.062884008,True
+"{""distances"": [3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",43,0.010042375,True
+"{""distances"": [3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",43,0.010042375,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",5306,0.694327164,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",5306,0.694327164,True
+"{""distances"": [1], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",4907,0.628994072,True
+"{""distances"": [1], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",4907,0.628994072,True
+"{""distances"": [2], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",146,0.02468778,True
+"{""distances"": [2], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",146,0.02468778,True
+"{""distances"": [3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",73,0.019984803,True
+"{""distances"": [3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",73,0.019984803,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",4907,0.628994072,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",4907,0.628994072,True
+"{""distances"": [1], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",4656,0.587743056,True
+"{""distances"": [1], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",4656,0.587743056,True
+"{""distances"": [2], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",88,0.012876986,True
+"{""distances"": [2], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",88,0.012876986,True
+"{""distances"": [3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",61,0.016323786,True
+"{""distances"": [3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",61,0.016323786,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",4656,0.587743056,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 360, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",4656,0.587743056,True
+"{""distances"": [1], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",7485,1.111390131,True
+"{""distances"": [1], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",7485,1.111390131,True
+"{""distances"": [2], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",420,0.085765639,True
+"{""distances"": [2], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",420,0.085765639,True
+"{""distances"": [3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",80,0.022433088,True
+"{""distances"": [3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",80,0.022433088,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",7485,1.111390131,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",7374,1.08932455,True
+"{""distances"": [1], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",7902,1.204606841,False
+"{""distances"": [1], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",7902,1.204606841,False
+"{""distances"": [2], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",388,0.078840979,True
+"{""distances"": [2], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",388,0.078840979,True
+"{""distances"": [3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",77,0.021513852,True
+"{""distances"": [3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",77,0.021513852,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",7891,1.202400915,False
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",7775,1.181347663,False
+"{""distances"": [1], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",6398,0.893399666,True
+"{""distances"": [1], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",6398,0.893399666,True
+"{""distances"": [2], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",330,0.066397355,True
+"{""distances"": [2], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",330,0.066397355,True
+"{""distances"": [3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",59,0.01601463,True
+"{""distances"": [3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",59,0.01601463,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",6398,0.893399666,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",6398,0.893399666,True
+"{""distances"": [1], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",5534,0.736567645,True
+"{""distances"": [1], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",5534,0.736567645,True
+"{""distances"": [2], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",311,0.062359819,True
+"{""distances"": [2], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",311,0.062359819,True
+"{""distances"": [3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",61,0.01662564,True
+"{""distances"": [3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",61,0.01662564,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",5534,0.736567645,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",5534,0.736567645,True
+"{""distances"": [1], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",4470,0.559470297,True
+"{""distances"": [1], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",4470,0.559470297,True
+"{""distances"": [2], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",156,0.026743254,True
+"{""distances"": [2], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",156,0.026743254,True
+"{""distances"": [3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",61,0.016727719,True
+"{""distances"": [3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",61,0.016727719,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",4470,0.559470297,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",4470,0.559470297,True
+"{""distances"": [1], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",4163,0.51233536,True
+"{""distances"": [1], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",4163,0.51233536,True
+"{""distances"": [2], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",100,0.015313116,True
+"{""distances"": [2], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",100,0.015313116,True
+"{""distances"": [3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",52,0.013988835,True
+"{""distances"": [3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",52,0.013988835,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",4163,0.51233536,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 720, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",4163,0.51233536,True
+"{""distances"": [1], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",7457,1.104597695,True
+"{""distances"": [1], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",7457,1.104597695,True
+"{""distances"": [2], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",396,0.080475912,True
+"{""distances"": [2], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",396,0.080475912,True
+"{""distances"": [3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",78,0.021823089,True
+"{""distances"": [3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",78,0.021823089,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY""}",7457,1.104597695,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 15, ""score"": ""FREQUENCY_MARGIN""}",7457,1.104597695,True
+"{""distances"": [1], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",6996,1.009714356,True
+"{""distances"": [1], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",6996,1.009714356,True
+"{""distances"": [2], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",379,0.076810614,True
+"{""distances"": [2], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",379,0.076810614,True
+"{""distances"": [3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",76,0.021210468,True
+"{""distances"": [3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",76,0.021210468,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY""}",6996,1.009714356,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 30, ""score"": ""FREQUENCY_MARGIN""}",6996,1.009714356,True
+"{""distances"": [1], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",6634,0.938231636,True
+"{""distances"": [1], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",6634,0.938231636,True
+"{""distances"": [2], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",330,0.066309068,True
+"{""distances"": [2], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",330,0.066309068,True
+"{""distances"": [3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",58,0.015710832,True
+"{""distances"": [3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",58,0.015710832,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY""}",6634,0.938231636,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 60, ""score"": ""FREQUENCY_MARGIN""}",6634,0.938231636,True
+"{""distances"": [1], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",8667,1.375506514,True
+"{""distances"": [1], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",8667,1.375506514,True
+"{""distances"": [2], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",290,0.057818864,True
+"{""distances"": [2], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",290,0.057818864,True
+"{""distances"": [3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",56,0.015101679,True
+"{""distances"": [3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",56,0.015101679,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY""}",8667,1.375506514,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 120, ""score"": ""FREQUENCY_MARGIN""}",8667,1.375506514,True
+"{""distances"": [1], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",5876,0.796765664,True
+"{""distances"": [1], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",5876,0.796765664,True
+"{""distances"": [2], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",158,0.027165268,True
+"{""distances"": [2], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",158,0.027165268,True
+"{""distances"": [3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",63,0.017234643,True
+"{""distances"": [3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",63,0.017234643,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY""}",5876,0.796765664,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 240, ""score"": ""FREQUENCY_MARGIN""}",5876,0.796765664,True
+"{""distances"": [1], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",7064,1.023566845,True
+"{""distances"": [1], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",7064,1.023566845,True
+"{""distances"": [2], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",109,0.017143204,True
+"{""distances"": [2], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",109,0.017143204,True
+"{""distances"": [3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",50,0.013278159,True
+"{""distances"": [3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",50,0.013278159,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY""}",7064,1.023566845,True
+"{""distances"": [1, 2, 3], ""lookback_minutes"": 1440, ""maker_rate_per_leg"": ""0"", ""operating_minutes"": 360, ""score"": ""FREQUENCY_MARGIN""}",7064,1.023566845,True

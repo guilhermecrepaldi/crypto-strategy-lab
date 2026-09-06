@@ -1,0 +1,151 @@
+{
+  "archives": [
+    {
+      "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2021-05-19.zip",
+      "sha256": "55f5893789989867daf9b04d4410eaf0de7c9c4b4e1ab9f28282099beecf3ac6"
+    },
+    {
+      "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2021-05-20.zip",
+      "sha256": "5bbccb16fa7223fb871ff9a256c82f8bd4062c59fde4a48b26bf42dd6fa0a6b4"
+    },
+    {
+      "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2021-05-21.zip",
+      "sha256": "f36fa642739d7f72f725225b0fb0dba245ae710ab21ded061454b9136bd618c9"
+    }
+  ],
+  "cpu_gpu_equivalence": "PASS",
+  "distances_ticks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    10
+  ],
+  "next_gpu_workload": "DEFERRED_PENDING_CONCRETE_PROFILED_HOTSPOT",
+  "oracle_gate": "FAIL",
+  "schema_version": "usdcusdt-gpu-benchmark-v2",
+  "selected_mode": "CPU",
+  "speedup_acceptance_threshold": 2.0,
+  "tick_size": "0.00001",
+  "warmup_match": true,
+  "warmup_seconds": 0.5334836000110954,
+  "workloads": {
+    "FULL_HISTORICAL_DAY": {
+      "candidates": 1914,
+      "cpu_best_seconds": 0.07294230000115931,
+      "cpu_result_hash": "c17d9b678716caa23c3d4ea58937fc274160f7ed63fdf3d4f423be81e85059af",
+      "cpu_seconds": [
+        0.0857753999880515,
+        0.07294230000115931,
+        0.07522249998874031
+      ],
+      "events": 196022,
+      "gpu_best_seconds": 0.04339760000584647,
+      "gpu_profile_best": {
+        "allocation_seconds": 2.8700014809146523e-05,
+        "device_to_host_seconds": 0.00019150000298395753,
+        "host_to_device_seconds": 0.0008676000288687646,
+        "kernel_seconds": 0.014857100002700463,
+        "peak_vram_bytes": 1071104,
+        "total_seconds": 0.04334999999264255
+      },
+      "gpu_result_hash": "c17d9b678716caa23c3d4ea58937fc274160f7ed63fdf3d4f423be81e85059af",
+      "gpu_seconds": [
+        0.06397039999137633,
+        0.04529109998838976,
+        0.04339760000584647
+      ],
+      "result_match": true,
+      "selected_backend": "CPU",
+      "speedup": 1.6807911034557812
+    },
+    "MULTI_DAY_SAMPLE": {
+      "candidates": 1920,
+      "cpu_best_seconds": 0.146081500017317,
+      "cpu_result_hash": "cb70f1ed527e29ee0025290a02a065743b50f278399952f572b30cdb440a53f9",
+      "cpu_seconds": [
+        0.146081500017317,
+        0.15211229998385534,
+        0.1501014999812469
+      ],
+      "events": 426197,
+      "gpu_best_seconds": 0.10978679999243468,
+      "gpu_profile_best": {
+        "allocation_seconds": 5.829994915984571e-05,
+        "device_to_host_seconds": 0.0005296000163070858,
+        "host_to_device_seconds": 0.0013405000208877027,
+        "kernel_seconds": 0.06384810002055019,
+        "peak_vram_bytes": 2187776,
+        "total_seconds": 0.10962730000028387
+      },
+      "gpu_result_hash": "cb70f1ed527e29ee0025290a02a065743b50f278399952f572b30cdb440a53f9",
+      "gpu_seconds": [
+        0.1110913000011351,
+        0.11076929999398999,
+        0.10978679999243468
+      ],
+      "result_match": true,
+      "selected_backend": "CPU",
+      "speedup": 1.330592566933214
+    },
+    "SMALL_HISTORICAL_10000": {
+      "candidates": 48,
+      "cpu_best_seconds": 0.003068999998504296,
+      "cpu_result_hash": "f56726761eab6eb6c9c49f6ce35b02b6f1f951825c75d8321f7bce5ceb4a2c8d",
+      "cpu_seconds": [
+        0.003138699976261705,
+        0.003068999998504296,
+        0.00312619999749586
+      ],
+      "events": 10000,
+      "gpu_best_seconds": 0.0020790999988093972,
+      "gpu_profile_best": {
+        "allocation_seconds": 1.7400016076862812e-05,
+        "device_to_host_seconds": 8.190001244656742e-05,
+        "host_to_device_seconds": 0.00020970002515241504,
+        "kernel_seconds": 0.0007952999731060117,
+        "peak_vram_bytes": 52736,
+        "total_seconds": 0.002069299982395023
+      },
+      "gpu_result_hash": "f56726761eab6eb6c9c49f6ce35b02b6f1f951825c75d8321f7bce5ceb4a2c8d",
+      "gpu_seconds": [
+        0.002189499995438382,
+        0.002120599994668737,
+        0.0020790999988093972
+      ],
+      "result_match": true,
+      "selected_backend": "CPU",
+      "speedup": 1.4761194748986426
+    },
+    "TINY_SYNTHETIC": {
+      "candidates": 18,
+      "cpu_best_seconds": 8.590001380071044e-05,
+      "cpu_result_hash": "0777ae9f38196ba504a860d2e94c9126819d616ed932bbf832f5cd1381a3138b",
+      "cpu_seconds": [
+        0.00015619999612681568,
+        9.830002090893686e-05,
+        8.590001380071044e-05
+      ],
+      "events": 4,
+      "gpu_best_seconds": 0.0005459999956656247,
+      "gpu_profile_best": {
+        "allocation_seconds": 1.610000617802143e-05,
+        "device_to_host_seconds": 9.930002852343023e-05,
+        "host_to_device_seconds": 0.00018339999951422215,
+        "kernel_seconds": 5.2499992307275534e-05,
+        "peak_vram_bytes": 2560,
+        "total_seconds": 0.0005378999921958894
+      },
+      "gpu_result_hash": "0777ae9f38196ba504a860d2e94c9126819d616ed932bbf832f5cd1381a3138b",
+      "gpu_seconds": [
+        0.0007837000011932105,
+        0.0005593000096268952,
+        0.0005459999956656247
+      ],
+      "result_match": true,
+      "selected_backend": "CPU",
+      "speedup": 0.1573260338509533
+    }
+  }
+}

@@ -1,4 +1,8 @@
-# Stablecoin market research
+# LEGACY — stablecoin market research
+
+Status: `LEGACY_EVIDENCE`. This document records how the hypothesis moved from FDUSDUSDC to
+USDCUSDT. Any FDUSD comparison or recommendation below is historical context, not an active
+experiment or instruction to perform new FDUSD work.
 
 Consulta realizada em **2026-09-06**. Este documento é uma investigação anterior a qualquer
 adaptação. Ele não muda `S0_FROZEN_LEVELS-v1`, não cria estratégia, não troca o par e não afirma

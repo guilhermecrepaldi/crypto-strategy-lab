@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+from datetime import date as Date
 from datetime import timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -43,7 +44,36 @@ from crypto_strategy_lab.data.history_reporting import (
 )
 from crypto_strategy_lab.db.persistence import persist_download_manifest, persist_result
 from crypto_strategy_lab.fixtures import load_fixture
-from crypto_strategy_lab.microstructure.data import download_archive, manifest_for, parse_archive
+from crypto_strategy_lab.microstructure.adaptive import (
+    run_adaptive_campaign,
+    write_adaptive_reports,
+)
+from crypto_strategy_lab.microstructure.campaign import register_first_block
+from crypto_strategy_lab.microstructure.data import (
+    HistoryManifest,
+    download_archive,
+    download_history_range,
+    iter_archive,
+    manifest_for,
+    parse_archive,
+    slice_history_manifest,
+    verify_history_manifest,
+)
+from crypto_strategy_lab.microstructure.level_scanner import (
+    scan_campaign,
+    write_scanner_reports,
+)
+from crypto_strategy_lab.microstructure.price_path import load_price_history, run_campaign
+from crypto_strategy_lab.microstructure.price_profile import (
+    build_price_profiles,
+    write_price_profile_reports,
+)
+from crypto_strategy_lab.microstructure.reporting import (
+    write_backtest_reports,
+)
+from crypto_strategy_lab.microstructure.reporting import (
+    write_history_audit as write_microstructure_history_audit,
+)
 from crypto_strategy_lab.microstructure.workflow import (
     audit_trade_levels,
     run_s0_fixture,
@@ -64,6 +94,35 @@ from crypto_strategy_lab.simulation.engine import SimulationConfig, SimulationEn
 from crypto_strategy_lab.simulation.portfolio import ExecutionCosts
 
 app = typer.Typer(no_args_is_help=True, help="Offline historical crypto strategy lab")
+
+DEFAULT_MICROSTRUCTURE_SYMBOL = "USDCUSDT"
+DEFAULT_MICROSTRUCTURE_KIND: Literal["trades", "aggTrades"] = "trades"
+DEFAULT_MICROSTRUCTURE_MANIFEST = Path(
+    f"data/manifests/{DEFAULT_MICROSTRUCTURE_SYMBOL.lower()}-{DEFAULT_MICROSTRUCTURE_KIND}-history.json"
+)
+
+
+def _microstructure_manifest_path(
+    symbol: str = DEFAULT_MICROSTRUCTURE_SYMBOL,
+    kind: Literal["trades", "aggTrades"] = DEFAULT_MICROSTRUCTURE_KIND,
+) -> Path:
+    return Path("data/manifests") / f"{symbol.strip().lower()}-{kind}-history.json"
+
+
+def _microstructure_audit_path(symbol: str, kind: Literal["trades", "aggTrades"]) -> Path:
+    return Path("docs/microstructure") / (
+        f"{symbol.strip().lower()}-{kind}-historical-data-audit.md"
+    )
+
+
+def _require_active_microstructure_symbol(symbol: str) -> str:
+    normalized = symbol.strip().upper()
+    if normalized != DEFAULT_MICROSTRUCTURE_SYMBOL:
+        raise typer.BadParameter(
+            f"the active campaign accepts only {DEFAULT_MICROSTRUCTURE_SYMBOL}; "
+            "legacy pairs are archived"
+        )
+    return normalized
 
 
 def _symbols(value: str) -> list[str]:
@@ -527,28 +586,241 @@ def controlled_evaluate(
     )
 
 
+@app.command("microstructure-register-models")
+def microstructure_register_models(
+    artifact_root: Annotated[Path, typer.Option()] = Path("artifacts"),
+    report_root: Annotated[Path, typer.Option()] = Path("reports"),
+) -> None:
+    """Idempotently preregister the frozen USDCUSDT M001-M004 block."""
+    registrations = register_first_block(
+        artifact_root=artifact_root,
+        report_root=report_root,
+    )
+    typer.echo(
+        "Registered: " + ", ".join(f"{item.model_id}={item.model_hash}" for item in registrations)
+    )
+
+
 @app.command("microstructure-download")
 def microstructure_download(
-    date: Annotated[str, typer.Option(help="UTC day as YYYY-MM-DD")],
-    kind: Annotated[Literal["trades", "aggTrades"], typer.Option()] = "aggTrades",
-    symbol: Annotated[str, typer.Option()] = "FDUSDUSDC",
+    date: Annotated[str | None, typer.Option(help="One UTC day as YYYY-MM-DD")] = None,
+    start: Annotated[str | None, typer.Option(help="Inclusive UTC start date")] = None,
+    end: Annotated[str | None, typer.Option(help="Inclusive UTC end date")] = None,
+    all_available: Annotated[
+        bool, typer.Option("--all-available", help="Download every official daily archive")
+    ] = False,
+    kind: Annotated[Literal["trades", "aggTrades"], typer.Option()] = DEFAULT_MICROSTRUCTURE_KIND,
+    symbol: Annotated[str, typer.Option()] = DEFAULT_MICROSTRUCTURE_SYMBOL,
     destination: Annotated[Path, typer.Option()] = Path("data/raw/binance-microstructure"),
     manifest_output: Annotated[Path | None, typer.Option()] = None,
+    max_workers: Annotated[int, typer.Option(min=1, max=32)] = 8,
 ) -> None:
-    """Download and checksum one public, historical Binance Spot trade archive."""
-    normalized = symbol.upper()
-    filename = f"{normalized}-{kind}-{date}.zip"
+    """Download verified public Binance Spot trade archives, idempotently."""
+    normalized = _require_active_microstructure_symbol(symbol)
+    if date is None or start is not None or end is not None or all_available:
+        if date is not None:
+            raise typer.BadParameter("--date cannot be combined with range options")
+        if not all_available and (start is None or end is None):
+            raise typer.BadParameter("provide --start and --end, or --all-available")
+        try:
+            start_date = Date.fromisoformat(start) if start else None
+            end_date = Date.fromisoformat(end) if end else None
+        except ValueError as error:
+            raise typer.BadParameter("dates must use YYYY-MM-DD") from error
+        history = download_history_range(
+            normalized,
+            destination / normalized / kind,
+            start=start_date,
+            end=end_date,
+            all_available=all_available,
+            kind=kind,
+            max_workers=max_workers,
+        )
+        output = manifest_output or _microstructure_manifest_path(normalized, kind)
+        write_artifact(history, output)
+        audit_path = write_microstructure_history_audit(
+            history, _microstructure_audit_path(normalized, kind)
+        )
+        typer.echo(
+            f"Archives: {len(history.archives)}; records={history.total_records}; "
+            f"integrity={history.integrity_status}"
+        )
+        typer.echo(f"Coverage: {history.first_timestamp} -> {history.last_timestamp}")
+        typer.echo(f"Manifest: {output} ({history.dataset_hash})")
+        typer.echo(f"Audit: {audit_path}")
+        return
+    try:
+        single_date = Date.fromisoformat(date)
+    except ValueError as error:
+        raise typer.BadParameter("date must use YYYY-MM-DD") from error
+    filename = f"{normalized}-{kind}-{single_date.isoformat()}.zip"
     source_url = f"https://data.binance.vision/data/spot/daily/{kind}/{normalized}/{filename}"
     target = destination / normalized / kind / filename
     downloaded = download_archive(source_url, target)
     events = parse_archive(downloaded, kind)
-    manifest = manifest_for(downloaded, events, origin=source_url, period=date)
+    manifest = manifest_for(
+        downloaded,
+        events,
+        origin=source_url,
+        period=single_date.isoformat(),
+        symbol=normalized,
+        kind=kind,
+    )
     output = manifest_output or downloaded.with_suffix(".manifest.json")
     write_artifact(manifest, output)
     typer.echo(f"Archive: {downloaded}")
     typer.echo(f"SHA256: {manifest.sha256}")
     typer.echo(f"Records: {manifest.record_count}")
     typer.echo(f"Manifest: {output}")
+
+
+@app.command("microstructure-history-verify")
+def microstructure_history_verify(
+    manifest: Annotated[Path, typer.Option(exists=True)] = DEFAULT_MICROSTRUCTURE_MANIFEST,
+) -> None:
+    """Strictly re-verify a consolidated trade history fully offline."""
+    parsed = HistoryManifest.model_validate_json(manifest.read_text(encoding="utf-8"))
+    verify_history_manifest(parsed)
+    typer.echo(
+        f"Verified offline: {len(parsed.archives)} archives, {parsed.total_records} records, "
+        f"dataset={parsed.dataset_hash}"
+    )
+
+
+@app.command("microstructure-history-slice")
+def microstructure_history_slice(
+    manifest: Annotated[Path, typer.Option(exists=True)] = DEFAULT_MICROSTRUCTURE_MANIFEST,
+    start: Annotated[str, typer.Option(help="Inclusive UTC start date")] = "2025-12-31",
+    end: Annotated[str, typer.Option(help="Inclusive UTC end date")] = "2026-09-05",
+    output: Annotated[Path, typer.Option()] = Path(
+        "data/manifests/usdcusdt-trades-development-2026.json"
+    ),
+) -> None:
+    """Create an offline sub-manifest without redownloading or inventing missing dates."""
+    parsed = HistoryManifest.model_validate_json(manifest.read_text(encoding="utf-8"))
+    _require_active_microstructure_symbol(parsed.symbol)
+    try:
+        start_date = Date.fromisoformat(start)
+        end_date = Date.fromisoformat(end)
+    except ValueError as error:
+        raise typer.BadParameter("dates must use YYYY-MM-DD") from error
+    subset = slice_history_manifest(parsed, start=start_date, end=end_date)
+    write_artifact(subset, output)
+    typer.echo(
+        f"Slice: {subset.requested_start} -> {subset.requested_end}; "
+        f"integrity={subset.integrity_status}; dataset={subset.dataset_hash}"
+    )
+    typer.echo(f"Manifest: {output}")
+
+
+@app.command("microstructure-price-profile")
+def microstructure_price_profile(
+    manifest: Annotated[Path, typer.Option(exists=True)] = DEFAULT_MICROSTRUCTURE_MANIFEST,
+    output_dir: Annotated[Path, typer.Option()] = Path("reports/usdcusdt"),
+) -> None:
+    """Build exact daily-to-historical price profiles from a valid local manifest."""
+    parsed = HistoryManifest.model_validate_json(manifest.read_text(encoding="utf-8"))
+    _require_active_microstructure_symbol(parsed.symbol)
+    verify_history_manifest(parsed)
+    events = (
+        event
+        for archive in parsed.archives
+        for event in iter_archive(Path(archive.local_path), parsed.kind)
+    )
+    rows, summaries = build_price_profiles(
+        events,
+        symbol=parsed.symbol,
+        source_kind=parsed.kind,
+    )
+    paths = write_price_profile_reports(rows, summaries, output_dir)
+    typer.echo(f"Price profile rows: {len(rows)}")
+    typer.echo(f"Period summaries: {len(summaries)}")
+    typer.echo(f"Profiles: {paths['profiles']}")
+    typer.echo(f"Summaries: {paths['summaries_json']}")
+
+
+@app.command("microstructure-backtest")
+def microstructure_backtest(
+    manifest: Annotated[Path, typer.Option(exists=True)] = DEFAULT_MICROSTRUCTURE_MANIFEST,
+    output_dir: Annotated[Path, typer.Option()] = Path("reports/microstructure"),
+    lower: Annotated[str, typer.Option()] = "0.9988",
+    upper: Annotated[str, typer.Option()] = "0.9989",
+    step_size: Annotated[str, typer.Option()] = "0.01",
+    min_quantity: Annotated[str, typer.Option()] = "0.01",
+    min_notional: Annotated[str, typer.Option()] = "5",
+) -> None:
+    """Run the frozen continuous price-path backtest; this does not claim fills."""
+    parsed = HistoryManifest.model_validate_json(manifest.read_text(encoding="utf-8"))
+    _require_active_microstructure_symbol(parsed.symbol)
+    verify_history_manifest(parsed)
+    archives = [Path(item.local_path) for item in parsed.archives]
+    low, high = Decimal(lower), Decimal(upper)
+    history, total = load_price_history(
+        archives,
+        kind=parsed.kind,
+        lower=low,
+        upper=high,
+    )
+    campaign = run_campaign(
+        history,
+        dataset_hash=parsed.dataset_hash,
+        archive_count=len(parsed.archives),
+        total_records=total,
+        lower=low,
+        upper=high,
+        step_size=Decimal(step_size),
+        min_quantity=Decimal(min_quantity),
+        min_notional=Decimal(min_notional),
+    )
+    outputs = write_backtest_reports(campaign, output_dir)
+    typer.echo(f"Run ID: {campaign.run_id}")
+    typer.echo(f"Classification: {campaign.backtest_classification}")
+    typer.echo("Execution evidence: INCONCLUSIVE (bulk trades contain no queue position)")
+    typer.echo(f"Summary: {outputs['summary']}")
+    typer.echo(f"HTML: {outputs['html']}")
+
+
+@app.command("microstructure-level-scan")
+def microstructure_level_scan(
+    manifest: Annotated[Path, typer.Option(exists=True)] = DEFAULT_MICROSTRUCTURE_MANIFEST,
+    output_dir: Annotated[Path, typer.Option()] = Path("reports/microstructure"),
+) -> None:
+    """Run the preregistered daily ORACLE and causal selector campaign offline."""
+    parsed = HistoryManifest.model_validate_json(manifest.read_text(encoding="utf-8"))
+    _require_active_microstructure_symbol(parsed.symbol)
+    if parsed.integrity_status != "VALID":
+        raise typer.BadParameter("history manifest must be VALID; run history verification first")
+    payload = scan_campaign(parsed)
+    outputs = write_scanner_reports(payload, output_dir)
+    typer.echo(f"Run ID: {payload['run_id']}")
+    typer.echo(f"ORACLE_PATTERN: {payload['oracle_pattern']}")
+    typer.echo(f"CAUSAL_SELECTOR: {payload['causal_selector']}")
+    typer.echo("EXECUTION: INCONCLUSIVE")
+    typer.echo(f"Summary: {outputs['summary']}")
+    typer.echo(f"HTML: {outputs['html']}")
+
+
+@app.command("microstructure-adaptive-scan")
+def microstructure_adaptive_scan(
+    manifest: Annotated[Path, typer.Option(exists=True)] = DEFAULT_MICROSTRUCTURE_MANIFEST,
+    scanner_report: Annotated[Path, typer.Option(exists=True)] = Path(
+        "reports/microstructure/daily-level-scanner.json"
+    ),
+    output_dir: Annotated[Path, typer.Option()] = Path("reports/microstructure"),
+) -> None:
+    """Evaluate STATIC, ALWAYS_BEST and preregistered IDLE_TRIGGERED offline."""
+    parsed = HistoryManifest.model_validate_json(manifest.read_text(encoding="utf-8"))
+    _require_active_microstructure_symbol(parsed.symbol)
+    scanner = json.loads(scanner_report.read_text(encoding="utf-8"))
+    if parsed.integrity_status != "VALID" or scanner.get("dataset_hash") != parsed.dataset_hash:
+        raise typer.BadParameter("scanner and VALID history manifest must share one dataset hash")
+    payload = run_adaptive_campaign(parsed, scanner)
+    outputs = write_adaptive_reports(payload, output_dir)
+    typer.echo(f"Run ID: {payload['run_id']}")
+    typer.echo(f"ADAPTIVE_PATTERN: {payload['adaptive_pattern']}")
+    typer.echo(f"ANTI_THRASHING: {payload['anti_thrashing']}")
+    typer.echo("EXECUTION: INCONCLUSIVE")
+    typer.echo(f"Summary: {outputs['summary']}")
 
 
 @app.command("microstructure-s0-fixture")
@@ -569,14 +841,17 @@ def microstructure_s0_fixture(
 def microstructure_frequency_audit(
     archive: Annotated[Path, typer.Option(exists=True)],
     date: Annotated[str, typer.Option(help="UTC day represented by the archive")],
-    kind: Annotated[Literal["trades", "aggTrades"], typer.Option()] = "aggTrades",
-    symbol: Annotated[str, typer.Option()] = "FDUSDUSDC",
+    kind: Annotated[Literal["trades", "aggTrades"], typer.Option()] = DEFAULT_MICROSTRUCTURE_KIND,
+    symbol: Annotated[str, typer.Option()] = DEFAULT_MICROSTRUCTURE_SYMBOL,
     lower: Annotated[str, typer.Option()] = "0.9988",
     upper: Annotated[str, typer.Option()] = "0.9989",
-    output: Annotated[Path, typer.Option()] = Path("reports/runs/fdusdusdc-level-frequency.json"),
+    output: Annotated[Path | None, typer.Option()] = None,
 ) -> None:
     """Measure level recurrence without mislabeling observed price paths as fills."""
-    normalized = symbol.upper()
+    normalized = _require_active_microstructure_symbol(symbol)
+    output_path = output or Path("reports/runs") / (
+        f"{normalized.lower()}-{kind}-level-frequency.json"
+    )
     filename = f"{normalized}-{kind}-{date}.zip"
     source_url = f"https://data.binance.vision/data/spot/daily/{kind}/{normalized}/{filename}"
     audit = audit_trade_levels(
@@ -584,15 +859,16 @@ def microstructure_frequency_audit(
         kind=kind,
         source_url=source_url,
         period=date,
+        symbol=normalized,
         lower=Decimal(lower),
         upper=Decimal(upper),
     )
-    write_artifact(audit, output)
+    write_artifact(audit, output_path)
     typer.echo(f"Run ID: {audit.run_id}")
     typer.echo(f"Observed lower->upper paths: {audit.completed_observed_paths}")
     typer.echo("Observed paths are fills: NO")
     typer.echo(f"Realistic queue: {audit.realistic_queue_status}")
-    typer.echo(f"Output: {output}")
+    typer.echo(f"Output: {output_path}")
 
 
 @app.command("rl-train")

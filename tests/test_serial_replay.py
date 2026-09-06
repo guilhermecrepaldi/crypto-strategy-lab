@@ -1,0 +1,413 @@
+import zipfile
+from datetime import UTC, datetime, timedelta
+from decimal import Decimal
+from pathlib import Path
+
+import pytest
+
+from crypto_strategy_lab.microstructure.data import (
+    HistoryManifest,
+    manifest_for,
+    parse_archive,
+)
+from crypto_strategy_lab.microstructure.serial_replay import (
+    SerialModelConfig,
+    SerialScenarioConfig,
+    SerialStrategy,
+    SerialTape,
+    load_serial_tape,
+    preregistered_first_block,
+    replay_serial_model,
+    scan_oracle_cpu,
+    symmetric_break_even_fee,
+)
+
+START = datetime(2026, 1, 1, tzinfo=UTC)
+TICK = Decimal("0.0001")
+
+
+def _config(**changes: object) -> SerialModelConfig:
+    values: dict[str, object] = {
+        "model_id": "M001",
+        "parent_model_id": None,
+        "strategy": SerialStrategy.STATIC,
+        "lookback_minutes": 10,
+    }
+    values.update(changes)
+    return SerialModelConfig.model_validate(values)
+
+
+def _scenario(**changes: object) -> SerialScenarioConfig:
+    values: dict[str, object] = {
+        "tick_size": TICK,
+        "quantity_step": Decimal("0.01"),
+    }
+    values.update(changes)
+    return SerialScenarioConfig.model_validate(values)
+
+
+def _tape(items: list[tuple[int, str]]) -> SerialTape:
+    return SerialTape.from_events(
+        [(START + timedelta(seconds=offset), Decimal(price)) for offset, price in items],
+        tick_size=TICK,
+    )
+
+
+def test_first_block_is_frozen_and_model_hash_excludes_human_identity() -> None:
+    models = preregistered_first_block()
+
+    assert [item.model_id for item in models] == ["M001", "M002", "M003", "M004"]
+    assert models[0].strategy == SerialStrategy.STATIC
+    assert models[3].idle_threshold_minutes == 30
+    assert models[3].confirmation_checks == 5
+    assert models[3].switch_advantage == Decimal("0.10")
+    assert models[3].cooldown_minutes == 60
+    duplicate_identity = models[0].model_copy(update={"model_id": "M999"})
+    assert duplicate_identity.model_hash == models[0].model_hash
+    assert _scenario().scenario_hash != _scenario(maker_fee_per_leg=Decimal("0.0001")).scenario_hash
+
+
+def test_serial_cycle_uses_one_lot_and_never_reuses_one_event() -> None:
+    tape = _tape(
+        [
+            (-120, "0.9998"),
+            (-110, "0.9999"),
+            (-100, "0.9998"),
+            (-90, "0.9999"),
+            (1, "0.9998"),
+            (2, "0.9998"),
+            (3, "0.9999"),
+            (4, "0.9999"),
+            (5, "0.9998"),
+            (6, "0.9999"),
+            (3_600, "1.0000"),
+        ]
+    )
+
+    result = replay_serial_model(
+        tape,
+        _config(),
+        _scenario(),
+        start=START,
+        end_exclusive=START + timedelta(minutes=59),
+    )
+
+    assert result.completed_cycles == 2
+    assert result.cycles[0].entry_timestamp == START + timedelta(seconds=1)
+    assert result.cycles[0].exit_timestamp == START + timedelta(seconds=3)
+    assert result.cycles[1].entry_timestamp == START + timedelta(seconds=5)
+    assert result.final_inventory == 0
+    assert result.final_marked_equity > Decimal("100")
+    assert result.execution_class == "PRICE_PATH_NOT_FILL_EVIDENCE"
+    assert result.capacity_capped_final_capital is None
+
+
+def test_open_cycle_is_carried_and_marked_without_time_stop() -> None:
+    tape = _tape(
+        [
+            (-120, "0.9998"),
+            (-110, "0.9999"),
+            (1, "0.9998"),
+            (3_500, "0.9997"),
+            (3_600, "0.9997"),
+        ]
+    )
+
+    result = replay_serial_model(
+        tape,
+        _config(),
+        _scenario(),
+        start=START,
+        end_exclusive=START + timedelta(minutes=59),
+    )
+
+    assert result.completed_cycles == 0
+    assert result.open_cycle_censored is True
+    assert result.open_holding_seconds == Decimal("3539.0")
+    assert result.final_inventory > 0
+    assert result.unrealized_profit < 0
+
+
+def test_selector_never_uses_boundary_or_future_events() -> None:
+    tape = _tape(
+        [
+            (-120, "0.9998"),
+            (-110, "0.9999"),
+            (0, "1.0000"),
+            (1, "1.0001"),
+            (30, "0.9998"),
+        ]
+    )
+
+    result = replay_serial_model(
+        tape,
+        _config(),
+        _scenario(),
+        start=START,
+        end_exclusive=START + timedelta(seconds=20),
+    )
+
+    assert result.active_low == Decimal("0.9998")
+    assert result.completed_cycles == 0
+
+
+def test_same_timestamp_distinct_events_can_complete_but_one_event_cannot() -> None:
+    timestamp = START - timedelta(seconds=30)
+    tape = SerialTape.from_events(
+        [
+            (START - timedelta(minutes=2), Decimal("0.9998")),
+            (START - timedelta(minutes=2) + timedelta(seconds=1), Decimal("0.9999")),
+            (timestamp, Decimal("1.0000")),
+            (timestamp, Decimal("1.0001")),
+            (START + timedelta(seconds=1), Decimal("0.9998")),
+            (START + timedelta(seconds=1), Decimal("0.9999")),
+            (START + timedelta(minutes=1), Decimal("1.0000")),
+        ],
+        tick_size=TICK,
+    )
+
+    result = replay_serial_model(
+        tape,
+        _config(),
+        _scenario(),
+        start=START,
+        end_exclusive=START + timedelta(seconds=30),
+    )
+
+    assert result.completed_cycles == 1
+    assert result.cycles[0].entry_event < result.cycles[0].exit_event
+    assert result.cycles[0].entry_timestamp == result.cycles[0].exit_timestamp
+
+
+def test_fee_accounting_and_break_even_are_exact() -> None:
+    low = Decimal("0.9998")
+    high = Decimal("0.9999")
+    break_even = symmetric_break_even_fee(low, high)
+
+    assert abs(high * (1 - break_even) - low * (1 + break_even)) < Decimal("1e-27")
+    with pytest.raises(ValueError):
+        symmetric_break_even_fee(high, low)
+
+
+def test_terminal_mark_excludes_future_prices() -> None:
+    tape = _tape(
+        [
+            (-120, "0.9998"),
+            (-110, "0.9999"),
+            (1, "0.9998"),
+            (20, "0.9997"),
+            (30, "1.0001"),
+        ]
+    )
+
+    result = replay_serial_model(
+        tape,
+        _config(),
+        _scenario(),
+        start=START,
+        end_exclusive=START + timedelta(seconds=21),
+    )
+
+    assert result.last_price == Decimal("0.9997")
+    assert result.daily_cycles == {START.date(): 0}
+
+
+def test_replay_rejects_missing_physical_cutoff() -> None:
+    tape = _tape([(-120, "0.9998"), (-110, "0.9999"), (10, "1.0000")])
+
+    with pytest.raises(ValueError, match="physical event tape"):
+        replay_serial_model(
+            tape,
+            _config(),
+            _scenario(),
+            start=START,
+            end_exclusive=START + timedelta(days=1),
+        )
+
+
+def test_oracle_resets_flat_at_window_boundary_and_returns_exact_event_indexes() -> None:
+    tape = _tape(
+        [
+            (-10, "0.9998"),
+            (1, "0.9999"),
+            (2, "0.9998"),
+            (3, "0.9999"),
+            (4, "0.9998"),
+            (5, "0.9999"),
+            (20, "1.0000"),
+        ]
+    )
+
+    results = scan_oracle_cpu(
+        tape,
+        distances=(1,),
+        start=START,
+        end_exclusive=START + timedelta(seconds=10),
+    )
+    candidate = next(item for item in results if item.low_tick == 9_998)
+
+    assert candidate.cycles == 2
+    assert len(candidate.entry_events) == len(candidate.exit_events) == 2
+    assert all(
+        entry < exit_event
+        for entry, exit_event in zip(candidate.entry_events, candidate.exit_events, strict=True)
+    )
+
+
+def test_periodic_selector_does_not_keep_stale_level_when_window_has_no_candidate() -> None:
+    tape = _tape(
+        [
+            (-120, "0.9998"),
+            (-110, "0.9999"),
+            (120, "1.0005"),
+        ]
+    )
+    config = _config(
+        model_id="M002",
+        parent_model_id="M001",
+        strategy=SerialStrategy.PERIODIC_RESELECT,
+        decision_interval_minutes=1,
+        lookback_minutes=1,
+    )
+
+    result = replay_serial_model(
+        tape,
+        config,
+        _scenario(),
+        start=START,
+        end_exclusive=START + timedelta(seconds=90),
+    )
+
+    assert result.completed_cycles == 0
+    assert result.active_low is None
+    assert result.final_inventory == 0
+
+
+def test_idle_triggered_never_treats_waiting_high_as_idle() -> None:
+    events = [
+        (-120, "0.9998"),
+        (-110, "0.9999"),
+        (1, "0.9998"),
+    ]
+    for offset in range(60, 1_800, 20):
+        events.extend(((offset, "1.0000"), (offset + 1, "1.0001")))
+    events.append((2_000, "1.0002"))
+    tape = _tape(events)
+    config = _config(
+        model_id="M004",
+        parent_model_id="M003",
+        strategy=SerialStrategy.IDLE_TRIGGERED,
+        decision_interval_minutes=1,
+        idle_threshold_minutes=5,
+        confirmation_checks=2,
+        switch_advantage=Decimal("0.10"),
+        cooldown_minutes=1,
+    )
+
+    result = replay_serial_model(
+        tape,
+        config,
+        _scenario(),
+        start=START,
+        end_exclusive=START + timedelta(minutes=30),
+    )
+
+    assert result.open_cycle_censored is True
+    assert result.active_low == Decimal("0.9998")
+    assert result.reselection_count == 0
+    assert result.blocked_reselection_checks == 29
+
+
+def test_idle_triggered_requires_continuous_flat_time_and_confirmations() -> None:
+    events = [(-120, "0.9998"), (-110, "0.9999")]
+    for offset in range(60, 1_800, 20):
+        events.extend(((offset, "1.0000"), (offset + 1, "1.0001")))
+    events.extend(((2_050, "1.0000"), (2_051, "1.0001"), (2_200, "1.0002")))
+    tape = _tape(events)
+    config = _config(
+        model_id="M004",
+        parent_model_id="M003",
+        strategy=SerialStrategy.IDLE_TRIGGERED,
+        decision_interval_minutes=1,
+        idle_threshold_minutes=30,
+        confirmation_checks=5,
+        switch_advantage=Decimal("0.10"),
+        cooldown_minutes=60,
+    )
+
+    first = replay_serial_model(
+        tape,
+        config,
+        _scenario(),
+        start=START,
+        end_exclusive=START + timedelta(minutes=36),
+    )
+    repeated = replay_serial_model(
+        tape,
+        config,
+        _scenario(),
+        start=START,
+        end_exclusive=START + timedelta(minutes=36),
+    )
+
+    assert first == repeated
+    assert first.reselection_count == 1
+    assert first.active_low == Decimal("1.0000")
+    assert first.completed_cycles == 1
+
+
+def test_manifest_tape_loader_accepts_only_active_valid_campaign(tmp_path: Path) -> None:
+    archive = tmp_path / "USDCUSDT-trades-2026-01-01.zip"
+    first_raw = int(START.timestamp() * 1_000_000)
+    with zipfile.ZipFile(archive, "w") as output:
+        output.writestr(
+            "USDCUSDT-trades-2026-01-01.csv",
+            f"1,0.9998,1,0,{first_raw},true,true\n"
+            f"2,0.9999,1,0,{first_raw + 1_000_000},false,true\n",
+        )
+    events = parse_archive(archive, "trades")
+    item = manifest_for(
+        archive,
+        events,
+        origin="official-fixture",
+        period="2026-01-01",
+        symbol="USDCUSDT",
+        kind="trades",
+    )
+    manifest = HistoryManifest(
+        symbol="USDCUSDT",
+        kind="trades",
+        requested_start=START.date(),
+        requested_end=START.date(),
+        all_available=False,
+        discovered_first_date=START.date(),
+        discovered_last_date=START.date(),
+        archives=(item,),
+        missing_dates=(),
+        cross_archive_gaps=(),
+        cross_archive_overlaps=(),
+        total_records=2,
+        total_size_bytes=item.size_bytes,
+        first_timestamp=item.first_timestamp,
+        last_timestamp=item.last_timestamp,
+        dataset_hash="verified-by-caller",
+        integrity_status="VALID",
+    )
+
+    tape = load_serial_tape(
+        manifest,
+        tick_size=TICK,
+        start=START,
+        end_exclusive=events[-1].timestamp + timedelta(microseconds=1),
+    )
+
+    assert len(tape.events) == 2
+    with pytest.raises(ValueError, match="VALID"):
+        load_serial_tape(
+            manifest.model_copy(
+                update={"integrity_status": "INVALID", "invalidity_reasons": ("gap",)}
+            ),
+            tick_size=TICK,
+            start=START,
+            end_exclusive=events[-1].timestamp + timedelta(microseconds=1),
+        )

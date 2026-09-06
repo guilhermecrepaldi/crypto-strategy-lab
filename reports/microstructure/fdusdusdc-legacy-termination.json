@@ -1,0 +1,11 @@
+{
+  "classification": "LEGACY_EVIDENCE",
+  "command": "uv run crypto-lab microstructure-adaptive-scan --manifest data/manifests/fdusdusdc-history.json --scanner-report reports/microstructure/daily-level-scanner.json --output-dir reports/microstructure",
+  "cpu_seconds_at_observation": "4137.625",
+  "effective_python_pid": 28744,
+  "known_state": "RUNNING_CPU_ACTIVE_NO_INCREMENTAL_CHECKPOINT_OUTPUTS_ONLY_AT_COMPLETION",
+  "launcher_pids": [29724, 32280],
+  "reason": "TERMINATED_BY_OWNER_SCOPE_CHANGE",
+  "start_time_local": "2026-09-06T11:37:37-03:00",
+  "working_directory": "D:\\projetos\\crypto change"
+}

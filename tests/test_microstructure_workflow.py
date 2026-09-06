@@ -46,6 +46,19 @@ def test_frequency_audit_separates_paths_cycles_durations_and_fee_roles(tmp_path
     assert scenarios["maker_zero_taker_10bps:MAKER->TAKER"] < 0
 
 
+def test_frequency_audit_accepts_descriptive_fixture_period(tmp_path: Path) -> None:
+    audit = audit_trade_levels(
+        _trade_archive(tmp_path / "sample.zip"),
+        kind="aggTrades",
+        source_url="fixture://sample.zip",
+        period="fixture",
+        lower=Decimal("0.9988"),
+        upper=Decimal("0.9989"),
+    )
+
+    assert audit.dataset.utc_date == datetime.fromtimestamp(1_725_148_800, UTC).date()
+
+
 def test_fixture_uses_entire_compounding_lot_without_binary_float() -> None:
     fixture = Path("fixtures/microstructure_s0.json")
 

@@ -1,0 +1,454 @@
+{
+  "events": [
+    {
+      "event_type": "MODEL_CREATED",
+      "occurred_at": "2026-09-06T16:33:02.053424+00:00",
+      "payload": {
+        "MODEL_HASH": "a12d09bcf15f5223acf6bf16c75822ef7b85f6ac66aa168837b2109dfc7837a0",
+        "artifacts": {
+          "config": "artifacts\\usdcusdt\\models\\M001\\config.json",
+          "daily": null,
+          "decision": null,
+          "directory": "artifacts\\usdcusdt\\models\\M001",
+          "hypothesis": "artifacts\\usdcusdt\\models\\M001\\hypothesis.json",
+          "lineage": "artifacts\\usdcusdt\\models\\M001\\lineage.json",
+          "metrics": null,
+          "model_spec": "artifacts\\usdcusdt\\models\\M001\\MODEL_SPEC.md",
+          "monthly": null,
+          "run_manifest": null
+        },
+        "created_at": "2026-09-06T16:33:02.053424Z",
+        "hypothesis": {
+          "change": "Initial STATIC model: one tick, 24-hour lookback and no reselection.",
+          "expected_effect": "Provide an interpretable lower-complexity reference and expose level migration.",
+          "hypothesis": "A one-tick pair selected from the preceding 24 hours may retain positive price-path throughput after it is frozen for the standardized replay.",
+          "observation": "A causal serial reference is required before testing adaptation.",
+          "reason_for_new_model": "Establish the first causal serial benchmark."
+        },
+        "lineage": {
+          "ancestor_chain": [],
+          "change_category": "INITIAL",
+          "change_summary": "Initial STATIC model: one tick, 24-hour lookback and no reselection.",
+          "parent_model_id": null,
+          "parent_run_hash": null,
+          "references": {
+            "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+            "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md"
+          }
+        },
+        "model": {
+          "confirmation_checks": null,
+          "cooldown_minutes": null,
+          "decision_interval_minutes": null,
+          "distances": [
+            1
+          ],
+          "idle_threshold_minutes": null,
+          "lookback_minutes": 1440,
+          "strategy": "STATIC",
+          "switch_advantage": null,
+          "symbol": "USDCUSDT"
+        },
+        "model_hash": "a12d09bcf15f5223acf6bf16c75822ef7b85f6ac66aa168837b2109dfc7837a0",
+        "model_id": "M001",
+        "pair": "USDCUSDT",
+        "schema_version": "usdcusdt-model-registry-v2",
+        "status": "CREATED"
+      }
+    },
+    {
+      "event_type": "MODEL_CREATED",
+      "occurred_at": "2026-09-06T16:33:02.083924+00:00",
+      "payload": {
+        "MODEL_HASH": "1868ea2a70c1526c615448d95d780e7b42b233721a2602c9b628f86a9e6da561",
+        "artifacts": {
+          "config": "artifacts\\usdcusdt\\models\\M002\\config.json",
+          "daily": null,
+          "decision": null,
+          "directory": "artifacts\\usdcusdt\\models\\M002",
+          "hypothesis": "artifacts\\usdcusdt\\models\\M002\\hypothesis.json",
+          "lineage": "artifacts\\usdcusdt\\models\\M002\\lineage.json",
+          "metrics": null,
+          "model_spec": "artifacts\\usdcusdt\\models\\M002\\MODEL_SPEC.md",
+          "monthly": null,
+          "run_manifest": null
+        },
+        "created_at": "2026-09-06T16:33:02.083924Z",
+        "hypothesis": {
+          "change": "Add flat-only PERIODIC_RESELECT at a one-hour decision interval.",
+          "expected_effect": "Recover activity lost to intraday migration without a time stop.",
+          "hypothesis": "Hourly causal reselection with the same 24-hour lookback improves throughput without changing tick distance.",
+          "observation": "A level frozen for the full replay may become stale as activity moves.",
+          "reason_for_new_model": "Test the smallest scheduled adaptation from M001."
+        },
+        "lineage": {
+          "ancestor_chain": [
+            "M001"
+          ],
+          "change_category": "DECISION_RULE",
+          "change_summary": "Add flat-only PERIODIC_RESELECT at a one-hour decision interval.",
+          "parent_model_id": "M001",
+          "parent_run_hash": null,
+          "references": {
+            "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+            "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md"
+          }
+        },
+        "model": {
+          "confirmation_checks": null,
+          "cooldown_minutes": null,
+          "decision_interval_minutes": 60,
+          "distances": [
+            1
+          ],
+          "idle_threshold_minutes": null,
+          "lookback_minutes": 1440,
+          "strategy": "PERIODIC_RESELECT",
+          "switch_advantage": null,
+          "symbol": "USDCUSDT"
+        },
+        "model_hash": "1868ea2a70c1526c615448d95d780e7b42b233721a2602c9b628f86a9e6da561",
+        "model_id": "M002",
+        "pair": "USDCUSDT",
+        "schema_version": "usdcusdt-model-registry-v2",
+        "status": "CREATED"
+      }
+    },
+    {
+      "event_type": "MODEL_CREATED",
+      "occurred_at": "2026-09-06T16:33:02.096429+00:00",
+      "payload": {
+        "MODEL_HASH": "856cd1bad8d3d497b725c5c33baca116589042374308c4e066a2851ceb5d6827",
+        "artifacts": {
+          "config": "artifacts\\usdcusdt\\models\\M003\\config.json",
+          "daily": null,
+          "decision": null,
+          "directory": "artifacts\\usdcusdt\\models\\M003",
+          "hypothesis": "artifacts\\usdcusdt\\models\\M003\\hypothesis.json",
+          "lineage": "artifacts\\usdcusdt\\models\\M003\\lineage.json",
+          "metrics": null,
+          "model_spec": "artifacts\\usdcusdt\\models\\M003\\MODEL_SPEC.md",
+          "monthly": null,
+          "run_manifest": null
+        },
+        "created_at": "2026-09-06T16:33:02.096429Z",
+        "hypothesis": {
+          "change": "Reduce the flat-only selection interval from one hour to one minute.",
+          "expected_effect": "Increase completed cycles while quantifying reselection churn.",
+          "hypothesis": "One-minute ALWAYS_BEST causal decisions raise throughput at the cost of more reselections.",
+          "observation": "Hourly decisions may react too slowly to rapidly migrating activity.",
+          "reason_for_new_model": "Measure the upper-frequency causal adaptation reference."
+        },
+        "lineage": {
+          "ancestor_chain": [
+            "M001",
+            "M002"
+          ],
+          "change_category": "DECISION_RULE",
+          "change_summary": "Reduce the flat-only selection interval from one hour to one minute.",
+          "parent_model_id": "M002",
+          "parent_run_hash": null,
+          "references": {
+            "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+            "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md"
+          }
+        },
+        "model": {
+          "confirmation_checks": null,
+          "cooldown_minutes": null,
+          "decision_interval_minutes": 1,
+          "distances": [
+            1
+          ],
+          "idle_threshold_minutes": null,
+          "lookback_minutes": 1440,
+          "strategy": "ALWAYS_BEST",
+          "switch_advantage": null,
+          "symbol": "USDCUSDT"
+        },
+        "model_hash": "856cd1bad8d3d497b725c5c33baca116589042374308c4e066a2851ceb5d6827",
+        "model_id": "M003",
+        "pair": "USDCUSDT",
+        "schema_version": "usdcusdt-model-registry-v2",
+        "status": "CREATED"
+      }
+    },
+    {
+      "event_type": "MODEL_CREATED",
+      "occurred_at": "2026-09-06T16:33:02.114135+00:00",
+      "payload": {
+        "MODEL_HASH": "554d1d805205e59505ff89892d4ec00be5868d56636ebd584b80c8724e90fc28",
+        "artifacts": {
+          "config": "artifacts\\usdcusdt\\models\\M004\\config.json",
+          "daily": null,
+          "decision": null,
+          "directory": "artifacts\\usdcusdt\\models\\M004",
+          "hypothesis": "artifacts\\usdcusdt\\models\\M004\\hypothesis.json",
+          "lineage": "artifacts\\usdcusdt\\models\\M004\\lineage.json",
+          "metrics": null,
+          "model_spec": "artifacts\\usdcusdt\\models\\M004\\MODEL_SPEC.md",
+          "monthly": null,
+          "run_manifest": null
+        },
+        "created_at": "2026-09-06T16:33:02.114135Z",
+        "hypothesis": {
+          "change": "Switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",
+          "expected_effect": "Retain at least 90% of cycles and 99% of equity with at most half the reselections.",
+          "hypothesis": "A stay-until-bad policy can preserve most M003 throughput with materially fewer changes.",
+          "observation": "Continuous best-candidate chasing may create unnecessary thrashing.",
+          "reason_for_new_model": "Test the preregistered anti-thrashing mechanism against M003."
+        },
+        "lineage": {
+          "ancestor_chain": [
+            "M001",
+            "M002",
+            "M003"
+          ],
+          "change_category": "DECISION_RULE",
+          "change_summary": "Switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",
+          "parent_model_id": "M003",
+          "parent_run_hash": null,
+          "references": {
+            "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+            "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md"
+          }
+        },
+        "model": {
+          "confirmation_checks": 5,
+          "cooldown_minutes": 60,
+          "decision_interval_minutes": 1,
+          "distances": [
+            1
+          ],
+          "idle_threshold_minutes": 30,
+          "lookback_minutes": 1440,
+          "strategy": "IDLE_TRIGGERED",
+          "switch_advantage": "0.10",
+          "symbol": "USDCUSDT"
+        },
+        "model_hash": "554d1d805205e59505ff89892d4ec00be5868d56636ebd584b80c8724e90fc28",
+        "model_id": "M004",
+        "pair": "USDCUSDT",
+        "schema_version": "usdcusdt-model-registry-v2",
+        "status": "CREATED"
+      }
+    }
+  ],
+  "models": [
+    {
+      "artifacts": {
+        "config": "artifacts\\usdcusdt\\models\\M001\\config.json",
+        "daily": null,
+        "decision": null,
+        "directory": "artifacts\\usdcusdt\\models\\M001",
+        "hypothesis": "artifacts\\usdcusdt\\models\\M001\\hypothesis.json",
+        "lineage": "artifacts\\usdcusdt\\models\\M001\\lineage.json",
+        "metrics": null,
+        "model_spec": "artifacts\\usdcusdt\\models\\M001\\MODEL_SPEC.md",
+        "monthly": null,
+        "run_manifest": null
+      },
+      "created_at": "2026-09-06T16:33:02.053424Z",
+      "hypothesis": {
+        "change": "Initial STATIC model: one tick, 24-hour lookback and no reselection.",
+        "expected_effect": "Provide an interpretable lower-complexity reference and expose level migration.",
+        "hypothesis": "A one-tick pair selected from the preceding 24 hours may retain positive price-path throughput after it is frozen for the standardized replay.",
+        "observation": "A causal serial reference is required before testing adaptation.",
+        "reason_for_new_model": "Establish the first causal serial benchmark."
+      },
+      "lineage": {
+        "ancestor_chain": [],
+        "change_category": "INITIAL",
+        "change_summary": "Initial STATIC model: one tick, 24-hour lookback and no reselection.",
+        "parent_model_id": null,
+        "parent_run_hash": null,
+        "references": {
+          "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+          "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md"
+        }
+      },
+      "model": {
+        "confirmation_checks": null,
+        "cooldown_minutes": null,
+        "decision_interval_minutes": null,
+        "distances": [
+          1
+        ],
+        "idle_threshold_minutes": null,
+        "lookback_minutes": 1440,
+        "strategy": "STATIC",
+        "switch_advantage": null,
+        "symbol": "USDCUSDT"
+      },
+      "model_hash": "a12d09bcf15f5223acf6bf16c75822ef7b85f6ac66aa168837b2109dfc7837a0",
+      "model_id": "M001",
+      "pair": "USDCUSDT",
+      "schema_version": "usdcusdt-model-registry-v2",
+      "status": "CREATED"
+    },
+    {
+      "artifacts": {
+        "config": "artifacts\\usdcusdt\\models\\M002\\config.json",
+        "daily": null,
+        "decision": null,
+        "directory": "artifacts\\usdcusdt\\models\\M002",
+        "hypothesis": "artifacts\\usdcusdt\\models\\M002\\hypothesis.json",
+        "lineage": "artifacts\\usdcusdt\\models\\M002\\lineage.json",
+        "metrics": null,
+        "model_spec": "artifacts\\usdcusdt\\models\\M002\\MODEL_SPEC.md",
+        "monthly": null,
+        "run_manifest": null
+      },
+      "created_at": "2026-09-06T16:33:02.083924Z",
+      "hypothesis": {
+        "change": "Add flat-only PERIODIC_RESELECT at a one-hour decision interval.",
+        "expected_effect": "Recover activity lost to intraday migration without a time stop.",
+        "hypothesis": "Hourly causal reselection with the same 24-hour lookback improves throughput without changing tick distance.",
+        "observation": "A level frozen for the full replay may become stale as activity moves.",
+        "reason_for_new_model": "Test the smallest scheduled adaptation from M001."
+      },
+      "lineage": {
+        "ancestor_chain": [
+          "M001"
+        ],
+        "change_category": "DECISION_RULE",
+        "change_summary": "Add flat-only PERIODIC_RESELECT at a one-hour decision interval.",
+        "parent_model_id": "M001",
+        "parent_run_hash": null,
+        "references": {
+          "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+          "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md"
+        }
+      },
+      "model": {
+        "confirmation_checks": null,
+        "cooldown_minutes": null,
+        "decision_interval_minutes": 60,
+        "distances": [
+          1
+        ],
+        "idle_threshold_minutes": null,
+        "lookback_minutes": 1440,
+        "strategy": "PERIODIC_RESELECT",
+        "switch_advantage": null,
+        "symbol": "USDCUSDT"
+      },
+      "model_hash": "1868ea2a70c1526c615448d95d780e7b42b233721a2602c9b628f86a9e6da561",
+      "model_id": "M002",
+      "pair": "USDCUSDT",
+      "schema_version": "usdcusdt-model-registry-v2",
+      "status": "CREATED"
+    },
+    {
+      "artifacts": {
+        "config": "artifacts\\usdcusdt\\models\\M003\\config.json",
+        "daily": null,
+        "decision": null,
+        "directory": "artifacts\\usdcusdt\\models\\M003",
+        "hypothesis": "artifacts\\usdcusdt\\models\\M003\\hypothesis.json",
+        "lineage": "artifacts\\usdcusdt\\models\\M003\\lineage.json",
+        "metrics": null,
+        "model_spec": "artifacts\\usdcusdt\\models\\M003\\MODEL_SPEC.md",
+        "monthly": null,
+        "run_manifest": null
+      },
+      "created_at": "2026-09-06T16:33:02.096429Z",
+      "hypothesis": {
+        "change": "Reduce the flat-only selection interval from one hour to one minute.",
+        "expected_effect": "Increase completed cycles while quantifying reselection churn.",
+        "hypothesis": "One-minute ALWAYS_BEST causal decisions raise throughput at the cost of more reselections.",
+        "observation": "Hourly decisions may react too slowly to rapidly migrating activity.",
+        "reason_for_new_model": "Measure the upper-frequency causal adaptation reference."
+      },
+      "lineage": {
+        "ancestor_chain": [
+          "M001",
+          "M002"
+        ],
+        "change_category": "DECISION_RULE",
+        "change_summary": "Reduce the flat-only selection interval from one hour to one minute.",
+        "parent_model_id": "M002",
+        "parent_run_hash": null,
+        "references": {
+          "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+          "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md"
+        }
+      },
+      "model": {
+        "confirmation_checks": null,
+        "cooldown_minutes": null,
+        "decision_interval_minutes": 1,
+        "distances": [
+          1
+        ],
+        "idle_threshold_minutes": null,
+        "lookback_minutes": 1440,
+        "strategy": "ALWAYS_BEST",
+        "switch_advantage": null,
+        "symbol": "USDCUSDT"
+      },
+      "model_hash": "856cd1bad8d3d497b725c5c33baca116589042374308c4e066a2851ceb5d6827",
+      "model_id": "M003",
+      "pair": "USDCUSDT",
+      "schema_version": "usdcusdt-model-registry-v2",
+      "status": "CREATED"
+    },
+    {
+      "artifacts": {
+        "config": "artifacts\\usdcusdt\\models\\M004\\config.json",
+        "daily": null,
+        "decision": null,
+        "directory": "artifacts\\usdcusdt\\models\\M004",
+        "hypothesis": "artifacts\\usdcusdt\\models\\M004\\hypothesis.json",
+        "lineage": "artifacts\\usdcusdt\\models\\M004\\lineage.json",
+        "metrics": null,
+        "model_spec": "artifacts\\usdcusdt\\models\\M004\\MODEL_SPEC.md",
+        "monthly": null,
+        "run_manifest": null
+      },
+      "created_at": "2026-09-06T16:33:02.114135Z",
+      "hypothesis": {
+        "change": "Switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",
+        "expected_effect": "Retain at least 90% of cycles and 99% of equity with at most half the reselections.",
+        "hypothesis": "A stay-until-bad policy can preserve most M003 throughput with materially fewer changes.",
+        "observation": "Continuous best-candidate chasing may create unnecessary thrashing.",
+        "reason_for_new_model": "Test the preregistered anti-thrashing mechanism against M003."
+      },
+      "lineage": {
+        "ancestor_chain": [
+          "M001",
+          "M002",
+          "M003"
+        ],
+        "change_category": "DECISION_RULE",
+        "change_summary": "Switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",
+        "parent_model_id": "M003",
+        "parent_run_hash": null,
+        "references": {
+          "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+          "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md"
+        }
+      },
+      "model": {
+        "confirmation_checks": 5,
+        "cooldown_minutes": 60,
+        "decision_interval_minutes": 1,
+        "distances": [
+          1
+        ],
+        "idle_threshold_minutes": 30,
+        "lookback_minutes": 1440,
+        "strategy": "IDLE_TRIGGERED",
+        "switch_advantage": "0.10",
+        "symbol": "USDCUSDT"
+      },
+      "model_hash": "554d1d805205e59505ff89892d4ec00be5868d56636ebd584b80c8724e90fc28",
+      "model_id": "M004",
+      "pair": "USDCUSDT",
+      "schema_version": "usdcusdt-model-registry-v2",
+      "status": "CREATED"
+    }
+  ],
+  "pair": "USDCUSDT",
+  "schema_version": "usdcusdt-model-registry-v2"
+}

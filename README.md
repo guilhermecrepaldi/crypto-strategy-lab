@@ -1,9 +1,10 @@
 # Crypto Strategy Lab
 
-Laboratório offline-first para pesquisa histórica de rotação Spot com aprendizado por
-reforço. O corte histórico usa BTCUSDT, ETHUSDT, SHIBUSDT e BNBUSDT mais caixa em USDT, candles
-canônicos de 5 minutos e decisões a cada 15 minutos. Não existe código para autenticar em
-exchange, usar Testnet ou enviar ordens.
+Laboratório offline-first para pesquisa histórica de estratégias Spot. A campanha científica
+ativa é `USDCUSDT_EXHAUSTIVE`: um único lote serial compra USDC em um LOW exato, aguarda o HIGH
+exato, vende, compõe o capital e repete. O corte anterior de rotação com aprendizado por reforço
+permanece preservado como histórico do projeto, mas não participa desta campanha. Não existe
+código para autenticar em exchange, usar Testnet ou enviar ordens.
 
 ## Garantias do corte vertical
 
@@ -61,6 +62,21 @@ Sem banco, é possível validar somente o engine e os relatórios:
 ```powershell
 uv run crypto-lab simulate-fixture --no-persist
 ```
+
+O acelerador CUDA é opcional e não altera a estratégia nem o ledger. Para reproduzir o gate da
+RTX 5060 com três arquivos oficiais já ingeridos:
+
+```powershell
+uv sync --extra gpu
+uv run python scripts/benchmark_usdcusdt_gpu.py `
+  data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2021-05-19.zip `
+  data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2021-05-20.zip `
+  data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2021-05-21.zip
+```
+
+CPU/GPU produziram hashes semânticos idênticos, mas nenhum workload atingiu o gate de 2x; por
+isso o Oracle permanece em CPU. Download, ZIP, hashing, manifests e finanças exatas nunca foram
+movidos para GPU.
 
 O corte ML curto treina em uma fixture e avalia em outra cronologicamente separada:
 
@@ -201,30 +217,45 @@ uv run crypto-lab history-ingest --symbols BTCUSDT,ETHUSDT,SHIBUSDT,BNBUSDT `
   --manifest-path data/manifests/two-year-ready.json --gap-policy STOP
 ```
 
-## Ciclagem passiva FDUSD/USDC
+## Campanha serial USDC/USDT
 
-O primeiro corte de microestrutura implementa `S0_FROZEN_LEVELS-v1`: um único lote compra em
-`0.9988` e somente após fill completo vende em `0.9989`. Não existe timeout, stop temporal,
-reprecificação ou saída taker automática. O motor event-driven separa toque, trade e fill; modela
-fila, latência, fill parcial, cancelamento, inventário FDUSD/USDC, taxas maker/taker e `RISK_HALT`.
+`USDCUSDT` é o único par operacional e experimental da linha atual. A identidade é fixa: uma
+banca, um lote, um LOW, um HIGH e um ciclo serial. Não existe timeout ou stop temporal; uma
+posição aberta continua aguardando HIGH. Mudança estrutural apenas bloqueia novas entradas e não
+autoriza liquidação automática.
+
+O primeiro bloco pré-registrado contém M001 estático, M002 com reseleção horária, M003
+`ALWAYS_BEST` por minuto e M004 `IDLE_TRIGGERED`. Todos reiniciam com 100 USDT em
+`2026-01-01T00:00:00Z` e usam o mesmo cutoff físico. Esses replays são DEVELOPMENT; os partitions
+existentes `VALIDATION` e `LOCKED_TEST` permanecem fechados.
 
 ```powershell
-# prova mecânica offline de resultado exato
-uv run crypto-lab microstructure-s0-fixture
+# máximo histórico diário oficial, checksums e manifesto íntegro/explicitamente inválido
+uv run crypto-lab microstructure-download --symbol USDCUSDT --kind trades `
+  --all-available --max-workers 4
 
-# histórico público oficial, checksum e manifesto
-uv run crypto-lab microstructure-download --date 2026-09-05 --kind aggTrades
+# verificação completamente offline antes de qualquer experimento
+uv run crypto-lab microstructure-history-verify `
+  --manifest data/manifests/usdcusdt-trades-history.json
 
-# recorrência exploratória; nunca converte percurso de preço em fill
-uv run crypto-lab microstructure-frequency-audit `
-  --archive data/raw/binance-microstructure/FDUSDUSDC/aggTrades/FDUSDUSDC-aggTrades-2026-09-05.zip `
-  --date 2026-09-05 --kind aggTrades
+# perfis exatos por preço, de diário até histórico total
+uv run crypto-lab microstructure-price-profile `
+  --manifest data/manifests/usdcusdt-trades-history.json `
+  --output-dir reports/usdcusdt
 ```
 
-Os documentos canônicos estão em `docs/microstructure/`. A amostra oficial reproduz 48 percursos
-`0.9988 → 0.9989` em 05/09/2026, mas arquivos Spot bulk não fornecem a fila L2 histórica necessária
-para provar nossos fills. A classificação atual é `INCONCLUSIVE`; o cenário com 1 bp maker por
-perna e qualquer cenário testado com perna taker são matematicamente negativos para um tick.
+O downloader é incremental, idempotente e valida o `.CHECKSUM` oficial. Gaps não são preenchidos:
+o manifesto registra datas ausentes e permanece `INVALID` até uma cobertura oficial reconciliada
+ser produzida. Price paths nunca são chamados de fills; fila, capacidade, partial fills e execução
+real continuam `INCONCLUSIVE` sem evidência L2/shadow.
+
+O trabalho anterior FDUSDUSDC é `LEGACY_EVIDENCE` / `ARCHIVED_EXPERIMENT`. Seus arquivos são
+preservados para explicar a origem da hipótese, mas nenhum novo download, scanner, backtest,
+modelo, controle ou comparação FDUSD faz parte da campanha ativa.
+
+O protocolo e a memória científica estão em `docs/microstructure/`. A auditoria de GPU fica em
+`reports/usdcusdt/`: CPU é o backend canônico; CUDA só pode ser selecionado após equivalência exata
+CPU/GPU e speedup end-to-end de pelo menos 2x.
 
 ## Validação
 
@@ -242,8 +273,8 @@ testes unitários e migration em banco limpo.
 
 ## Limitações deliberadas
 
-- O catálogo, ranking causal e dataset oficial cobrem o experimento de dezembro de 2021 a junho
-  de 2022; isso não equivale à história completa de mercado ou a dois anos finais.
+- O histórico diário USDCUSDT possui um intervalo sem arquivos diários oficiais; a reconciliação
+  com archives mensais ainda é necessária antes de chamar o corpus histórico inteiro de válido.
 - CoinMarketCap, notícias e adaptador de LLM real estão indisponíveis nesta entrega.
 - Sanity e development controlados ainda não constituem evidência de lucratividade. Somente
   uma política congelada que generalize cronologicamente em `VALIDATION`, entre seeds e após

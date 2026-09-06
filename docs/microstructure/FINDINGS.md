@@ -1,4 +1,6 @@
-# Findings — initial falsification gate
+# LEGACY findings — initial FDUSDUSDC falsification gate
+
+Status: `LEGACY_EVIDENCE` / `ARCHIVED_EXPERIMENT`; no new FDUSDUSDC work is authorized.
 
 Classification: **INCONCLUSIVE** — recurrence is real in the inspected archives; executable edge
 has not been demonstrated.

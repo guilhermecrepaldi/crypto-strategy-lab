@@ -1,6 +1,7 @@
-# Stablecoin two-level cycling — canonical specification
+# LEGACY — stablecoin two-level cycling specification
 
-Status: `S0_FROZEN_LEVELS-v1` implemented as the first falsification slice.
+Status: `LEGACY_EVIDENCE` / `ARCHIVED_EXPERIMENT`. `S0_FROZEN_LEVELS-v1` is preserved as the
+first falsification slice and is not the active USDCUSDT campaign specification.
 
 ## Invariants
 
