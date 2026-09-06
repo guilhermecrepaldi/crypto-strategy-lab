@@ -319,7 +319,7 @@ M005,EVALUATED,c5e2d7a1fc0ea6279fc71f05f5551508ea6ac4a71d391f5854dfe7e6eccc4c62,
   ""scenario_hash"": ""db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"",
   ""status"": ""PENDING_SCIENTIFIC_REVIEW""
 }",Correct M001 before execution under a new hashed tick semantics.,28779,64564,161749,2026-02,HOT,2026-04,7,7,48
-M006,PROMOTED,dc63c807b874044fd9849459d7da0aabd9b99465b8a4fdd3a450160e96311980,M005,2026-09-06T18:37:41.287345Z,Hourly causal reselection with M005's tick-at-selection semantics improves throughput without changing its distance rule.,M005 can become stale as market activity moves.,Add flat-only PERIODIC_RESELECT at a one-hour decision interval to M005.,Recover intraday level migration relative to M005.,"{
+M006,SUPERSEDED,dc63c807b874044fd9849459d7da0aabd9b99465b8a4fdd3a450160e96311980,M005,2026-09-06T18:37:41.287345Z,Hourly causal reselection with M005's tick-at-selection semantics improves throughput without changing its distance rule.,M005 can become stale as market activity moves.,Add flat-only PERIODIC_RESELECT at a one-hour decision interval to M005.,Recover intraday level migration relative to M005.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": 60,
@@ -587,7 +587,7 @@ M006,PROMOTED,dc63c807b874044fd9849459d7da0aabd9b99465b8a4fdd3a450160e96311980,M
   ""scenario_hash"": ""db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"",
   ""status"": ""PENDING_SCIENTIFIC_REVIEW""
 }",Test the smallest scheduled adaptation from M005.,43922,106200,125177,2026-07,HOT,2026-04,15,7,55
-M007,CREATED,2cb6c755cad4b805eb6b79e7b7e04fd271e660f285a8c1d6aca4c643dded934f,M006,2026-09-06T18:37:41.302112Z,One-minute ALWAYS_BEST decisions with the same causal tick policy raise throughput at the cost of more reselections.,M006 hourly decisions may react too slowly to migrating activity.,Reduce M006's flat-only selection interval from one hour to one minute.,Increase completed cycles while quantifying reselection churn.,"{
+M007,PROMOTED,2cb6c755cad4b805eb6b79e7b7e04fd271e660f285a8c1d6aca4c643dded934f,M006,2026-09-06T18:37:41.302112Z,One-minute ALWAYS_BEST decisions with the same causal tick policy raise throughput at the cost of more reselections.,M006 hourly decisions may react too slowly to migrating activity.,Reduce M006's flat-only selection interval from one hour to one minute.,Increase completed cycles while quantifying reselection churn.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": 1,
@@ -604,7 +604,257 @@ M007,CREATED,2cb6c755cad4b805eb6b79e7b7e04fd271e660f285a8c1d6aca4c643dded934f,M0
   ""symbol"": ""USDCUSDT"",
   ""tick_evidence_class"": ""OBSERVED_ACCEPTED_GRID"",
   ""tick_source"": ""BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX""
-}",,,Measure the upper-frequency adaptation reference against M006.,,,,,,,,,
+}","{
+  ""completed_cycles"": 344704,
+  ""concentration"": {
+    ""PROFIT_CONCENTRATION_WARNING"": ""YES"",
+    ""daily"": {
+      ""all_periods"": {
+        ""best_share"": ""0.2368677269266678580682666132"",
+        ""gross_losses"": ""4827075291.1651033"",
+        ""gross_positive"": ""905464478174.5832079"",
+        ""net"": ""900637402883.4181046"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.6456768350712989621736805471"",
+        ""top5_share"": ""0.4729276401434859510625367750""
+      },
+      ""complete_period_count"": 247,
+      ""complete_periods"": {
+        ""best_share"": ""0.2369101506294933462226961470"",
+        ""gross_losses"": ""4827075291.1651033"",
+        ""gross_positive"": ""905302335877.8557493"",
+        ""net"": ""900475260586.6906460"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.6457924776813234457334723211"",
+        ""top5_share"": ""0.4730123428673383148007060129""
+      },
+      ""granularity"": ""day"",
+      ""period_count"": 248
+    },
+    ""monthly"": {
+      ""all_periods"": {
+        ""best_share"": ""0.3193617364250123268428532404"",
+        ""gross_losses"": ""487080201.8828291"",
+        ""gross_positive"": ""901124483085.3009337"",
+        ""net"": ""900637402883.4181046"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""1"",
+        ""top5_share"": ""0.9940835885355208645707980999""
+      },
+      ""complete_period_count"": 8,
+      ""complete_periods"": {
+        ""best_share"": ""0.3193617364250123268428532404"",
+        ""gross_losses"": ""117756081.5591734"",
+        ""gross_positive"": ""901124483085.3009337"",
+        ""net"": ""901006727003.7417603"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""1"",
+        ""top5_share"": ""0.9940835885355208645707980999""
+      },
+      ""granularity"": ""month"",
+      ""period_count"": 9
+    },
+    ""weekly"": {
+      ""all_periods"": {
+        ""best_share"": ""0.2689737189375078632164816251"",
+        ""gross_losses"": ""738043143.2534070"",
+        ""gross_positive"": ""901375446026.6715116"",
+        ""net"": ""900637402883.4181046"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.9743778786267072979569762811"",
+        ""top5_share"": ""0.8231785411701990575304710023""
+      },
+      ""complete_period_count"": 34,
+      ""complete_periods"": {
+        ""best_share"": ""0.2689737189617167953395934943"",
+        ""gross_losses"": ""557885035.7784530"",
+        ""gross_positive"": ""901375445945.5433736"",
+        ""net"": ""900817560909.7649206"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.9743778787144060070320297145"",
+        ""top5_share"": ""0.8231785412442890969109416394""
+      },
+      ""granularity"": ""week"",
+      ""period_count"": 36
+    }
+  },
+  ""data_support"": {
+    ""book_depth"": ""UNKNOWN"",
+    ""executable_capacity"": ""UNKNOWN"",
+    ""fills_partial_fills"": ""UNKNOWN_PRICE_PATH_ONLY"",
+    ""gross_trade_volume"": ""OBSERVED_TRADES"",
+    ""latency"": ""COUNTERFACTUAL_ZERO"",
+    ""mid"": ""UNKNOWN"",
+    ""price"": ""OBSERVED_TRADES"",
+    ""queue_ahead"": ""UNKNOWN"",
+    ""spread_bid_ask"": ""UNKNOWN"",
+    ""trade_intensity"": ""OBSERVED_TRADES""
+  },
+  ""fees_quote"": ""0E-7"",
+  ""final_marked_equity"": ""900637402983.4181046"",
+  ""initial_quote"": ""100"",
+  ""open_cycle_censored"": true,
+  ""productivity_distribution"": {
+    ""daily"": {
+      ""best"": ""2026-01-31 00:00:00+00:00"",
+      ""capital_hour_return"": {
+        ""max"": ""0.1532118490526954640775849338"",
+        ""min"": ""-0.00004162949462942762075430008102"",
+        ""p10"": ""-0.000007499222717866368244052898646"",
+        ""p50"": ""0.000001667246040758539761060188976"",
+        ""p90"": ""0.001101891380298341276302658688""
+      },
+      ""complete_periods"": 247,
+      ""cycles"": {
+        ""max"": 44788,
+        ""min"": 0,
+        ""p10"": 0,
+        ""p50"": 0,
+        ""p90"": 2648
+      },
+      ""worst"": ""2026-01-02 00:00:00+00:00""
+    },
+    ""monthly"": {
+      ""best"": ""2026-01-01 00:00:00+00:00"",
+      ""capital_hour_return"": {
+        ""max"": ""0.1525560900633386536753404621"",
+        ""min"": ""-6.529288675117060214723624872E-7"",
+        ""p10"": ""8.063892891009137647225958538E-7"",
+        ""p50"": ""0.0007578695760389061901912619886"",
+        ""p90"": ""0.001716067424377516172813045070""
+      },
+      ""complete_periods"": 8,
+      ""cycles"": {
+        ""max"": 182453,
+        ""min"": 0,
+        ""p10"": 0,
+        ""p50"": 34262,
+        ""p90"": 53855
+      },
+      ""worst"": ""2026-03-01 00:00:00+00:00""
+    },
+    ""weekly"": {
+      ""best"": ""2026-01-26 00:00:00+00:00"",
+      ""capital_hour_return"": {
+        ""max"": ""0.05942864584847660390615274234"",
+        ""min"": ""-0.000002976764840246478904039042493"",
+        ""p10"": ""-0.000001546700775181714196689144244"",
+        ""p50"": ""0.000003509454959581112531527662521"",
+        ""p90"": ""0.004730622092144647184259901306""
+      },
+      ""complete_periods"": 34,
+      ""cycles"": {
+        ""max"": 115130,
+        ""min"": 0,
+        ""p10"": 0,
+        ""p50"": 0,
+        ""p90"": 33511
+      },
+      ""worst"": ""2026-02-09 00:00:00+00:00""
+    }
+  },
+  ""productivity_fingerprint"": {
+    ""BEST_1D_CYCLES"": 44788,
+    ""BEST_30D_CYCLES"": 137665,
+    ""BEST_7D_CYCLES"": 115521,
+    ""BEST_MONTH"": ""2026-07"",
+    ""BEST_REGIME"": ""HOT"",
+    ""HOT_PERIOD_COUNT"": 55,
+    ""LONGEST_COLD_STREAK"": 7,
+    ""LONGEST_HOT_STREAK"": 15,
+    ""WORST_MONTH"": ""2026-04""
+  },
+  ""realized_profit"": ""901637280379.9040993"",
+  ""return_fraction"": ""9006374028.834181046"",
+  ""temporal_stability"": {
+    ""aggregate"": ""19.72212165320988089198087268"",
+    ""horizons"": {
+      ""12h"": {
+        ""failure_fraction"": ""0.3232323232323232323232323232"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.1939393939393939393939393939"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""13.12519130700948882767064585""
+      },
+      ""168h"": {
+        ""failure_fraction"": ""0.2285714285714285714285714286"",
+        ""mad"": ""0E+5"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.4571428571428571428571428571"",
+        ""relative_variability"": ""0E+17"",
+        ""score"": ""35.26530612244897959183673469""
+      },
+      ""1h"": {
+        ""failure_fraction"": ""0.3155772139136279616871114098"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.07326499747941522433204503445"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""5.014423369747239265743898930""
+      },
+      ""24h"": {
+        ""failure_fraction"": ""0.3562753036437246963562753036"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.2226720647773279352226720648"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""14.33395072858102902850399122""
+      },
+      ""336h"": {
+        ""failure_fraction"": ""0.1764705882352941176470588235"",
+        ""mad"": ""0.0001406825184680728723346695448"",
+        ""median_absolute_productivity"": ""0.0001406825184680728723346695448"",
+        ""profitable_fraction"": ""0.5882352941176470588235294118"",
+        ""relative_variability"": ""0.4999999982229490782949647664"",
+        ""score"": ""24.22145337328274361200862724""
+      },
+      ""4h"": {
+        ""failure_fraction"": ""0.3201075991930060524546065905"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.1311365164761264290517821116"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""8.915872102041951564986665422""
+      },
+      ""720h"": {
+        ""failure_fraction"": ""0.125"",
+        ""mad"": ""0.000541287028069252456622853458"",
+        ""median_absolute_productivity"": ""0.000554546268227954602911014495"",
+        ""profitable_fraction"": ""0.75"",
+        ""relative_variability"": ""0.4939501559263598313746844227"",
+        ""score"": ""33.20952101733263606603633476""
+      },
+      ""72h"": {
+        ""failure_fraction"": ""0.2804878048780487804878048780"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.3292682926829268292682926829"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""23.69125520523497917906008328""
+      }
+    },
+    ""reason"": ""DESCRIPTIVE_ONLY""
+  },
+  ""unrealized_profit"": ""-999877496.4859947""
+}","{
+  ""campaign_snapshot_id"": ""b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9"",
+  ""comparison"": {
+    ""model_ladder"": ""M005_TO_M008"",
+    ""same_dataset_scenario_cutoff_required"": true
+  },
+  ""criteria"": {
+    ""early_stop_economic"": false,
+    ""promotion_guardrail"": ""docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md"",
+    ""temporal_metrics_are_diagnostic_only"": true
+  },
+  ""early_stop"": false,
+  ""execution_evidence"": ""INCONCLUSIVE_PRICE_PATH_ONLY"",
+  ""full_replay_completed"": true,
+  ""run_hash"": ""f622acb767d0dbaa39edfb7c90e6ef349dfaf6d694ee17dcde29f22a3d740d21"",
+  ""scenario_hash"": ""db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"",
+  ""status"": ""PENDING_SCIENTIFIC_REVIEW""
+}",Measure the upper-frequency adaptation reference against M006.,44788,115521,137665,2026-07,HOT,2026-04,15,7,55
 M008,CREATED,0c1fa31a6983ab295cfb043be5ef32425cc866d73a880166abeb0fb8d0a8a31d,M007,2026-09-06T18:37:41.317861Z,A stay-until-bad policy can preserve most M007 throughput with materially fewer changes.,M007 may create unnecessary candidate thrashing.,"Relative to M007, switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",Retain at least 90% of M007 cycles and 99% of its equity with at most half its reselections.,"{
   ""confirmation_checks"": 5,
   ""cooldown_minutes"": 60,

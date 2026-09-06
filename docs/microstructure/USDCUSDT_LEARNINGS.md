@@ -34,11 +34,22 @@ fill result.
 - Flat-only reselection cannot repair an existing open lot. M006 was holding inventory for 89.11%
   of elapsed time, so `LONG_HOLD` remains the dominant observed bottleneck and does not authorize
   a time stop.
+- M007 confirmed that reducing only the flat decision interval from one hour to one minute can
+  recover additional activity: idle fell 27.00 hours, cycles increased 10.42%, and mathematical
+  marked equity rose 8.9330x versus M006 on the same frozen scenario.
+- M007 is the current DEVELOPMENT champion. It did not improve continuous productivity: 193 days
+  still had zero cycles, March and April had none, and daily p50 remained zero.
+- M007 increased reselections from 191 to 234 and reversals within 24 hours from 65 to 100. This
+  supports testing the already preregistered M008 anti-thrashing package, but the current replay
+  cannot quantify queue-priority or latency cost.
+- M007 exact maximum drawdown was materially unchanged at 0.26851667%. Its best-day and top-five
+  concentration improved, while best-month concentration worsened slightly; the warning remains.
 
 ## Likely
 
-- One-minute flat-only reselection is a justified M007 ablation for the remaining 648.32 idle
-  hours. It may improve intrahour access, but it risks more switching and cannot fix `LONG_HOLD`.
+- M008's stay-until-bad package may preserve M007's recovered throughput with fewer changes and
+  reversals. Because four already frozen thresholds form one package, this replay will not
+  identify the marginal effect of each threshold.
 
 ## Refuted
 

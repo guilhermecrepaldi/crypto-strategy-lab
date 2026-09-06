@@ -436,3 +436,93 @@ M007 is authorized as the next single-variable DEVELOPMENT ablation on the same 
 scenario and cutoff. It is not expected to solve `LONG_HOLD`, because selection remains frozen
 while a lot is open. M008 remains unexecuted and unauthorized until the M007 autopsy determines
 whether its preregistered anti-thrashing mechanism attacks an observed problem.
+
+## M007 autopsy — one-minute flat-state reselection
+
+Identity and scope:
+
+```text
+MODEL=M007
+PARENT=M006
+MODEL_HASH=2cb6c755cad4b805eb6b79e7b7e04fd271e660f285a8c1d6aca4c643dded934f
+SCENARIO=PRICE_PATH_HISTORICAL_TICK_ZERO_FEE_V2
+RUN_HASH=f622acb767d0dbaa39edfb7c90e6ef349dfaf6d694ee17dcde29f22a3d740d21
+START=2026-01-01T00:00:00Z
+END_EXCLUSIVE=2026-09-05T23:59:59.783644Z
+STATUS=EVALUATED
+```
+
+The replay completed alone against the same verified tape, profile, scenario and cutoff as M006.
+M007 completed 344,704 cycles and compounded 100 USDT to marked mathematical equity
+900,637,402,983.4181046 USDT. Against M006 this is 32,541 more cycles (10.42%),
+799,816,520,996.7480750 USDT more marked equity and an equity ratio of 8.9330. These numbers
+remain zero-fee, unlimited-capacity price-path evidence rather than executable capital.
+
+The single intended effect occurred. Flat idle fell by 27.00 hours to 621.32 hours, while holding
+rose by the same amount to 5,330.68 hours. Average daily cycles increased from 1,258.72 to
+1,389.94 and days reaching 2,000 cycles rose from 28 to 30. The change did not reduce the 193
+zero-cycle days or lift the complete-day p50 above zero. March and April still produced no
+completed cycles. Of the total, 127,989 cycles completed after February.
+
+January completed 182,453 cycles, February 34,262, May 1,885, June 53,855, July 50,538 and
+August 21,711. The best cycle-count day was `2026-01-31` with 44,788; the best week was ISO week
+05 with 115,130; January was the best month with 182,453. The best MTM day, week and month were
+`2026-02-05`, ISO week 06 and July. The worst complete MTM day, week and month were
+`2026-09-03`, ISO week 15 and April. The top UTC hours by cycles were 11, 20, 14, 17 and 18.
+The most frequent completed level remained `1.00120 -> 1.00130`, now with 98,838 cycles; the
+largest mathematical level profit remained `1.00180 -> 1.00190`. Every selection still used one
+exchange tick at selection time.
+
+M007 recorded 234 reselections and 100 reversals within 24 hours, increases of 43 and 35 over
+M006. The reversal share rose from 34.0% to 42.7%. Its 319,944 blocked checks mostly reflect the
+one-minute decision clock observing the required no-reselection-while-open invariant; they are
+not switches. There were no cooldown violations. The observed switching cost is behaviorally
+real, but its queue-priority, latency and fee consequences are absent from this scenario.
+
+Concentration improved on daily measures: best-day share fell from 24.98% to 23.69%, top-five
+share from 49.52% to 47.29%, and top-ten share from 66.73% to 64.57%. Best-month share increased
+slightly from 30.90% to 31.94%, so the concentration warning remains. Temporal stability rose
+only from 19.6153 to 19.7221. Hourly classification found 435 HOT, 3,638 COLD, 1,878 FAILURE and
+one UNKNOWN hour; HOT median productivity was 350 cycles per hour, while COLD and FAILURE
+medians remained zero.
+
+Complete-month absolute MTM deltas and normalized capital-hour returns were nonnegative in seven
+of eight months; April was negative. Exact event-level fixed-point reconstruction found M007
+maximum drawdown of 0.26851667% on the same April 14 path as M006. The sub-picounit numerical
+difference between them is economically indistinguishable, so drawdown is classified as
+materially unchanged. Cash, inventory and terminal marked equity reconciled exactly.
+
+The dominant bottleneck remains `LONG_HOLD`. M007 held inventory for 89.56% of elapsed time; the
+longest completed hold remained 111.28 days and the terminal lot remained open for 19.37 days.
+Thirty-five completed cycles crossed days and fourteen crossed weeks. A faster flat decision
+clock cannot release an open lot, and none of these observations authorizes a time stop.
+
+Scientific decision:
+
+```text
+HYPOTHESIS_RESULT=YES
+DECISION=PROMOTE_DEVELOPMENT
+CURRENT_CHAMPION=M007
+EXECUTABLE_EDGE=NOT_DEMONSTRATED
+CURRENT_BOTTLENECK=LONG_HOLD
+```
+
+## M008 authorization — preregistered anti-thrashing package
+
+```text
+MODEL=M008
+PARENT_MODEL=M007
+MODEL_HASH=0c1fa31a6983ab295cfb043be5ef32425cc866d73a880166abeb0fb8d0a8a31d
+OBSERVATION=M007 improved throughput but increased reselections and 24-hour reversals
+ROOT_CAUSE_HYPOTHESIS=some minute-level candidate changes are transient and add avoidable churn
+PROPOSED_CHANGE=30 flat-idle minutes, five confirmations, 10% advantage and 60-minute cooldown
+EXPECTED_EFFECT=preserve M007 productivity while materially reducing changes and reversals
+RISKS_OF_CHANGE=late response to real migration, higher idle and lost cycles
+```
+
+The thresholds were registered before observing M007 and are frozen as one policy package. Their
+individual effects cannot be attributed from this single ablation. The 30-minute clock measures
+only flat idle, never time waiting for HIGH. Promotion gates compare directly with M007: retain
+at least 90% of its cycles and 99% of its equity, make at most 117 reselections and 50 reversals
+within 24 hours, and record no cooldown violation. M008 alone is authorized for the next replay;
+no later model is authorized before its autopsy.
