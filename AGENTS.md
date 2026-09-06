@@ -73,12 +73,30 @@ Informe quais modelos foram realmente usados; não alegue troca de modelo que n�
 
 - `VALIDATION` e `LOCKED_TEST` permanecem fechados até seus gates explícitos.
 - Não acessar conta Binance, Testnet ou live; não solicitar chaves nem enviar ordens.
-- Não fazer push ou deploy sem autorização específica.
+- Não fazer deploy sem autorização específica.
 - Não iniciar um segundo trainer se existir um trainer canônico ativo.
 - Bugs técnicos não são perdas legítimas. Preserve o artifact, invalide somente o escopo
   comprovadamente afetado, corrija com teste e registre a decisão.
 - Resultados positivos, negativos, falhas e invalidações devem permanecer rastreáveis aos
   artifacts originais; destaque eventos somente por critérios explícitos e reproduzíveis.
+
+## Espelho contínuo da campanha no GitHub
+
+- O OWNER autoriza `git push` normal exclusivamente para `origin/main` deste repositório após
+  cada milestone consistente da campanha. Não acumule milestones concluídos apenas localmente.
+- Antes de uma execução longa baseada em mudanças novas, valide, faça commit e push da
+  pré-configuração; registre no run o `GIT_COMMIT_SHA` já publicado. Ao concluir, reconcilie
+  registry, journal, decisões e resultados leves, então faça novo commit e push.
+- Antes de cada push, execute `git fetch`, confirme que `origin/main` não avançou de forma
+  inesperada, rode `git diff --check` e os testes proporcionais ao delta, verifique secrets e
+  arquivos grandes. Depois do push, confirme `HEAD == origin/main`.
+- Nunca usar force push, reescrever histórico publicado, alterar remote, criar release ou fazer
+  deploy por efeito desta autorização. Divergência remota ambígua bloqueia somente o push.
+- Não versionar trades históricos brutos, ZIPs, market tapes, caches mmap ou artifacts binários
+  grandes. Versionar manifests, hashes, provenance, comandos de reconstrução, configs, código,
+  testes, registros e relatórios resumidos.
+- Resultados publicados são imutáveis como evidência. Correções exigem novo commit e registro
+  explícito; se mudarem significado científico, registrar correção ou invalidação.
 - Todo modelo `Mxxx` executado nesta campanha percorre integralmente o intervalo padronizado de
   `2026-01-01T00:00:00Z` ao cutoff físico congelado. Resultado econômico ruim, ociosidade,
   inferioridade ou posição aberta não autorizam early stop; somente invalidade técnica pode
