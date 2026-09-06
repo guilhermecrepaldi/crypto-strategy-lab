@@ -1850,6 +1850,377 @@
         "previous_model_id": "M006",
         "to": "PROMOTED"
       }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-06T21:27:20.706489+00:00",
+      "payload": {
+        "SCENARIO_HASH": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8",
+        "label": "PRICE_PATH_HISTORICAL_TICK_ZERO_FEE_V2",
+        "model_id": "M008",
+        "scenario": {
+          "execution_class": "PRICE_PATH_NOT_FILL_EVIDENCE",
+          "forced_terminal_liquidation": false,
+          "historical_tick_catalog_hash": "d577304217e8ca555fbc7e39e8738426cf96f992bb304d133feb2684ed836c55",
+          "historical_tick_policy": "CAUSAL_OBSERVED_GRID_THEN_OFFICIAL_COMPLETION_BOUND",
+          "historical_tick_source_url": "https://www.binance.com/en/support/announcement/detail/1f1ee792db2d445eb967aa09f6c05138",
+          "initial_quote": "100",
+          "latency_assumption": "ZERO_COUNTERFACTUAL",
+          "maker_fee_per_leg": "0",
+          "minimum_notional": "0",
+          "quantity_step": "0.01",
+          "queue_assumption": "NOT_MODELED",
+          "tick_size": "0.00001"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-06T21:27:20.798106+00:00",
+      "payload": {
+        "MODEL_HASH": "0c1fa31a6983ab295cfb043be5ef32425cc866d73a880166abeb0fb8d0a8a31d",
+        "RUN_HASH": "3ede578b075b09ae6cb6ab148162327f69a43fe0c3cd2fd54df1dba3fef4952d",
+        "SCENARIO_HASH": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M008\\runs\\3ede578b075b09ae6cb6ab148162327f69a43fe0c3cd2fd54df1dba3fef4952d",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9",
+        "code_commit": "7d44c7c8c43b58d82f8917e9b49745bf3daf8bd9",
+        "dataset_hash": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+        "interval": {
+          "early_stop": "TECHNICAL_INVALIDITY_ONLY",
+          "end_exclusive": "2026-09-05T23:59:59.783644+00:00",
+          "full_replay": true,
+          "start": "2026-01-01T00:00:00+00:00"
+        },
+        "model_id": "M008",
+        "run": {
+          "execution_class": "PRICE_PATH_NOT_FILL_EVIDENCE",
+          "live_accessed": false,
+          "locked_test_accessed": false,
+          "manifest": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+          "tape_cache": {
+            "cache_key": "22307d010fe179b2b834931f839376014423bde9a7751b4f453463de16bdcf18",
+            "schema_version": "usdcusdt-market-tape-v2",
+            "tape_hash": "505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c"
+          },
+          "testnet_accessed": false,
+          "validation_accessed": false
+        },
+        "technical_revision": "full-replay-historical-tick-temporal-regimes-v2"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-06T21:27:20.835411+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M008",
+        "reason": "canonical full DEVELOPMENT replay started",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-06T21:31:41.038024+00:00",
+      "payload": {
+        "EVALUATION_HASH": "277e49e36dd3f48e0962a2904a9975f1b57c3c371bc621fa905412c2e90ce9ed",
+        "EVIDENCE_HASH": "68d15de543d4fd4a817d7d31474d8665c6d5e135eecd4f0e6974e20354d116ef",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M008\\runs\\3ede578b075b09ae6cb6ab148162327f69a43fe0c3cd2fd54df1dba3fef4952d\\evaluations\\277e49e36dd3f48e0962a2904a9975f1b57c3c371bc621fa905412c2e90ce9ed",
+        "campaign_snapshot_id": "b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9",
+        "comparison": {
+          "model_ladder": "M005_TO_M008",
+          "same_dataset_scenario_cutoff_required": true
+        },
+        "criteria": {
+          "early_stop_economic": false,
+          "promotion_guardrail": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md",
+          "temporal_metrics_are_diagnostic_only": true
+        },
+        "decision": {
+          "campaign_snapshot_id": "b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9",
+          "comparison": {
+            "model_ladder": "M005_TO_M008",
+            "same_dataset_scenario_cutoff_required": true
+          },
+          "criteria": {
+            "early_stop_economic": false,
+            "promotion_guardrail": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md",
+            "temporal_metrics_are_diagnostic_only": true
+          },
+          "early_stop": false,
+          "execution_evidence": "INCONCLUSIVE_PRICE_PATH_ONLY",
+          "full_replay_completed": true,
+          "run_hash": "3ede578b075b09ae6cb6ab148162327f69a43fe0c3cd2fd54df1dba3fef4952d",
+          "scenario_hash": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8",
+          "status": "PENDING_SCIENTIFIC_REVIEW"
+        },
+        "metrics": {
+          "completed_cycles": 257368,
+          "concentration": {
+            "PROFIT_CONCENTRATION_WARNING": "YES",
+            "daily": {
+              "all_periods": {
+                "best_share": "0.4547997556341936324420007451",
+                "gross_losses": "220646382.5874813",
+                "gross_positive": "29226273105.8780357",
+                "net": "29005626723.2905544",
+                "net_profit_status": "POSITIVE",
+                "top10_share": "0.7814486141935788777685313782",
+                "top5_share": "0.6365011320728311890914850608"
+              },
+              "complete_period_count": 247,
+              "complete_periods": {
+                "best_share": "0.4548810298867173592863150449",
+                "gross_losses": "220646382.5874813",
+                "gross_positive": "29221051205.3267507",
+                "net": "29000404822.7392694",
+                "net_profit_status": "POSITIVE",
+                "top10_share": "0.7815882617004596186421689558",
+                "top5_share": "0.6366148769750631373057061188"
+              },
+              "granularity": "day",
+              "period_count": 248
+            },
+            "monthly": {
+              "all_periods": {
+                "best_share": "0.4591010283919775416821787743",
+                "gross_losses": "18716819.6247365",
+                "gross_positive": "29024343542.9152909",
+                "net": "29005626723.2905544",
+                "net_profit_status": "POSITIVE",
+                "top10_share": "1",
+                "top5_share": "0.9990298641432886660297170069"
+              },
+              "complete_period_count": 8,
+              "complete_periods": {
+                "best_share": "0.4591010283919775416821787743",
+                "gross_losses": "6822490.5912540",
+                "gross_positive": "29024343542.9152909",
+                "net": "29017521052.3240369",
+                "net_profit_status": "POSITIVE",
+                "top10_share": "1",
+                "top5_share": "0.9990298641432886660297170069"
+              },
+              "granularity": "month",
+              "period_count": 9
+            },
+            "weekly": {
+              "all_periods": {
+                "best_share": "0.4590229625186843913510187581",
+                "gross_losses": "36561621.1295080",
+                "gross_positive": "29042188344.4200624",
+                "net": "29005626723.2905544",
+                "net_profit_status": "POSITIVE",
+                "top10_share": "0.9859157524560783374150234744",
+                "top5_share": "0.8190740670878007126528446228"
+              },
+              "complete_period_count": 34,
+              "complete_periods": {
+                "best_share": "0.4590229634862489732860095962",
+                "gross_losses": "30759509.4058580",
+                "gross_positive": "29042188283.2026614",
+                "net": "29011428773.7968034",
+                "net_profit_status": "POSITIVE",
+                "top10_share": "0.9859157545342688436458694495",
+                "top5_share": "0.8190740688143092362070268915"
+              },
+              "granularity": "week",
+              "period_count": 36
+            }
+          },
+          "data_support": {
+            "book_depth": "UNKNOWN",
+            "executable_capacity": "UNKNOWN",
+            "fills_partial_fills": "UNKNOWN_PRICE_PATH_ONLY",
+            "gross_trade_volume": "OBSERVED_TRADES",
+            "latency": "COUNTERFACTUAL_ZERO",
+            "mid": "UNKNOWN",
+            "price": "OBSERVED_TRADES",
+            "queue_ahead": "UNKNOWN",
+            "spread_bid_ask": "UNKNOWN",
+            "trade_intensity": "OBSERVED_TRADES"
+          },
+          "fees_quote": "0E-7",
+          "final_marked_equity": "29005626823.2905544",
+          "initial_quote": "100",
+          "open_cycle_censored": true,
+          "productivity_distribution": {
+            "daily": {
+              "best": "2026-01-29 00:00:00+00:00",
+              "capital_hour_return": {
+                "max": "0.1779284347759792294859560392",
+                "min": "-0.00004162949462940841580257577716",
+                "p10": "-0.000008325176079256339476042862096",
+                "p50": "8.328184859831168013440311141E-7",
+                "p90": "0.0006704683062183179528387735325"
+              },
+              "complete_periods": 247,
+              "cycles": {
+                "max": 40656,
+                "min": 0,
+                "p10": 0,
+                "p50": 0,
+                "p90": 1383
+              },
+              "worst": "2026-01-02 00:00:00+00:00"
+            },
+            "monthly": {
+              "best": "2026-01-01 00:00:00+00:00",
+              "capital_hour_return": {
+                "max": "0.07293699720832037805572090789",
+                "min": "-6.529288675114044667877306658E-7",
+                "p10": "8.063892891005414494195990449E-7",
+                "p50": "0.0002896258014857354808407877306",
+                "p90": "0.001622963398159647211128946756"
+              },
+              "complete_periods": 8,
+              "cycles": {
+                "max": 163142,
+                "min": 0,
+                "p10": 0,
+                "p50": 22496,
+                "p90": 32835
+              },
+              "worst": "2026-03-01 00:00:00+00:00"
+            },
+            "weekly": {
+              "best": "2026-01-26 00:00:00+00:00",
+              "capital_hour_return": {
+                "max": "0.06395871734565547817367445247",
+                "min": "-0.000006545364852379298583380498529",
+                "p10": "-0.000001785292738532336902509202287",
+                "p50": "0.000002381035824590637041692587546",
+                "p90": "0.001078317137578483119047740804"
+              },
+              "complete_periods": 34,
+              "cycles": {
+                "max": 96114,
+                "min": 0,
+                "p10": 0,
+                "p50": 0,
+                "p90": 18063
+              },
+              "worst": "2026-01-12 00:00:00+00:00"
+            }
+          },
+          "productivity_fingerprint": {
+            "BEST_1D_CYCLES": 40656,
+            "BEST_30D_CYCLES": 137686,
+            "BEST_7D_CYCLES": 94835,
+            "BEST_MONTH": "2026-02",
+            "BEST_REGIME": "HOT",
+            "HOT_PERIOD_COUNT": 46,
+            "LONGEST_COLD_STREAK": 7,
+            "LONGEST_HOT_STREAK": 9,
+            "WORST_MONTH": "2026-04"
+          },
+          "realized_profit": "29037828443.3568119",
+          "return_fraction": "290056267.232905544",
+          "temporal_stability": {
+            "aggregate": "17.97055855509709776211983419",
+            "horizons": {
+              "12h": {
+                "failure_fraction": "0.3454545454545454545454545455",
+                "mad": "0E+7",
+                "median_absolute_productivity": "0",
+                "profitable_fraction": "0.1555555555555555555555555556",
+                "relative_variability": "0E+19",
+                "score": "10.18181818181818181818181818"
+              },
+              "168h": {
+                "failure_fraction": "0.2571428571428571428571428571",
+                "mad": "0E+7",
+                "median_absolute_productivity": "0",
+                "profitable_fraction": "0.4285714285714285714285714286",
+                "relative_variability": "0E+19",
+                "score": "31.83673469387755102040816327"
+              },
+              "1h": {
+                "failure_fraction": "0.3303646445975466308183498572",
+                "mad": "0E+7",
+                "median_absolute_productivity": "0",
+                "profitable_fraction": "0.05141992942362628129726096454",
+                "relative_variability": "0E+19",
+                "score": "3.443260271435905410344226914"
+              },
+              "24h": {
+                "failure_fraction": "0.3765182186234817813765182186",
+                "mad": "0E+7",
+                "median_absolute_productivity": "0",
+                "profitable_fraction": "0.1862348178137651821862348178",
+                "relative_variability": "0E+19",
+                "score": "11.61140159648576439541706961"
+              },
+              "336h": {
+                "failure_fraction": "0.1764705882352941176470588235",
+                "mad": "0.00006917176959587467217198092228",
+                "median_absolute_productivity": "0.00006917176959587467217198092228",
+                "profitable_fraction": "0.5882352941176470588235294118",
+                "relative_variability": "0.4999999963858088400298184161",
+                "score": "24.22145346227915653834789680"
+              },
+              "4h": {
+                "failure_fraction": "0.3396099529253530598520511096",
+                "mad": "0E+7",
+                "median_absolute_productivity": "0",
+                "profitable_fraction": "0.09751176866173503698722259583",
+                "relative_variability": "0E+19",
+                "score": "6.439580149685528333655184204"
+              },
+              "720h": {
+                "failure_fraction": "0.125",
+                "mad": "0.0002640673019690850284782692430",
+                "median_absolute_productivity": "0.0002643450011085778375075833968",
+                "profitable_fraction": "0.75",
+                "relative_variability": "0.4997372315733851701425264768",
+                "score": "32.82974417799659820939669996"
+              },
+              "72h": {
+                "failure_fraction": "0.2682926829268292682926829268",
+                "mad": "0E+7",
+                "median_absolute_productivity": "0",
+                "profitable_fraction": "0.3170731707317073170731707317",
+                "relative_variability": "0E+19",
+                "score": "23.20047590719809637120761452"
+              }
+            },
+            "reason": "DESCRIPTIVE_ONLY"
+          },
+          "unrealized_profit": "-32201720.0662575"
+        },
+        "model_id": "M008",
+        "run_hash": "3ede578b075b09ae6cb6ab148162327f69a43fe0c3cd2fd54df1dba3fef4952d",
+        "scenario_hash": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-06T21:31:45.935292+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M008",
+        "reason": "full physical interval completed; scientific decision pending",
+        "to": "EVALUATED"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-06T21:35:10.276559+00:00",
+      "payload": {
+        "from": "EVALUATED",
+        "model_id": "M008",
+        "reason": "M007 comparison gates failed: retained 74.6635% of cycles and 3.2206% of equity despite passing anti-thrashing limits; scientific review keeps M007 champion",
+        "to": "REJECTED"
+      }
     }
   ],
   "models": [
@@ -2309,15 +2680,15 @@
       "status": "PROMOTED"
     },
     {
-      "BEST_1D_CYCLES": null,
-      "BEST_30D_CYCLES": null,
-      "BEST_7D_CYCLES": null,
-      "BEST_MONTH": null,
-      "BEST_REGIME": null,
-      "HOT_PERIOD_COUNT": null,
-      "LONGEST_COLD_STREAK": null,
-      "LONGEST_HOT_STREAK": null,
-      "WORST_MONTH": null,
+      "BEST_1D_CYCLES": 40656,
+      "BEST_30D_CYCLES": 137686,
+      "BEST_7D_CYCLES": 94835,
+      "BEST_MONTH": "2026-02",
+      "BEST_REGIME": "HOT",
+      "HOT_PERIOD_COUNT": 46,
+      "LONGEST_COLD_STREAK": 7,
+      "LONGEST_HOT_STREAK": 9,
+      "WORST_MONTH": "2026-04",
       "artifacts": {
         "config": "artifacts\\usdcusdt\\models\\M008\\config.json",
         "daily": null,
@@ -2377,7 +2748,7 @@
       "model_id": "M008",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "REJECTED"
     }
   ],
   "pair": "USDCUSDT",

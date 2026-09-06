@@ -44,17 +44,24 @@ fill result.
   cannot quantify queue-priority or latency cost.
 - M007 exact maximum drawdown was materially unchanged at 0.26851667%. Its best-day and top-five
   concentration improved, while best-month concentration worsened slightly; the warning remains.
+- M008 proved that the preregistered anti-thrashing package can reduce reselections and reversals,
+  but it retained only 74.66% of M007 cycles and 3.22% of its mathematical equity. Reduced flat
+  idle merely became more holding, while zero-cycle days and concentration worsened.
+- M008 is rejected and M007 remains the DEVELOPMENT champion. This rejection applies to the
+  four-control package; it does not identify which individual threshold caused the loss.
 
 ## Likely
 
-- M008's stay-until-bad package may preserve M007's recovered throughput with fewer changes and
-  reversals. Because four already frozen thresholds form one package, this replay will not
-  identify the marginal effect of each threshold.
+- Isolating only M008's already registered 10% relative-score hysteresis may reduce M007 reversal
+  churn without the package's idle delay, confirmations or cooldown. Causal scoring of the
+  incumbent's absolute active endpoints must be exact before this can be tested as M009.
 
 ## Refuted
 
 - The M005 hypothesis that one static causally selected band would remain productively useful
   throughout the frozen 2026 DEVELOPMENT interval.
+- The M008 hypothesis that its combined idle, confirmation, advantage and cooldown controls could
+  preserve at least 90% of M007 cycles and 99% of M007 equity while reducing switches.
 
 ## Unknown
 

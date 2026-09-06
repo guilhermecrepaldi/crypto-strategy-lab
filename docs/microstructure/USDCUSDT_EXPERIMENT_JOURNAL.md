@@ -526,3 +526,86 @@ only flat idle, never time waiting for HIGH. Promotion gates compare directly wi
 at least 90% of its cycles and 99% of its equity, make at most 117 reselections and 50 reversals
 within 24 hours, and record no cooldown violation. M008 alone is authorized for the next replay;
 no later model is authorized before its autopsy.
+
+## M008 autopsy — rejected anti-thrashing package
+
+Identity and scope:
+
+```text
+MODEL=M008
+PARENT=M007
+MODEL_HASH=0c1fa31a6983ab295cfb043be5ef32425cc866d73a880166abeb0fb8d0a8a31d
+SCENARIO=PRICE_PATH_HISTORICAL_TICK_ZERO_FEE_V2
+RUN_HASH=3ede578b075b09ae6cb6ab148162327f69a43fe0c3cd2fd54df1dba3fef4952d
+START=2026-01-01T00:00:00Z
+END_EXCLUSIVE=2026-09-05T23:59:59.783644Z
+STATUS=REJECTED
+```
+
+The complete replay used the same verified tape, profile, scenario and cutoff. M008 completed
+257,368 cycles and ended with marked mathematical equity 29,005,626,823.2905544 USDT. Relative
+to champion M007, it retained only 74.66% of cycles and 3.22% of equity, failing the frozen 90%
+and 99% preservation gates. It added nine zero-cycle days, removed nine days with at least 2,000
+cycles, and lowered temporal stability from 19.7221 to 17.9706.
+
+The package did satisfy its switching limits: reselections fell from 234 to 64, reversals within
+24 hours from 100 to 7, and cooldown violations remained zero. This operational benefit was too
+expensive. Flat idle fell by 218.28 hours, but all of that time moved into holding; holding rose
+to 5,548.96 hours. The fall in idle is therefore not a throughput improvement. The longest
+completed hold remained 111.28 days, the terminal lot remained open for 19.37 days, and
+`LONG_HOLD` remained the dominant bottleneck.
+
+M008 averaged 1,037.77 cycles per observed day. January produced 163,142 cycles, February
+25,065, May only four, June 32,835, July 13,826 and August 22,496; March and April remained at
+zero. Only 69,161 cycles completed after February. The best cycle-count day was `2026-01-29`
+with 40,656, the best week was ISO week 05 with 96,114, and January was the best month. The best
+MTM day, week and month were `2026-02-05`, ISO week 06 and February; the worst were
+`2026-02-06`, ISO week 15 and April. The top UTC hours were 11, 20, 9, 10 and 8. The most
+frequent level remained `1.00120 -> 1.00130`, with 109,420 completed cycles.
+
+Absolute MTM deltas against M007 were negative in seven of eight complete months; April was the
+only positive delta because its loss was smaller. Normalized capital-hour returns were lower in
+six of eight complete months, with April and August higher. These are separate measures. Profit
+concentration worsened: best-day share rose from 23.69% to 45.48%, top-five from 47.29% to
+63.65%, top-ten from 64.57% to 78.14%, and best-month from 31.94% to 45.91%. Exact event-level
+maximum drawdown remained materially unchanged at 0.26851667%; accounting reconciled exactly.
+
+Scientific decision:
+
+```text
+HYPOTHESIS_RESULT=NO
+DECISION=REJECT
+CURRENT_CHAMPION=M007
+EXECUTABLE_EDGE=NOT_DEMONSTRATED
+CURRENT_BOTTLENECK=LONG_HOLD
+```
+
+The experiment rejects only the complete M008 package. It cannot attribute the loss separately
+to the 30-minute idle threshold, five confirmations, 10% advantage or 60-minute cooldown.
+
+## M009 preregistration — isolated relative-score hysteresis
+
+```text
+MODEL=M009
+PARENT_MODEL=M007
+BASE_CONFIG=EXACT_COPY_OF_CANONICAL_M007_MODEL_SPEC
+OBSERVATION=M007 recovered throughput but 42.7% of its reselections reversed within 24 hours
+ROOT_CAUSE_HYPOTHESIS=some candidate changes have too little causal score advantage to persist
+PROPOSED_CHANGE=require best_score > 1.10 * incumbent_score before a flat-state switch
+EXPECTED_EFFECT=reduce reversals while preserving the one-minute response and M007 productivity
+RISKS_OF_CHANGE=block useful migrations; causal recent score may describe activity that vanishes
+```
+
+The 10% threshold is inherited from the preregistered M008 component, not selected through a new
+sweep. M009 changes only the switching comparison; it has no idle wait, repeated confirmation or
+additional cooldown. At each M007 decision point, both candidates are evaluated on the same
+causal prefix and lookback. The incumbent uses its current absolute endpoints. Equality keeps the
+incumbent; when incumbent score is zero, the proposed score must be positive. Initialization,
+eligibility, tie-breaking, open-position freezing and every economic rule remain those of M007.
+
+The implementation must expose one immutable expanded configuration and exact model hash before
+execution. Its direct gates against M007 are at least 90% of cycles, at least 99% of equity, at
+most 117 reselections and at most 50 reversals, plus no cooldown violation. Promotion to champion
+also requires at least 101% of M007 equity and all general frozen guardrails. M009 is authorized
+only after its implementation and causal incumbent-score semantics pass review; no replay may
+begin before that gate.
