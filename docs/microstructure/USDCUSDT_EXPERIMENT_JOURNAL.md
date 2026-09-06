@@ -779,3 +779,32 @@ alongside trade quantity/aggressor evidence and historical tick/lot rules. No pr
 M010, live capture, Testnet or account access is authorized. If sufficient offline data exists,
 an execution gate for frozen M007 requires a new preregistration; otherwise the exact missing
 coverage must be reported before any acquisition decision.
+
+## Local execution-evidence inventory
+
+The read-only inventory found a complete and valid bounded trade dataset but no local historical
+L2. The active 2025--2026 manifest binds 613 official daily archives, 275,345,480 individual
+trades and 3,555,555,183 compressed bytes, with no missing dates, ID/timestamp gaps, overlaps or
+invalidity reasons. Trade rows provide quantity and aggressor-side inference.
+
+Zero local snapshot, delta, depth or L2 manifest files were found. The repository's execution
+engine already models sequence gaps, queue consumption, partial fills, latency, cancellation and
+fees on fixtures, but no real L2 importer or real execution artifact exists. Historical tick
+evidence is partial and bound; historical step size and minimum notional remain unknown. The
+single current public filter/depth snapshot cannot be used as historical proof.
+
+```text
+EXECUTION_GATE_READY=NO
+LOCAL_SEQUENCED_L2=NONE
+TRADE_QUANTITY_AND_AGGRESSOR=AVAILABLE
+HISTORICAL_STEP_AND_MIN_NOTIONAL=UNKNOWN
+FILLS_INVENTED=NO
+M007_CHANGED=NO
+M010_AUTHORIZED=NO
+NEXT_GATE=OWNER_DECISION_ON_OFFLINE_HISTORICAL_L2_ACQUISITION
+```
+
+The detailed inventory is recorded in
+`docs/microstructure/USDCUSDT_EXECUTION_EVIDENCE_INVENTORY.md` and
+`reports/usdcusdt/execution-evidence-inventory.json`. No data acquisition or shadow capture is
+authorized by this inventory.

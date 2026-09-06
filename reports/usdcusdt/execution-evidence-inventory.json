@@ -1,0 +1,134 @@
+{
+  "schema_version": "usdcusdt-execution-evidence-inventory-v1",
+  "captured_at_utc": "2026-09-06T23:11:15.4486025Z",
+  "scope": {
+    "campaign": "USDCUSDT_EXHAUSTIVE",
+    "symbol": "USDCUSDT",
+    "mode": "LOCAL_READ_ONLY_INVENTORY",
+    "new_downloads": false,
+    "live_capture": false,
+    "testnet_accessed": false,
+    "account_accessed": false,
+    "orders_sent": false
+  },
+  "active_trade_manifest": {
+    "path": "data/manifests/usdcusdt-trades-2025-2026.json",
+    "file_sha256": "553550be53b657c9523bda59d905b1b987f7f86310db838ca0e47dd625a4359d",
+    "dataset_hash": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+    "requested_start": "2025-01-01",
+    "requested_end": "2026-09-05",
+    "first_timestamp": "2025-01-01T00:00:00.006766Z",
+    "last_timestamp": "2026-09-05T23:59:59.783643Z",
+    "daily_archives": 613,
+    "records": 275345480,
+    "compressed_archive_bytes": 3555555183,
+    "integrity_status": "VALID",
+    "missing_dates": 0,
+    "id_gaps": 0,
+    "id_overlaps": 0,
+    "timestamp_gaps": 0,
+    "timestamp_overlaps": 0,
+    "invalidity_reasons": 0,
+    "all_available_flag": false,
+    "all_available_interpretation": "BOUNDED_RANGE_REQUEST_NOT_ALL_HISTORY_MODE"
+  },
+  "development_trade_slice": {
+    "path": "data/manifests/usdcusdt-trades-development-2026.json",
+    "file_sha256": "5641a105e78248c15b12a02155e25dda49bbea3c10dbb45a9dec0df630368f28",
+    "dataset_hash": "b3ff95df03f699cda1764ca96d46906dcc2fa0d88153727a6ba99d0d21f33e14",
+    "first_archive_date": "2025-12-31",
+    "last_archive_date": "2026-09-05",
+    "archives": 249,
+    "records": 109445442,
+    "compressed_archive_bytes": 1442561312,
+    "integrity_status": "VALID"
+  },
+  "trade_schema": {
+    "source_kind": "BINANCE_SPOT_DAILY_TRADES",
+    "timestamp_unit_2025_2026": "microseconds",
+    "columns": [
+      "trade_id",
+      "price",
+      "quantity",
+      "quote_quantity",
+      "timestamp",
+      "buyer_is_maker",
+      "best_match"
+    ],
+    "available_evidence": [
+      "trade identity and ordering",
+      "executed price",
+      "executed base and quote quantity",
+      "aggressor-side inference from buyer_is_maker"
+    ],
+    "not_available": [
+      "resting order identity",
+      "queue position",
+      "order-book levels",
+      "cancellations",
+      "book update sequence",
+      "latency"
+    ]
+  },
+  "local_l2": {
+    "snapshot_files": 0,
+    "delta_files": 0,
+    "depth_files": 0,
+    "l2_manifests": 0,
+    "coverage": null,
+    "sequence_continuity": "UNAVAILABLE",
+    "status": "MISSING"
+  },
+  "exchange_rules": {
+    "historical_tick": {
+      "status": "PARTIAL",
+      "old_grid": "0.0001",
+      "new_grid": "0.00001",
+      "official_completion_bound": "2026-04-14T05:00:00Z",
+      "source": "https://www.binance.com/en/support/announcement/detail/1f1ee792db2d445eb967aa09f6c05138",
+      "transition_policy": "OFFICIAL_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX"
+    },
+    "current_snapshot_only": {
+      "path": "reports/microstructure/stablecoin-market-comparison.json",
+      "captured_at_utc": "2026-09-06T14:52:33.2078946Z",
+      "tick_size": "0.00001",
+      "step_size": "1",
+      "minimum_notional": "5",
+      "historical_proof": false
+    },
+    "historical_step_size": "UNKNOWN",
+    "historical_minimum_notional": "UNKNOWN"
+  },
+  "existing_execution_engine": {
+    "implementation": "src/crypto_strategy_lab/microstructure/execution.py",
+    "supports": [
+      "book snapshot and delta events",
+      "sequence/gap invalidation",
+      "queue consumption",
+      "partial fills",
+      "latency",
+      "cancel in flight",
+      "fees",
+      "single-lot exact accounting",
+      "risk halt without forced liquidation"
+    ],
+    "real_l2_importer": false,
+    "real_historical_execution_artifact": false,
+    "current_use": "FIXTURES_ONLY"
+  },
+  "decision": {
+    "execution_gate_ready": false,
+    "reason": "NO_LOCAL_SEQUENCED_L2_HISTORY_OR_HISTORICAL_FILTER_CATALOG",
+    "m007_changed": false,
+    "m010_authorized": false,
+    "fills_invented": false,
+    "next_required_evidence": [
+      "timestamped and sequenced L2 snapshots plus deltas for the intended interval",
+      "gap and recovery-snapshot provenance",
+      "historical quantity step and minimum-notional rules",
+      "explicit fee scenario",
+      "declared latency and queue-bound assumptions"
+    ],
+    "owner_authorization_required_before": "ACQUIRING_NEW_HISTORICAL_L2_DATA_OR_STARTING_ANY_PUBLIC_LIVE_SHADOW_CAPTURE"
+  }
+}

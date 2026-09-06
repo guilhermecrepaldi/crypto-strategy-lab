@@ -86,5 +86,6 @@ fill result.
 - Historical maker-fee applicability, executable capacity, queue position, partial fills,
   latency degradation and adverse selection.
 - Whether local historical data contains sufficiently continuous, timestamped and sequenced L2
-  evidence to evaluate those execution unknowns without invented fills.
+  evidence to evaluate those execution unknowns without invented fills. The current inventory
+  found none; availability from an external historical source remains unassessed.
 - Whether a frozen DEVELOPMENT champion generalizes prospectively.
