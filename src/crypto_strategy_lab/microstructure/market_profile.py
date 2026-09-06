@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -261,8 +262,14 @@ def write_hourly_market_profile(profile: MarketHourlyProfile, directory: Path) -
                 "schema_version": profile.schema_version,
                 "dataset_hash": profile.dataset_hash,
                 "profile_hash": profile.profile_hash,
+                "start": profile.start.isoformat().replace("+00:00", "Z"),
+                "end_exclusive": profile.end_exclusive.isoformat().replace("+00:00", "Z"),
+                "tick_size": str(profile.tick_size),
+                "tick_catalog_hash": profile.tick_catalog_hash,
                 "json": str(json_path),
                 "csv": str(csv_path),
+                "json_sha256": _sha256(json_path),
+                "csv_sha256": _sha256(csv_path),
             },
             indent=2,
             sort_keys=True,
@@ -271,6 +278,14 @@ def write_hourly_market_profile(profile: MarketHourlyProfile, directory: Path) -
         encoding="utf-8",
     )
     return {"json": json_path, "csv": csv_path, "manifest": manifest_path}
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 __all__ = [

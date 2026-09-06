@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
 from decimal import ROUND_DOWN, Decimal
 from enum import StrEnum
-from typing import Final, Literal
+from typing import Any, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -493,8 +493,8 @@ class OracleCandidateResult(BaseModel):
 class CandidateTimeline:
     low_tick: int
     distance: int
-    low_events: array[int]
-    high_events: array[int]
+    low_events: Any
+    high_events: Any
     cycle_entries: array[int] = field(default_factory=lambda: array("q"))
     cycle_exits: array[int] = field(default_factory=lambda: array("q"))
 
@@ -564,12 +564,14 @@ class SerialTape:
     """Compact, ordered price-event tape on one exact fixed-point grid."""
 
     tick_size: Decimal
-    occurrences: dict[int, array[int]]
-    events: array[int]
-    price_ticks: array[int]
+    occurrences: dict[int, Any]
+    events: Any
+    price_ticks: Any
     last_event: int
     last_price_tick: int
     observed_tick_evidence_event: int | None = None
+    tape_hash: str | None = None
+    tape_cache_key: str | None = None
 
     @classmethod
     def from_events(
@@ -632,7 +634,7 @@ class SerialTape:
         index = bisect_left(self.events, end_exclusive) - 1
         if index < 0:
             raise ValueError("replay interval has no observed mark price")
-        return self.price_ticks[index]
+        return int(self.price_ticks[index])
 
     def timelines(self, distances: tuple[int, ...]) -> dict[tuple[int, int], CandidateTimeline]:
         result: dict[tuple[int, int], CandidateTimeline] = {}

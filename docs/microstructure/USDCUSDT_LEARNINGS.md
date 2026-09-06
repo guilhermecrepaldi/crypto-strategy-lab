@@ -12,14 +12,26 @@ fill result.
 - The optional CUDA Oracle matched CPU outputs on all four golden datasets, but its maximum
   frozen end-to-end speedup was 1.681x and failed the frozen 2x adoption gate. CPU remains the
   selected Oracle backend.
+- M005 is the corrected active baseline, not a confirmed champion. Its complete zero-fee
+  price-path replay produced 191,697 cycles, but 194 of 248 days had no completed cycle and
+  January plus February contained 99.9671% of all cycles.
+- A LOW/HIGH pair frozen for the whole replay did not preserve continuous productivity. The
+  longest completed M005 hold lasted 102.53 days and the terminal open cycle was censored after
+  19.37 days; neither event authorizes a time stop.
+- M005's mathematical compounding result is not executable evidence: fill probability, queue,
+  book depth, capacity and latency remain unknown, while its reference scenario has zero fees
+  and no capacity cap.
 
 ## Likely
 
-- None yet.
+- Flat-only causal reselection is a justified next ablation because it can avoid future entries
+  at an inactive frozen level. It cannot free inventory already waiting for HIGH, so it may not
+  solve the dominant long-hold bottleneck.
 
 ## Refuted
 
-- None yet.
+- The M005 hypothesis that one static causally selected band would remain productively useful
+  throughout the frozen 2026 DEVELOPMENT interval.
 
 ## Unknown
 

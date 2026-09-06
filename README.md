@@ -226,10 +226,11 @@ autoriza liquidação automática.
 
 M001-M004 foram preservados como pré-registros superados antes de qualquer replay: eles tratavam
 o tick como constante, enquanto a Binance reduziu oficialmente o tick de USDCUSDT de `0.0001`
-para `0.00001` em `2026-04-14T05:00:00Z`. O bloco ativo equivalente é M005 estático, M006 com
-reseleção horária, M007 `ALWAYS_BEST` por minuto e M008 `IDLE_TRIGGERED`. Todos reiniciam com 100
-USDT em `2026-01-01T00:00:00Z` e usam o mesmo cutoff físico. Esses replays são DEVELOPMENT; os
-partitions existentes `VALIDATION` e `LOCKED_TEST` permanecem fechados.
+para `0.00001` em `2026-04-14T05:00:00Z`. M005 é o baseline estático corrigido e já foi avaliado;
+M006 é o próximo challenger autorizado, com reseleção horária somente quando flat. M007 e M008
+foram registrados antes do gate evolutivo e não estão automaticamente autorizados. Todo replay
+reinicia com 100 USDT em `2026-01-01T00:00:00Z` e usa o mesmo cutoff físico. O intervalo inteiro é
+DEVELOPMENT; `VALIDATION` e `LOCKED_TEST` permanecem fechados.
 
 ```powershell
 # dados oficiais; a campanha ativa usa somente 2025-2026
@@ -241,10 +242,15 @@ uv run crypto-lab microstructure-download --symbol USDCUSDT --kind trades `
 uv run crypto-lab microstructure-history-verify `
   --manifest data/manifests/usdcusdt-trades-2025-2026.json
 
-# replay integral M005-M008 e análise temporal/regimes pós-replay
+# pré-processamento único e idempotente do tape validado
+uv run crypto-lab microstructure-build-tape `
+  --manifest data/manifests/usdcusdt-trades-2025-2026.json `
+  --artifact-root artifacts
+
+# um modelo explicitamente autorizado por vez; sempre seguido por autópsia
 uv run crypto-lab microstructure-full-replay `
   --manifest data/manifests/usdcusdt-trades-2025-2026.json `
-  --artifact-root artifacts --report-root reports
+  --artifact-root artifacts --report-root reports --models M006
 ```
 
 O downloader é incremental, idempotente e valida o `.CHECKSUM` oficial. Gaps não são preenchidos.
@@ -260,6 +266,12 @@ com os trades; depois desse evento, `0.00001` é uma grade observadamente aceita
 somente o limite de conclusão publicado pela Binance. LOW e HIGH ficam absolutos depois de
 selecionados: mudança posterior da grade não altera posição aberta, não arredonda alvo e não
 provoca reseleção implícita.
+
+Cada sucessor nasce da autópsia do modelo anterior: observação, hipótese causal, uma mudança
+interpretável, efeito esperado e risco são registrados antes da execução. O resultado do mesmo
+período pode orientar a próxima hipótese porque ele é declarado DEVELOPMENT, mas nenhuma decisão
+no evento `T` pode consultar dados posteriores a `T`. Registro `CREATED` não equivale a autorização
+científica.
 
 O trabalho anterior FDUSDUSDC é `LEGACY_EVIDENCE` / `ARCHIVED_EXPERIMENT`. Seus arquivos são
 preservados para explicar a origem da hipótese, mas nenhum novo download, scanner, backtest,

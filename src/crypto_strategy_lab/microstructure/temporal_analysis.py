@@ -173,8 +173,8 @@ class _PriceIntegral:
         index = bisect_left(self._tape.events, timestamp_end) - 1
         if index < 0:
             raise ValueError("price integral precedes the first observed trade")
-        return int(self._areas[index]) + self._tape.price_ticks[index] * (
-            micros - self._tape.events[index] // EVENT_ORDER_SCALE
+        return int(self._areas[index]) + int(self._tape.price_ticks[index]) * (
+            micros - int(self._tape.events[index]) // EVENT_ORDER_SCALE
         )
 
 

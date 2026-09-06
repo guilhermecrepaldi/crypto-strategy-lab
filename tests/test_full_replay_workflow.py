@@ -86,6 +86,11 @@ def test_full_replay_writes_complete_evidence_and_never_economic_stops(
     artifacts = tmp_path / "artifacts"
     reports = tmp_path / "reports"
     register_active_block(artifact_root=artifacts, report_root=reports)
+    registry_before_replay = ModelRegistry(artifact_root=artifacts, report_root=reports)
+    registry_before_replay.transition("M006", ModelStatus.RUNNING, reason="partial replay started")
+    registry_before_replay.transition(
+        "M006", ModelStatus.INCONCLUSIVE, reason="partial replay interrupted"
+    )
     monkeypatch.setattr(  # type: ignore[attr-defined]
         "crypto_strategy_lab.microstructure.replay_workflow.load_serial_tape",
         lambda *args, **kwargs: tape,
@@ -117,3 +122,9 @@ def test_full_replay_writes_complete_evidence_and_never_economic_stops(
     assert (reports / "usdcusdt" / "temporal-productivity.html").exists()
     assert any(item.get("kind") == "MARKET_PRODUCTIVITY_REGIME" for item in records)
     assert not (artifacts / "usdcusdt" / "models" / ".full-replay.lock").exists()
+    assert any(
+        item["event_type"] == "STATUS_CHANGED"
+        and item["payload"].get("from") == ModelStatus.INCONCLUSIVE.value
+        and item["payload"].get("to") == ModelStatus.RUNNING.value
+        for item in registry.journal()
+    )

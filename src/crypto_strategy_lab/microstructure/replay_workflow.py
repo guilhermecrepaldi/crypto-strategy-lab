@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import subprocess
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -30,6 +31,7 @@ from crypto_strategy_lab.microstructure.serial_replay import (
     load_serial_tape,
     replay_serial_model,
 )
+from crypto_strategy_lab.microstructure.tape_cache import CACHE_SCHEMA, load_or_build_tape
 from crypto_strategy_lab.microstructure.temporal_analysis import (
     MarketProductivityRegime,
     TemporalAnalysisContext,
@@ -59,10 +61,12 @@ def run_full_replay_campaign(
     artifact_root: Path = Path("artifacts"),
     report_root: Path = Path("reports"),
     model_ids: tuple[str, ...] = DEFAULT_MODEL_IDS,
+    progress: Callable[[str, int], None] | None = None,
 ) -> tuple[dict[str, Any], ...]:
     """Replay every requested model to the one frozen physical cutoff, sequentially."""
     manifest = HistoryManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
     _validate_manifest(manifest)
+    progress_callback = progress or (lambda milestone, percent: print(f"{milestone} {percent}"))
     registry = ModelRegistry(artifact_root=artifact_root, report_root=report_root)
     registrations = {item.model_id: item for item in registry.entries()}
     missing = [model_id for model_id in model_ids if model_id not in registrations]
@@ -100,32 +104,50 @@ def run_full_replay_campaign(
     )
     lock_path = artifact_root / "usdcusdt" / "models" / ".full-replay.lock"
     with _exclusive_lock(lock_path):
-        market_profile = build_hourly_market_profile(
+        market_profile, profile_paths, profile_reused = load_or_build_market_profile(
             manifest,
+            artifact_root=artifact_root,
             start=REPLAY_START,
             end_exclusive=end_exclusive,
             tick_size=scenario.tick_size,
             tick_catalog=USDCUSDT_TICK_CATALOG,
         )
-        profile_paths = write_hourly_market_profile(
-            market_profile,
-            artifact_root / "usdcusdt" / "market-profiles" / market_profile.profile_hash,
-        )
-        tape = load_serial_tape(
+        tape_result = load_or_build_tape(
             manifest,
-            tick_size=scenario.tick_size,
             start=tape_start,
             end_exclusive=end_exclusive,
+            artifact_root=artifact_root,
+            tick_size=scenario.tick_size,
             tick_catalog=USDCUSDT_TICK_CATALOG,
+            raw_loader=lambda: load_serial_tape(
+                manifest,
+                tick_size=scenario.tick_size,
+                start=tape_start,
+                end_exclusive=end_exclusive,
+                tick_catalog=USDCUSDT_TICK_CATALOG,
+            ),
+            progress=progress_callback,
         )
+        tape = tape_result.tape
         analysis_context = TemporalAnalysisContext(tape)
         records: list[dict[str, Any]] = [
             {
                 "kind": "MARKET_HOURLY_PROFILE",
                 "profile_hash": market_profile.profile_hash,
+                "reused": profile_reused,
                 "paths": {key: str(value) for key, value in profile_paths.items()},
             }
         ]
+        records.insert(
+            1,
+            {
+                "kind": "MARKET_TAPE_READY",
+                "tape_hash": tape_result.manifest.tape_hash,
+                "records": tape_result.manifest.records,
+                "reused": tape_result.reused,
+                "memory_footprint_bytes": tape_result.manifest.memory_footprint_bytes,
+            },
+        )
         analyses: list[TemporalReplayAnalysis] = []
         for model in models:
             record, analysis = _run_one(
@@ -168,6 +190,103 @@ def run_full_replay_campaign(
                 }
             )
         return tuple(records)
+
+
+def load_or_build_market_profile(
+    manifest: HistoryManifest,
+    *,
+    artifact_root: Path,
+    start: datetime,
+    end_exclusive: datetime,
+    tick_size: Any,
+    tick_catalog: TickCatalog | None,
+) -> tuple[MarketHourlyProfile, dict[str, Path], bool]:
+    profile_root = artifact_root / "usdcusdt" / "market-profiles"
+    expected_catalog_hash = tick_catalog.catalog_hash if tick_catalog else None
+    for directory in sorted(profile_root.glob("*/")):
+        json_path = directory / "market-hourly.json"
+        csv_path = directory / "market-hourly.csv"
+        manifest_path = directory / "market-hourly-manifest.json"
+        if not json_path.is_file() or not csv_path.is_file() or not manifest_path.is_file():
+            continue
+        try:
+            cache_metadata = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if (
+            cache_metadata.get("dataset_hash") != manifest.dataset_hash
+            or cache_metadata.get("profile_hash") != directory.name
+        ):
+            continue
+        expected_metadata = {
+            "start": start.isoformat().replace("+00:00", "Z"),
+            "end_exclusive": end_exclusive.isoformat().replace("+00:00", "Z"),
+            "tick_size": str(tick_size),
+            "tick_catalog_hash": expected_catalog_hash,
+        }
+        declared_target = all(
+            cache_metadata.get(key) == value for key, value in expected_metadata.items()
+        )
+        try:
+            profile = MarketHourlyProfile.model_validate_json(json_path.read_text(encoding="utf-8"))
+        except Exception:
+            if declared_target:
+                raise ValueError("matching market profile JSON is invalid") from None
+            continue
+        profile_matches = (
+            profile.dataset_hash == manifest.dataset_hash
+            and profile.start == start
+            and profile.end_exclusive == end_exclusive
+            and profile.tick_size == tick_size
+            and profile.tick_catalog_hash == expected_catalog_hash
+        )
+        if not profile_matches:
+            if declared_target:
+                raise ValueError("market profile manifest and JSON identities disagree")
+            continue
+        identity = {
+            "dataset_hash": profile.dataset_hash,
+            "start": profile.start,
+            "end_exclusive": profile.end_exclusive,
+            "tick_size": profile.tick_size,
+            "tick_catalog_hash": profile.tick_catalog_hash,
+            "hours": [item.model_dump(mode="json") for item in profile.hours],
+        }
+        if canonical_hash(identity) != profile.profile_hash:
+            raise ValueError("market profile cache hash validation failed")
+        if profile.profile_hash != directory.name:
+            raise ValueError("market profile directory does not match its semantic hash")
+        actual_hashes = {
+            "json_sha256": _file_sha256(json_path),
+            "csv_sha256": _file_sha256(csv_path),
+        }
+        declared_hashes = {key: cache_metadata.get(key) for key in actual_hashes}
+        if any(declared_hashes.values()) and declared_hashes != actual_hashes:
+            raise ValueError("market profile file hash validation failed")
+        for key, value in expected_metadata.items():
+            declared = cache_metadata.get(key)
+            if declared is not None and declared != value:
+                raise ValueError("market profile manifest identity mismatch")
+        if declared_hashes != actual_hashes or any(
+            cache_metadata.get(key) != value for key, value in expected_metadata.items()
+        ):
+            upgraded = {**cache_metadata, **expected_metadata, **actual_hashes}
+            temporary = manifest_path.with_suffix(".json.upgrading")
+            temporary.write_text(
+                json.dumps(upgraded, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            os.replace(temporary, manifest_path)
+        return profile, {"json": json_path, "csv": csv_path, "manifest": manifest_path}, True
+    profile = build_hourly_market_profile(
+        manifest,
+        start=start,
+        end_exclusive=end_exclusive,
+        tick_size=tick_size,
+        tick_catalog=tick_catalog,
+    )
+    paths = write_hourly_market_profile(profile, profile_root / profile.profile_hash)
+    return profile, paths, False
 
 
 def _run_one(
@@ -227,15 +346,24 @@ def _run_one(
                 "locked_test_accessed": False,
                 "live_accessed": False,
                 "testnet_accessed": False,
+                "tape_cache": {
+                    "cache_key": tape.tape_cache_key,
+                    "tape_hash": tape.tape_hash,
+                    "schema_version": CACHE_SCHEMA,
+                },
             },
         ),
     )
     run_hash = str(run_event["payload"]["RUN_HASH"])
-    if status == ModelStatus.CREATED:
+    if status in {ModelStatus.CREATED, ModelStatus.INCONCLUSIVE}:
         registry.transition(
             model.model_id,
             ModelStatus.RUNNING,
-            reason="canonical full DEVELOPMENT replay started",
+            reason=(
+                "canonical full DEVELOPMENT replay started"
+                if status == ModelStatus.CREATED
+                else "resuming canonical full DEVELOPMENT replay after inconclusive run"
+            ),
         )
     try:
         result = replay_serial_model(
@@ -413,4 +541,17 @@ def _git_head() -> str:
     return completed.stdout.strip()
 
 
-__all__ = ["DEFAULT_MODEL_IDS", "REPLAY_START", "run_full_replay_campaign"]
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+__all__ = [
+    "DEFAULT_MODEL_IDS",
+    "REPLAY_START",
+    "load_or_build_market_profile",
+    "run_full_replay_campaign",
+]

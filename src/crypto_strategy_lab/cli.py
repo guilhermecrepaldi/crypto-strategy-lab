@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 import subprocess
+from datetime import UTC, timedelta
 from datetime import date as Date
-from datetime import timedelta
+from datetime import datetime as DateTime
 from decimal import Decimal
 from pathlib import Path
 from typing import Annotated, Literal, cast
@@ -69,13 +70,21 @@ from crypto_strategy_lab.microstructure.price_profile import (
     build_price_profiles,
     write_price_profile_reports,
 )
-from crypto_strategy_lab.microstructure.replay_workflow import run_full_replay_campaign
+from crypto_strategy_lab.microstructure.replay_workflow import (
+    REPLAY_START,
+    run_full_replay_campaign,
+)
 from crypto_strategy_lab.microstructure.reporting import (
     write_backtest_reports,
 )
 from crypto_strategy_lab.microstructure.reporting import (
     write_history_audit as write_microstructure_history_audit,
 )
+from crypto_strategy_lab.microstructure.serial_replay import (
+    SERIAL_TAPE_QUANTUM,
+    USDCUSDT_TICK_CATALOG,
+)
+from crypto_strategy_lab.microstructure.tape_cache import load_or_build_tape
 from crypto_strategy_lab.microstructure.workflow import (
     audit_trade_levels,
     run_s0_fixture,
@@ -606,16 +615,14 @@ def microstructure_register_models(
 @app.command("microstructure-full-replay")
 def microstructure_full_replay(
     manifest: Annotated[Path, typer.Option(exists=True)],
+    models: Annotated[str, typer.Option(help="Exactly one preregistered model ID")],
     artifact_root: Annotated[Path, typer.Option()] = Path("artifacts"),
     report_root: Annotated[Path, typer.Option()] = Path("reports"),
-    models: Annotated[str, typer.Option(help="Comma-separated preregistered model IDs")] = (
-        "M005,M006,M007,M008"
-    ),
 ) -> None:
     """Run complete DEVELOPMENT replays to the frozen physical cutoff; never economic-stop."""
     model_ids = tuple(item.strip().upper() for item in models.split(",") if item.strip())
-    if not model_ids:
-        raise typer.BadParameter("at least one preregistered model ID is required")
+    if len(model_ids) != 1:
+        raise typer.BadParameter("exactly one preregistered model ID is required")
     records = run_full_replay_campaign(
         manifest,
         artifact_root=artifact_root,
@@ -624,6 +631,58 @@ def microstructure_full_replay(
     )
     for record in records:
         typer.echo(json.dumps(record, sort_keys=True))
+
+
+@app.command("microstructure-build-tape")
+def microstructure_build_tape(
+    manifest: Annotated[Path, typer.Option(exists=True)],
+    artifact_root: Annotated[Path, typer.Option()] = Path("artifacts"),
+    start: Annotated[str | None, typer.Option(help="Inclusive UTC ISO timestamp")] = None,
+    end: Annotated[str | None, typer.Option(help="Exclusive UTC ISO timestamp")] = None,
+) -> None:
+    """Build or verify the immutable NumPy USDCUSDT market-tape cache."""
+    parsed = HistoryManifest.model_validate_json(manifest.read_text(encoding="utf-8"))
+    tape_start = REPLAY_START - timedelta(days=1)
+    tape_end = parsed.last_timestamp + timedelta(microseconds=1)
+    try:
+        if start is not None:
+            tape_start = DateTime.fromisoformat(start.replace("Z", "+00:00"))
+        if end is not None:
+            tape_end = DateTime.fromisoformat(end.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise typer.BadParameter("timestamps must be ISO-8601 and timezone-aware") from error
+    if tape_start.tzinfo is None or tape_end.tzinfo is None:
+        raise typer.BadParameter("timestamps must be timezone-aware")
+    tape_start = tape_start.astimezone(UTC)
+    tape_end = tape_end.astimezone(UTC)
+    result = load_or_build_tape(
+        parsed,
+        start=tape_start,
+        end_exclusive=tape_end,
+        artifact_root=artifact_root,
+        tick_size=SERIAL_TAPE_QUANTUM,
+        tick_catalog=USDCUSDT_TICK_CATALOG,
+        progress=lambda milestone, percent: typer.echo(f"{milestone} {percent}"),
+    )
+    item = result.manifest
+    typer.echo(
+        json.dumps(
+            {
+                "status": item.status,
+                "reused": result.reused,
+                "records": item.records,
+                "start": item.start,
+                "end_exclusive": item.end_exclusive,
+                "size_bytes": item.total_size_bytes,
+                "build_time_seconds": item.build_time_seconds,
+                "cache_key": item.cache_key,
+                "tape_hash": item.tape_hash,
+                "memory_footprint_bytes": item.memory_footprint_bytes,
+            },
+            default=str,
+            sort_keys=True,
+        )
+    )
 
 
 @app.command("microstructure-download")

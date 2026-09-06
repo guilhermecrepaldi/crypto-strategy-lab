@@ -52,6 +52,23 @@ operação, timestep, episódio ou reset. Não crie um harness novo apenas para 
 Use agentes somente quando o bloco for independente e o ganho superar o custo de coordenação.
 Informe quais modelos foram realmente usados; não alegue troca de modelo que não ocorreu.
 
+## Evolução dirigida por aprendizado
+
+- Trate todo o intervalo congelado de `2026-01-01` ao cutoff físico como `DEVELOPMENT`; seu
+  resultado é score de desenvolvimento, nunca prova prospectiva.
+- Execute um único `Mxxx` por vez. Antes de autorizar o sucessor, faça a autópsia física do
+  anterior, registre observação, hipótese de causa, mudança proposta, efeito esperado e riscos.
+- Cada challenger deve atacar um gargalo observado com uma mudança interpretável. Resultado
+  rejeitado não vira pai automático; a linhagem parte do champion vigente e pode ramificar.
+- Compare capital final, ciclos, idle, zero days, holding, reseleções, drawdown, estabilidade,
+  concentração e taxas. Capital final isolado não autoriza promoção.
+- Registros `CREATED` anteriores a este protocolo são somente identidades reservadas. Não são
+  autorização científica de execução sem vínculo explícito com a autópsia do pai.
+- A cada dez modelos concluídos, pause novas execuções para revisar champion, descobertas,
+  hipóteses rejeitadas, risco de overfit, gargalo e direção seguinte.
+- Toda decisão no evento `T` usa apenas o prefixo causal até `T`. Análises posteriores podem
+  motivar um novo modelo, mas nunca retroagir dentro de um replay.
+
 ## Segurança experimental
 
 - `VALIDATION` e `LOCKED_TEST` permanecem fechados até seus gates explícitos.

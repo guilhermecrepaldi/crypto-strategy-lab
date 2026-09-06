@@ -264,3 +264,86 @@ Scientific review decision: `GPU_ORACLE_GATE=FAIL`; CPU remains the canonical an
 Oracle backend. The preregistered 2x threshold was not changed after seeing results. Another GPU
 workload is deferred until a concrete campaign hotspot is measured; this infrastructure result
 does not create a model ID and says nothing about strategy edge.
+
+## Evolutionary-development gate
+
+Every new model after the already registered first block must be justified by the preceding
+artifacts. The loop is `EXECUTE -> AUTOPSY -> HYPOTHESIS -> PREREGISTER -> FULL REPLAY ->
+COMPARE`. A challenger normally branches from the current DEVELOPMENT champion; a rejected
+challenger does not become the automatic parent. One interpretable change should attack one
+observed bottleneck unless a deliberate architectural change is separately documented.
+
+The complete `2026-01-01` through physical-cutoff interval is DEVELOPMENT data. Reusing it to
+design successors creates declared development bias and does not permit any model decision at
+time `T` to use information after `T`. `VALIDATION` and `LOCKED_TEST` remain unopened. A model
+autopsy is mandatory before the next model is scientifically authorized, and every ten completed
+models require a temporary research-direction review.
+
+## M005 autopsy — corrected static baseline
+
+Identity and scope:
+
+```text
+MODEL=M005
+MODEL_HASH=c5e2d7a1fc0ea6279fc71f05f5551508ea6ac4a71d391f5854dfe7e6eccc4c62
+SCENARIO=PRICE_PATH_HISTORICAL_TICK_ZERO_FEE_V2
+RUN_HASH=16487d8f1c68966198cfbe7026c45cc246da67431e06b805e41f63c9e0c8c751
+START=2026-01-01T00:00:00Z
+END_EXCLUSIVE=2026-09-05T23:59:59.783644Z
+STATUS=EVALUATED
+```
+
+The full replay completed without an economic early stop. It selected absolute levels
+`1.00090 -> 1.00100`, made no reselections and reported 191,697 completed cycles. The zero-fee,
+unlimited-capacity price path compounded 100 USDT to marked equity
+20,744,700,612.7931666 USDT. This number reconciles exactly as initial capital plus realized
+profit 20,766,901,116.5514930 minus unrealized loss 22,200,603.7583264. It is mathematical
+price-path evidence, not executable capital: fills, queue, book depth, latency and capacity are
+unknown.
+
+Productivity was not temporally stable. Average daily cycles were 772.97 but the median was zero;
+194 of 248 days had zero cycles and only 18 days reached 2,000. January and February contained
+99.9671% of all cycles, while only 63 cycles completed after February. The best day was
+`2026-01-23` with 28,779 cycles. Profit concentration triggered the frozen warning: the best day
+accounted for 59.2%, the top five days for 89.6%, and the best month for 92.96% of positive MTM
+contributions.
+
+Completed-hold p50 was 0.368 seconds, but that statistic hides the capital-lock tail. The longest
+completed hold ran from `2026-02-10T08:10:53.227612Z` to
+`2026-05-23T20:58:01.999673Z` (102.53 days). The terminal cycle remained open from
+`2026-08-17T15:04:02.390957Z` for 19.37 days at the cutoff. The position was open for about
+85.65% of elapsed time. These holds remain open until HIGH and do not justify a time stop.
+
+Scientific decision:
+
+```text
+HYPOTHESIS_RESULT=NO
+DECISION=RETAIN_AS_BASELINE
+CURRENT_CHAMPION=NONE_CONFIRMED
+EXECUTABLE_EDGE=NOT_DEMONSTRATED
+CURRENT_BOTTLENECK=LONG_HOLD_THEN_STATIC_LEVEL_SELECTION
+```
+
+The supported conclusion is that the frozen band lost useful access after the concentrated
+January-February period. The artifacts alone do not establish whether this was caused by a
+general activity migration, reduced flow or another market condition; that distinction remains
+diagnostic work, not a hidden trading filter.
+
+## M006 authorization and interrupted attempt
+
+M006 remains authorized as the next causal ablation after this autopsy. It changes only flat-state
+selection: the same one-tick distance and 24-hour causal lookback are reconsidered hourly. The
+expected effect is to avoid new entries at a level that has lost recent activity. Its principal
+risk is reselection churn, and it cannot release an already open position or move HIGH.
+
+The first M006 invocation began automatically four seconds after M005 was persisted by the old
+multi-model command. The OWNER's new autopsy gate arrived before it completed, so the process was
+interrupted gracefully. The partial run has no evaluation and is preserved as
+`INCONCLUSIVE / OWNER_PROTOCOL_CHANGE`; it is not scientific evidence. M006 must be rerun alone,
+with the same dataset, scenario and cutoff, after the reusable market tape is ready. M007 remains
+unauthorized until the M006 autopsy.
+
+M007 and M008 were already registered before the evolutionary-development gate. Their immutable
+records are preserved, but `CREATED` means reserved identity rather than scientific authorization.
+After the M006 autopsy, each configuration must either receive an explicit evidence-linked
+authorization or remain unexecuted; registration order alone cannot determine the next model.

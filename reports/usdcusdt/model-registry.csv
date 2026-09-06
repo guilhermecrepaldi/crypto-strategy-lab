@@ -51,7 +51,7 @@ M004,SUPERSEDED,554d1d805205e59505ff89892d4ec00be5868d56636ebd584b80c8724e90fc28
   ""switch_advantage"": ""0.10"",
   ""symbol"": ""USDCUSDT""
 }",,,Test the preregistered anti-thrashing mechanism against M003.,,,,,,,,,
-M005,CREATED,c5e2d7a1fc0ea6279fc71f05f5551508ea6ac4a71d391f5854dfe7e6eccc4c62,,2026-09-06T18:37:41.270251Z,"A pair one causally known exchange tick wide, selected from the preceding 24 hours, may retain positive price-path throughput when frozen.",The first tape pass exposed a historical tick transition before any model ran.,"Replace M001's unverified constant-tick assumption with the announcement-bound, causal observed-grid policy; keep STATIC selection and every economic rule.",Restore admissible historical price levels without using a future grid or changing the serial benchmark.,"{
+M005,EVALUATED,c5e2d7a1fc0ea6279fc71f05f5551508ea6ac4a71d391f5854dfe7e6eccc4c62,,2026-09-06T18:37:41.270251Z,"A pair one causally known exchange tick wide, selected from the preceding 24 hours, may retain positive price-path throughput when frozen.",The first tape pass exposed a historical tick transition before any model ran.,"Replace M001's unverified constant-tick assumption with the announcement-bound, causal observed-grid policy; keep STATIC selection and every economic rule.",Restore admissible historical price levels without using a future grid or changing the serial benchmark.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": null,
@@ -68,8 +68,258 @@ M005,CREATED,c5e2d7a1fc0ea6279fc71f05f5551508ea6ac4a71d391f5854dfe7e6eccc4c62,,2
   ""symbol"": ""USDCUSDT"",
   ""tick_evidence_class"": ""OBSERVED_ACCEPTED_GRID"",
   ""tick_source"": ""BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX""
-}",,,Correct M001 before execution under a new hashed tick semantics.,,,,,,,,,
-M006,CREATED,dc63c807b874044fd9849459d7da0aabd9b99465b8a4fdd3a450160e96311980,M005,2026-09-06T18:37:41.287345Z,Hourly causal reselection with M005's tick-at-selection semantics improves throughput without changing its distance rule.,M005 can become stale as market activity moves.,Add flat-only PERIODIC_RESELECT at a one-hour decision interval to M005.,Recover intraday level migration relative to M005.,"{
+}","{
+  ""completed_cycles"": 191697,
+  ""concentration"": {
+    ""PROFIT_CONCENTRATION_WARNING"": ""YES"",
+    ""daily"": {
+      ""all_periods"": {
+        ""best_share"": ""0.5920901764390773018100271422"",
+        ""gross_losses"": ""242255204.2061256"",
+        ""gross_positive"": ""20986955716.9992922"",
+        ""net"": ""20744700512.7931666"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.9731653886923736727900828430"",
+        ""top5_share"": ""0.8957443968677949447013693828""
+      },
+      ""complete_period_count"": 247,
+      ""complete_periods"": {
+        ""best_share"": ""0.5921955591127877262935089571"",
+        ""gross_losses"": ""242255204.2061256"",
+        ""gross_positive"": ""20983221035.9932186"",
+        ""net"": ""20740965831.7870930"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.9733385967182855823946907110"",
+        ""top5_share"": ""0.8959038251833781751428193153""
+      },
+      ""granularity"": ""day"",
+      ""period_count"": 248
+    },
+    ""monthly"": {
+      ""all_periods"": {
+        ""best_share"": ""0.9296169954219684253560486381"",
+        ""gross_losses"": ""18197256.0299332"",
+        ""gross_positive"": ""20762897768.8230998"",
+        ""net"": ""20744700512.7931666"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""1"",
+        ""top5_share"": ""0.9992147192853161894159744004""
+      },
+      ""complete_period_count"": 8,
+      ""complete_periods"": {
+        ""best_share"": ""0.9296169954219684253560486381"",
+        ""gross_losses"": ""9690482.6272100"",
+        ""gross_positive"": ""20762897768.8230998"",
+        ""net"": ""20753207286.1958898"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""1"",
+        ""top5_share"": ""0.9992147192853161894159744004""
+      },
+      ""granularity"": ""month"",
+      ""period_count"": 9
+    },
+    ""weekly"": {
+      ""all_periods"": {
+        ""best_share"": ""0.9034681439436213277252661777"",
+        ""gross_losses"": ""62837768.2552390"",
+        ""gross_positive"": ""20807538281.0484056"",
+        ""net"": ""20744700512.7931666"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.9966965716555495402301631902"",
+        ""top5_share"": ""0.9929301824931231815215570852""
+      },
+      ""complete_period_count"": 34,
+      ""complete_periods"": {
+        ""best_share"": ""0.9034681785645491578546208426"",
+        ""gross_losses"": ""58688122.6929350"",
+        ""gross_positive"": ""20807537483.7029116"",
+        ""net"": ""20748849361.0099766"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.9966966098489936667752904657"",
+        ""top5_share"": ""0.9929302205422391563253637036""
+      },
+      ""granularity"": ""week"",
+      ""period_count"": 36
+    }
+  },
+  ""data_support"": {
+    ""book_depth"": ""UNKNOWN"",
+    ""executable_capacity"": ""UNKNOWN"",
+    ""fills_partial_fills"": ""UNKNOWN_PRICE_PATH_ONLY"",
+    ""gross_trade_volume"": ""OBSERVED_TRADES"",
+    ""latency"": ""COUNTERFACTUAL_ZERO"",
+    ""mid"": ""UNKNOWN"",
+    ""price"": ""OBSERVED_TRADES"",
+    ""queue_ahead"": ""UNKNOWN"",
+    ""spread_bid_ask"": ""UNKNOWN"",
+    ""trade_intensity"": ""OBSERVED_TRADES""
+  },
+  ""fees_quote"": ""0E-7"",
+  ""final_marked_equity"": ""20744700612.7931666"",
+  ""initial_quote"": ""100"",
+  ""open_cycle_censored"": true,
+  ""productivity_distribution"": {
+    ""daily"": {
+      ""best"": ""2026-01-23 00:00:00+00:00"",
+      ""capital_hour_return"": {
+        ""max"": ""0.1689758352028079089779400093"",
+        ""min"": ""-0.00003081852355255889014426447564"",
+        ""p10"": ""-0.000007079773347661843617274898366"",
+        ""p50"": ""4.166580714366397675796772267E-7"",
+        ""p90"": ""0.00005575420797806086435021580100""
+      },
+      ""complete_periods"": 247,
+      ""cycles"": {
+        ""max"": 28779,
+        ""min"": 0,
+        ""p10"": 0,
+        ""p50"": 0,
+        ""p90"": 13
+      },
+      ""worst"": ""2026-01-03 00:00:00+00:00""
+    },
+    ""monthly"": {
+      ""best"": ""2026-01-01 00:00:00+00:00"",
+      ""capital_hour_return"": {
+        ""max"": ""0.01088727123682138186003855687"",
+        ""min"": ""-6.529288675116839512177747972E-7"",
+        ""p10"": ""2.547681637084969983546427215E-7"",
+        ""p50"": ""0.000001975100936014376251103368250"",
+        ""p90"": ""0.001660948796708988068877049558""
+      },
+      ""complete_periods"": 8,
+      ""cycles"": {
+        ""max"": 164088,
+        ""min"": 0,
+        ""p10"": 0,
+        ""p50"": 13,
+        ""p90"": 27546
+      },
+      ""worst"": ""2026-03-01 00:00:00+00:00""
+    },
+    ""weekly"": {
+      ""best"": ""2026-01-19 00:00:00+00:00"",
+      ""capital_hour_return"": {
+        ""max"": ""0.02723566459035051080090630863"",
+        ""min"": ""-0.000004938261654604777010132329869"",
+        ""p10"": ""-0.000001785292738533100735027997830"",
+        ""p50"": ""0.000001785089761630274666433886628"",
+        ""p90"": ""0.01042744988250148948602462321""
+      },
+      ""complete_periods"": 34,
+      ""cycles"": {
+        ""max"": 54543,
+        ""min"": 0,
+        ""p10"": 0,
+        ""p50"": 1,
+        ""p90"": 24609
+      },
+      ""worst"": ""2026-02-16 00:00:00+00:00""
+    }
+  },
+  ""productivity_fingerprint"": {
+    ""BEST_1D_CYCLES"": 28779,
+    ""BEST_30D_CYCLES"": 161749,
+    ""BEST_7D_CYCLES"": 64564,
+    ""BEST_MONTH"": ""2026-02"",
+    ""BEST_REGIME"": ""HOT"",
+    ""HOT_PERIOD_COUNT"": 48,
+    ""LONGEST_COLD_STREAK"": 7,
+    ""LONGEST_HOT_STREAK"": 7,
+    ""WORST_MONTH"": ""2026-04""
+  },
+  ""realized_profit"": ""20766901116.5514930"",
+  ""return_fraction"": ""207447005.127931666"",
+  ""temporal_stability"": {
+    ""aggregate"": ""18.21457689886730560993235808"",
+    ""horizons"": {
+      ""12h"": {
+        ""failure_fraction"": ""0.3232323232323232323232323232"",
+        ""mad"": ""0E+7"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.1393939393939393939393939394"",
+        ""relative_variability"": ""0E+19"",
+        ""score"": ""9.433731251913070094888276707""
+      },
+      ""168h"": {
+        ""failure_fraction"": ""0.2857142857142857142857142857"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.4857142857142857142857142857"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""34.69387755102040816326530612""
+      },
+      ""1h"": {
+        ""failure_fraction"": ""0.3073433036464459754663081835"",
+        ""mad"": ""0E+7"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.03024701730801545958662409679"",
+        ""relative_variability"": ""0E+19"",
+        ""score"": ""2.095079908311875725358167148""
+      },
+      ""24h"": {
+        ""failure_fraction"": ""0.3603238866396761133603238866"",
+        ""mad"": ""0E+7"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.2186234817813765182186234818"",
+        ""relative_variability"": ""0E+19"",
+        ""score"": ""13.98482191152125096297267616""
+      },
+      ""336h"": {
+        ""failure_fraction"": ""0.2352941176470588235294117647"",
+        ""mad"": ""0.000001486516416461114958083319813"",
+        ""median_absolute_productivity"": ""0.000001486516416461114958083319813"",
+        ""profitable_fraction"": ""0.5882352941176470588235294118"",
+        ""relative_variability"": ""0.4999998318216246101228790311"",
+        ""score"": ""22.49135704608609020208502628""
+      },
+      ""4h"": {
+        ""failure_fraction"": ""0.3174176193678547410894418292"",
+        ""mad"": ""0E+7"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.06993947545393409549428379287"",
+        ""relative_variability"": ""0E+19"",
+        ""score"": ""4.773945365550982308453130448""
+      },
+      ""720h"": {
+        ""failure_fraction"": ""0.125"",
+        ""mad"": ""0.000001457262887106758434189562470"",
+        ""median_absolute_productivity"": ""0.000001457262887106758434189562470"",
+        ""profitable_fraction"": ""0.75"",
+        ""relative_variability"": ""0.4999998284455629559537428199"",
+        ""score"": ""32.81251125825993101553562744""
+      },
+      ""72h"": {
+        ""failure_fraction"": ""0.3048780487804878048780487805"",
+        ""mad"": ""0E+7"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.3658536585365853658536585366"",
+        ""relative_variability"": ""0E+19"",
+        ""score"": ""25.43129089827483640690065437""
+      }
+    },
+    ""reason"": ""DESCRIPTIVE_ONLY""
+  },
+  ""unrealized_profit"": ""-22200603.7583264""
+}","{
+  ""campaign_snapshot_id"": ""b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9"",
+  ""comparison"": {
+    ""model_ladder"": ""M005_TO_M008"",
+    ""same_dataset_scenario_cutoff_required"": true
+  },
+  ""criteria"": {
+    ""early_stop_economic"": false,
+    ""promotion_guardrail"": ""docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md"",
+    ""temporal_metrics_are_diagnostic_only"": true
+  },
+  ""early_stop"": false,
+  ""execution_evidence"": ""INCONCLUSIVE_PRICE_PATH_ONLY"",
+  ""full_replay_completed"": true,
+  ""run_hash"": ""16487d8f1c68966198cfbe7026c45cc246da67431e06b805e41f63c9e0c8c751"",
+  ""scenario_hash"": ""db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"",
+  ""status"": ""PENDING_SCIENTIFIC_REVIEW""
+}",Correct M001 before execution under a new hashed tick semantics.,28779,64564,161749,2026-02,HOT,2026-04,7,7,48
+M006,INCONCLUSIVE,dc63c807b874044fd9849459d7da0aabd9b99465b8a4fdd3a450160e96311980,M005,2026-09-06T18:37:41.287345Z,Hourly causal reselection with M005's tick-at-selection semantics improves throughput without changing its distance rule.,M005 can become stale as market activity moves.,Add flat-only PERIODIC_RESELECT at a one-hour decision interval to M005.,Recover intraday level migration relative to M005.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": 60,
