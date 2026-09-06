@@ -1,5 +1,5 @@
-model_id,status,MODEL_HASH,parent,created_at,HYPOTHESIS,PROBLEM_OBSERVED,CHANGE_FROM_PARENT,EXPECTED_IMPROVEMENT,FULL_STRATEGY_SUMMARY,FINAL_RESULT,DECISION,REASON
-M001,CREATED,a12d09bcf15f5223acf6bf16c75822ef7b85f6ac66aa168837b2109dfc7837a0,,2026-09-06T16:33:02.053424Z,A one-tick pair selected from the preceding 24 hours may retain positive price-path throughput after it is frozen for the standardized replay.,A causal serial reference is required before testing adaptation.,"Initial STATIC model: one tick, 24-hour lookback and no reselection.",Provide an interpretable lower-complexity reference and expose level migration.,"{
+model_id,status,MODEL_HASH,parent,created_at,HYPOTHESIS,PROBLEM_OBSERVED,CHANGE_FROM_PARENT,EXPECTED_IMPROVEMENT,FULL_STRATEGY_SUMMARY,FINAL_RESULT,DECISION,REASON,BEST_1D_CYCLES,BEST_7D_CYCLES,BEST_30D_CYCLES,BEST_MONTH,BEST_REGIME,WORST_MONTH,LONGEST_HOT_STREAK,LONGEST_COLD_STREAK,HOT_PERIOD_COUNT
+M001,SUPERSEDED,a12d09bcf15f5223acf6bf16c75822ef7b85f6ac66aa168837b2109dfc7837a0,,2026-09-06T16:33:02.053424Z,A one-tick pair selected from the preceding 24 hours may retain positive price-path throughput after it is frozen for the standardized replay.,A causal serial reference is required before testing adaptation.,"Initial STATIC model: one tick, 24-hour lookback and no reselection.",Provide an interpretable lower-complexity reference and expose level migration.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": null,
@@ -11,8 +11,8 @@ M001,CREATED,a12d09bcf15f5223acf6bf16c75822ef7b85f6ac66aa168837b2109dfc7837a0,,2
   ""strategy"": ""STATIC"",
   ""switch_advantage"": null,
   ""symbol"": ""USDCUSDT""
-}",,,Establish the first causal serial benchmark.
-M002,CREATED,1868ea2a70c1526c615448d95d780e7b42b233721a2602c9b628f86a9e6da561,M001,2026-09-06T16:33:02.083924Z,Hourly causal reselection with the same 24-hour lookback improves throughput without changing tick distance.,A level frozen for the full replay may become stale as activity moves.,Add flat-only PERIODIC_RESELECT at a one-hour decision interval.,Recover activity lost to intraday migration without a time stop.,"{
+}",,,Establish the first causal serial benchmark.,,,,,,,,,
+M002,SUPERSEDED,1868ea2a70c1526c615448d95d780e7b42b233721a2602c9b628f86a9e6da561,M001,2026-09-06T16:33:02.083924Z,Hourly causal reselection with the same 24-hour lookback improves throughput without changing tick distance.,A level frozen for the full replay may become stale as activity moves.,Add flat-only PERIODIC_RESELECT at a one-hour decision interval.,Recover activity lost to intraday migration without a time stop.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": 60,
@@ -24,8 +24,8 @@ M002,CREATED,1868ea2a70c1526c615448d95d780e7b42b233721a2602c9b628f86a9e6da561,M0
   ""strategy"": ""PERIODIC_RESELECT"",
   ""switch_advantage"": null,
   ""symbol"": ""USDCUSDT""
-}",,,Test the smallest scheduled adaptation from M001.
-M003,CREATED,856cd1bad8d3d497b725c5c33baca116589042374308c4e066a2851ceb5d6827,M002,2026-09-06T16:33:02.096429Z,One-minute ALWAYS_BEST causal decisions raise throughput at the cost of more reselections.,Hourly decisions may react too slowly to rapidly migrating activity.,Reduce the flat-only selection interval from one hour to one minute.,Increase completed cycles while quantifying reselection churn.,"{
+}",,,Test the smallest scheduled adaptation from M001.,,,,,,,,,
+M003,SUPERSEDED,856cd1bad8d3d497b725c5c33baca116589042374308c4e066a2851ceb5d6827,M002,2026-09-06T16:33:02.096429Z,One-minute ALWAYS_BEST causal decisions raise throughput at the cost of more reselections.,Hourly decisions may react too slowly to rapidly migrating activity.,Reduce the flat-only selection interval from one hour to one minute.,Increase completed cycles while quantifying reselection churn.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": 1,
@@ -37,8 +37,8 @@ M003,CREATED,856cd1bad8d3d497b725c5c33baca116589042374308c4e066a2851ceb5d6827,M0
   ""strategy"": ""ALWAYS_BEST"",
   ""switch_advantage"": null,
   ""symbol"": ""USDCUSDT""
-}",,,Measure the upper-frequency causal adaptation reference.
-M004,CREATED,554d1d805205e59505ff89892d4ec00be5868d56636ebd584b80c8724e90fc28,M003,2026-09-06T16:33:02.114135Z,A stay-until-bad policy can preserve most M003 throughput with materially fewer changes.,Continuous best-candidate chasing may create unnecessary thrashing.,"Switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",Retain at least 90% of cycles and 99% of equity with at most half the reselections.,"{
+}",,,Measure the upper-frequency causal adaptation reference.,,,,,,,,,
+M004,SUPERSEDED,554d1d805205e59505ff89892d4ec00be5868d56636ebd584b80c8724e90fc28,M003,2026-09-06T16:33:02.114135Z,A stay-until-bad policy can preserve most M003 throughput with materially fewer changes.,Continuous best-candidate chasing may create unnecessary thrashing.,"Switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",Retain at least 90% of cycles and 99% of equity with at most half the reselections.,"{
   ""confirmation_checks"": 5,
   ""cooldown_minutes"": 60,
   ""decision_interval_minutes"": 1,
@@ -50,4 +50,76 @@ M004,CREATED,554d1d805205e59505ff89892d4ec00be5868d56636ebd584b80c8724e90fc28,M0
   ""strategy"": ""IDLE_TRIGGERED"",
   ""switch_advantage"": ""0.10"",
   ""symbol"": ""USDCUSDT""
-}",,,Test the preregistered anti-thrashing mechanism against M003.
+}",,,Test the preregistered anti-thrashing mechanism against M003.,,,,,,,,,
+M005,CREATED,c5e2d7a1fc0ea6279fc71f05f5551508ea6ac4a71d391f5854dfe7e6eccc4c62,,2026-09-06T18:37:41.270251Z,"A pair one causally known exchange tick wide, selected from the preceding 24 hours, may retain positive price-path throughput when frozen.",The first tape pass exposed a historical tick transition before any model ran.,"Replace M001's unverified constant-tick assumption with the announcement-bound, causal observed-grid policy; keep STATIC selection and every economic rule.",Restore admissible historical price levels without using a future grid or changing the serial benchmark.,"{
+  ""confirmation_checks"": null,
+  ""cooldown_minutes"": null,
+  ""decision_interval_minutes"": null,
+  ""distance_semantics"": ""ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION"",
+  ""distances"": [
+    1
+  ],
+  ""idle_threshold_minutes"": null,
+  ""lookback_minutes"": 1440,
+  ""selected_levels_remain_absolute"": true,
+  ""selection_moment"": ""AT_LEVEL_SELECTION"",
+  ""strategy"": ""STATIC"",
+  ""switch_advantage"": null,
+  ""symbol"": ""USDCUSDT"",
+  ""tick_evidence_class"": ""OBSERVED_ACCEPTED_GRID"",
+  ""tick_source"": ""BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX""
+}",,,Correct M001 before execution under a new hashed tick semantics.,,,,,,,,,
+M006,CREATED,dc63c807b874044fd9849459d7da0aabd9b99465b8a4fdd3a450160e96311980,M005,2026-09-06T18:37:41.287345Z,Hourly causal reselection with M005's tick-at-selection semantics improves throughput without changing its distance rule.,M005 can become stale as market activity moves.,Add flat-only PERIODIC_RESELECT at a one-hour decision interval to M005.,Recover intraday level migration relative to M005.,"{
+  ""confirmation_checks"": null,
+  ""cooldown_minutes"": null,
+  ""decision_interval_minutes"": 60,
+  ""distance_semantics"": ""ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION"",
+  ""distances"": [
+    1
+  ],
+  ""idle_threshold_minutes"": null,
+  ""lookback_minutes"": 1440,
+  ""selected_levels_remain_absolute"": true,
+  ""selection_moment"": ""AT_LEVEL_SELECTION"",
+  ""strategy"": ""PERIODIC_RESELECT"",
+  ""switch_advantage"": null,
+  ""symbol"": ""USDCUSDT"",
+  ""tick_evidence_class"": ""OBSERVED_ACCEPTED_GRID"",
+  ""tick_source"": ""BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX""
+}",,,Test the smallest scheduled adaptation from M005.,,,,,,,,,
+M007,CREATED,2cb6c755cad4b805eb6b79e7b7e04fd271e660f285a8c1d6aca4c643dded934f,M006,2026-09-06T18:37:41.302112Z,One-minute ALWAYS_BEST decisions with the same causal tick policy raise throughput at the cost of more reselections.,M006 hourly decisions may react too slowly to migrating activity.,Reduce M006's flat-only selection interval from one hour to one minute.,Increase completed cycles while quantifying reselection churn.,"{
+  ""confirmation_checks"": null,
+  ""cooldown_minutes"": null,
+  ""decision_interval_minutes"": 1,
+  ""distance_semantics"": ""ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION"",
+  ""distances"": [
+    1
+  ],
+  ""idle_threshold_minutes"": null,
+  ""lookback_minutes"": 1440,
+  ""selected_levels_remain_absolute"": true,
+  ""selection_moment"": ""AT_LEVEL_SELECTION"",
+  ""strategy"": ""ALWAYS_BEST"",
+  ""switch_advantage"": null,
+  ""symbol"": ""USDCUSDT"",
+  ""tick_evidence_class"": ""OBSERVED_ACCEPTED_GRID"",
+  ""tick_source"": ""BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX""
+}",,,Measure the upper-frequency adaptation reference against M006.,,,,,,,,,
+M008,CREATED,0c1fa31a6983ab295cfb043be5ef32425cc866d73a880166abeb0fb8d0a8a31d,M007,2026-09-06T18:37:41.317861Z,A stay-until-bad policy can preserve most M007 throughput with materially fewer changes.,M007 may create unnecessary candidate thrashing.,"Relative to M007, switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",Retain at least 90% of M007 cycles and 99% of its equity with at most half its reselections.,"{
+  ""confirmation_checks"": 5,
+  ""cooldown_minutes"": 60,
+  ""decision_interval_minutes"": 1,
+  ""distance_semantics"": ""ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION"",
+  ""distances"": [
+    1
+  ],
+  ""idle_threshold_minutes"": 30,
+  ""lookback_minutes"": 1440,
+  ""selected_levels_remain_absolute"": true,
+  ""selection_moment"": ""AT_LEVEL_SELECTION"",
+  ""strategy"": ""IDLE_TRIGGERED"",
+  ""switch_advantage"": ""0.10"",
+  ""symbol"": ""USDCUSDT"",
+  ""tick_evidence_class"": ""OBSERVED_ACCEPTED_GRID"",
+  ""tick_source"": ""BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX""
+}",,,Test the preregistered anti-thrashing mechanism against M007.,,,,,,,,,

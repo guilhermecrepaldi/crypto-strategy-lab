@@ -820,6 +820,7 @@ class ModelRegistry:
         model_projections = [
             {
                 **model,
+                "status": self.current_status(model["model_id"]).value,
                 **_productivity_fields(model["model_id"], events),
             }
             for model in models

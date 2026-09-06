@@ -232,10 +232,320 @@
         "schema_version": "usdcusdt-model-registry-v2",
         "status": "CREATED"
       }
+    },
+    {
+      "event_type": "MODEL_CREATED",
+      "occurred_at": "2026-09-06T18:37:41.270251+00:00",
+      "payload": {
+        "MODEL_HASH": "c5e2d7a1fc0ea6279fc71f05f5551508ea6ac4a71d391f5854dfe7e6eccc4c62",
+        "artifacts": {
+          "config": "artifacts\\usdcusdt\\models\\M005\\config.json",
+          "daily": null,
+          "decision": null,
+          "directory": "artifacts\\usdcusdt\\models\\M005",
+          "hypothesis": "artifacts\\usdcusdt\\models\\M005\\hypothesis.json",
+          "lineage": "artifacts\\usdcusdt\\models\\M005\\lineage.json",
+          "metrics": null,
+          "model_spec": "artifacts\\usdcusdt\\models\\M005\\MODEL_SPEC.md",
+          "monthly": null,
+          "run_manifest": null
+        },
+        "created_at": "2026-09-06T18:37:41.270251Z",
+        "hypothesis": {
+          "change": "Replace M001's unverified constant-tick assumption with the announcement-bound, causal observed-grid policy; keep STATIC selection and every economic rule.",
+          "expected_effect": "Restore admissible historical price levels without using a future grid or changing the serial benchmark.",
+          "hypothesis": "A pair one causally known exchange tick wide, selected from the preceding 24 hours, may retain positive price-path throughput when frozen.",
+          "observation": "The first tape pass exposed a historical tick transition before any model ran.",
+          "reason_for_new_model": "Correct M001 before execution under a new hashed tick semantics."
+        },
+        "lineage": {
+          "ancestor_chain": [],
+          "change_category": "TECHNICAL_CORRECTION",
+          "change_summary": "Replace M001's unverified constant-tick assumption with the announcement-bound, causal observed-grid policy; keep STATIC selection and every economic rule.",
+          "parent_model_id": null,
+          "parent_run_hash": null,
+          "references": {
+            "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+            "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md",
+            "reason": "UNVERIFIED_HISTORICAL_TICK_ASSUMPTION",
+            "supersedes": "M001"
+          }
+        },
+        "model": {
+          "confirmation_checks": null,
+          "cooldown_minutes": null,
+          "decision_interval_minutes": null,
+          "distance_semantics": "ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION",
+          "distances": [
+            1
+          ],
+          "idle_threshold_minutes": null,
+          "lookback_minutes": 1440,
+          "selected_levels_remain_absolute": true,
+          "selection_moment": "AT_LEVEL_SELECTION",
+          "strategy": "STATIC",
+          "switch_advantage": null,
+          "symbol": "USDCUSDT",
+          "tick_evidence_class": "OBSERVED_ACCEPTED_GRID",
+          "tick_source": "BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX"
+        },
+        "model_hash": "c5e2d7a1fc0ea6279fc71f05f5551508ea6ac4a71d391f5854dfe7e6eccc4c62",
+        "model_id": "M005",
+        "pair": "USDCUSDT",
+        "schema_version": "usdcusdt-model-registry-v2",
+        "status": "CREATED"
+      }
+    },
+    {
+      "event_type": "MODEL_CREATED",
+      "occurred_at": "2026-09-06T18:37:41.287345+00:00",
+      "payload": {
+        "MODEL_HASH": "dc63c807b874044fd9849459d7da0aabd9b99465b8a4fdd3a450160e96311980",
+        "artifacts": {
+          "config": "artifacts\\usdcusdt\\models\\M006\\config.json",
+          "daily": null,
+          "decision": null,
+          "directory": "artifacts\\usdcusdt\\models\\M006",
+          "hypothesis": "artifacts\\usdcusdt\\models\\M006\\hypothesis.json",
+          "lineage": "artifacts\\usdcusdt\\models\\M006\\lineage.json",
+          "metrics": null,
+          "model_spec": "artifacts\\usdcusdt\\models\\M006\\MODEL_SPEC.md",
+          "monthly": null,
+          "run_manifest": null
+        },
+        "created_at": "2026-09-06T18:37:41.287345Z",
+        "hypothesis": {
+          "change": "Add flat-only PERIODIC_RESELECT at a one-hour decision interval to M005.",
+          "expected_effect": "Recover intraday level migration relative to M005.",
+          "hypothesis": "Hourly causal reselection with M005's tick-at-selection semantics improves throughput without changing its distance rule.",
+          "observation": "M005 can become stale as market activity moves.",
+          "reason_for_new_model": "Test the smallest scheduled adaptation from M005."
+        },
+        "lineage": {
+          "ancestor_chain": [
+            "M005"
+          ],
+          "change_category": "DECISION_RULE",
+          "change_summary": "Add flat-only PERIODIC_RESELECT at a one-hour decision interval to M005.",
+          "parent_model_id": "M005",
+          "parent_run_hash": null,
+          "references": {
+            "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+            "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md",
+            "reason": "UNVERIFIED_HISTORICAL_TICK_ASSUMPTION",
+            "supersedes": "M002"
+          }
+        },
+        "model": {
+          "confirmation_checks": null,
+          "cooldown_minutes": null,
+          "decision_interval_minutes": 60,
+          "distance_semantics": "ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION",
+          "distances": [
+            1
+          ],
+          "idle_threshold_minutes": null,
+          "lookback_minutes": 1440,
+          "selected_levels_remain_absolute": true,
+          "selection_moment": "AT_LEVEL_SELECTION",
+          "strategy": "PERIODIC_RESELECT",
+          "switch_advantage": null,
+          "symbol": "USDCUSDT",
+          "tick_evidence_class": "OBSERVED_ACCEPTED_GRID",
+          "tick_source": "BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX"
+        },
+        "model_hash": "dc63c807b874044fd9849459d7da0aabd9b99465b8a4fdd3a450160e96311980",
+        "model_id": "M006",
+        "pair": "USDCUSDT",
+        "schema_version": "usdcusdt-model-registry-v2",
+        "status": "CREATED"
+      }
+    },
+    {
+      "event_type": "MODEL_CREATED",
+      "occurred_at": "2026-09-06T18:37:41.302112+00:00",
+      "payload": {
+        "MODEL_HASH": "2cb6c755cad4b805eb6b79e7b7e04fd271e660f285a8c1d6aca4c643dded934f",
+        "artifacts": {
+          "config": "artifacts\\usdcusdt\\models\\M007\\config.json",
+          "daily": null,
+          "decision": null,
+          "directory": "artifacts\\usdcusdt\\models\\M007",
+          "hypothesis": "artifacts\\usdcusdt\\models\\M007\\hypothesis.json",
+          "lineage": "artifacts\\usdcusdt\\models\\M007\\lineage.json",
+          "metrics": null,
+          "model_spec": "artifacts\\usdcusdt\\models\\M007\\MODEL_SPEC.md",
+          "monthly": null,
+          "run_manifest": null
+        },
+        "created_at": "2026-09-06T18:37:41.302112Z",
+        "hypothesis": {
+          "change": "Reduce M006's flat-only selection interval from one hour to one minute.",
+          "expected_effect": "Increase completed cycles while quantifying reselection churn.",
+          "hypothesis": "One-minute ALWAYS_BEST decisions with the same causal tick policy raise throughput at the cost of more reselections.",
+          "observation": "M006 hourly decisions may react too slowly to migrating activity.",
+          "reason_for_new_model": "Measure the upper-frequency adaptation reference against M006."
+        },
+        "lineage": {
+          "ancestor_chain": [
+            "M005",
+            "M006"
+          ],
+          "change_category": "DECISION_RULE",
+          "change_summary": "Reduce M006's flat-only selection interval from one hour to one minute.",
+          "parent_model_id": "M006",
+          "parent_run_hash": null,
+          "references": {
+            "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+            "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md",
+            "reason": "UNVERIFIED_HISTORICAL_TICK_ASSUMPTION",
+            "supersedes": "M003"
+          }
+        },
+        "model": {
+          "confirmation_checks": null,
+          "cooldown_minutes": null,
+          "decision_interval_minutes": 1,
+          "distance_semantics": "ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION",
+          "distances": [
+            1
+          ],
+          "idle_threshold_minutes": null,
+          "lookback_minutes": 1440,
+          "selected_levels_remain_absolute": true,
+          "selection_moment": "AT_LEVEL_SELECTION",
+          "strategy": "ALWAYS_BEST",
+          "switch_advantage": null,
+          "symbol": "USDCUSDT",
+          "tick_evidence_class": "OBSERVED_ACCEPTED_GRID",
+          "tick_source": "BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX"
+        },
+        "model_hash": "2cb6c755cad4b805eb6b79e7b7e04fd271e660f285a8c1d6aca4c643dded934f",
+        "model_id": "M007",
+        "pair": "USDCUSDT",
+        "schema_version": "usdcusdt-model-registry-v2",
+        "status": "CREATED"
+      }
+    },
+    {
+      "event_type": "MODEL_CREATED",
+      "occurred_at": "2026-09-06T18:37:41.317861+00:00",
+      "payload": {
+        "MODEL_HASH": "0c1fa31a6983ab295cfb043be5ef32425cc866d73a880166abeb0fb8d0a8a31d",
+        "artifacts": {
+          "config": "artifacts\\usdcusdt\\models\\M008\\config.json",
+          "daily": null,
+          "decision": null,
+          "directory": "artifacts\\usdcusdt\\models\\M008",
+          "hypothesis": "artifacts\\usdcusdt\\models\\M008\\hypothesis.json",
+          "lineage": "artifacts\\usdcusdt\\models\\M008\\lineage.json",
+          "metrics": null,
+          "model_spec": "artifacts\\usdcusdt\\models\\M008\\MODEL_SPEC.md",
+          "monthly": null,
+          "run_manifest": null
+        },
+        "created_at": "2026-09-06T18:37:41.317861Z",
+        "hypothesis": {
+          "change": "Relative to M007, switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",
+          "expected_effect": "Retain at least 90% of M007 cycles and 99% of its equity with at most half its reselections.",
+          "hypothesis": "A stay-until-bad policy can preserve most M007 throughput with materially fewer changes.",
+          "observation": "M007 may create unnecessary candidate thrashing.",
+          "reason_for_new_model": "Test the preregistered anti-thrashing mechanism against M007."
+        },
+        "lineage": {
+          "ancestor_chain": [
+            "M005",
+            "M006",
+            "M007"
+          ],
+          "change_category": "DECISION_RULE",
+          "change_summary": "Relative to M007, switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",
+          "parent_model_id": "M007",
+          "parent_run_hash": null,
+          "references": {
+            "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+            "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md",
+            "reason": "UNVERIFIED_HISTORICAL_TICK_ASSUMPTION",
+            "supersedes": "M004"
+          }
+        },
+        "model": {
+          "confirmation_checks": 5,
+          "cooldown_minutes": 60,
+          "decision_interval_minutes": 1,
+          "distance_semantics": "ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION",
+          "distances": [
+            1
+          ],
+          "idle_threshold_minutes": 30,
+          "lookback_minutes": 1440,
+          "selected_levels_remain_absolute": true,
+          "selection_moment": "AT_LEVEL_SELECTION",
+          "strategy": "IDLE_TRIGGERED",
+          "switch_advantage": "0.10",
+          "symbol": "USDCUSDT",
+          "tick_evidence_class": "OBSERVED_ACCEPTED_GRID",
+          "tick_source": "BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX"
+        },
+        "model_hash": "0c1fa31a6983ab295cfb043be5ef32425cc866d73a880166abeb0fb8d0a8a31d",
+        "model_id": "M008",
+        "pair": "USDCUSDT",
+        "schema_version": "usdcusdt-model-registry-v2",
+        "status": "CREATED"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-06T18:37:41.340169+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M001",
+        "reason": "UNVERIFIED_HISTORICAL_TICK_ASSUMPTION",
+        "to": "SUPERSEDED"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-06T18:37:41.354888+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M002",
+        "reason": "UNVERIFIED_HISTORICAL_TICK_ASSUMPTION",
+        "to": "SUPERSEDED"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-06T18:37:41.365662+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M003",
+        "reason": "UNVERIFIED_HISTORICAL_TICK_ASSUMPTION",
+        "to": "SUPERSEDED"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-06T18:37:41.383626+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M004",
+        "reason": "UNVERIFIED_HISTORICAL_TICK_ASSUMPTION",
+        "to": "SUPERSEDED"
+      }
     }
   ],
   "models": [
     {
+      "BEST_1D_CYCLES": null,
+      "BEST_30D_CYCLES": null,
+      "BEST_7D_CYCLES": null,
+      "BEST_MONTH": null,
+      "BEST_REGIME": null,
+      "HOT_PERIOD_COUNT": null,
+      "LONGEST_COLD_STREAK": null,
+      "LONGEST_HOT_STREAK": null,
+      "WORST_MONTH": null,
       "artifacts": {
         "config": "artifacts\\usdcusdt\\models\\M001\\config.json",
         "daily": null,
@@ -284,9 +594,18 @@
       "model_id": "M001",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "SUPERSEDED"
     },
     {
+      "BEST_1D_CYCLES": null,
+      "BEST_30D_CYCLES": null,
+      "BEST_7D_CYCLES": null,
+      "BEST_MONTH": null,
+      "BEST_REGIME": null,
+      "HOT_PERIOD_COUNT": null,
+      "LONGEST_COLD_STREAK": null,
+      "LONGEST_HOT_STREAK": null,
+      "WORST_MONTH": null,
       "artifacts": {
         "config": "artifacts\\usdcusdt\\models\\M002\\config.json",
         "daily": null,
@@ -337,9 +656,18 @@
       "model_id": "M002",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "SUPERSEDED"
     },
     {
+      "BEST_1D_CYCLES": null,
+      "BEST_30D_CYCLES": null,
+      "BEST_7D_CYCLES": null,
+      "BEST_MONTH": null,
+      "BEST_REGIME": null,
+      "HOT_PERIOD_COUNT": null,
+      "LONGEST_COLD_STREAK": null,
+      "LONGEST_HOT_STREAK": null,
+      "WORST_MONTH": null,
       "artifacts": {
         "config": "artifacts\\usdcusdt\\models\\M003\\config.json",
         "daily": null,
@@ -391,9 +719,18 @@
       "model_id": "M003",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "SUPERSEDED"
     },
     {
+      "BEST_1D_CYCLES": null,
+      "BEST_30D_CYCLES": null,
+      "BEST_7D_CYCLES": null,
+      "BEST_MONTH": null,
+      "BEST_REGIME": null,
+      "HOT_PERIOD_COUNT": null,
+      "LONGEST_COLD_STREAK": null,
+      "LONGEST_HOT_STREAK": null,
+      "WORST_MONTH": null,
       "artifacts": {
         "config": "artifacts\\usdcusdt\\models\\M004\\config.json",
         "daily": null,
@@ -444,6 +781,283 @@
       },
       "model_hash": "554d1d805205e59505ff89892d4ec00be5868d56636ebd584b80c8724e90fc28",
       "model_id": "M004",
+      "pair": "USDCUSDT",
+      "schema_version": "usdcusdt-model-registry-v2",
+      "status": "SUPERSEDED"
+    },
+    {
+      "BEST_1D_CYCLES": null,
+      "BEST_30D_CYCLES": null,
+      "BEST_7D_CYCLES": null,
+      "BEST_MONTH": null,
+      "BEST_REGIME": null,
+      "HOT_PERIOD_COUNT": null,
+      "LONGEST_COLD_STREAK": null,
+      "LONGEST_HOT_STREAK": null,
+      "WORST_MONTH": null,
+      "artifacts": {
+        "config": "artifacts\\usdcusdt\\models\\M005\\config.json",
+        "daily": null,
+        "decision": null,
+        "directory": "artifacts\\usdcusdt\\models\\M005",
+        "hypothesis": "artifacts\\usdcusdt\\models\\M005\\hypothesis.json",
+        "lineage": "artifacts\\usdcusdt\\models\\M005\\lineage.json",
+        "metrics": null,
+        "model_spec": "artifacts\\usdcusdt\\models\\M005\\MODEL_SPEC.md",
+        "monthly": null,
+        "run_manifest": null
+      },
+      "created_at": "2026-09-06T18:37:41.270251Z",
+      "hypothesis": {
+        "change": "Replace M001's unverified constant-tick assumption with the announcement-bound, causal observed-grid policy; keep STATIC selection and every economic rule.",
+        "expected_effect": "Restore admissible historical price levels without using a future grid or changing the serial benchmark.",
+        "hypothesis": "A pair one causally known exchange tick wide, selected from the preceding 24 hours, may retain positive price-path throughput when frozen.",
+        "observation": "The first tape pass exposed a historical tick transition before any model ran.",
+        "reason_for_new_model": "Correct M001 before execution under a new hashed tick semantics."
+      },
+      "lineage": {
+        "ancestor_chain": [],
+        "change_category": "TECHNICAL_CORRECTION",
+        "change_summary": "Replace M001's unverified constant-tick assumption with the announcement-bound, causal observed-grid policy; keep STATIC selection and every economic rule.",
+        "parent_model_id": null,
+        "parent_run_hash": null,
+        "references": {
+          "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+          "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md",
+          "reason": "UNVERIFIED_HISTORICAL_TICK_ASSUMPTION",
+          "supersedes": "M001"
+        }
+      },
+      "model": {
+        "confirmation_checks": null,
+        "cooldown_minutes": null,
+        "decision_interval_minutes": null,
+        "distance_semantics": "ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION",
+        "distances": [
+          1
+        ],
+        "idle_threshold_minutes": null,
+        "lookback_minutes": 1440,
+        "selected_levels_remain_absolute": true,
+        "selection_moment": "AT_LEVEL_SELECTION",
+        "strategy": "STATIC",
+        "switch_advantage": null,
+        "symbol": "USDCUSDT",
+        "tick_evidence_class": "OBSERVED_ACCEPTED_GRID",
+        "tick_source": "BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX"
+      },
+      "model_hash": "c5e2d7a1fc0ea6279fc71f05f5551508ea6ac4a71d391f5854dfe7e6eccc4c62",
+      "model_id": "M005",
+      "pair": "USDCUSDT",
+      "schema_version": "usdcusdt-model-registry-v2",
+      "status": "CREATED"
+    },
+    {
+      "BEST_1D_CYCLES": null,
+      "BEST_30D_CYCLES": null,
+      "BEST_7D_CYCLES": null,
+      "BEST_MONTH": null,
+      "BEST_REGIME": null,
+      "HOT_PERIOD_COUNT": null,
+      "LONGEST_COLD_STREAK": null,
+      "LONGEST_HOT_STREAK": null,
+      "WORST_MONTH": null,
+      "artifacts": {
+        "config": "artifacts\\usdcusdt\\models\\M006\\config.json",
+        "daily": null,
+        "decision": null,
+        "directory": "artifacts\\usdcusdt\\models\\M006",
+        "hypothesis": "artifacts\\usdcusdt\\models\\M006\\hypothesis.json",
+        "lineage": "artifacts\\usdcusdt\\models\\M006\\lineage.json",
+        "metrics": null,
+        "model_spec": "artifacts\\usdcusdt\\models\\M006\\MODEL_SPEC.md",
+        "monthly": null,
+        "run_manifest": null
+      },
+      "created_at": "2026-09-06T18:37:41.287345Z",
+      "hypothesis": {
+        "change": "Add flat-only PERIODIC_RESELECT at a one-hour decision interval to M005.",
+        "expected_effect": "Recover intraday level migration relative to M005.",
+        "hypothesis": "Hourly causal reselection with M005's tick-at-selection semantics improves throughput without changing its distance rule.",
+        "observation": "M005 can become stale as market activity moves.",
+        "reason_for_new_model": "Test the smallest scheduled adaptation from M005."
+      },
+      "lineage": {
+        "ancestor_chain": [
+          "M005"
+        ],
+        "change_category": "DECISION_RULE",
+        "change_summary": "Add flat-only PERIODIC_RESELECT at a one-hour decision interval to M005.",
+        "parent_model_id": "M005",
+        "parent_run_hash": null,
+        "references": {
+          "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+          "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md",
+          "reason": "UNVERIFIED_HISTORICAL_TICK_ASSUMPTION",
+          "supersedes": "M002"
+        }
+      },
+      "model": {
+        "confirmation_checks": null,
+        "cooldown_minutes": null,
+        "decision_interval_minutes": 60,
+        "distance_semantics": "ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION",
+        "distances": [
+          1
+        ],
+        "idle_threshold_minutes": null,
+        "lookback_minutes": 1440,
+        "selected_levels_remain_absolute": true,
+        "selection_moment": "AT_LEVEL_SELECTION",
+        "strategy": "PERIODIC_RESELECT",
+        "switch_advantage": null,
+        "symbol": "USDCUSDT",
+        "tick_evidence_class": "OBSERVED_ACCEPTED_GRID",
+        "tick_source": "BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX"
+      },
+      "model_hash": "dc63c807b874044fd9849459d7da0aabd9b99465b8a4fdd3a450160e96311980",
+      "model_id": "M006",
+      "pair": "USDCUSDT",
+      "schema_version": "usdcusdt-model-registry-v2",
+      "status": "CREATED"
+    },
+    {
+      "BEST_1D_CYCLES": null,
+      "BEST_30D_CYCLES": null,
+      "BEST_7D_CYCLES": null,
+      "BEST_MONTH": null,
+      "BEST_REGIME": null,
+      "HOT_PERIOD_COUNT": null,
+      "LONGEST_COLD_STREAK": null,
+      "LONGEST_HOT_STREAK": null,
+      "WORST_MONTH": null,
+      "artifacts": {
+        "config": "artifacts\\usdcusdt\\models\\M007\\config.json",
+        "daily": null,
+        "decision": null,
+        "directory": "artifacts\\usdcusdt\\models\\M007",
+        "hypothesis": "artifacts\\usdcusdt\\models\\M007\\hypothesis.json",
+        "lineage": "artifacts\\usdcusdt\\models\\M007\\lineage.json",
+        "metrics": null,
+        "model_spec": "artifacts\\usdcusdt\\models\\M007\\MODEL_SPEC.md",
+        "monthly": null,
+        "run_manifest": null
+      },
+      "created_at": "2026-09-06T18:37:41.302112Z",
+      "hypothesis": {
+        "change": "Reduce M006's flat-only selection interval from one hour to one minute.",
+        "expected_effect": "Increase completed cycles while quantifying reselection churn.",
+        "hypothesis": "One-minute ALWAYS_BEST decisions with the same causal tick policy raise throughput at the cost of more reselections.",
+        "observation": "M006 hourly decisions may react too slowly to migrating activity.",
+        "reason_for_new_model": "Measure the upper-frequency adaptation reference against M006."
+      },
+      "lineage": {
+        "ancestor_chain": [
+          "M005",
+          "M006"
+        ],
+        "change_category": "DECISION_RULE",
+        "change_summary": "Reduce M006's flat-only selection interval from one hour to one minute.",
+        "parent_model_id": "M006",
+        "parent_run_hash": null,
+        "references": {
+          "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+          "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md",
+          "reason": "UNVERIFIED_HISTORICAL_TICK_ASSUMPTION",
+          "supersedes": "M003"
+        }
+      },
+      "model": {
+        "confirmation_checks": null,
+        "cooldown_minutes": null,
+        "decision_interval_minutes": 1,
+        "distance_semantics": "ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION",
+        "distances": [
+          1
+        ],
+        "idle_threshold_minutes": null,
+        "lookback_minutes": 1440,
+        "selected_levels_remain_absolute": true,
+        "selection_moment": "AT_LEVEL_SELECTION",
+        "strategy": "ALWAYS_BEST",
+        "switch_advantage": null,
+        "symbol": "USDCUSDT",
+        "tick_evidence_class": "OBSERVED_ACCEPTED_GRID",
+        "tick_source": "BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX"
+      },
+      "model_hash": "2cb6c755cad4b805eb6b79e7b7e04fd271e660f285a8c1d6aca4c643dded934f",
+      "model_id": "M007",
+      "pair": "USDCUSDT",
+      "schema_version": "usdcusdt-model-registry-v2",
+      "status": "CREATED"
+    },
+    {
+      "BEST_1D_CYCLES": null,
+      "BEST_30D_CYCLES": null,
+      "BEST_7D_CYCLES": null,
+      "BEST_MONTH": null,
+      "BEST_REGIME": null,
+      "HOT_PERIOD_COUNT": null,
+      "LONGEST_COLD_STREAK": null,
+      "LONGEST_HOT_STREAK": null,
+      "WORST_MONTH": null,
+      "artifacts": {
+        "config": "artifacts\\usdcusdt\\models\\M008\\config.json",
+        "daily": null,
+        "decision": null,
+        "directory": "artifacts\\usdcusdt\\models\\M008",
+        "hypothesis": "artifacts\\usdcusdt\\models\\M008\\hypothesis.json",
+        "lineage": "artifacts\\usdcusdt\\models\\M008\\lineage.json",
+        "metrics": null,
+        "model_spec": "artifacts\\usdcusdt\\models\\M008\\MODEL_SPEC.md",
+        "monthly": null,
+        "run_manifest": null
+      },
+      "created_at": "2026-09-06T18:37:41.317861Z",
+      "hypothesis": {
+        "change": "Relative to M007, switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",
+        "expected_effect": "Retain at least 90% of M007 cycles and 99% of its equity with at most half its reselections.",
+        "hypothesis": "A stay-until-bad policy can preserve most M007 throughput with materially fewer changes.",
+        "observation": "M007 may create unnecessary candidate thrashing.",
+        "reason_for_new_model": "Test the preregistered anti-thrashing mechanism against M007."
+      },
+      "lineage": {
+        "ancestor_chain": [
+          "M005",
+          "M006",
+          "M007"
+        ],
+        "change_category": "DECISION_RULE",
+        "change_summary": "Relative to M007, switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",
+        "parent_model_id": "M007",
+        "parent_run_hash": null,
+        "references": {
+          "campaign_id": "USDCUSDT_EXHAUSTION_V1",
+          "journal": "docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md",
+          "reason": "UNVERIFIED_HISTORICAL_TICK_ASSUMPTION",
+          "supersedes": "M004"
+        }
+      },
+      "model": {
+        "confirmation_checks": 5,
+        "cooldown_minutes": 60,
+        "decision_interval_minutes": 1,
+        "distance_semantics": "ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION",
+        "distances": [
+          1
+        ],
+        "idle_threshold_minutes": 30,
+        "lookback_minutes": 1440,
+        "selected_levels_remain_absolute": true,
+        "selection_moment": "AT_LEVEL_SELECTION",
+        "strategy": "IDLE_TRIGGERED",
+        "switch_advantage": "0.10",
+        "symbol": "USDCUSDT",
+        "tick_evidence_class": "OBSERVED_ACCEPTED_GRID",
+        "tick_source": "BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX"
+      },
+      "model_hash": "0c1fa31a6983ab295cfb043be5ef32425cc866d73a880166abeb0fb8d0a8a31d",
+      "model_id": "M008",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
       "status": "CREATED"
