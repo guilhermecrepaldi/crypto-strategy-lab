@@ -48,7 +48,7 @@ from crypto_strategy_lab.microstructure.adaptive import (
     run_adaptive_campaign,
     write_adaptive_reports,
 )
-from crypto_strategy_lab.microstructure.campaign import register_first_block
+from crypto_strategy_lab.microstructure.campaign import register_active_block
 from crypto_strategy_lab.microstructure.data import (
     HistoryManifest,
     download_archive,
@@ -593,8 +593,8 @@ def microstructure_register_models(
     artifact_root: Annotated[Path, typer.Option()] = Path("artifacts"),
     report_root: Annotated[Path, typer.Option()] = Path("reports"),
 ) -> None:
-    """Idempotently preregister the frozen USDCUSDT M001-M004 block."""
-    registrations = register_first_block(
+    """Idempotently preregister the active verified-tick USDCUSDT model block."""
+    registrations = register_active_block(
         artifact_root=artifact_root,
         report_root=report_root,
     )
@@ -609,7 +609,7 @@ def microstructure_full_replay(
     artifact_root: Annotated[Path, typer.Option()] = Path("artifacts"),
     report_root: Annotated[Path, typer.Option()] = Path("reports"),
     models: Annotated[str, typer.Option(help="Comma-separated preregistered model IDs")] = (
-        "M001,M002,M003,M004"
+        "M005,M006,M007,M008"
     ),
 ) -> None:
     """Run complete DEVELOPMENT replays to the frozen physical cutoff; never economic-stop."""

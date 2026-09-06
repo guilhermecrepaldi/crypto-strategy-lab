@@ -13,12 +13,20 @@ from crypto_strategy_lab.microstructure.data import (
     parse_archive,
 )
 from crypto_strategy_lab.microstructure.serial_replay import (
+    SERIAL_TAPE_QUANTUM,
+    USDCUSDT_FINE_GRID_OBSERVED_FROM,
+    USDCUSDT_TICK_CATALOG,
+    USDCUSDT_TICK_CHANGE,
     CandidateTimeline,
     SerialModelConfig,
     SerialScenarioConfig,
     SerialStrategy,
     SerialTape,
+    TickCatalog,
+    TickPeriod,
+    TickTransition,
     load_serial_tape,
+    preregistered_corrected_block,
     preregistered_first_block,
     replay_serial_model,
     scan_oracle_cpu,
@@ -49,6 +57,16 @@ def _scenario(**changes: object) -> SerialScenarioConfig:
     return SerialScenarioConfig.model_validate(values)
 
 
+def _historical_scenario() -> SerialScenarioConfig:
+    return SerialScenarioConfig(
+        scenario_id="PRICE_PATH_HISTORICAL_TICK_ZERO_FEE_V2",
+        tick_size=SERIAL_TAPE_QUANTUM,
+        historical_tick_catalog_hash=USDCUSDT_TICK_CATALOG.catalog_hash,
+        historical_tick_source_url=USDCUSDT_TICK_CATALOG.source_url,
+        historical_tick_policy="CAUSAL_OBSERVED_GRID_THEN_OFFICIAL_COMPLETION_BOUND",
+    )
+
+
 def _tape(items: list[tuple[int, str]]) -> SerialTape:
     return SerialTape.from_events(
         [(START + timedelta(seconds=offset), Decimal(price)) for offset, price in items],
@@ -68,6 +86,251 @@ def test_first_block_is_frozen_and_model_hash_excludes_human_identity() -> None:
     duplicate_identity = models[0].model_copy(update={"model_id": "M999"})
     assert duplicate_identity.model_hash == models[0].model_hash
     assert _scenario().scenario_hash != _scenario(maker_fee_per_leg=Decimal("0.0001")).scenario_hash
+
+
+def test_corrected_block_has_new_ids_and_hashed_tick_semantics() -> None:
+    legacy = preregistered_first_block()
+    corrected = preregistered_corrected_block()
+
+    assert [item.model_id for item in corrected] == ["M005", "M006", "M007", "M008"]
+    assert corrected[-1].parent_model_id == "M007"
+    assert all(
+        item.distance_semantics == "ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION" for item in corrected
+    )
+    assert all(item.selection_moment == "AT_LEVEL_SELECTION" for item in corrected)
+    assert [item.model_hash for item in corrected] != [item.model_hash for item in legacy]
+
+
+def test_official_tick_catalog_preserves_the_evidenced_rollout_window() -> None:
+    assert USDCUSDT_TICK_CATALOG.tick_size_at(
+        USDCUSDT_TICK_CHANGE - timedelta(minutes=1)
+    ) == Decimal("0.0001")
+    assert USDCUSDT_TICK_CATALOG.tick_size_at(USDCUSDT_TICK_CHANGE) == Decimal("0.00001")
+    assert USDCUSDT_TICK_CATALOG.is_price_compatible(
+        USDCUSDT_FINE_GRID_OBSERVED_FROM, Decimal("0.99949")
+    )
+    assert not USDCUSDT_TICK_CATALOG.is_price_compatible(
+        USDCUSDT_TICK_CHANGE - timedelta(hours=1), Decimal("0.99949")
+    )
+
+
+def test_rollout_grid_changes_only_after_evidence_enters_the_prefix() -> None:
+    tape = SerialTape.from_events(
+        [
+            (USDCUSDT_FINE_GRID_OBSERVED_FROM - timedelta(seconds=1), Decimal("0.99950")),
+            (USDCUSDT_FINE_GRID_OBSERVED_FROM, Decimal("0.99949")),
+        ],
+        tick_size=SERIAL_TAPE_QUANTUM,
+        tick_catalog=USDCUSDT_TICK_CATALOG,
+    )
+    evidence_event = tape.observed_tick_evidence_event
+    assert evidence_event is not None
+
+    before_prefix = USDCUSDT_TICK_CATALOG.tick_size_at_decision(
+        USDCUSDT_FINE_GRID_OBSERVED_FROM,
+        decision_event=evidence_event,
+        observed_tick_evidence_event=evidence_event,
+    )
+    after_prefix = USDCUSDT_TICK_CATALOG.tick_size_at_decision(
+        USDCUSDT_FINE_GRID_OBSERVED_FROM,
+        decision_event=evidence_event + 1,
+        observed_tick_evidence_event=evidence_event,
+    )
+
+    assert before_prefix == Decimal("0.0001")
+    assert after_prefix == Decimal("0.00001")
+
+
+@pytest.mark.parametrize(
+    "periods",
+    [
+        (
+            TickPeriod(
+                start=datetime(2025, 1, 1, tzinfo=UTC),
+                end_exclusive=datetime(2025, 2, 1, tzinfo=UTC),
+                tick_size=Decimal("0.0001"),
+            ),
+            TickPeriod(start=datetime(2025, 2, 2, tzinfo=UTC), tick_size=Decimal("0.00001")),
+        ),
+        (
+            TickPeriod(
+                start=datetime(2025, 1, 1, tzinfo=UTC),
+                end_exclusive=datetime(2025, 2, 2, tzinfo=UTC),
+                tick_size=Decimal("0.0001"),
+            ),
+            TickPeriod(start=datetime(2025, 2, 1, tzinfo=UTC), tick_size=Decimal("0.00001")),
+        ),
+    ],
+)
+def test_tick_catalog_rejects_gaps_and_overlaps(periods: tuple[TickPeriod, ...]) -> None:
+    with pytest.raises(ValueError, match="gap or overlap"):
+        TickCatalog(periods=periods)
+
+
+def test_future_catalog_change_does_not_change_past_selection_grid() -> None:
+    future_change = datetime(2026, 7, 1, tzinfo=UTC)
+    alternative = TickCatalog(
+        periods=(
+            TickPeriod(
+                start=datetime(2025, 1, 1, tzinfo=UTC),
+                end_exclusive=USDCUSDT_TICK_CHANGE,
+                tick_size=Decimal("0.0001"),
+            ),
+            TickPeriod(
+                start=USDCUSDT_TICK_CHANGE,
+                end_exclusive=future_change,
+                tick_size=Decimal("0.00001"),
+            ),
+            TickPeriod(start=future_change, tick_size=Decimal("0.00002")),
+        ),
+        transitions=(
+            TickTransition(
+                start=USDCUSDT_FINE_GRID_OBSERVED_FROM,
+                end_exclusive=USDCUSDT_TICK_CHANGE,
+                allowed_tick_sizes=(Decimal("0.0001"), Decimal("0.00001")),
+                evidence="known rollout window",
+            ),
+        ),
+    )
+    decision = datetime(2026, 3, 1, tzinfo=UTC)
+
+    assert alternative.catalog_hash != USDCUSDT_TICK_CATALOG.catalog_hash
+    assert alternative.absolute_distances_at(decision, (1,)) == (
+        USDCUSDT_TICK_CATALOG.absolute_distances_at(decision, (1,))
+    )
+
+
+def test_static_model_keeps_absolute_high_across_tick_change() -> None:
+    start = USDCUSDT_TICK_CHANGE - timedelta(minutes=1)
+    end = USDCUSDT_TICK_CHANGE + timedelta(minutes=1)
+    tape = SerialTape.from_events(
+        [
+            (start - timedelta(seconds=20), Decimal("0.9998")),
+            (start - timedelta(seconds=19), Decimal("0.9999")),
+            (start + timedelta(seconds=1), Decimal("0.9998")),
+            (USDCUSDT_TICK_CHANGE + timedelta(seconds=1), Decimal("0.99981")),
+            (USDCUSDT_TICK_CHANGE + timedelta(seconds=2), Decimal("0.9999")),
+            (end - timedelta(microseconds=1), Decimal("0.9999")),
+        ],
+        tick_size=SERIAL_TAPE_QUANTUM,
+        tick_catalog=USDCUSDT_TICK_CATALOG,
+    )
+    model = preregistered_corrected_block()[0].model_copy(update={"lookback_minutes": 10})
+
+    result = replay_serial_model(
+        tape,
+        model,
+        _historical_scenario(),
+        start=start,
+        end_exclusive=end,
+        tick_catalog=USDCUSDT_TICK_CATALOG,
+    )
+
+    assert result.completed_cycles == 1
+    assert result.cycles[0].high == Decimal("0.9999")
+    assert result.cycles[0].tick_at_selection == Decimal("0.0001")
+    assert result.reselection_count == 0
+
+
+def test_adaptive_selection_uses_new_tick_only_at_next_decision() -> None:
+    start = USDCUSDT_TICK_CHANGE - timedelta(minutes=1)
+    end = USDCUSDT_TICK_CHANGE + timedelta(minutes=1)
+    tape = SerialTape.from_events(
+        [
+            (start - timedelta(seconds=20), Decimal("0.9995")),
+            (start - timedelta(seconds=19), Decimal("0.9996")),
+            (USDCUSDT_FINE_GRID_OBSERVED_FROM, Decimal("0.99981")),
+            (USDCUSDT_FINE_GRID_OBSERVED_FROM + timedelta(seconds=1), Decimal("0.99982")),
+            (USDCUSDT_TICK_CHANGE + timedelta(seconds=1), Decimal("0.99981")),
+            (USDCUSDT_TICK_CHANGE + timedelta(seconds=2), Decimal("0.99982")),
+            (end - timedelta(microseconds=1), Decimal("0.99982")),
+        ],
+        tick_size=SERIAL_TAPE_QUANTUM,
+        tick_catalog=USDCUSDT_TICK_CATALOG,
+    )
+    model = preregistered_corrected_block()[1].model_copy(
+        update={"decision_interval_minutes": 1, "lookback_minutes": 10}
+    )
+
+    result = replay_serial_model(
+        tape,
+        model,
+        _historical_scenario(),
+        start=start,
+        end_exclusive=end,
+        tick_catalog=USDCUSDT_TICK_CATALOG,
+    )
+
+    assert result.completed_cycles == 1
+    assert result.cycles[0].high - result.cycles[0].low == Decimal("0.00001")
+    assert result.cycles[0].tick_at_selection == Decimal("0.00001")
+    assert result.selection_changes[0].timestamp == USDCUSDT_TICK_CHANGE
+    assert result.selection_changes[0].selected_tick_at_selection == Decimal("0.00001")
+
+
+def test_price_outside_historical_grid_is_rejected_without_rounding() -> None:
+    with pytest.raises(ValueError, match="incompatible"):
+        SerialTape.from_events(
+            [
+                (
+                    USDCUSDT_TICK_CHANGE - timedelta(hours=1),
+                    Decimal("0.99949"),
+                )
+            ],
+            tick_size=SERIAL_TAPE_QUANTUM,
+            tick_catalog=USDCUSDT_TICK_CATALOG,
+        )
+
+
+def test_coarser_selection_grid_excludes_misaligned_high_score_candidate() -> None:
+    grid_change = START + timedelta(minutes=10)
+    catalog = TickCatalog(
+        periods=(
+            TickPeriod(
+                start=START - timedelta(hours=1),
+                end_exclusive=grid_change,
+                tick_size=Decimal("0.00001"),
+            ),
+            TickPeriod(start=grid_change, tick_size=Decimal("0.0001")),
+        )
+    )
+    start = grid_change + timedelta(minutes=1)
+    end = start + timedelta(minutes=1)
+    tape = SerialTape.from_events(
+        [
+            (grid_change - timedelta(minutes=2), Decimal("0.99981")),
+            (grid_change - timedelta(minutes=2) + timedelta(seconds=1), Decimal("0.99991")),
+            (grid_change - timedelta(minutes=1), Decimal("0.99981")),
+            (grid_change - timedelta(minutes=1) + timedelta(seconds=1), Decimal("0.99991")),
+            (grid_change - timedelta(seconds=2), Decimal("0.9998")),
+            (grid_change - timedelta(seconds=1), Decimal("0.9999")),
+            (start + timedelta(seconds=1), Decimal("0.9998")),
+            (start + timedelta(seconds=2), Decimal("0.9999")),
+            (end - timedelta(microseconds=1), Decimal("0.9999")),
+        ],
+        tick_size=SERIAL_TAPE_QUANTUM,
+        tick_catalog=catalog,
+    )
+    model = preregistered_corrected_block()[0].model_copy(update={"lookback_minutes": 10})
+    scenario = _historical_scenario().model_copy(
+        update={
+            "historical_tick_catalog_hash": catalog.catalog_hash,
+            "historical_tick_source_url": catalog.source_url,
+        }
+    )
+
+    result = replay_serial_model(
+        tape,
+        model,
+        scenario,
+        start=start,
+        end_exclusive=end,
+        tick_catalog=catalog,
+    )
+
+    assert result.completed_cycles == 1
+    assert result.cycles[0].low == Decimal("0.9998")
+    assert result.cycles[0].high == Decimal("0.9999")
 
 
 def test_contained_cycles_matches_bruteforce_for_causal_windows() -> None:

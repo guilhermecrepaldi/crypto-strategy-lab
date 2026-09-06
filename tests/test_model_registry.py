@@ -262,6 +262,22 @@ def test_promotion_requires_evaluation_and_decision_references(tmp_path: Path) -
         registry.promote("M001", decision, occurred_at=AT)
 
 
+def test_created_model_can_be_superseded_before_execution(tmp_path: Path) -> None:
+    registry = ModelRegistry(tmp_path / "artifacts", tmp_path / "reports")
+    registry.register(spec())
+
+    event = registry.transition(
+        "M001",
+        ModelStatus.SUPERSEDED,
+        reason="preregistered assumption corrected before any replay",
+        occurred_at=AT,
+    )
+
+    assert event["payload"]["from"] == ModelStatus.CREATED.value
+    assert event["payload"]["to"] == ModelStatus.SUPERSEDED.value
+    assert registry.current_status("M001") == ModelStatus.SUPERSEDED
+
+
 def test_second_promotion_supersedes_first_and_invalidation_removes_champion(
     tmp_path: Path,
 ) -> None:

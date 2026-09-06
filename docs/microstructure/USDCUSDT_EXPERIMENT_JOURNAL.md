@@ -26,7 +26,7 @@ compared silently.
 
 ### Reference scenario
 
-`PRICE_PATH_MATHEMATICAL_ZERO_FEE_V1` is a counterfactual price-path benchmark:
+`PRICE_PATH_HISTORICAL_TICK_ZERO_FEE_V2` is a counterfactual price-path benchmark:
 
 - serial one-pair, one-bank, one-lot, one-LOW, one-HIGH state machine;
 - full compounding after each completed cycle;
@@ -38,14 +38,18 @@ compared silently.
 - no forced liquidation at the terminal boundary;
 - terminal equity is cash plus open inventory marked at the last valid trade;
 - realized, unrealized and open-cycle results are reported separately.
+- `distance=1` means one causally supported exchange grid step at the level-selection instant;
+- LOW and HIGH remain absolute after selection, including across a later tick-size change.
 
 `capacity_capped_final_capital` remains null until queue/capacity evidence exists. Price touches
 are not described as fills.
 
 ### Identity and reproducibility
 
-- `MODEL_HASH`: decision logic and all decision-changing parameters.
-- `SCENARIO_HASH`: execution environment and accounting assumptions.
+- `MODEL_HASH`: decision logic, distance semantics, fixing moment and all decision-changing
+  parameters.
+- `SCENARIO_HASH`: execution environment, accounting assumptions and the hashed historical
+  filter-catalog policy.
 - `RUN_HASH`: model, scenario, dataset, interval, code commit, technical revision and execution
   backend provenance. CPU and CUDA executions remain the same model and scenario, but cannot
   overwrite each other's run artifact.
@@ -68,7 +72,7 @@ candidate exists, remain in USDT.
 
 Expected effect: provide an interpretable lower-complexity reference and expose level migration.
 
-Result: pending validated USDCUSDT dataset.
+Result: `SUPERSEDED` before execution due to an unverified constant historical tick assumption.
 
 ## M002 — preregistered
 
@@ -83,7 +87,7 @@ Change: `PERIODIC_RESELECT`, one-hour decision interval. A change applies only w
 cycle is open, it remains at its original HIGH; after the sell, the candidate is recalculated from
 the then-current causal prefix.
 
-Result: pending validated USDCUSDT dataset.
+Result: `SUPERSEDED` before execution with M001; no replay or economic result exists.
 
 ## M003 — preregistered
 
@@ -97,7 +101,7 @@ reselections.
 Change: one-minute decision interval, same 24-hour lookback, distance and tie-break rules. A
 change still applies only while flat.
 
-Result: pending validated USDCUSDT dataset.
+Result: `SUPERSEDED` before execution with M001; no replay or economic result exists.
 
 ## M004 — preregistered
 
@@ -116,7 +120,43 @@ Expected gate: at least 90% of M003 cycles, at least 99% of M003 ending equity, 
 of its reselections, no cooldown violation and at least 50% fewer `A -> B -> A` reversals in a
 rolling 24-hour window when the comparator has such reversals.
 
-Result: pending validated USDCUSDT dataset.
+Result: `SUPERSEDED` before execution with M001; no replay or economic result exists.
+
+## Technical correction and active identities M005-M008
+
+The first full-replay attempt stopped before any model entered `RUNNING`: the tape contained
+`0.99949` at `2026-04-14T04:59:57.245631Z`, which cannot be represented on the assumed constant
+`0.0001` grid. Binance's official 2026-04-07 announcement establishes the historical filter
+change for USDCUSDT: previous tick `0.0001`, updated tick `0.00001`, effective by
+`2026-04-14T05:00:00Z`. It also states that existing orders retain their original tick.
+
+Source: <https://www.binance.com/en/support/announcement/detail/1f1ee792db2d445eb967aa09f6c05138>
+
+This was a technical incompatibility found before returns, not a response to model performance.
+M001-M004 and their hashes remain immutable and are marked `SUPERSEDED` with reason
+`UNVERIFIED_HISTORICAL_TICK_ASSUMPTION`. M005-M008 reproduce their respective decision rules with
+the corrected, hashed semantics:
+
+```text
+DISTANCE_SEMANTICS=ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION
+DISTANCE_TICKS=1
+TICK_SOURCE=BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX
+TICK_EVIDENCE_CLASS=OBSERVED_ACCEPTED_GRID
+HIGH=LOW+CAUSALLY_SUPPORTED_TICK_AT_SELECTION
+```
+
+M005 is the corrected static reference. M006, M007 and M008 form its internal hourly,
+always-best and idle-triggered lineage. A tick change never moves an already selected HIGH,
+forces a close or creates an extra reselection. M005 may therefore remain at an absolute
+`0.0001` distance after the exchange moves to `0.00001`; it is still one tick at selection.
+
+The announcement says the adjustment completes **by** 05:00 UTC; it does not prove an exact
+rollout start. The replay therefore discovers the first fine-grid evidence from the chronological
+trade prefix at runtime. A selection whose prefix excludes that first fine event still uses the
+old-grid assumption; only a later selection may use the observed accepted fine grid. The pre-event
+`0.0001` period, including 2025, is explicitly
+`OLD_GRID_ASSUMPTION_COMPATIBLE_WITH_OBSERVED_TRADES`, not an official point-in-time filter
+snapshot. At 05:00 the catalog uses `OFFICIAL_COMPLETION_BOUND`.
 
 ## Frozen first-block mechanics
 

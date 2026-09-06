@@ -2,11 +2,11 @@ from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
-from crypto_strategy_lab.microstructure.campaign import register_first_block
+from crypto_strategy_lab.microstructure.campaign import register_active_block
 from crypto_strategy_lab.microstructure.data import HistoryManifest
 from crypto_strategy_lab.microstructure.market_profile import MarketHour, MarketHourlyProfile
 from crypto_strategy_lab.microstructure.replay_workflow import run_full_replay_campaign
-from crypto_strategy_lab.microstructure.serial_replay import SerialTape
+from crypto_strategy_lab.microstructure.serial_replay import SERIAL_TAPE_QUANTUM, SerialTape
 from crypto_strategy_lab.ml.model_registry import (
     REQUIRED_EVALUATION_FILES,
     ModelRegistry,
@@ -30,7 +30,7 @@ def test_full_replay_writes_complete_evidence_and_never_economic_stops(
             (START + timedelta(hours=3, seconds=1), Decimal("0.9999")),
             (end - timedelta(microseconds=1), Decimal("1.0000")),
         ],
-        tick_size=Decimal("0.0001"),
+        tick_size=SERIAL_TAPE_QUANTUM,
     )
     manifest = HistoryManifest(
         symbol="USDCUSDT",
@@ -58,7 +58,7 @@ def test_full_replay_writes_complete_evidence_and_never_economic_stops(
         dataset_hash=manifest.dataset_hash,
         start=START,
         end_exclusive=end,
-        tick_size=Decimal("0.0001"),
+        tick_size=SERIAL_TAPE_QUANTUM,
         profile_hash="profile-hash",
         hours=tuple(
             MarketHour(
@@ -85,7 +85,7 @@ def test_full_replay_writes_complete_evidence_and_never_economic_stops(
     )
     artifacts = tmp_path / "artifacts"
     reports = tmp_path / "reports"
-    register_first_block(artifact_root=artifacts, report_root=reports)
+    register_active_block(artifact_root=artifacts, report_root=reports)
     monkeypatch.setattr(  # type: ignore[attr-defined]
         "crypto_strategy_lab.microstructure.replay_workflow.load_serial_tape",
         lambda *args, **kwargs: tape,
@@ -102,7 +102,7 @@ def test_full_replay_writes_complete_evidence_and_never_economic_stops(
     registry = ModelRegistry(artifact_root=artifacts, report_root=reports)
 
     assert all(
-        registry.current_status(f"M{index:03}") == ModelStatus.EVALUATED for index in range(1, 5)
+        registry.current_status(f"M{index:03}") == ModelStatus.EVALUATED for index in range(5, 9)
     )
     evaluations = [
         item for item in registry.journal() if item["event_type"] == "EVALUATION_RECORDED"

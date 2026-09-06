@@ -8,7 +8,6 @@ import subprocess
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
-from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -21,10 +20,13 @@ from crypto_strategy_lab.microstructure.market_profile import (
     write_hourly_market_profile,
 )
 from crypto_strategy_lab.microstructure.serial_replay import (
+    SERIAL_TAPE_QUANTUM,
+    USDCUSDT_TICK_CATALOG,
     SerialModelConfig,
     SerialReplayResult,
     SerialScenarioConfig,
     SerialTape,
+    TickCatalog,
     load_serial_tape,
     replay_serial_model,
 )
@@ -47,8 +49,8 @@ from crypto_strategy_lab.ml.model_registry import (
 )
 
 REPLAY_START = datetime(2026, 1, 1, tzinfo=UTC)
-TECHNICAL_REVISION = "full-replay-temporal-regimes-v1"
-DEFAULT_MODEL_IDS = ("M001", "M002", "M003", "M004")
+TECHNICAL_REVISION = "full-replay-historical-tick-temporal-regimes-v2"
+DEFAULT_MODEL_IDS = ("M005", "M006", "M007", "M008")
 
 
 def run_full_replay_campaign(
@@ -81,7 +83,13 @@ def run_full_replay_campaign(
     end_exclusive = manifest.last_timestamp + timedelta(microseconds=1)
     if manifest.first_timestamp > tape_start:
         raise ValueError("validated manifest lacks the causal warm-up before 2026-01-01")
-    scenario = SerialScenarioConfig(tick_size=Decimal("0.0001"))
+    scenario = SerialScenarioConfig(
+        scenario_id="PRICE_PATH_HISTORICAL_TICK_ZERO_FEE_V2",
+        tick_size=SERIAL_TAPE_QUANTUM,
+        historical_tick_catalog_hash=USDCUSDT_TICK_CATALOG.catalog_hash,
+        historical_tick_source_url=USDCUSDT_TICK_CATALOG.source_url,
+        historical_tick_policy="CAUSAL_OBSERVED_GRID_THEN_OFFICIAL_COMPLETION_BOUND",
+    )
     snapshot_id = canonical_hash(
         {
             "campaign": CAMPAIGN_ID,
@@ -97,6 +105,7 @@ def run_full_replay_campaign(
             start=REPLAY_START,
             end_exclusive=end_exclusive,
             tick_size=scenario.tick_size,
+            tick_catalog=USDCUSDT_TICK_CATALOG,
         )
         profile_paths = write_hourly_market_profile(
             market_profile,
@@ -107,6 +116,7 @@ def run_full_replay_campaign(
             tick_size=scenario.tick_size,
             start=tape_start,
             end_exclusive=end_exclusive,
+            tick_catalog=USDCUSDT_TICK_CATALOG,
         )
         analysis_context = TemporalAnalysisContext(tape)
         records: list[dict[str, Any]] = [
@@ -128,6 +138,7 @@ def run_full_replay_campaign(
                 end_exclusive,
                 market_profile,
                 analysis_context,
+                USDCUSDT_TICK_CATALOG,
             )
             records.append(record)
             if analysis is not None:
@@ -169,6 +180,7 @@ def _run_one(
     end_exclusive: datetime,
     market_profile: MarketHourlyProfile,
     analysis_context: TemporalAnalysisContext,
+    tick_catalog: TickCatalog,
 ) -> tuple[dict[str, Any], TemporalReplayAnalysis | None]:
     status = registry.current_status(model.model_id)
     if status in {
@@ -232,6 +244,7 @@ def _run_one(
             scenario,
             start=REPLAY_START,
             end_exclusive=end_exclusive,
+            tick_catalog=tick_catalog,
         )
         analysis = analyze_replay_temporally(
             result,
@@ -306,7 +319,7 @@ def _record_evaluation(
             campaign_snapshot_id=snapshot_id,
             run_hash=run_hash,
             comparison={
-                "model_ladder": "M001_TO_M004",
+                "model_ladder": "M005_TO_M008",
                 "same_dataset_scenario_cutoff_required": True,
             },
             criteria={

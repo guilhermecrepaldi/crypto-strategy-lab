@@ -71,7 +71,9 @@ class ModelStatus(StrEnum):
 
 ALLOWED_STATUSES: Final = frozenset(ModelStatus)
 ALLOWED_STATUS_TRANSITIONS: Final[dict[ModelStatus, frozenset[ModelStatus]]] = {
-    ModelStatus.CREATED: frozenset({ModelStatus.RUNNING, ModelStatus.REJECTED}),
+    ModelStatus.CREATED: frozenset(
+        {ModelStatus.RUNNING, ModelStatus.REJECTED, ModelStatus.SUPERSEDED}
+    ),
     ModelStatus.RUNNING: frozenset(
         {ModelStatus.EVALUATED, ModelStatus.INCONCLUSIVE, ModelStatus.INVALIDATED_TECHNICAL}
     ),

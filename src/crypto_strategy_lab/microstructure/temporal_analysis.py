@@ -950,7 +950,8 @@ def _market_feature_buckets(
 def _tick_distance_summary(cycles: Sequence[Any], tick_size: Decimal) -> dict[str, Any]:
     groups: dict[int, list[Any]] = defaultdict(list)
     for cycle in cycles:
-        groups[int((cycle.high - cycle.low) / tick_size)].append(cycle)
+        selection_tick = cycle.tick_at_selection or tick_size
+        groups[int((cycle.high - cycle.low) / selection_tick)].append(cycle)
     return {
         str(distance): {
             "completed_cycles": len(items),

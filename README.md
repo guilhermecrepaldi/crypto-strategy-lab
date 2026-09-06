@@ -224,10 +224,12 @@ banca, um lote, um LOW, um HIGH e um ciclo serial. Não existe timeout ou stop t
 posição aberta continua aguardando HIGH. Mudança estrutural apenas bloqueia novas entradas e não
 autoriza liquidação automática.
 
-O primeiro bloco pré-registrado contém M001 estático, M002 com reseleção horária, M003
-`ALWAYS_BEST` por minuto e M004 `IDLE_TRIGGERED`. Todos reiniciam com 100 USDT em
-`2026-01-01T00:00:00Z` e usam o mesmo cutoff físico. Esses replays são DEVELOPMENT; os partitions
-existentes `VALIDATION` e `LOCKED_TEST` permanecem fechados.
+M001-M004 foram preservados como pré-registros superados antes de qualquer replay: eles tratavam
+o tick como constante, enquanto a Binance reduziu oficialmente o tick de USDCUSDT de `0.0001`
+para `0.00001` em `2026-04-14T05:00:00Z`. O bloco ativo equivalente é M005 estático, M006 com
+reseleção horária, M007 `ALWAYS_BEST` por minuto e M008 `IDLE_TRIGGERED`. Todos reiniciam com 100
+USDT em `2026-01-01T00:00:00Z` e usam o mesmo cutoff físico. Esses replays são DEVELOPMENT; os
+partitions existentes `VALIDATION` e `LOCKED_TEST` permanecem fechados.
 
 ```powershell
 # dados oficiais; a campanha ativa usa somente 2025-2026
@@ -239,7 +241,7 @@ uv run crypto-lab microstructure-download --symbol USDCUSDT --kind trades `
 uv run crypto-lab microstructure-history-verify `
   --manifest data/manifests/usdcusdt-trades-2025-2026.json
 
-# replay integral M001-M004 e análise temporal/regimes pós-replay
+# replay integral M005-M008 e análise temporal/regimes pós-replay
 uv run crypto-lab microstructure-full-replay `
   --manifest data/manifests/usdcusdt-trades-2025-2026.json `
   --artifact-root artifacts --report-root reports
@@ -251,6 +253,13 @@ antes e depois são consecutivos; ausências não comprovadas mantêm o manifest
 vai de `2026-01-01` ao cutoff físico completo, sem early stop econômico. Price paths nunca são
 chamados de fills; fila, capacidade, partial fills e execução real continuam `INCONCLUSIVE` sem
 evidência L2/shadow.
+
+O catálogo de filtros usa somente 2025-2026 e registra fonte, classe de evidência e hash. Até o
+primeiro preço fino observado causalmente, `0.0001` é uma hipótese histórica explícita compatível
+com os trades; depois desse evento, `0.00001` é uma grade observadamente aceita, e `05:00 UTC` é
+somente o limite de conclusão publicado pela Binance. LOW e HIGH ficam absolutos depois de
+selecionados: mudança posterior da grade não altera posição aberta, não arredonda alvo e não
+provoca reseleção implícita.
 
 O trabalho anterior FDUSDUSDC é `LEGACY_EVIDENCE` / `ARCHIVED_EXPERIMENT`. Seus arquivos são
 preservados para explicar a origem da hipótese, mas nenhum novo download, scanner, backtest,
