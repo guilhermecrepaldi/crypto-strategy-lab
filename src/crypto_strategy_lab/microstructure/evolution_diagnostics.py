@@ -46,7 +46,10 @@ from crypto_strategy_lab.ml.model_registry import (
     run_artifact_dir,
 )
 
-SCHEMA_VERSION: Final = "usdcusdt-evolution-diagnostic-v1"
+SCHEMA_VERSION: Final = "usdcusdt-evolution-diagnostic-v2"
+_HOUR_EVENTS: Final = 3_600 * 1_000_000 * EVENT_ORDER_SCALE
+_DAY_EVENTS: Final = 24 * _HOUR_EVENTS
+_ACTIVITY_SIGNALS: Final = ("UNKNOWN", "CONTRACTING", "NOT_CONTRACTING")
 _PROTECTION_KEYS: Final = {
     "validation_accessed",
     "locked_test_accessed",
@@ -122,6 +125,10 @@ def diagnose_evolution(
     """Write an idempotent causal diagnostic for two evaluated model runs."""
     if parent_model_id == challenger_model_id:
         raise EvolutionDiagnosticError("parent and challenger must be distinct")
+    if (parent_model_id, challenger_model_id) != ("M007", "M009"):
+        raise EvolutionDiagnosticError(
+            "activity contraction diagnostic requires M007 as primary and M009 as dependent"
+        )
     registry = ModelRegistry(artifact_root=artifact_root, report_root=report_root)
     parent = _load_run_evidence(registry, parent_model_id, Path(artifact_root))
     challenger = _load_run_evidence(registry, challenger_model_id, Path(artifact_root))
@@ -294,7 +301,9 @@ def _build_summary(
     parent: _RunEvidence, challenger: _RunEvidence, artifact_id: str
 ) -> tuple[dict[str, Any], dict[str, bytes]]:
     parent_data = _diagnose_model(parent)
-    challenger_data = _diagnose_model(challenger)
+    challenger_data = _diagnose_model(
+        challenger, excluded_entry_events=parent_data["entry_event_ids"]
+    )
     summary = {
         "schema_version": SCHEMA_VERSION,
         "status": "READY",
@@ -330,6 +339,28 @@ def _build_summary(
             parent.model_id: parent_data["cohorts"],
             challenger.model_id: challenger_data["cohorts"],
         },
+        "entry_event_overlap": {
+            "primary_model_id": parent.model_id,
+            "dependent_model_id": challenger.model_id,
+            "shared_count": len(
+                parent_data["entry_event_ids"] & challenger_data["entry_event_ids"]
+            ),
+            "unique_counts": {
+                parent.model_id: len(
+                    parent_data["entry_event_ids"] - challenger_data["entry_event_ids"]
+                ),
+                challenger.model_id: len(
+                    challenger_data["entry_event_ids"] - parent_data["entry_event_ids"]
+                ),
+            },
+        },
+        "dependent_verification": {
+            "model_id": challenger.model_id,
+            "shared_events_excluded": len(
+                parent_data["entry_event_ids"] & challenger_data["entry_event_ids"]
+            ),
+            "activity_contraction_on_unique_events": challenger_data["dependent_unique_activity"],
+        },
     }
     files: dict[str, bytes] = {}
     long_holds: dict[str, Any] = {}
@@ -347,7 +378,9 @@ def _build_summary(
     return summary, files
 
 
-def _diagnose_model(evidence: _RunEvidence) -> dict[str, Any]:
+def _diagnose_model(
+    evidence: _RunEvidence, *, excluded_entry_events: set[int] | None = None
+) -> dict[str, Any]:
     replay = evidence.replay
     initial = _decimal(replay, "initial_quote")
     cash = initial
@@ -362,6 +395,10 @@ def _diagnose_model(evidence: _RunEvidence) -> dict[str, Any]:
         "OTHER": _CohortAccumulator(),
     }
     entry_count = 0
+    entry_event_ids: set[int] = set()
+    activity_stats = _new_activity_stats()
+    dependent_unique_stats = _new_activity_stats()
+    dependent_unique_count = 0
     realized_total = Decimal("0")
     sum_logs = Decimal("0")
     aggregates: dict[str, dict[str, dict[str, Decimal | int]]] = defaultdict(dict)
@@ -370,17 +407,37 @@ def _diagnose_model(evidence: _RunEvidence) -> dict[str, Any]:
             raise EvolutionDiagnosticError("cycle is not an object")
         item, cash = _cycle_entry(evidence, cycle, cash, timelines, selections)
         entry_count += 1
+        entry_event_ids.add(int(item["entry_event"]))
+        _record_activity(activity_stats, item)
+        is_dependent_unique = (
+            excluded_entry_events is not None
+            and int(item["entry_event"]) not in excluded_entry_events
+        )
+        if is_dependent_unique:
+            dependent_unique_count += 1
+            _record_activity(dependent_unique_stats, item)
         realized_total += Decimal(item["realized"])
         cohort_accumulators[item["cohort"]].add(item)
         if item["cohort"] == "LONG_HOLD":
             long_holds.append(item)
         sum_logs += Decimal(item["log_return"])
         _aggregate(aggregates, "exit_month", item["exit_timestamp"][:7], item)
+        _aggregate(aggregates, "entry_month", item["entry_timestamp"][:7], item)
         _aggregate(aggregates, "low", item["low"], item)
         _aggregate(aggregates, "high", item["high"], item)
         _aggregate(aggregates, "level", f"{item['low']}->{item['high']}", item)
         _aggregate(aggregates, "selection_tick", item["tick_at_selection"], item)
         _aggregate(aggregates, "entry_tick", item["tick_at_entry"], item)
+        _aggregate(aggregates, "activity_signal", item["activity_signal"], item)
+        _aggregate(aggregates, "cohort", item["cohort"], item)
+        breakdown_key = (
+            f"{item['entry_timestamp'][:7]}|"
+            f"selection_tick={item['tick_at_selection'] or 'UNKNOWN'}|"
+            f"signal={item['activity_signal']}|cohort={item['cohort']}"
+        )
+        _aggregate(aggregates, "activity_breakdown", breakdown_key, item)
+        if is_dependent_unique:
+            _aggregate(aggregates, "dependent_unique_activity_breakdown", breakdown_key, item)
     final_cash = _decimal(replay, "final_cash")
     open_censored = bool(replay.get("open_cycle_censored"))
     terminal_context: dict[str, Any] = {}
@@ -430,6 +487,12 @@ def _diagnose_model(evidence: _RunEvidence) -> dict[str, Any]:
         for dimension, grouped in aggregates.items()
         for key, values in grouped.items()
     ]
+    activity_summary = _activity_summary(activity_stats, entry_count)
+    dependent_unique_activity = (
+        _activity_summary(dependent_unique_stats, dependent_unique_count)
+        if excluded_entry_events is not None
+        else None
+    )
     return {
         "summary": {
             "initial_quote": _string(initial),
@@ -438,6 +501,7 @@ def _diagnose_model(evidence: _RunEvidence) -> dict[str, Any]:
             "final_marked_equity": _string(marked),
             "realized_total": _string(realized_total),
             "long_hold_count": len(long_holds),
+            "activity_contraction": activity_summary,
             "terminal": terminal,
         },
         "entries": (),
@@ -447,6 +511,8 @@ def _diagnose_model(evidence: _RunEvidence) -> dict[str, Any]:
         },
         "aggregates": {dimension: dict(grouped) for dimension, grouped in aggregates.items()},
         "aggregate_rows": aggregate_rows,
+        "entry_event_ids": entry_event_ids,
+        "dependent_unique_activity": dependent_unique_activity,
         "cohorts": {
             name: accumulator.result() for name, accumulator in cohort_accumulators.items()
         },
@@ -506,6 +572,7 @@ def _cycle_entry(
     lookback = evidence.model.lookback_minutes * 60 * 1_000_000 * EVENT_ORDER_SCALE
     lookback_cycles = timeline.contained_cycles(entry - lookback, entry)
     lookback_score = _score(current, timelines, evidence.model, entry - lookback, entry)
+    activity = _activity_contraction(timeline, entry)
     tick_at_entry, eligible, grid_multiple = _selection_grid(
         evidence.model,
         USDCUSDT_TICK_CATALOG if evidence.model.distance_semantics is not None else None,
@@ -542,6 +609,7 @@ def _cycle_entry(
         "model_id": evidence.model_id,
         "run_hash": evidence.run_hash,
         "evaluation_hash": evidence.evaluation_hash,
+        "entry_event": entry,
         "entry_timestamp": entry_timestamp.isoformat(),
         "exit_timestamp": exit_timestamp.isoformat(),
         "hold_seconds": _string(hold_seconds),
@@ -565,6 +633,13 @@ def _cycle_entry(
         "prior_high_age_seconds": None if prior_high_age is None else _string(prior_high_age),
         "canonical_lookback_cycles": lookback_cycles,
         "canonical_lookback_score": _string(lookback_score),
+        "activity_c1h": activity["C1h"],
+        "activity_c24h": activity["C24h"],
+        "activity_ratio": activity["R"],
+        "activity_signal": activity["signal"],
+        "C1h": activity["C1h"],
+        "C24h": activity["C24h"],
+        "R": activity["R"],
         "tick_at_selection": _string(selection_tick),
         "tick_at_entry": None if tick_at_entry is None else _string(tick_at_entry),
         "selection_tick_regime": _string(selection_tick),
@@ -617,6 +692,7 @@ def _terminal_context(
     )
     lookback_cycles = timeline.contained_cycles(entry - lookback, entry)
     lookback_score = _score(current, timelines, evidence.model, entry - lookback, entry)
+    activity = _activity_contraction(timeline, entry)
     tick, eligible, grid_multiple = _selection_grid(
         evidence.model,
         USDCUSDT_TICK_CATALOG if evidence.model.distance_semantics is not None else None,
@@ -641,6 +717,13 @@ def _terminal_context(
         "prior_high_age_seconds": _string(prior_high_age),
         "canonical_lookback_cycles": lookback_cycles,
         "canonical_lookback_score": _string(lookback_score),
+        "activity_c1h": activity["C1h"],
+        "activity_c24h": activity["C24h"],
+        "activity_ratio": activity["R"],
+        "activity_signal": activity["signal"],
+        "C1h": activity["C1h"],
+        "C24h": activity["C24h"],
+        "R": activity["R"],
         "low": _string(_price_tick(current[0], evidence.tape.tick_size)),
         "high": _string(_price_tick(current[0] + current[1], evidence.tape.tick_size)),
         "tick_at_selection": _string(selection[2]),
@@ -656,6 +739,79 @@ def _terminal_context(
         "alternative_score": _string(
             _score(alternative, timelines, evidence.model, entry - lookback, entry)
         ),
+    }
+
+
+def _activity_contraction(timeline: CandidateTimeline, entry: int) -> dict[str, int | str | None]:
+    """Classify the selected candidate's activity before an entry event.
+
+    Both windows are end-exclusive, matching ``CandidateTimeline``'s causal
+    counting contract.  The ratio is deliberately fixed by the protocol.
+    """
+    c1h = timeline.contained_cycles(entry - _HOUR_EVENTS, entry)
+    c24h = timeline.contained_cycles(entry - _DAY_EVENTS, entry)
+    if c24h == 0:
+        ratio: str | None = None
+        signal = "UNKNOWN"
+    else:
+        ratio_decimal = Decimal(24 * c1h) / Decimal(c24h)
+        ratio = _string(ratio_decimal)
+        signal = "CONTRACTING" if ratio_decimal < 1 else "NOT_CONTRACTING"
+    return {"C1h": c1h, "C24h": c24h, "R": ratio, "signal": signal}
+
+
+def _new_activity_stats() -> dict[str, dict[str, Decimal | int]]:
+    return {
+        signal: {
+            "entries": 0,
+            "long_holds_completed": 0,
+            "other_entries": 0,
+            "sum_log_return": Decimal("0"),
+        }
+        for signal in _ACTIVITY_SIGNALS
+    }
+
+
+def _record_activity(stats: dict[str, dict[str, Decimal | int]], item: Mapping[str, Any]) -> None:
+    signal = str(item["activity_signal"])
+    bucket = stats[signal]
+    bucket["entries"] = int(bucket["entries"]) + 1
+    cohort_field = "long_holds_completed" if item["cohort"] == "LONG_HOLD" else "other_entries"
+    bucket[cohort_field] = int(bucket[cohort_field]) + 1
+    bucket["sum_log_return"] = Decimal(bucket["sum_log_return"]) + Decimal(str(item["log_return"]))
+
+
+def _rate(numerator: int, denominator: int) -> str | None:
+    return None if denominator == 0 else _string(Decimal(numerator) / Decimal(denominator))
+
+
+def _activity_summary(
+    stats: dict[str, dict[str, Decimal | int]], total_entries: int
+) -> dict[str, Any]:
+    total_long = sum(int(bucket["long_holds_completed"]) for bucket in stats.values())
+    total_other = sum(int(bucket["other_entries"]) for bucket in stats.values())
+    known_long = total_long - int(stats["UNKNOWN"]["long_holds_completed"])
+    known_other = total_other - int(stats["UNKNOWN"]["other_entries"])
+    contracting_long = int(stats["CONTRACTING"]["long_holds_completed"])
+    contracting_other = int(stats["CONTRACTING"]["other_entries"])
+    return {
+        "entries": total_entries,
+        "counts_by_signal": {signal: int(stats[signal]["entries"]) for signal in _ACTIVITY_SIGNALS},
+        "rates_by_signal": {
+            signal: _rate(int(stats[signal]["entries"]), total_entries)
+            for signal in _ACTIVITY_SIGNALS
+        },
+        "by_signal": {
+            signal: {
+                key: _string(value) if isinstance(value, Decimal) else value
+                for key, value in stats[signal].items()
+            }
+            for signal in _ACTIVITY_SIGNALS
+        },
+        "contracting_long_hold_capture_rate_all": _rate(contracting_long, total_long),
+        "contracting_long_hold_capture_rate_known": _rate(contracting_long, known_long),
+        "contracting_other_entry_fraction_all": _rate(contracting_other, total_other),
+        "contracting_other_entry_fraction_known": _rate(contracting_other, known_other),
     }
 
 

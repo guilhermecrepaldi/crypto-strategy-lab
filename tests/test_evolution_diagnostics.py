@@ -1,3 +1,4 @@
+from array import array
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -5,8 +6,12 @@ from pathlib import Path
 import pytest
 
 from crypto_strategy_lab.microstructure.evolution_diagnostics import (
+    _DAY_EVENTS,
+    _HOUR_EVENTS,
     EvolutionDiagnosticError,
+    _activity_contraction,
     _aggregate,
+    _build_summary,
     _diagnose_model,
     _RunEvidence,
     _selection_points,
@@ -16,6 +21,7 @@ from crypto_strategy_lab.microstructure.evolution_diagnostics import (
     _write_artifact,
 )
 from crypto_strategy_lab.microstructure.serial_replay import (
+    CandidateTimeline,
     SerialModelConfig,
     SerialStrategy,
     SerialTape,
@@ -150,6 +156,79 @@ def test_diagnostic_reconciles_cycles_and_separates_long_holds(tmp_path: Path) -
     assert "rounding_residual_drag" in bucket
     assert "full_capital_gross_edge" in bucket
     assert data["aggregates"]["level"]["0.9998->0.9999"]["cycles"] == 2
+    assert data["summary"]["activity_contraction"]["counts_by_signal"] == {
+        "UNKNOWN": 0,
+        "CONTRACTING": 1,
+        "NOT_CONTRACTING": 1,
+    }
+    assert data["summary"]["activity_contraction"]["contracting_long_hold_capture_rate_all"] == "0"
+    assert data["summary"]["activity_contraction"]["contracting_other_entry_fraction_all"] == "1"
+    long_hold = data["long_holds"]["completed"][0]
+    assert long_hold["activity_signal"] == "NOT_CONTRACTING"
+    assert long_hold["C1h"] == 1
+    assert long_hold["C24h"] == 2
+    assert long_hold["R"] == "12"
+    assert data["aggregates"]["activity_signal"]["CONTRACTING"]["cycles"] == 1
+    assert abs(
+        data["aggregates"]["activity_signal"]["CONTRACTING"]["log_return"]
+        + Decimal(long_hold["log_return"])
+        - data["aggregates"]["exit_month"]["2026-01"]["log_return"]
+    ) < Decimal("1e-25")
+    breakdown = [row for row in data["aggregate_rows"] if row["dimension"] == "activity_breakdown"]
+    assert {row["cycles"] for row in breakdown} == {"1"}
+    assert all("signal=" in row["key"] and "cohort=" in row["key"] for row in breakdown)
+
+
+def _timeline_for_activity(entry: int, entries: list[int]) -> CandidateTimeline:
+    timeline = CandidateTimeline(
+        9_998,
+        1,
+        array("q", entries),
+        array("q", [value + 1 for value in entries]),
+    )
+    timeline.build()
+    return timeline
+
+
+def test_activity_windows_are_end_exclusive_and_unknown_when_empty() -> None:
+    entry = 10_000 * _DAY_EVENTS
+    timeline = _timeline_for_activity(
+        entry,
+        [entry - _DAY_EVENTS, entry - _HOUR_EVENTS, entry],
+    )
+    activity = _activity_contraction(timeline, entry)
+
+    assert activity == {
+        "C1h": 1,
+        "C24h": 2,
+        "R": "12",
+        "signal": "NOT_CONTRACTING",
+    }
+    assert _activity_contraction(_timeline_for_activity(entry, []), entry) == {
+        "C1h": 0,
+        "C24h": 0,
+        "R": None,
+        "signal": "UNKNOWN",
+    }
+
+
+def test_activity_ratio_equality_is_not_contracting_and_under_one_is_contracting() -> None:
+    entry = 10_000 * _DAY_EVENTS
+    equal = _timeline_for_activity(
+        entry,
+        [entry - _DAY_EVENTS + index * _HOUR_EVENTS for index in range(24)],
+    )
+    under = _timeline_for_activity(
+        entry,
+        [entry - _DAY_EVENTS + index * _HOUR_EVENTS for index in range(23)],
+    )
+
+    equal_activity = _activity_contraction(equal, entry)
+    under_activity = _activity_contraction(under, entry)
+    assert equal_activity["R"] == "1"
+    assert equal_activity["signal"] == "NOT_CONTRACTING"
+    assert under_activity["R"] == "0"
+    assert under_activity["signal"] == "CONTRACTING"
 
 
 def test_zero_duration_same_event_cycle_is_valid(tmp_path: Path) -> None:
@@ -251,6 +330,30 @@ def test_terminal_censored_position_is_not_in_completed_hold_cohort(tmp_path: Pa
     assert terminal["causal_entry"]["canonical_lookback_cycles"] >= 0
     assert terminal["causal_entry"]["canonical_lookback_score"] is not None
     assert terminal["causal_entry"]["selection_tick_regime"] == "0.0001"
+    assert terminal["causal_entry"]["activity_signal"] == "NOT_CONTRACTING"
+
+
+def test_summary_reports_shared_and_unique_entry_events(tmp_path: Path) -> None:
+    parent = _evidence(tmp_path, "M007")
+    challenger = _evidence(tmp_path, "M009")
+    challenger.replay["cycles"] = list(challenger.replay["cycles"])
+    challenger.replay["cycles"].pop()
+    challenger.replay["final_cash"] = "100.01"
+    challenger.replay["final_marked_equity"] = "100.01"
+
+    summary, _ = _build_summary(parent, challenger, "a" * 64)
+
+    overlap = summary["entry_event_overlap"]
+    assert overlap["shared_count"] == 1
+    assert overlap["unique_counts"] == {"M007": 1, "M009": 0}
+    dependent = summary["dependent_verification"]
+    assert dependent["shared_events_excluded"] == 1
+    assert dependent["activity_contraction_on_unique_events"]["entries"] == 0
+    assert dependent["activity_contraction_on_unique_events"]["counts_by_signal"] == {
+        "UNKNOWN": 0,
+        "CONTRACTING": 0,
+        "NOT_CONTRACTING": 0,
+    }
 
 
 def test_diagnostic_artifact_is_idempotent_and_corruption_fails_closed(tmp_path: Path) -> None:
