@@ -1123,3 +1123,21 @@ M008,REJECTED,0c1fa31a6983ab295cfb043be5ef32425cc866d73a880166abeb0fb8d0a8a31d,M
   ""scenario_hash"": ""db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"",
   ""status"": ""PENDING_SCIENTIFIC_REVIEW""
 }",Test the preregistered anti-thrashing mechanism against M007.,40656,94835,137686,2026-02,HOT,2026-04,9,7,46
+M009,CREATED,1bc2e893ff54a05d79e3035b1820a9cb62cae6d197d5b97e2ed1a20f9d5570ed,M007,2026-09-06T21:46:40.669144Z,A strict 10% causal score advantage can reduce transient M007 switches while preserving its one-minute response and productivity.,"M007 recovered throughput, but 42.7% of its reselections reversed within 24 hours.","Relative to M007, require best_score > 1.10 * incumbent_score for candidate-to-candidate flat switches; add no idle wait, confirmation or cooldown.",Retain at least 90% of M007 cycles and 99% of its equity while reducing reselections to at most 117 and 24-hour reversals to at most 50.,"{
+  ""confirmation_checks"": null,
+  ""cooldown_minutes"": null,
+  ""decision_interval_minutes"": 1,
+  ""distance_semantics"": ""ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION"",
+  ""distances"": [
+    1
+  ],
+  ""idle_threshold_minutes"": null,
+  ""lookback_minutes"": 1440,
+  ""selected_levels_remain_absolute"": true,
+  ""selection_moment"": ""AT_LEVEL_SELECTION"",
+  ""strategy"": ""RELATIVE_SCORE_HYSTERESIS"",
+  ""switch_advantage"": ""0.10"",
+  ""symbol"": ""USDCUSDT"",
+  ""tick_evidence_class"": ""OBSERVED_ACCEPTED_GRID"",
+  ""tick_source"": ""BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX""
+}",,,Isolate the already preregistered M008 score-advantage component after rejecting the combined M008 package.,,,,,,,,,

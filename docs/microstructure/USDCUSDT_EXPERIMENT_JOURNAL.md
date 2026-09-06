@@ -588,6 +588,7 @@ to the 30-minute idle threshold, five confirmations, 10% advantage or 60-minute 
 ```text
 MODEL=M009
 PARENT_MODEL=M007
+MODEL_HASH=1bc2e893ff54a05d79e3035b1820a9cb62cae6d197d5b97e2ed1a20f9d5570ed
 BASE_CONFIG=EXACT_COPY_OF_CANONICAL_M007_MODEL_SPEC
 OBSERVATION=M007 recovered throughput but 42.7% of its reselections reversed within 24 hours
 ROOT_CAUSE_HYPOTHESIS=some candidate changes have too little causal score advantage to persist
@@ -609,3 +610,12 @@ most 117 reselections and at most 50 reversals, plus no cooldown violation. Prom
 also requires at least 101% of M007 equity and all general frozen guardrails. M009 is authorized
 only after its implementation and causal incumbent-score semantics pass review; no replay may
 begin before that gate.
+
+The implementation gate passed at code commit `5dc208f`: the expanded registry configuration
+differs from M007 only in `strategy` and `switch_advantage`. The engine applies the same strict
+causal comparison at minute boundaries and immediately after an exit, preserves M007 behavior
+when no candidate exists, and never evaluates a switch while inventory is open. Unit tests cover
+the strict threshold, zero-score incumbent, equality, missing candidate and causal boundaries;
+real-timeline fixtures cover exact score comparison and an open absolute band across the
+historical tick transition. Astra's semantic review reported no blocking finding. M009 is now
+authorized for one full identified replay; no successor is authorized before its autopsy.
