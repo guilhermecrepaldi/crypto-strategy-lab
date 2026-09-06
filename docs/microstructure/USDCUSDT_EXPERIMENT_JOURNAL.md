@@ -741,3 +741,41 @@ terminal position remains censored and separate. M009 is only a dependent verifi
 shared entry events explicitly counted rather than treated as independent evidence. Associated
 historical log return is descriptive and is not PnL of a hypothetical filter. Only a signal that
 discriminates beyond one isolated episode/regime may support a separately preregistered M010.
+
+## Activity-contraction result — no M010 authorization
+
+The v2 artifact `631f4743edecae4100d2e8419c3004696a299126b599d3131efd05577d9d8b45`
+evaluated the frozen `R(t)` signal on all M007 entries. `R < 1` marked 48,514 of 344,704 entries
+(14.0741%). It captured two of thirteen completed holds of at least 24 hours (15.3846%), while
+marking 48,512 of the other 344,691 entries (14.0741%). The difference from the base rate is not
+useful discrimination. Eleven completed long holds occurred with `R >= 1`; there were no
+`UNKNOWN` entries because the 2025 warmup supplied the complete prior windows.
+
+The signal did mark the 111.28-day hold (`R=0.56922934`) and the terminal censored entry
+(`R=0.22348681`), but those few cases cannot justify a trajectory-changing filter. The marked
+entries contributed 2.5370103 units of historical cycle log return. That value is descriptive,
+not the counterfactual PnL of rejecting them. Searching a new threshold, window or signal
+combination after this result is prohibited.
+
+M009 shared 301,795 entry events with M007. After deduplication it had 25,665 exclusive entries
+and only two exclusive completed long holds; one was marked by the signal. This is dependent,
+small-sample evidence and not replication.
+
+Scientific decision:
+
+```text
+ACTIVITY_HYPOTHESIS=NOT_SUPPORTED
+M010_AUTHORIZED=NO
+CURRENT_CHAMPION=M007
+PRICE_PATH_EVOLUTION=PAUSED_FOR_EXECUTION_EVIDENCE
+GLOBAL_PLATEAU_DEMONSTRATED=NO
+EXECUTABLE_EDGE=NOT_DEMONSTRATED
+CURRENT_BOTTLENECK=EXECUTABILITY
+```
+
+The next action is a read-only inventory of local USDCUSDT microstructure sources and manifests.
+It must determine whether timestamped, sequenced and continuous L2 snapshots/updates exist,
+alongside trade quantity/aggressor evidence and historical tick/lot rules. No price-path replay,
+M010, live capture, Testnet or account access is authorized. If sufficient offline data exists,
+an execution gate for frozen M007 requires a new preregistration; otherwise the exact missing
+coverage must be reported before any acquisition decision.

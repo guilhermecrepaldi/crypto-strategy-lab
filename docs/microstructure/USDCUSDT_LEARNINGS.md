@@ -66,12 +66,6 @@ fill result.
   robustly. The 111.28-day hold began 0.000331 second after a HIGH touch and after 43,132 lookback
   cycles; the old-tick long holds all followed substantial activity.
 
-## Likely
-
-- A preregistered relative activity signal `24 * C_1h / C_24h < 1` may reveal contraction without
-  mixing the two tick grids, but it must be calculated for every M007 entry before it can motivate
-  a new model.
-
 ## Refuted
 
 - The M005 hypothesis that one static causally selected band would remain productively useful
@@ -80,6 +74,9 @@ fill result.
   preserve at least 90% of M007 cycles and 99% of M007 equity while reducing switches.
 - The M009 joint hypothesis that isolated 10% relative-score hysteresis could preserve at least
   99% of M007 equity while meeting both anti-thrashing limits.
+- The preregistered `24 * C_1h / C_24h < 1` signal as a useful discriminator for long holds. It
+  captured 15.38% of M007 long holds while flagging 14.07% of all other entries; this does not
+  authorize a filter, alternate threshold or M010.
 
 ## Unknown
 
@@ -88,4 +85,6 @@ fill result.
 - How much Oracle activity a causal selector can capture.
 - Historical maker-fee applicability, executable capacity, queue position, partial fills,
   latency degradation and adverse selection.
+- Whether local historical data contains sufficiently continuous, timestamped and sequenced L2
+  evidence to evaluate those execution unknowns without invented fills.
 - Whether a frozen DEVELOPMENT champion generalizes prospectively.

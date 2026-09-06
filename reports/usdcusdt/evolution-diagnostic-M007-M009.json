@@ -1,5 +1,5 @@
 {
-  "artifact_id": "63dce839c6983021bbc33603faf5c8aec22ede775dca3195a9f7d3779afce0e6",
+  "artifact_id": "631f4743edecae4100d2e8419c3004696a299126b599d3131efd05577d9d8b45",
   "cohorts": {
     "M007": {
       "LONG_HOLD": {
@@ -106,6 +106,56 @@
       }
     }
   },
+  "dependent_verification": {
+    "activity_contraction_on_unique_events": {
+      "by_signal": {
+        "CONTRACTING": {
+          "entries": 8924,
+          "long_holds_completed": 1,
+          "other_entries": 8923,
+          "sum_log_return": "0.2052736627423430461060698462"
+        },
+        "NOT_CONTRACTING": {
+          "entries": 16741,
+          "long_holds_completed": 1,
+          "other_entries": 16740,
+          "sum_log_return": "0.3985929816369813699178579482"
+        },
+        "UNKNOWN": {
+          "entries": 0,
+          "long_holds_completed": 0,
+          "other_entries": 0,
+          "sum_log_return": "0"
+        }
+      },
+      "contracting_long_hold_capture_rate_all": "0.5",
+      "contracting_long_hold_capture_rate_known": "0.5",
+      "contracting_other_entry_fraction_all": "0.3476990219381989634882905350",
+      "contracting_other_entry_fraction_known": "0.3476990219381989634882905350",
+      "counts_by_signal": {
+        "CONTRACTING": 8924,
+        "NOT_CONTRACTING": 16741,
+        "UNKNOWN": 0
+      },
+      "entries": 25665,
+      "rates_by_signal": {
+        "CONTRACTING": "0.3477108903175530878628482369",
+        "NOT_CONTRACTING": "0.6522891096824469121371517631",
+        "UNKNOWN": "0"
+      }
+    },
+    "model_id": "M009",
+    "shared_events_excluded": 301795
+  },
+  "entry_event_overlap": {
+    "dependent_model_id": "M009",
+    "primary_model_id": "M007",
+    "shared_count": 301795,
+    "unique_counts": {
+      "M007": 42909,
+      "M009": 25665
+    }
+  },
   "identity": {
     "campaign_snapshot_id": "b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9",
     "challenger_evaluation_hash": "3f933e550c36c1b7ea21de0da180b8f5244d339db8a64b4195e847b256479701",
@@ -134,6 +184,43 @@
   },
   "models": {
     "M007": {
+      "activity_contraction": {
+        "by_signal": {
+          "CONTRACTING": {
+            "entries": 48514,
+            "long_holds_completed": 2,
+            "other_entries": 48512,
+            "sum_log_return": "2.537010334717826436137277172"
+          },
+          "NOT_CONTRACTING": {
+            "entries": 296190,
+            "long_holds_completed": 11,
+            "other_entries": 296179,
+            "sum_log_return": "20.38529762735688230655956893"
+          },
+          "UNKNOWN": {
+            "entries": 0,
+            "long_holds_completed": 0,
+            "other_entries": 0,
+            "sum_log_return": "0"
+          }
+        },
+        "contracting_long_hold_capture_rate_all": "0.1538461538461538461538461538",
+        "contracting_long_hold_capture_rate_known": "0.1538461538461538461538461538",
+        "contracting_other_entry_fraction_all": "0.1407405473307977289804491559",
+        "contracting_other_entry_fraction_known": "0.1407405473307977289804491559",
+        "counts_by_signal": {
+          "CONTRACTING": 48514,
+          "NOT_CONTRACTING": 296190,
+          "UNKNOWN": 0
+        },
+        "entries": 344704,
+        "rates_by_signal": {
+          "CONTRACTING": "0.1407410415893056071295952469",
+          "NOT_CONTRACTING": "0.8592589584106943928704047531",
+          "UNKNOWN": "0"
+        }
+      },
       "all_entries_evaluated": 344704,
       "completed_cycles": 344704,
       "final_marked_equity": "900637402983.4181046",
@@ -142,6 +229,13 @@
       "realized_total": "901637280379.9040993",
       "terminal": {
         "causal_entry": {
+          "C1h": 72,
+          "C24h": 7732,
+          "R": "0.2234868080703569580962234868",
+          "activity_c1h": 72,
+          "activity_c24h": 7732,
+          "activity_ratio": "0.2234868080703569580962234868",
+          "activity_signal": "CONTRACTING",
           "alternative_high": "1.00096",
           "alternative_low": "1.00095",
           "alternative_score": "0.052919726260052949697789395",
@@ -176,6 +270,43 @@
       }
     },
     "M009": {
+      "activity_contraction": {
+        "by_signal": {
+          "CONTRACTING": {
+            "entries": 53371,
+            "long_holds_completed": 3,
+            "other_entries": 53368,
+            "sum_log_return": "2.633259119088264556546571788"
+          },
+          "NOT_CONTRACTING": {
+            "entries": 274089,
+            "long_holds_completed": 10,
+            "other_entries": 274079,
+            "sum_log_return": "18.82827131266822078280228834"
+          },
+          "UNKNOWN": {
+            "entries": 0,
+            "long_holds_completed": 0,
+            "other_entries": 0,
+            "sum_log_return": "0"
+          }
+        },
+        "contracting_long_hold_capture_rate_all": "0.2307692307692307692307692308",
+        "contracting_long_hold_capture_rate_known": "0.2307692307692307692307692308",
+        "contracting_other_entry_fraction_all": "0.1629821009201489095945298018",
+        "contracting_other_entry_fraction_known": "0.1629821009201489095945298018",
+        "counts_by_signal": {
+          "CONTRACTING": 53371,
+          "NOT_CONTRACTING": 274089,
+          "UNKNOWN": 0
+        },
+        "entries": 327460,
+        "rates_by_signal": {
+          "CONTRACTING": "0.1629847920356684785928052281",
+          "NOT_CONTRACTING": "0.8370152079643315214071947719",
+          "UNKNOWN": "0"
+        }
+      },
       "all_entries_evaluated": 327460,
       "completed_cycles": 327460,
       "final_marked_equity": "208998109792.7031495",
@@ -184,6 +315,13 @@
       "realized_total": "209230137039.2219579",
       "terminal": {
         "causal_entry": {
+          "C1h": 72,
+          "C24h": 7732,
+          "R": "0.2234868080703569580962234868",
+          "activity_c1h": 72,
+          "activity_c24h": 7732,
+          "activity_ratio": "0.2234868080703569580962234868",
+          "activity_signal": "CONTRACTING",
           "alternative_high": "1.00096",
           "alternative_low": "1.00095",
           "alternative_score": "0.052919726260052949697789395",
@@ -218,6 +356,6 @@
       }
     }
   },
-  "schema_version": "usdcusdt-evolution-diagnostic-v1",
+  "schema_version": "usdcusdt-evolution-diagnostic-v2",
   "status": "READY"
 }
