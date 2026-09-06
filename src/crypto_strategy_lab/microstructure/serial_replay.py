@@ -5,18 +5,16 @@ from bisect import bisect_left, bisect_right
 from collections import Counter
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
-from datetime import UTC, date, datetime, time, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import ROUND_DOWN, Decimal
 from enum import StrEnum
-from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from crypto_strategy_lab.domain import canonical_hash, require_utc
 from crypto_strategy_lab.microstructure.data import (
     HistoryManifest,
-    MicrostructureManifest,
-    iter_archive,
+    iter_history,
 )
 
 EVENT_ORDER_SCALE = 4096
@@ -153,6 +151,17 @@ class SerialCycle(BaseModel):
     sell_fee_quote: Decimal
 
 
+class SelectionChange(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    event: int
+    timestamp: datetime
+    previous_low: Decimal | None
+    previous_high: Decimal | None
+    selected_low: Decimal | None
+    selected_high: Decimal | None
+
+
 class SerialReplayResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -180,11 +189,15 @@ class SerialReplayResult(BaseModel):
     reversal_24h_count: int
     active_low: Decimal | None
     active_high: Decimal | None
+    open_entry_event: int | None
     open_entry_timestamp: datetime | None
+    open_entry_price: Decimal | None
+    open_buy_fee_quote: Decimal | None
     open_holding_seconds: Decimal | None
     open_cycle_censored: bool
     execution_class: str
     capacity_capped_final_capital: None = None
+    selection_changes: tuple[SelectionChange, ...]
     cycles: tuple[SerialCycle, ...]
 
 
@@ -216,11 +229,11 @@ class CandidateTimeline:
         while low_index < len(self.low_events):
             low_index = bisect_right(self.low_events, after, lo=low_index)
             if low_index >= len(self.low_events):
-                return
+                break
             entry = self.low_events[low_index]
             high_index = bisect_right(self.high_events, entry, lo=high_index)
             if high_index >= len(self.high_events):
-                return
+                break
             exit_event = self.high_events[high_index]
             self.cycle_entries.append(entry)
             self.cycle_exits.append(exit_event)
@@ -229,7 +242,24 @@ class CandidateTimeline:
             high_index += 1
 
     def contained_cycles(self, start: int, end: int) -> int:
-        return len(self.cycle_events(start, end)[0])
+        if start >= end or not self.cycle_entries:
+            return 0
+        first_global = bisect_left(self.cycle_entries, start)
+        first_before_start = first_global - 1
+        if first_before_start >= 0 and self.cycle_exits[first_before_start] >= start:
+            # At most one global cycle can cross the left boundary.  A fresh
+            # causal window may reuse its exit with the first LOW after start.
+            crossing_exit = self.cycle_exits[first_before_start]
+            first_window_low = bisect_left(self.low_events, start)
+            if (
+                first_window_low < len(self.low_events)
+                and self.low_events[first_window_low] < crossing_exit
+            ):
+                first_count = int(crossing_exit < end)
+                suffix_end = bisect_left(self.cycle_exits, end, lo=first_global)
+                return first_count + max(0, suffix_end - first_global)
+        suffix_end = bisect_left(self.cycle_exits, end, lo=first_global)
+        return max(0, suffix_end - first_global)
 
     def cycle_events(self, start: int, end: int) -> tuple[tuple[int, ...], tuple[int, ...]]:
         entries: list[int] = []
@@ -341,55 +371,12 @@ def load_serial_tape(
     physical_end_exclusive = manifest.last_timestamp + timedelta(microseconds=1)
     if end_exclusive > physical_end_exclusive:
         raise ValueError("requested tape end exceeds validated history")
-    selected = tuple(
-        item
-        for item in manifest.archives
-        if item.last_timestamp >= start and item.first_timestamp < end_exclusive
-    )
-    if not selected:
-        raise ValueError("requested tape interval has no archives")
-
-    # A reconciled manifest already excludes replaced daily archives.  Apply the
-    # same authority rule at load time so an older/mixed manifest cannot double-count
-    # a day when a complete monthly archive is present.
-    monthly = tuple(item for item in selected if item.cadence == "monthly")
-    if monthly:
-        selected = tuple(
-            item
-            for item in selected
-            if item.cadence == "monthly"
-            or not any(_archive_coverage_overlaps(item, replacement) for replacement in monthly)
-        )
-    selected = tuple(sorted(selected, key=_archive_coverage_start))
 
     def events() -> Iterator[tuple[datetime, Decimal]]:
-        for item in selected:
-            for event in iter_archive(Path(item.local_path), manifest.kind):
-                if not start <= event.timestamp < end_exclusive:
-                    continue
-                yield event.timestamp, event.price
+        for event in iter_history(manifest, start=start, end_exclusive=end_exclusive):
+            yield event.timestamp, event.price
 
     return SerialTape.from_events(events(), tick_size=tick_size)
-
-
-def _archive_coverage_start(item: MicrostructureManifest) -> datetime:
-    coverage_start = item.coverage_start
-    if coverage_start is not None:
-        return coverage_start
-    return datetime.combine(item.utc_date, time.min, tzinfo=UTC)
-
-
-def _archive_coverage_end(item: MicrostructureManifest) -> datetime:
-    coverage_end = item.coverage_end
-    if coverage_end is not None:
-        return coverage_end
-    return datetime.combine(item.utc_date, time.max, tzinfo=UTC)
-
-
-def _archive_coverage_overlaps(left: MicrostructureManifest, right: MicrostructureManifest) -> bool:
-    left_start = _archive_coverage_start(left)
-    right_start = _archive_coverage_start(right)
-    return left_start <= _archive_coverage_end(right) and right_start <= _archive_coverage_end(left)
 
 
 @dataclass
@@ -731,6 +718,35 @@ def _result(
         else None
     )
     open_at = _event_to_datetime(state.entry_event) if state.entry_event is not None else None
+    open_price = active_low if state.entry_event is not None else None
+    open_buy_fee = (
+        state.inventory_cost - state.inventory * open_price
+        if state.entry_event is not None and open_price is not None
+        else None
+    )
+    changes = tuple(
+        SelectionChange(
+            event=event,
+            timestamp=_event_to_datetime(event),
+            previous_low=(
+                _price(previous[0], scenario.tick_size) if previous is not None else None
+            ),
+            previous_high=(
+                _price(previous[0] + previous[1], scenario.tick_size)
+                if previous is not None
+                else None
+            ),
+            selected_low=(
+                _price(selected[0], scenario.tick_size) if selected is not None else None
+            ),
+            selected_high=(
+                _price(selected[0] + selected[1], scenario.tick_size)
+                if selected is not None
+                else None
+            ),
+        )
+        for event, previous, selected in state.changes
+    )
     return SerialReplayResult(
         model_id=config.model_id,
         model_hash=config.model_hash,
@@ -756,12 +772,16 @@ def _result(
         reversal_24h_count=reversals,
         active_low=active_low,
         active_high=active_high,
+        open_entry_event=state.entry_event,
         open_entry_timestamp=open_at,
+        open_entry_price=open_price,
+        open_buy_fee_quote=open_buy_fee,
         open_holding_seconds=(
             Decimal((end - open_at).total_seconds()) if open_at is not None else None
         ),
         open_cycle_censored=open_at is not None,
         execution_class=scenario.execution_class,
+        selection_changes=changes,
         cycles=tuple(state.cycles),
     )
 

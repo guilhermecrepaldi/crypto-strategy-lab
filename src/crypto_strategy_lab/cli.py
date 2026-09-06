@@ -69,6 +69,7 @@ from crypto_strategy_lab.microstructure.price_profile import (
     build_price_profiles,
     write_price_profile_reports,
 )
+from crypto_strategy_lab.microstructure.replay_workflow import run_full_replay_campaign
 from crypto_strategy_lab.microstructure.reporting import (
     write_backtest_reports,
 )
@@ -600,6 +601,29 @@ def microstructure_register_models(
     typer.echo(
         "Registered: " + ", ".join(f"{item.model_id}={item.model_hash}" for item in registrations)
     )
+
+
+@app.command("microstructure-full-replay")
+def microstructure_full_replay(
+    manifest: Annotated[Path, typer.Option(exists=True)],
+    artifact_root: Annotated[Path, typer.Option()] = Path("artifacts"),
+    report_root: Annotated[Path, typer.Option()] = Path("reports"),
+    models: Annotated[str, typer.Option(help="Comma-separated preregistered model IDs")] = (
+        "M001,M002,M003,M004"
+    ),
+) -> None:
+    """Run complete DEVELOPMENT replays to the frozen physical cutoff; never economic-stop."""
+    model_ids = tuple(item.strip().upper() for item in models.split(",") if item.strip())
+    if not model_ids:
+        raise typer.BadParameter("at least one preregistered model ID is required")
+    records = run_full_replay_campaign(
+        manifest,
+        artifact_root=artifact_root,
+        report_root=report_root,
+        model_ids=model_ids,
+    )
+    for record in records:
+        typer.echo(json.dumps(record, sort_keys=True))
 
 
 @app.command("microstructure-download")

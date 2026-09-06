@@ -230,24 +230,27 @@ O primeiro bloco pré-registrado contém M001 estático, M002 com reseleção ho
 existentes `VALIDATION` e `LOCKED_TEST` permanecem fechados.
 
 ```powershell
-# máximo histórico diário oficial, checksums e manifesto íntegro/explicitamente inválido
+# dados oficiais; a campanha ativa usa somente 2025-2026
 uv run crypto-lab microstructure-download --symbol USDCUSDT --kind trades `
-  --all-available --max-workers 4
+  --start 2025-01-01 --end 2026-09-05 --max-workers 4 `
+  --manifest-output data/manifests/usdcusdt-trades-2025-2026.json
 
 # verificação completamente offline antes de qualquer experimento
 uv run crypto-lab microstructure-history-verify `
-  --manifest data/manifests/usdcusdt-trades-history.json
+  --manifest data/manifests/usdcusdt-trades-2025-2026.json
 
-# perfis exatos por preço, de diário até histórico total
-uv run crypto-lab microstructure-price-profile `
-  --manifest data/manifests/usdcusdt-trades-history.json `
-  --output-dir reports/usdcusdt
+# replay integral M001-M004 e análise temporal/regimes pós-replay
+uv run crypto-lab microstructure-full-replay `
+  --manifest data/manifests/usdcusdt-trades-2025-2026.json `
+  --artifact-root artifacts --report-root reports
 ```
 
-O downloader é incremental, idempotente e valida o `.CHECKSUM` oficial. Gaps não são preenchidos:
-o manifesto registra datas ausentes e permanece `INVALID` até uma cobertura oficial reconciliada
-ser produzida. Price paths nunca são chamados de fills; fila, capacidade, partial fills e execução
-real continuam `INCONCLUSIVE` sem evidência L2/shadow.
+O downloader é incremental, idempotente e valida o `.CHECKSUM` oficial. Gaps não são preenchidos.
+Datas sem archive podem ser classificadas como período sem trades somente quando os IDs oficiais
+antes e depois são consecutivos; ausências não comprovadas mantêm o manifesto `INVALID`. O replay
+vai de `2026-01-01` ao cutoff físico completo, sem early stop econômico. Price paths nunca são
+chamados de fills; fila, capacidade, partial fills e execução real continuam `INCONCLUSIVE` sem
+evidência L2/shadow.
 
 O trabalho anterior FDUSDUSDC é `LEGACY_EVIDENCE` / `ARCHIVED_EXPERIMENT`. Seus arquivos são
 preservados para explicar a origem da hipótese, mas nenhum novo download, scanner, backtest,
@@ -273,8 +276,9 @@ testes unitários e migration em banco limpo.
 
 ## Limitações deliberadas
 
-- O histórico diário USDCUSDT possui um intervalo sem arquivos diários oficiais; a reconciliação
-  com archives mensais ainda é necessária antes de chamar o corpus histórico inteiro de válido.
+- A campanha USDCUSDT usa somente 2025-2026. Archives anteriores já obtidos são preservados, mas
+  ficam fora da computação ativa. O intervalo histórico sem arquivos diários tem IDs limítrofes
+  consecutivos e é registrado explicitamente como período sem trades, não como dado inventado.
 - CoinMarketCap, notícias e adaptador de LLM real estão indisponíveis nesta entrega.
 - Sanity e development controlados ainda não constituem evidência de lucratividade. Somente
   uma política congelada que generalize cronologicamente em `VALIDATION`, entre seeds e após

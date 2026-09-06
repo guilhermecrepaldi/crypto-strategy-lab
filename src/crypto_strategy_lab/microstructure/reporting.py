@@ -35,6 +35,8 @@ def write_history_audit(manifest: HistoryManifest, output: str | Path) -> Path:
         f"- Dataset hash: `{manifest.dataset_hash}`",
         f"- Missing dates: `{len(manifest.missing_dates)}`",
         f"- Missing date ranges: `{len(manifest.missing_date_ranges)}`",
+        f"- No-trade ranges proven by contiguous trade IDs: `{len(manifest.no_trade_date_ranges)}`",
+        f"- Unresolved missing date ranges: `{len(manifest.unresolved_missing_date_ranges)}`",
         f"- Within-archive ID gaps: `{sum(len(item.gaps) for item in manifest.archives)}`",
         f"- Duplicate IDs: `{sum(len(item.duplicates) for item in manifest.archives)}`",
         f"- Cross-archive gaps: `{len(manifest.cross_archive_gaps)}`",

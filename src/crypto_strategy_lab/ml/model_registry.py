@@ -20,7 +20,18 @@ REGISTRY_SCHEMA_VERSION: Final = "usdcusdt-model-registry-v2"
 MODEL_ID_PATTERN: Final = re.compile(r"^M[0-9]{3,}$")
 REQUIRED_CREATION_FILES: Final = ("MODEL_SPEC.md", "config.json", "hypothesis.json", "lineage.json")
 REQUIRED_EXECUTION_FILES: Final = ("run-manifest.json",)
-REQUIRED_EVALUATION_FILES: Final = ("metrics.json", "daily.csv", "monthly.csv", "decision.json")
+REQUIRED_EVALUATION_FILES: Final = (
+    "metrics.json",
+    "daily.csv",
+    "weekly.csv",
+    "monthly.csv",
+    "hour-of-day.csv",
+    "day-of-week.csv",
+    "windows.json",
+    "regimes.json",
+    "replay.json",
+    "decision.json",
+)
 PROJECTION_FIELDS: Final = (
     "model_id",
     "status",
@@ -35,6 +46,15 @@ PROJECTION_FIELDS: Final = (
     "FINAL_RESULT",
     "DECISION",
     "REASON",
+    "BEST_1D_CYCLES",
+    "BEST_7D_CYCLES",
+    "BEST_30D_CYCLES",
+    "BEST_MONTH",
+    "BEST_REGIME",
+    "WORST_MONTH",
+    "LONGEST_HOT_STREAK",
+    "LONGEST_COLD_STREAK",
+    "HOT_PERIOD_COUNT",
 )
 
 
@@ -220,7 +240,13 @@ class EvaluationSpec(BaseModel):
     criteria: Any
     metrics: dict[str, Any] = Field(default_factory=dict)
     daily: Sequence[Mapping[str, Any]] = ()
+    weekly: Sequence[Mapping[str, Any]] = ()
     monthly: Sequence[Mapping[str, Any]] = ()
+    hour_of_day: Sequence[Mapping[str, Any]] = ()
+    day_of_week: Sequence[Mapping[str, Any]] = ()
+    windows: Any = Field(default_factory=dict)
+    regimes: Any = Field(default_factory=dict)
+    replay: Any = Field(default_factory=dict)
     decision: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -542,6 +568,20 @@ class ModelRegistry:
             "comparison": value.comparison,
             "criteria": value.criteria,
         }
+        evidence_hash = canonical_hash(
+            {
+                "metrics": value.metrics,
+                "daily": value.daily,
+                "weekly": value.weekly,
+                "monthly": value.monthly,
+                "hour_of_day": value.hour_of_day,
+                "day_of_week": value.day_of_week,
+                "windows": value.windows,
+                "regimes": value.regimes,
+                "replay": value.replay,
+                "decision": decision,
+            }
+        )
         payload = {
             "model_id": model_id,
             "scenario_hash": value.scenario_hash,
@@ -551,6 +591,7 @@ class ModelRegistry:
             "criteria": value.criteria,
             "metrics": value.metrics,
             "decision": decision,
+            "EVIDENCE_HASH": evidence_hash,
         }
         evaluation_hash = canonical_hash(payload)
         payload["EVALUATION_HASH"] = evaluation_hash
@@ -748,7 +789,13 @@ class ModelRegistry:
         directory.mkdir(parents=True, exist_ok=True)
         (directory / "metrics.json").write_text(_json_text(evaluation.metrics), encoding="utf-8")
         _write_csv(directory / "daily.csv", evaluation.daily)
+        _write_csv(directory / "weekly.csv", evaluation.weekly)
         _write_csv(directory / "monthly.csv", evaluation.monthly)
+        _write_csv(directory / "hour-of-day.csv", evaluation.hour_of_day)
+        _write_csv(directory / "day-of-week.csv", evaluation.day_of_week)
+        (directory / "windows.json").write_text(_json_text(evaluation.windows), encoding="utf-8")
+        (directory / "regimes.json").write_text(_json_text(evaluation.regimes), encoding="utf-8")
+        (directory / "replay.json").write_text(_json_text(evaluation.replay), encoding="utf-8")
         (directory / "decision.json").write_text(_json_text(dict(decision)), encoding="utf-8")
 
     def _append_event(
@@ -768,10 +815,17 @@ class ModelRegistry:
     def _project(self) -> None:
         events = self.journal()
         models = [item.model_dump(mode="json") for item in self.entries()]
+        model_projections = [
+            {
+                **model,
+                **_productivity_fields(model["model_id"], events),
+            }
+            for model in models
+        ]
         projection = {
             "schema_version": REGISTRY_SCHEMA_VERSION,
             "pair": PAIR,
-            "models": models,
+            "models": model_projections,
             "events": events,
         }
         self.registry_projection_path.parent.mkdir(parents=True, exist_ok=True)
@@ -791,6 +845,7 @@ class ModelRegistry:
                 "FINAL_RESULT": _latest_evaluation_result(model["model_id"], events),
                 "DECISION": _latest_evaluation_decision(model["model_id"], events),
                 "REASON": model["hypothesis"]["reason_for_new_model"],
+                **_productivity_fields(model["model_id"], events),
             }
             for model in models
         ]
@@ -903,6 +958,34 @@ def _latest_evaluation_decision(model_id: str, events: Sequence[Mapping[str, Any
         and event.get("payload", {}).get("model_id") == model_id
     ]
     return _json_text(evaluations[-1]["decision"]).strip() if evaluations else None
+
+
+_PRODUCTIVITY_FIELDS: Final = (
+    "BEST_1D_CYCLES",
+    "BEST_7D_CYCLES",
+    "BEST_30D_CYCLES",
+    "BEST_MONTH",
+    "BEST_REGIME",
+    "WORST_MONTH",
+    "LONGEST_HOT_STREAK",
+    "LONGEST_COLD_STREAK",
+    "HOT_PERIOD_COUNT",
+)
+
+
+def _productivity_fields(model_id: str, events: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    evaluations = [
+        event["payload"]
+        for event in events
+        if event.get("event_type") == "EVALUATION_RECORDED"
+        and event.get("payload", {}).get("model_id") == model_id
+    ]
+    metrics = evaluations[-1].get("metrics", {}) if evaluations else {}
+    fingerprint_value = (
+        metrics.get("productivity_fingerprint", {}) if isinstance(metrics, Mapping) else {}
+    )
+    fingerprint = fingerprint_value if isinstance(fingerprint_value, Mapping) else {}
+    return {field: fingerprint.get(field) for field in _PRODUCTIVITY_FIELDS}
 
 
 def _write_csv(

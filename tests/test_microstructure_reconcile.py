@@ -138,6 +138,53 @@ def test_reconcile_fails_explicitly_when_monthly_archive_missing(tmp_path, monke
         reconcile_history_manifest(daily, tmp_path / "monthly")
 
 
+def test_absent_daily_archive_is_proven_no_trade_time_by_contiguous_ids(tmp_path, monkeypatch):
+    source = tmp_path / "no-trade-source"
+    source.mkdir()
+    first = _archive(
+        source / "USDCUSDT-trades-2024-01-01.zip",
+        [_trade(1, datetime(2024, 1, 1, tzinfo=UTC))],
+    )
+    third = _archive(
+        source / "USDCUSDT-trades-2024-01-03.zip",
+        [_trade(2, datetime(2024, 1, 3, tzinfo=UTC))],
+    )
+    by_name = {path.name: path for path in (first, third)}
+    monkeypatch.setattr(
+        "crypto_strategy_lab.microstructure.data.list_daily_archives",
+        lambda _symbol, _kind: [
+            (f"data/spot/daily/trades/USDCUSDT/{path.name}", f"fixture://{path.name}")
+            for path in (first, third)
+        ],
+    )
+
+    def copy_archive(url, destination):
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(by_name[url.rsplit("/", 1)[-1]].read_bytes())
+        return destination
+
+    monkeypatch.setattr("crypto_strategy_lab.microstructure.data.download_archive", copy_archive)
+    history = download_history_range(
+        "USDCUSDT",
+        tmp_path / "no-trade-daily",
+        start=date(2024, 1, 1),
+        end=date(2024, 1, 3),
+        kind="trades",
+    )
+    monkeypatch.setattr(
+        "crypto_strategy_lab.microstructure.data.list_monthly_archives",
+        lambda *_args: pytest.fail("proven no-trade dates need no monthly replacement"),
+    )
+
+    reconciled = reconcile_history_manifest(history, tmp_path / "unused")
+
+    assert reconciled.missing_dates == (date(2024, 1, 2),)
+    assert reconciled.no_trade_date_ranges == ((date(2024, 1, 2), date(2024, 1, 2)),)
+    assert reconciled.unresolved_missing_date_ranges == ()
+    assert reconciled.invalidity_reasons == ()
+    assert reconciled.integrity_status == "VALID"
+
+
 def test_reconcile_fails_explicitly_when_monthly_archive_corrupt(tmp_path, monkeypatch):
     daily = _daily_manifest(tmp_path, monkeypatch)
     monkeypatch.setattr(

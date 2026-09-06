@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import csv
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -335,3 +337,75 @@ def test_execution_and_evaluation_artifacts_are_explicit(tmp_path: Path) -> None
         tmp_path / "artifacts",
     )
     assert all((evaluation_directory / name).exists() for name in REQUIRED_EVALUATION_FILES)
+
+
+def test_productivity_fingerprint_projection_is_empty_until_latest_evaluation(
+    tmp_path: Path,
+) -> None:
+    registry = ModelRegistry(tmp_path / "artifacts", tmp_path / "reports")
+    registry.register(spec())
+    fields = (
+        "BEST_1D_CYCLES",
+        "BEST_7D_CYCLES",
+        "BEST_30D_CYCLES",
+        "BEST_MONTH",
+        "BEST_REGIME",
+        "WORST_MONTH",
+        "LONGEST_HOT_STREAK",
+        "LONGEST_COLD_STREAK",
+        "HOT_PERIOD_COUNT",
+    )
+    before = json.loads(registry.registry_projection_path.read_text(encoding="utf-8"))["models"][0]
+    assert all(before[field] is None for field in fields)
+    with registry.registry_csv_path.open(encoding="utf-8", newline="") as handle:
+        before_csv = next(csv.DictReader(handle))
+    assert all(before_csv[field] == "" for field in fields)
+
+    scenario_hash, run_hash = run_for(registry)
+    fingerprint = {
+        "BEST_1D_CYCLES": 3,
+        "BEST_7D_CYCLES": 21,
+        "BEST_30D_CYCLES": 90,
+        "BEST_MONTH": "2026-01",
+        "BEST_REGIME": "caller-regime",
+        "WORST_MONTH": "2026-02",
+        "LONGEST_HOT_STREAK": 8,
+        "LONGEST_COLD_STREAK": 5,
+        "HOT_PERIOD_COUNT": 2,
+    }
+    registry.append_evaluation(
+        "M001",
+        {
+            "scenario_hash": scenario_hash,
+            "campaign_snapshot_id": "snapshot-1",
+            "run_hash": run_hash,
+            "comparison": {"baseline": "caller-provided"},
+            "criteria": {"gate": "caller-provided"},
+            "metrics": {"productivity_fingerprint": fingerprint},
+        },
+        occurred_at=AT,
+    )
+    after = json.loads(registry.registry_projection_path.read_text(encoding="utf-8"))["models"][0]
+    assert {field: after[field] for field in fields} == fingerprint
+    with registry.registry_csv_path.open(encoding="utf-8", newline="") as handle:
+        after_csv = next(csv.DictReader(handle))
+    assert after_csv["BEST_1D_CYCLES"] == "3"
+    assert after_csv["BEST_MONTH"] == "2026-01"
+    assert after_csv["HOT_PERIOD_COUNT"] == "2"
+
+    newer_fingerprint = {**fingerprint, "BEST_1D_CYCLES": 4, "BEST_MONTH": "2026-03"}
+    registry.append_evaluation(
+        "M001",
+        {
+            "scenario_hash": scenario_hash,
+            "campaign_snapshot_id": "snapshot-1",
+            "run_hash": run_hash,
+            "comparison": {"baseline": "newer"},
+            "criteria": {"gate": "newer"},
+            "metrics": {"productivity_fingerprint": newer_fingerprint},
+        },
+        occurred_at=datetime(2026, 1, 2, tzinfo=UTC),
+    )
+    latest = json.loads(registry.registry_projection_path.read_text(encoding="utf-8"))["models"][0]
+    assert latest["BEST_1D_CYCLES"] == 4
+    assert latest["BEST_MONTH"] == "2026-03"

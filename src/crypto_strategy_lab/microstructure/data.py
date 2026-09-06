@@ -96,6 +96,8 @@ class HistoryManifest(BaseModel):
     archives: tuple[MicrostructureManifest, ...]
     missing_dates: tuple[date, ...]
     missing_date_ranges: tuple[tuple[date, date], ...] = ()
+    no_trade_date_ranges: tuple[tuple[date, date], ...] = ()
+    unresolved_missing_date_ranges: tuple[tuple[date, date], ...] = ()
     cross_archive_gaps: tuple[tuple[int, int], ...]
     cross_archive_overlaps: tuple[tuple[int, int], ...]
     cross_archive_timestamp_gaps: tuple[tuple[datetime, datetime], ...] = ()
@@ -168,6 +170,54 @@ def iter_archive(
             if _is_header(row):
                 continue
             yield _archive_trade_from_row(row, path, kind)
+
+
+def select_history_archives(
+    manifest: HistoryManifest,
+    *,
+    start: datetime,
+    end_exclusive: datetime,
+) -> tuple[MicrostructureManifest, ...]:
+    """Select one non-overlapping archive authority for an already validated interval."""
+    start = start.astimezone(UTC)
+    end_exclusive = end_exclusive.astimezone(UTC)
+    if start >= end_exclusive:
+        raise ValueError("start must precede end_exclusive")
+    if manifest.integrity_status != "VALID" or manifest.invalidity_reasons:
+        raise MicrostructureIntegrityError("history iteration requires a VALID manifest")
+    if start < manifest.first_timestamp:
+        raise MicrostructureIntegrityError("requested history precedes validated coverage")
+    if end_exclusive > manifest.last_timestamp + timedelta(microseconds=1):
+        raise MicrostructureIntegrityError("requested history exceeds validated coverage")
+    selected = tuple(
+        item
+        for item in manifest.archives
+        if item.last_timestamp >= start and item.first_timestamp < end_exclusive
+    )
+    if not selected:
+        raise MicrostructureIntegrityError("requested history has no archives")
+    monthly = tuple(item for item in selected if item.cadence == "monthly")
+    if monthly:
+        selected = tuple(
+            item
+            for item in selected
+            if item.cadence == "monthly"
+            or not any(_coverage_overlaps(item, replacement) for replacement in monthly)
+        )
+    return tuple(sorted(selected, key=_coverage_start))
+
+
+def iter_history(
+    manifest: HistoryManifest,
+    *,
+    start: datetime,
+    end_exclusive: datetime,
+) -> Iterator[ArchiveTrade]:
+    """Stream a validated consolidated interval without materializing trade objects."""
+    for item in select_history_archives(manifest, start=start, end_exclusive=end_exclusive):
+        for event in iter_archive(Path(item.local_path), manifest.kind):
+            if start <= event.timestamp < end_exclusive:
+                yield event
 
 
 def _is_header(row: list[str]) -> bool:
@@ -533,9 +583,24 @@ def reconcile_history_manifest(
     """
     if daily_manifest.symbol.upper() != "USDCUSDT" or daily_manifest.kind != "trades":
         raise ValueError("monthly reconciliation is restricted to USDCUSDT trades")
-    missing_months = sorted({(item.year, item.month) for item in daily_manifest.missing_dates})
+    normalized = _build_history_manifest(
+        daily_manifest.archives,
+        symbol=daily_manifest.symbol,
+        kind=daily_manifest.kind,
+        requested_start=daily_manifest.requested_start,
+        requested_end=daily_manifest.requested_end,
+        all_available=daily_manifest.all_available,
+        discovered_start=daily_manifest.discovered_first_date,
+        discovered_end=daily_manifest.discovered_last_date,
+    )
+    unresolved = {
+        day
+        for first, last in normalized.unresolved_missing_date_ranges
+        for day in (first + timedelta(days=offset) for offset in range((last - first).days + 1))
+    }
+    missing_months = sorted({(item.year, item.month) for item in unresolved})
     if not missing_months:
-        return daily_manifest
+        return normalized
     entries = list_monthly_archives("USDCUSDT", "trades")
     by_month: dict[tuple[int, int], tuple[str, str]] = {}
     for key, url in entries:
@@ -567,16 +632,16 @@ def reconcile_history_manifest(
                 f"monthly trades archive is absent or corrupt for {year:04d}-{month:02d}"
             ) from exc
     replaced = set(missing_months)
-    retained = [item for item in daily_manifest.archives if _coverage_month(item) not in replaced]
+    retained = [item for item in normalized.archives if _coverage_month(item) not in replaced]
     return _build_history_manifest(
         [*retained, *monthly],
-        symbol=daily_manifest.symbol,
-        kind=daily_manifest.kind,
-        requested_start=daily_manifest.requested_start,
-        requested_end=daily_manifest.requested_end,
-        all_available=daily_manifest.all_available,
-        discovered_start=daily_manifest.discovered_first_date,
-        discovered_end=daily_manifest.discovered_last_date,
+        symbol=normalized.symbol,
+        kind=normalized.kind,
+        requested_start=normalized.requested_start,
+        requested_end=normalized.requested_end,
+        all_available=normalized.all_available,
+        discovered_start=normalized.discovered_first_date,
+        discovered_end=normalized.discovered_last_date,
     )
 
 
@@ -700,6 +765,7 @@ def _build_history_manifest(
     overlaps: list[tuple[int, int]] = []
     timestamp_gaps: list[tuple[datetime, datetime]] = []
     timestamp_overlaps: list[tuple[datetime, datetime]] = []
+    proven_no_trade_dates: set[date] = set()
     for previous, current in pairwise(ordered):
         if current.first_trade_id <= previous.last_trade_id:
             overlaps.append((previous.last_trade_id, current.first_trade_id))
@@ -709,8 +775,19 @@ def _build_history_manifest(
             timestamp_gaps.append((_coverage_end(previous), _coverage_start(current)))
         if current.first_timestamp <= previous.last_timestamp:
             timestamp_overlaps.append((previous.last_timestamp, current.first_timestamp))
+        first_missing = _coverage_end(previous).date() + timedelta(days=1)
+        last_missing = _coverage_start(current).date() - timedelta(days=1)
+        if previous.last_trade_id + 1 == current.first_trade_id and first_missing <= last_missing:
+            proven_no_trade_dates.update(
+                first_missing + timedelta(days=offset)
+                for offset in range((last_missing - first_missing).days + 1)
+            )
+    proven_no_trade_dates.intersection_update(missing_dates)
+    unresolved_missing_dates = tuple(sorted(set(missing_dates) - proven_no_trade_dates))
+    no_trade_date_ranges = _date_ranges(tuple(sorted(proven_no_trade_dates)))
+    unresolved_missing_date_ranges = _date_ranges(unresolved_missing_dates)
     invalidity_reasons: list[str] = []
-    if missing_dates:
+    if unresolved_missing_dates:
         invalidity_reasons.append("missing_requested_dates")
     if cross_gaps:
         invalidity_reasons.append("cross_archive_id_gaps")
@@ -751,6 +828,8 @@ def _build_history_manifest(
         archives=ordered,
         missing_dates=missing_dates,
         missing_date_ranges=missing_date_ranges,
+        no_trade_date_ranges=no_trade_date_ranges,
+        unresolved_missing_date_ranges=unresolved_missing_date_ranges,
         cross_archive_gaps=tuple(cross_gaps),
         cross_archive_overlaps=tuple(overlaps),
         cross_archive_timestamp_gaps=tuple(timestamp_gaps),
@@ -901,6 +980,12 @@ def _coverage_end(item: MicrostructureManifest) -> datetime:
     if item.coverage_end is not None:
         return item.coverage_end
     return datetime.combine(item.utc_date, time.max, tzinfo=UTC)
+
+
+def _coverage_overlaps(left: MicrostructureManifest, right: MicrostructureManifest) -> bool:
+    return _coverage_start(left) <= _coverage_end(right) and _coverage_start(
+        right
+    ) <= _coverage_end(left)
 
 
 def _coverage_month(item: MicrostructureManifest) -> tuple[int, int]:

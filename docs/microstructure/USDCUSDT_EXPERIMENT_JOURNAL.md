@@ -11,15 +11,18 @@ of production execution.
 - Initial reference capital: `100 USDT`
 - Reference start: `2026-01-01T00:00:00Z`
 - Reference end: last common physically validated event in the frozen dataset snapshot
+- Active data scope: official USDCUSDT trades from `2025-01-01` through the 2026 physical cutoff;
+  the financial replay still starts at `2026-01-01`, with prior data used only causally
 - Period class: `DEVELOPMENT`
 - FDUSDUSDC operational comparison: disabled
 - Existing `VALIDATION` and `LOCKED_TEST`: closed and not consulted
 - Real trading, Testnet, credentials, deployment: prohibited
 
-The maximum official historical corpus is used for market description, regime research, causal
-warm-up and integrity work. The standardized financial model ladder uses the fixed reference
-interval above. If the dataset cutoff changes, a new campaign snapshot is required and relevant
-models must be replayed; results with different cutoffs are never compared silently.
+The owner limited active simulation and regime work to 2025-2026. Older downloaded archives are
+preserved as data evidence but receive no further campaign computation. The standardized financial
+model ladder uses the fixed reference interval above. If the dataset cutoff changes, a new campaign
+snapshot is required and relevant models must be replayed; results with different cutoffs are never
+compared silently.
 
 ### Reference scenario
 
@@ -142,6 +145,72 @@ snapshot and scenario:
 7. a model justified by anti-thrashing passes its own anti-thrashing gate.
 
 These are administrative DEVELOPMENT promotion limits, not confirmation of an executable edge.
+
+## Frozen full-replay and temporal-productivity protocol
+
+Every executed `Mxxx` must replay continuously from `2026-01-01T00:00:00Z` to the last physical
+timestamp in the frozen validated snapshot. The portfolio is never reset at calendar boundaries,
+an open position is never liquidated merely because time elapsed, and poor economics, idleness or
+inferiority never stop a replay. Only a proven technical invalidity can stop it, with preserved
+evidence and status `INVALIDATED_TECHNICAL`.
+
+Temporal analysis is strictly post-replay. It cannot alter selection or execution. UTC horizons
+are 1h, 4h, 12h, 1d, 3d, 7d, 14d and 30d. Rolling windows advance by one hour for visualization;
+baselines, rankings and streaks use non-overlapping blocks anchored at campaign start. Incomplete
+tails are explicit and are not annualized. Invalid data is `UNKNOWN`, never zero.
+
+For `W=[a,b)`, frozen accounting is:
+
+- `MTM_DELTA = equity(b) - equity(a)`;
+- `REALIZED_NET = sum(net PnL of cycles closed in W)`;
+- `CAPITAL_HOURS = integral(equity(t), a, b)`, including idle and locked capital;
+- `NET_PROFIT_PER_HOUR = REALIZED_NET / elapsed_hours`;
+- `NET_PRODUCTIVITY = REALIZED_NET / CAPITAL_HOURS`;
+- `CAPITAL_HOUR_RETURN = MTM_DELTA / CAPITAL_HOURS`.
+
+Equity marks inventory with the last valid observed trade. This remains a price-path mark, not an
+executable mid or fill. Nonpositive capital-hours produce `UNKNOWN`.
+
+For each model and horizon, the baseline is the median `NET_PRODUCTIVITY` of at least four valid
+complete independent blocks. Dispersion is the median absolute deviation and the band is
+`max(MAD, 1e-12 h^-1)`. With `EPS_PROFIT=0.00000001 USDT`, classification order is:
+
+1. `FAILURE` when MTM delta or realized net is below `-EPS_PROFIT`;
+2. `HOT` when realized net is positive and productivity exceeds baseline plus band;
+3. `COLD` when no cycle closed or productivity is below baseline minus band;
+4. `NORMAL` otherwise.
+
+`FAILURE` here describes a negative period; it is not a software failure and never authorizes a
+stop. Top/bottom 10 and HOT/COLD streaks use independent blocks and deterministic UTC tie-breaks.
+Rolling overlaps cannot be presented as independent evidence.
+
+Profit concentration uses additive MTM deltas over UTC days, ISO weeks and civil months. Full and
+complete-period denominators remain separate. The frozen warning thresholds are best day >20%,
+top five days >50%, top ten days >75% (minimum 30 days), best week >35% (minimum eight weeks), or
+best month >50% (minimum six months) of positive MTM contributions. This warning is diagnostic,
+not a promotion veto.
+
+Per-horizon temporal stability is
+`100 * profitable_block_fraction * (1 - failure_fraction) * (1 - relative_variability)`, where
+relative variability is `MAD / (median_absolute_productivity + MAD + 1e-12)`. The aggregate needs
+all eight eligible horizons and is forced to zero when the full replay MTM is not positive. It is
+not a probability, significance test, fill claim or optimization target.
+
+A frozen cross-model cohort requires at least three distinct models with the same dataset,
+scenario and cutoff. A block is `CONSENSUS_FAILURE`, `CONSENSUS_HOT`, `CONSENSUS_COLD` or
+`CONSENSUS_NORMAL` at a two-thirds threshold, otherwise `MIXED`. This is observed cohort
+productivity, not proof of an exogenous market regime or independent evidence.
+
+Trade archives support traded prices, counts, gross volume, intensity, visits, order and
+price-path results. They do not establish bid/ask spread, true mid, book depth, queue ahead,
+partial fills, executable capacity, operational latency or adverse selection. Unsupported fields
+remain `UNKNOWN`; traded volume is never relabeled as available liquidity.
+
+The registry and evaluation artifacts retain daily, weekly, monthly, hour-of-day, day-of-week,
+window, regime, replay and decision evidence. The offline dashboard shows model×time and
+model×month matrices including return, cycles, idle time and days with at least 2,000 cycles.
+Retrospective HOT/COLD observations can motivate only a separately preregistered `M+1`; they may
+not become a hidden filter in an already executed model.
 
 ## Infrastructure decision — GPU Oracle gate
 

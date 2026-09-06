@@ -62,6 +62,13 @@ Informe quais modelos foram realmente usados; não alegue troca de modelo que n�
   comprovadamente afetado, corrija com teste e registre a decisão.
 - Resultados positivos, negativos, falhas e invalidações devem permanecer rastreáveis aos
   artifacts originais; destaque eventos somente por critérios explícitos e reproduzíveis.
+- Todo modelo `Mxxx` executado nesta campanha percorre integralmente o intervalo padronizado de
+  `2026-01-01T00:00:00Z` ao cutoff físico congelado. Resultado econômico ruim, ociosidade,
+  inferioridade ou posição aberta não autorizam early stop; somente invalidade técnica pode
+  interromper e deve ser registrada como `INVALIDATED_TECHNICAL`.
+- `HOT`, `COLD`, `FAILURE`, estabilidade, concentração e regimes são análises descritivas
+  posteriores ao replay. Não podem alimentar decisões passadas, filtrar meses, fechar posições,
+  mudar estratégia ou alterar gates já congelados sem uma nova hipótese pré-registrada.
 
 ## Escopo científico ativo
 

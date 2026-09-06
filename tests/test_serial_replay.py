@@ -1,4 +1,6 @@
 import zipfile
+from array import array
+from bisect import bisect_left, bisect_right
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -11,6 +13,7 @@ from crypto_strategy_lab.microstructure.data import (
     parse_archive,
 )
 from crypto_strategy_lab.microstructure.serial_replay import (
+    CandidateTimeline,
     SerialModelConfig,
     SerialScenarioConfig,
     SerialStrategy,
@@ -65,6 +68,62 @@ def test_first_block_is_frozen_and_model_hash_excludes_human_identity() -> None:
     duplicate_identity = models[0].model_copy(update={"model_id": "M999"})
     assert duplicate_identity.model_hash == models[0].model_hash
     assert _scenario().scenario_hash != _scenario(maker_fee_per_leg=Decimal("0.0001")).scenario_hash
+
+
+def test_contained_cycles_matches_bruteforce_for_causal_windows() -> None:
+    cases = (
+        ([1, 2, 3, 10, 11, 20], [4, 5, 12, 13, 21]),
+        ([1, 2, 10, 11, 12, 20], [3, 4, 13, 14, 21]),
+        ([10, 11, 12, 30, 31], [1, 2, 3, 13, 14, 32]),
+        # Distinct ordinals at equal timestamps are adjacent encoded events.
+        ([100, 101, 300, 301, 500], [102, 103, 302, 303, 502]),
+        ([1, 2, 3], []),
+        ([], [1, 2, 3]),
+    )
+    for low_events, high_events in cases:
+        timeline = CandidateTimeline(
+            1,
+            1,
+            array("q", low_events),
+            array("q", high_events),
+        )
+        timeline.build()
+        for start in range(-1, 35):
+            for end in range(start, 36):
+                expected = _brute_contained_cycles(timeline, start, end)
+                assert timeline.contained_cycles(start, end) == expected
+
+    # Exhaustively exercise short LOW/HIGH patterns, including repeated runs.
+    for mask in range(1, 1 << 8):
+        lows = [index * 3 + 1 for index in range(8) if mask & (1 << index)]
+        highs = [index * 3 + 2 for index in range(8) if not mask & (1 << index)]
+        timeline = CandidateTimeline(1, 1, array("q", lows), array("q", highs))
+        timeline.build()
+        for start in range(-1, 26):
+            for end in range(start, 27):
+                assert timeline.contained_cycles(start, end) == _brute_contained_cycles(
+                    timeline, start, end
+                )
+
+
+def _brute_contained_cycles(timeline: CandidateTimeline, start: int, end: int) -> int:
+    low_index = bisect_left(timeline.low_events, start)
+    high_index = bisect_left(timeline.high_events, start)
+    after = start - 1
+    count = 0
+    while low_index < len(timeline.low_events):
+        low_index = bisect_right(timeline.low_events, after, lo=low_index)
+        if low_index >= len(timeline.low_events) or timeline.low_events[low_index] >= end:
+            break
+        entry = timeline.low_events[low_index]
+        high_index = bisect_right(timeline.high_events, entry, lo=high_index)
+        if high_index >= len(timeline.high_events) or timeline.high_events[high_index] >= end:
+            break
+        after = timeline.high_events[high_index]
+        count += 1
+        low_index += 1
+        high_index += 1
+    return count
 
 
 def test_serial_cycle_uses_one_lot_and_never_reuses_one_event() -> None:
