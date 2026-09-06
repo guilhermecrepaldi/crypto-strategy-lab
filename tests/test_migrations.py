@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -37,8 +38,8 @@ def test_migrations_upgrade_clean_database_and_persist_fixture(fixture_path, tmp
         "CRYPTO_LAB_DATABASE_URL",
         "postgresql+psycopg://crypto_lab:crypto_lab_local@localhost:54329/crypto_strategy_lab",
     )
-    subprocess.run(["uv", "run", "alembic", "downgrade", "base"], check=True)
-    subprocess.run(["uv", "run", "alembic", "upgrade", "head"], check=True)
+    subprocess.run([sys.executable, "-m", "alembic", "downgrade", "base"], check=True)
+    subprocess.run([sys.executable, "-m", "alembic", "upgrade", "head"], check=True)
     engine = create_engine(database_url)
     tables = set(inspect(engine).get_table_names())
     assert {
