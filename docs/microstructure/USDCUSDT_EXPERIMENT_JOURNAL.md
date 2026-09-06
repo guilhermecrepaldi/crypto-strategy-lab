@@ -619,3 +619,70 @@ the strict threshold, zero-score incumbent, equality, missing candidate and caus
 real-timeline fixtures cover exact score comparison and an open absolute band across the
 historical tick transition. Astra's semantic review reported no blocking finding. M009 is now
 authorized for one full identified replay; no successor is authorized before its autopsy.
+
+## M009 autopsy — rejected isolated score hysteresis
+
+Identity and scope:
+
+```text
+MODEL=M009
+PARENT=M007
+MODEL_HASH=1bc2e893ff54a05d79e3035b1820a9cb62cae6d197d5b97e2ed1a20f9d5570ed
+SCENARIO=PRICE_PATH_HISTORICAL_TICK_ZERO_FEE_V2
+RUN_HASH=8829762ac9fb0e6b2f842054d5b3e966f535c35f5b6691ecfcc0de1050cabe3c
+START=2026-01-01T00:00:00Z
+END_EXCLUSIVE=2026-09-05T23:59:59.783644Z
+STATUS=REJECTED
+```
+
+M009 completed 327,460 cycles and ended with marked mathematical equity
+208,998,109,792.7031495 USDT. Against champion M007 it retained 94.9974% of cycles, passing the
+90% gate, but only 23.2056% of equity, failing both the 99% retention and 101% promotion gates.
+The 10% hysteresis reduced reselections from 234 to 119 and reversals within 24 hours from 100
+to 22. Reversals passed their maximum of 50; reselections missed their frozen maximum of 117 by
+two. Gate proximity does not authorize changing the threshold after observing the result.
+
+Flat idle increased by 11.89 hours to 633.21 hours and holding fell by the same amount to
+5,318.79 hours. M009 kept the 193 zero-cycle days and increased days with at least 2,000 cycles
+from 30 to 31. Average daily cycles were 1,320.40 and 125,081 cycles completed after February.
+March and April still completed none. The longest completed hold remained 111.28 days and the
+terminal open lot remained censored after 19.37 days.
+
+January completed 172,917 cycles, February 29,462, May 2,221, June 52,977, July 50,475 and
+August 19,408. The best cycle-count day was `2026-01-31` with 45,310, the best week ISO week 05
+with 108,297, and the best month January. Best MTM day, week and month were `2026-02-05`, ISO
+week 06 and July; worst were `2026-09-03`, ISO week 15 and April. The leading UTC hours were 20,
+11, 18, 17 and 12. The most frequent level was again `1.00120 -> 1.00130`, with 95,100 cycles.
+
+Absolute MTM deltas against M007 were negative in seven of eight complete months; April alone
+was positive. Normalized capital-hour returns improved in three of eight months: April, May and
+July. Daily concentration improved marginally while best-month concentration rose from 31.94%
+to 32.65%; temporal stability declined slightly from 19.7221 to 19.6698. Exact event-level
+maximum drawdown remained materially unchanged at 0.26851667% on the same April 14 path, and the
+fixed-point account reconciled exactly.
+
+Scientific decision:
+
+```text
+HYPOTHESIS_RESULT=NO
+MECHANISM_RESULT=PARTIAL
+DECISION=REJECT
+CURRENT_CHAMPION=M007
+CURRENT_BOTTLENECK=LONG_HOLD
+M010_AUTHORIZED=NO
+EXECUTABLE_EDGE=NOT_DEMONSTRATED
+```
+
+The supported lesson is narrow: fewer reversals did not preserve M007's result. The 76.79%
+equity loss despite only 5.00% fewer cycles indicates strong path and compounding dependence,
+but totals cannot identify which skipped cycles caused it. Choosing another advantage threshold
+now would be retrospective tuning.
+
+Before another model, Python must decompose M007 and M009 using their existing artifacts. The
+required diagnostic records exact `log(cash_after/cash_before)` contribution by cycle, month,
+level and tick regime; keeps the terminal marked component separate; and reconciles rounding and
+cash residue. It must list every completed hold of at least 24 hours plus the censored terminal
+position, attach only pre-entry causal context (selection age, time since HIGH, canonical
+lookback cycles and score, best alternative, tick regime), and compare these with all other
+entries rather than selected anecdotes. This is exploratory DEVELOPMENT analysis. It cannot add
+a timeout, move an open HIGH or authorize M010 until an interpretable causal signal is found.

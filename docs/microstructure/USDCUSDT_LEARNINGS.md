@@ -49,12 +49,20 @@ fill result.
   idle merely became more holding, while zero-cycle days and concentration worsened.
 - M008 is rejected and M007 remains the DEVELOPMENT champion. This rejection applies to the
   four-control package; it does not identify which individual threshold caused the loss.
+- M009 isolated M008's 10% score advantage. It retained 95.00% of M007 cycles and cut reversals
+  from 100 to 22, but retained only 23.21% of M007 mathematical equity and made 119 reselections
+  against a frozen maximum of 117.
+- M009 is rejected and M007 remains champion. The result shows that reducing reversals alone did
+  not preserve the development result; it does not establish the executable cost or value of a
+  switch because queue, latency and cancellation effects remain unmodeled.
+- A 76.79% equity reduction from a 5.00% cycle reduction demonstrates path-sensitive compounding.
+  Exact per-cycle contribution and long-hold entry context must be decomposed before another
+  admission rule is scientifically justified.
 
 ## Likely
 
-- Isolating only M008's already registered 10% relative-score hysteresis may reduce M007 reversal
-  churn without the package's idle delay, confirmations or cooldown. Causal scoring of the
-  incumbent's absolute active endpoints must be exact before this can be tested as M009.
+- Causal context at entries that led to holds of at least 24 hours may reveal an interpretable
+  admission signal, but it must be compared with every other entry before becoming a model rule.
 
 ## Refuted
 
@@ -62,6 +70,8 @@ fill result.
   throughout the frozen 2026 DEVELOPMENT interval.
 - The M008 hypothesis that its combined idle, confirmation, advantage and cooldown controls could
   preserve at least 90% of M007 cycles and 99% of M007 equity while reducing switches.
+- The M009 joint hypothesis that isolated 10% relative-score hysteresis could preserve at least
+  99% of M007 equity while meeting both anti-thrashing limits.
 
 ## Unknown
 

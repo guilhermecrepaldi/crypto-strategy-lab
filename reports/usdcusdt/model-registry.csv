@@ -1123,7 +1123,7 @@ M008,REJECTED,0c1fa31a6983ab295cfb043be5ef32425cc866d73a880166abeb0fb8d0a8a31d,M
   ""scenario_hash"": ""db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"",
   ""status"": ""PENDING_SCIENTIFIC_REVIEW""
 }",Test the preregistered anti-thrashing mechanism against M007.,40656,94835,137686,2026-02,HOT,2026-04,9,7,46
-M009,CREATED,1bc2e893ff54a05d79e3035b1820a9cb62cae6d197d5b97e2ed1a20f9d5570ed,M007,2026-09-06T21:46:40.669144Z,A strict 10% causal score advantage can reduce transient M007 switches while preserving its one-minute response and productivity.,"M007 recovered throughput, but 42.7% of its reselections reversed within 24 hours.","Relative to M007, require best_score > 1.10 * incumbent_score for candidate-to-candidate flat switches; add no idle wait, confirmation or cooldown.",Retain at least 90% of M007 cycles and 99% of its equity while reducing reselections to at most 117 and 24-hour reversals to at most 50.,"{
+M009,REJECTED,1bc2e893ff54a05d79e3035b1820a9cb62cae6d197d5b97e2ed1a20f9d5570ed,M007,2026-09-06T21:46:40.669144Z,A strict 10% causal score advantage can reduce transient M007 switches while preserving its one-minute response and productivity.,"M007 recovered throughput, but 42.7% of its reselections reversed within 24 hours.","Relative to M007, require best_score > 1.10 * incumbent_score for candidate-to-candidate flat switches; add no idle wait, confirmation or cooldown.",Retain at least 90% of M007 cycles and 99% of its equity while reducing reselections to at most 117 and 24-hour reversals to at most 50.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": 1,
@@ -1140,4 +1140,254 @@ M009,CREATED,1bc2e893ff54a05d79e3035b1820a9cb62cae6d197d5b97e2ed1a20f9d5570ed,M0
   ""symbol"": ""USDCUSDT"",
   ""tick_evidence_class"": ""OBSERVED_ACCEPTED_GRID"",
   ""tick_source"": ""BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX""
-}",,,Isolate the already preregistered M008 score-advantage component after rejecting the combined M008 package.,,,,,,,,,
+}","{
+  ""completed_cycles"": 327460,
+  ""concentration"": {
+    ""PROFIT_CONCENTRATION_WARNING"": ""YES"",
+    ""daily"": {
+      ""all_periods"": {
+        ""best_share"": ""0.2325924639020003840677130272"",
+        ""gross_losses"": ""1138451035.0153128"",
+        ""gross_positive"": ""210136560727.7184623"",
+        ""net"": ""208998109692.7031495"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.6434846920179378182031589692"",
+        ""top5_share"": ""0.4718705316588636284734474197""
+      },
+      ""complete_period_count"": 247,
+      ""complete_periods"": {
+        ""best_share"": ""0.2326341182641719505243271820"",
+        ""gross_losses"": ""1138451035.0153128"",
+        ""gross_positive"": ""210098934671.5262231"",
+        ""net"": ""208960483636.5109103"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.6435999319700992414207218885"",
+        ""top5_share"": ""0.4719550376901170291846295764""
+      },
+      ""granularity"": ""day"",
+      ""period_count"": 248
+    },
+    ""monthly"": {
+      ""all_periods"": {
+        ""best_share"": ""0.3264848219355230076106242908"",
+        ""gross_losses"": ""113834954.5151272"",
+        ""gross_positive"": ""209111944647.2182767"",
+        ""net"": ""208998109692.7031495"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""1"",
+        ""top5_share"": ""0.9929300185530602173943222420""
+      },
+      ""complete_period_count"": 8,
+      ""complete_periods"": {
+        ""best_share"": ""0.3264848219355230076106242908"",
+        ""gross_losses"": ""28131159.8550268"",
+        ""gross_positive"": ""209111944647.2182767"",
+        ""net"": ""209083813487.3632499"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""1"",
+        ""top5_share"": ""0.9929300185530602173943222420""
+      },
+      ""granularity"": ""month"",
+      ""period_count"": 9
+    },
+    ""weekly"": {
+      ""all_periods"": {
+        ""best_share"": ""0.2711372016473125245736501284"",
+        ""gross_losses"": ""174380897.1722990"",
+        ""gross_positive"": ""209172490589.8754485"",
+        ""net"": ""208998109692.7031495"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.9815141628009541269441558407"",
+        ""top5_share"": ""0.8313885713543636249421255362""
+      },
+      ""complete_period_count"": 34,
+      ""complete_periods"": {
+        ""best_share"": ""0.2711372017299461592688020363"",
+        ""gross_losses"": ""132574168.0698110"",
+        ""gross_positive"": ""209172490526.1266045"",
+        ""net"": ""209039916358.0567935"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.9815141631000871204406084647"",
+        ""top5_share"": ""0.8313885716077433127076744412""
+      },
+      ""granularity"": ""week"",
+      ""period_count"": 36
+    }
+  },
+  ""data_support"": {
+    ""book_depth"": ""UNKNOWN"",
+    ""executable_capacity"": ""UNKNOWN"",
+    ""fills_partial_fills"": ""UNKNOWN_PRICE_PATH_ONLY"",
+    ""gross_trade_volume"": ""OBSERVED_TRADES"",
+    ""latency"": ""COUNTERFACTUAL_ZERO"",
+    ""mid"": ""UNKNOWN"",
+    ""price"": ""OBSERVED_TRADES"",
+    ""queue_ahead"": ""UNKNOWN"",
+    ""spread_bid_ask"": ""UNKNOWN"",
+    ""trade_intensity"": ""OBSERVED_TRADES""
+  },
+  ""fees_quote"": ""0E-7"",
+  ""final_marked_equity"": ""208998109792.7031495"",
+  ""initial_quote"": ""100"",
+  ""open_cycle_censored"": true,
+  ""productivity_distribution"": {
+    ""daily"": {
+      ""best"": ""2026-01-31 00:00:00+00:00"",
+      ""capital_hour_return"": {
+        ""max"": ""0.1530136788454507394179139421"",
+        ""min"": ""-0.00004162949462942761678366779084"",
+        ""p10"": ""-0.000007499222717866367528210544043"",
+        ""p50"": ""0.000001667246040758539601840492811"",
+        ""p90"": ""0.001296932094643752413118050118""
+      },
+      ""complete_periods"": 247,
+      ""cycles"": {
+        ""max"": 45310,
+        ""min"": 0,
+        ""p10"": 0,
+        ""p50"": 0,
+        ""p90"": 2784
+      },
+      ""worst"": ""2026-01-02 00:00:00+00:00""
+    },
+    ""monthly"": {
+      ""best"": ""2026-01-01 00:00:00+00:00"",
+      ""capital_hour_return"": {
+        ""max"": ""0.1523222640678143708526535048"",
+        ""min"": ""-6.529288675117059591257976399E-7"",
+        ""p10"": ""8.063892891009136877462417640E-7"",
+        ""p50"": ""0.0007658134481446850678208101425"",
+        ""p90"": ""0.001671964727896830751271759171""
+      },
+      ""complete_periods"": 8,
+      ""cycles"": {
+        ""max"": 172917,
+        ""min"": 0,
+        ""p10"": 0,
+        ""p50"": 29462,
+        ""p90"": 52977
+      },
+      ""worst"": ""2026-03-01 00:00:00+00:00""
+    },
+    ""weekly"": {
+      ""best"": ""2026-01-26 00:00:00+00:00"",
+      ""capital_hour_return"": {
+        ""max"": ""0.05902205522500208053916867989"",
+        ""min"": ""-0.000002976764840246478619806052824"",
+        ""p10"": ""-0.000001546700775181709516603623542"",
+        ""p50"": ""0.000003509454959581112196729730250"",
+        ""p90"": ""0.004595560309789880423569494752""
+      },
+      ""complete_periods"": 34,
+      ""cycles"": {
+        ""max"": 108297,
+        ""min"": 0,
+        ""p10"": 0,
+        ""p50"": 0,
+        ""p90"": 32212
+      },
+      ""worst"": ""2026-02-09 00:00:00+00:00""
+    }
+  },
+  ""productivity_fingerprint"": {
+    ""BEST_1D_CYCLES"": 45310,
+    ""BEST_30D_CYCLES"": 127607,
+    ""BEST_7D_CYCLES"": 110297,
+    ""BEST_MONTH"": ""2026-07"",
+    ""BEST_REGIME"": ""HOT"",
+    ""HOT_PERIOD_COUNT"": 55,
+    ""LONGEST_COLD_STREAK"": 7,
+    ""LONGEST_HOT_STREAK"": 15,
+    ""WORST_MONTH"": ""2026-04""
+  },
+  ""realized_profit"": ""209230137039.2219579"",
+  ""return_fraction"": ""2089981096.927031495"",
+  ""temporal_stability"": {
+    ""aggregate"": ""19.66980787154706317534225675"",
+    ""horizons"": {
+      ""12h"": {
+        ""failure_fraction"": ""0.3232323232323232323232323232"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.1939393939393939393939393939"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""13.12519130700948882767064585""
+      },
+      ""168h"": {
+        ""failure_fraction"": ""0.2285714285714285714285714286"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.4571428571428571428571428571"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""35.26530612244897959183673469""
+      },
+      ""1h"": {
+        ""failure_fraction"": ""0.3154091749285834313560746093"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.06940010082339102671819862208"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""4.751067228272475934295768549""
+      },
+      ""24h"": {
+        ""failure_fraction"": ""0.3562753036437246963562753036"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.2226720647773279352226720648"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""14.33395072858102902850399122""
+      },
+      ""336h"": {
+        ""failure_fraction"": ""0.1764705882352941176470588235"",
+        ""mad"": ""0.00009176315515194273260193762438"",
+        ""median_absolute_productivity"": ""0.00009176315515194273260193762438"",
+        ""profitable_fraction"": ""0.5882352941176470588235294118"",
+        ""relative_variability"": ""0.4999999972755950008056723843"",
+        ""score"": ""24.22145341917532868069407135""
+      },
+      ""4h"": {
+        ""failure_fraction"": ""0.3207800941492938802958977808"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.1277740416946872898453261601"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""8.678667257002969922244749273""
+      },
+      ""720h"": {
+        ""failure_fraction"": ""0.125"",
+        ""mad"": ""0.000527564778987845069017760857"",
+        ""median_absolute_productivity"": ""0.000543198218133752930154501525"",
+        ""profitable_fraction"": ""0.75"",
+        ""relative_variability"": ""0.4926998597386475544619884222"",
+        ""score"": ""33.29157170465125423843200979""
+      },
+      ""72h"": {
+        ""failure_fraction"": ""0.2804878048780487804878048780"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.3292682926829268292682926829"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""23.69125520523497917906008328""
+      }
+    },
+    ""reason"": ""DESCRIPTIVE_ONLY""
+  },
+  ""unrealized_profit"": ""-232027346.5188084""
+}","{
+  ""campaign_snapshot_id"": ""b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9"",
+  ""comparison"": {
+    ""model_ladder"": ""M005_TO_M008"",
+    ""same_dataset_scenario_cutoff_required"": true
+  },
+  ""criteria"": {
+    ""early_stop_economic"": false,
+    ""promotion_guardrail"": ""docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md"",
+    ""temporal_metrics_are_diagnostic_only"": true
+  },
+  ""early_stop"": false,
+  ""execution_evidence"": ""INCONCLUSIVE_PRICE_PATH_ONLY"",
+  ""full_replay_completed"": true,
+  ""run_hash"": ""8829762ac9fb0e6b2f842054d5b3e966f535c35f5b6691ecfcc0de1050cabe3c"",
+  ""scenario_hash"": ""db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"",
+  ""status"": ""PENDING_SCIENTIFIC_REVIEW""
+}",Isolate the already preregistered M008 score-advantage component after rejecting the combined M008 package.,45310,110297,127607,2026-07,HOT,2026-04,15,7,55
