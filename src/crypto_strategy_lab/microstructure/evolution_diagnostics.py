@@ -474,7 +474,10 @@ def _cycle_entry(
         or int(evidence.tape.events[entry_index]) != entry
         or exit_index >= len(evidence.tape.events)
         or int(evidence.tape.events[exit_index]) != exit_event
-        or entry >= exit_event
+        # One price-path event may cross LOW and HIGH and therefore complete a
+        # cycle at the same event ordinal.  The canonical replay deliberately
+        # records those as zero-duration cycles.
+        or entry > exit_event
     ):
         raise EvolutionDiagnosticError("cycle events are absent or out of order")
     current = _tick_candidate(low, high, evidence.tape.tick_size)

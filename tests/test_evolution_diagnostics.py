@@ -152,6 +152,18 @@ def test_diagnostic_reconciles_cycles_and_separates_long_holds(tmp_path: Path) -
     assert data["aggregates"]["level"]["0.9998->0.9999"]["cycles"] == 2
 
 
+def test_zero_duration_same_event_cycle_is_valid(tmp_path: Path) -> None:
+    evidence = _evidence(tmp_path, "M007")
+    cycle = evidence.replay["cycles"][0]
+    cycle["exit_event"] = cycle["entry_event"]
+    cycle["exit_timestamp"] = cycle["entry_timestamp"]
+
+    data = _diagnose_model(evidence)
+
+    assert data["summary"]["completed_cycles"] == 2
+    assert data["cohorts"]["OTHER"]["count"] == 1
+
+
 def test_selection_history_allows_none_transitions_and_caches_event_ids(
     tmp_path: Path,
 ) -> None:
