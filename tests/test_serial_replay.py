@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+import crypto_strategy_lab.microstructure.serial_replay as serial_replay
 from crypto_strategy_lab.microstructure.data import (
     HistoryManifest,
     manifest_for,
@@ -676,6 +677,317 @@ def test_idle_triggered_requires_continuous_flat_time_and_confirmations() -> Non
     assert first.reselection_count == 1
     assert first.active_low == Decimal("1.0000")
     assert first.completed_cycles == 1
+
+
+def test_relative_score_hysteresis_schema_requires_only_advantage() -> None:
+    base = {
+        "model_id": "M009",
+        "parent_model_id": "M007",
+        "strategy": SerialStrategy.RELATIVE_SCORE_HYSTERESIS,
+        "decision_interval_minutes": 1,
+        "switch_advantage": Decimal("0.10"),
+        "lookback_minutes": 1_440,
+    }
+    config = SerialModelConfig.model_validate(base)
+
+    assert config.strategy == SerialStrategy.RELATIVE_SCORE_HYSTERESIS
+    assert config.switch_advantage == Decimal("0.10")
+    for field in ("idle_threshold_minutes", "confirmation_checks", "cooldown_minutes"):
+        with pytest.raises(ValueError, match="idle-control"):
+            SerialModelConfig.model_validate({**base, field: 1})
+    with pytest.raises(ValueError, match="requires switch_advantage"):
+        SerialModelConfig.model_validate(
+            {key: value for key, value in base.items() if key != "switch_advantage"}
+        )
+
+
+def test_relative_score_hysteresis_switches_only_above_strict_advantage(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = _config(
+        model_id="M009",
+        parent_model_id="M007",
+        strategy=SerialStrategy.RELATIVE_SCORE_HYSTERESIS,
+        decision_interval_minutes=1,
+        switch_advantage=Decimal("0.10"),
+    )
+    incumbent = (9_998, 1)
+    challenger = (9_999, 1)
+
+    def decide(current_score: Decimal, best_score: Decimal) -> tuple[int, int] | None:
+        state = serial_replay._State(cash=Decimal("100"), candidate=incumbent)
+        monkeypatch.setattr(serial_replay, "_select", lambda *args, **kwargs: challenger)
+        monkeypatch.setattr(
+            serial_replay,
+            "_score",
+            lambda candidate, *args, **kwargs: (
+                current_score if candidate == incumbent else best_score
+            ),
+        )
+        serial_replay._decision(
+            state,
+            {},
+            config,
+            now=0,
+            lookback=1,
+            tick_catalog=None,
+            tape_quantum=TICK,
+            observed_tick_evidence_event=None,
+        )
+        return state.candidate
+
+    assert decide(Decimal("100"), Decimal("110")) == incumbent
+    assert decide(Decimal("100"), Decimal("111")) == challenger
+    assert decide(Decimal("0"), Decimal("0")) == incumbent
+    assert decide(Decimal("0"), Decimal("1")) == challenger
+
+
+def test_relative_score_hysteresis_preserves_missing_candidate_behavior(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = _config(
+        model_id="M009",
+        parent_model_id="M007",
+        strategy=SerialStrategy.RELATIVE_SCORE_HYSTERESIS,
+        decision_interval_minutes=1,
+        switch_advantage=Decimal("0.10"),
+    )
+    incumbent = (9_998, 1)
+    state = serial_replay._State(cash=Decimal("100"), candidate=incumbent)
+    monkeypatch.setattr(serial_replay, "_select", lambda *args, **kwargs: None)
+
+    serial_replay._decision(
+        state,
+        {},
+        config,
+        now=10,
+        lookback=5,
+        tick_catalog=None,
+        tape_quantum=TICK,
+        observed_tick_evidence_event=None,
+    )
+
+    assert state.candidate is None
+    assert len(state.changes) == 1
+
+
+def test_relative_score_hysteresis_reselects_immediately_after_exit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = _config(
+        model_id="M009",
+        parent_model_id="M007",
+        strategy=SerialStrategy.RELATIVE_SCORE_HYSTERESIS,
+        decision_interval_minutes=1,
+        switch_advantage=Decimal("0.10"),
+    )
+    incumbent = (9_998, 1)
+    challenger = (9_999, 1)
+    timelines = {
+        incumbent: CandidateTimeline(9_998, 1, array("q", [1]), array("q", [2])),
+        challenger: CandidateTimeline(9_999, 1, array("q"), array("q")),
+    }
+    for timeline in timelines.values():
+        timeline.build()
+    state = serial_replay._State(
+        cash=Decimal("100"),
+        candidate=incumbent,
+        candidate_tick_size=TICK,
+    )
+    monkeypatch.setattr(serial_replay, "_select", lambda *args, **kwargs: challenger)
+    monkeypatch.setattr(
+        serial_replay,
+        "_score",
+        lambda candidate, *args, **kwargs: (
+            Decimal("2") if candidate == challenger else Decimal("1")
+        ),
+    )
+
+    serial_replay._advance(
+        state,
+        timelines,
+        config,
+        _scenario(),
+        start=0,
+        end=3,
+        recalculate_after_exit=True,
+        tick_catalog=None,
+        tape_quantum=TICK,
+        observed_tick_evidence_event=None,
+    )
+
+    assert state.candidate == challenger
+    assert state.changes[0][0] == 2
+
+
+def test_relative_score_hysteresis_scores_only_the_causal_prefix(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = _config(
+        model_id="M009",
+        parent_model_id="M007",
+        strategy=SerialStrategy.RELATIVE_SCORE_HYSTERESIS,
+        decision_interval_minutes=1,
+        switch_advantage=Decimal("0.10"),
+    )
+    incumbent = (9_998, 1)
+    challenger = (9_999, 1)
+    state = serial_replay._State(cash=Decimal("100"), candidate=incumbent)
+    observed: list[tuple[int, int]] = []
+    monkeypatch.setattr(serial_replay, "_select", lambda *args, **kwargs: challenger)
+
+    def score(
+        candidate: tuple[int, int] | None, _timelines: object, _config: object, start: int, end: int
+    ) -> Decimal:
+        observed.append((start, end))
+        return Decimal("2") if candidate == challenger else Decimal("1")
+
+    monkeypatch.setattr(serial_replay, "_score", score)
+    serial_replay._decision(
+        state,
+        {},
+        config,
+        now=100,
+        lookback=10,
+        tick_catalog=None,
+        tape_quantum=TICK,
+        observed_tick_evidence_event=None,
+    )
+
+    assert observed == [(90, 100), (90, 100)]
+
+
+def test_relative_score_hysteresis_uses_real_causal_timeline_scores() -> None:
+    items: list[tuple[int, str]] = []
+    for index in range(10):
+        items.extend(((-300 + index * 2, "0.9990"), (-299 + index * 2, "0.9991")))
+    for index in range(9):
+        items.extend(((-200 + index * 2, "1.0010"), (-199 + index * 2, "1.0011")))
+    items.extend(((1, "1.0010"), (2, "1.0011"), (3, "1.0010"), (4, "1.0011")))
+    items.append((61, "1.0020"))
+    tape = _tape(items)
+    common = {
+        "decision_interval_minutes": 1,
+        "lookback_minutes": 10,
+    }
+    m007 = _config(
+        model_id="M007",
+        parent_model_id="M006",
+        strategy=SerialStrategy.ALWAYS_BEST,
+        **common,
+    )
+    m009 = _config(
+        model_id="M009",
+        parent_model_id="M007",
+        strategy=SerialStrategy.RELATIVE_SCORE_HYSTERESIS,
+        switch_advantage=Decimal("0.10"),
+        **common,
+    )
+
+    always_best = replay_serial_model(
+        tape,
+        m007,
+        _scenario(),
+        start=START,
+        end_exclusive=START + timedelta(seconds=61),
+    )
+    hysteresis = replay_serial_model(
+        tape,
+        m009,
+        _scenario(),
+        start=START,
+        end_exclusive=START + timedelta(seconds=61),
+    )
+
+    assert always_best.active_low == Decimal("1.0010")
+    assert hysteresis.active_low == Decimal("0.9990")
+    assert always_best.completed_cycles == hysteresis.completed_cycles == 0
+
+
+def test_relative_score_hysteresis_keeps_open_band_across_tick_change() -> None:
+    start = USDCUSDT_TICK_CHANGE - timedelta(seconds=2)
+    end = start + timedelta(minutes=2)
+    tape = SerialTape.from_events(
+        [
+            (start - timedelta(seconds=20), Decimal("1.0000")),
+            (start - timedelta(seconds=19), Decimal("1.0001")),
+            (start - timedelta(seconds=10), Decimal("1.0000")),
+            (start - timedelta(seconds=9), Decimal("1.0001")),
+            (start + timedelta(milliseconds=500), Decimal("1.0000")),
+            (USDCUSDT_TICK_CHANGE + timedelta(milliseconds=100), Decimal("1.00002")),
+            (USDCUSDT_TICK_CHANGE + timedelta(milliseconds=200), Decimal("1.00003")),
+            (USDCUSDT_TICK_CHANGE + timedelta(seconds=30), Decimal("1.00002")),
+            (USDCUSDT_TICK_CHANGE + timedelta(seconds=31), Decimal("1.00003")),
+            (end, Decimal("1.00002")),
+        ],
+        tick_size=SERIAL_TAPE_QUANTUM,
+        tick_catalog=USDCUSDT_TICK_CATALOG,
+    )
+    config = _config(
+        model_id="M009",
+        parent_model_id="M007",
+        strategy=SerialStrategy.RELATIVE_SCORE_HYSTERESIS,
+        distances=(1,),
+        decision_interval_minutes=1,
+        lookback_minutes=10,
+        switch_advantage=Decimal("0.10"),
+        distance_semantics="ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION",
+        selection_moment="AT_LEVEL_SELECTION",
+        tick_source="BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX",
+        tick_evidence_class="OBSERVED_ACCEPTED_GRID",
+        selected_levels_remain_absolute=True,
+    )
+
+    result = replay_serial_model(
+        tape,
+        config,
+        _historical_scenario(),
+        start=start,
+        end_exclusive=end,
+        tick_catalog=USDCUSDT_TICK_CATALOG,
+    )
+
+    assert result.open_cycle_censored is True
+    assert result.open_entry_price == Decimal("1.0000")
+    assert result.active_low == Decimal("1.0000")
+    assert result.active_high == Decimal("1.0001")
+    assert result.blocked_reselection_checks == 1
+
+
+def test_relative_score_hysteresis_keeps_absolute_candidate_endpoints(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = _config(
+        model_id="M009",
+        parent_model_id="M007",
+        strategy=SerialStrategy.RELATIVE_SCORE_HYSTERESIS,
+        decision_interval_minutes=1,
+        switch_advantage=Decimal("0"),
+    )
+    incumbent = (99_981, 10)
+    challenger = (99_981, 1)
+    state = serial_replay._State(cash=Decimal("100"), candidate=incumbent)
+    monkeypatch.setattr(serial_replay, "_select", lambda *args, **kwargs: challenger)
+    monkeypatch.setattr(
+        serial_replay,
+        "_score",
+        lambda candidate, *args, **kwargs: (
+            Decimal("2") if candidate == challenger else Decimal("1")
+        ),
+    )
+
+    serial_replay._decision(
+        state,
+        {},
+        config,
+        now=0,
+        lookback=1,
+        tick_catalog=None,
+        tape_quantum=TICK,
+        observed_tick_evidence_event=None,
+    )
+
+    assert state.candidate == challenger
 
 
 def test_manifest_tape_loader_accepts_only_active_valid_campaign(tmp_path: Path) -> None:

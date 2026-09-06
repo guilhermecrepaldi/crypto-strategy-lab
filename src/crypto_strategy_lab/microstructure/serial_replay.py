@@ -233,6 +233,7 @@ class SerialStrategy(StrEnum):
     STATIC = "STATIC"
     PERIODIC_RESELECT = "PERIODIC_RESELECT"
     ALWAYS_BEST = "ALWAYS_BEST"
+    RELATIVE_SCORE_HYSTERESIS = "RELATIVE_SCORE_HYSTERESIS"
     IDLE_TRIGGERED = "IDLE_TRIGGERED"
 
 
@@ -268,14 +269,20 @@ class SerialModelConfig(BaseModel):
         idle_fields = (
             self.idle_threshold_minutes,
             self.confirmation_checks,
-            self.switch_advantage,
             self.cooldown_minutes,
         )
         if self.strategy == SerialStrategy.IDLE_TRIGGERED:
-            if any(item is None for item in idle_fields):
+            if any(item is None for item in (*idle_fields, self.switch_advantage)):
                 raise ValueError("IDLE_TRIGGERED requires every idle-control parameter")
+        elif self.strategy == SerialStrategy.RELATIVE_SCORE_HYSTERESIS:
+            if self.switch_advantage is None:
+                raise ValueError("RELATIVE_SCORE_HYSTERESIS requires switch_advantage")
+            if any(item is not None for item in idle_fields):
+                raise ValueError("idle-control parameters are exclusive to IDLE_TRIGGERED")
         elif any(item is not None for item in idle_fields):
             raise ValueError("idle-control parameters are exclusive to IDLE_TRIGGERED")
+        elif self.switch_advantage is not None:
+            raise ValueError("switch_advantage is exclusive to adaptive hysteresis/idle strategies")
         historical_tick_fields = (
             self.distance_semantics,
             self.selection_moment,
@@ -887,6 +894,17 @@ def _decision(
         eligible_distances=eligible_distances,
         grid_multiple=grid_multiple,
     )
+    if config.strategy == SerialStrategy.RELATIVE_SCORE_HYSTERESIS:
+        _switch_if_score_advantaged(
+            state,
+            timelines,
+            config,
+            selected,
+            tick_size,
+            now,
+            lookback,
+        )
+        return
     if config.strategy != SerialStrategy.IDLE_TRIGGERED:
         _switch(state, selected, tick_size, now, allow_none=True)
         return
@@ -933,6 +951,29 @@ def _switch(
     state.candidate_tick_size = selected_tick_size if selected is not None else None
     state.changes.append((now, previous, previous_tick_size, selected, state.candidate_tick_size))
     state.last_change = now
+
+
+def _switch_if_score_advantaged(
+    state: _State,
+    timelines: dict[tuple[int, int], CandidateTimeline],
+    config: SerialModelConfig,
+    selected: tuple[int, int] | None,
+    selected_tick_size: Decimal | None,
+    now: int,
+    lookback: int,
+) -> None:
+    """Apply hysteresis only to a candidate-to-candidate M007 switch."""
+    if selected is None or state.candidate is None:
+        _switch(state, selected, selected_tick_size, now, allow_none=True)
+        return
+    if selected == state.candidate:
+        return
+    current_score = _score(state.candidate, timelines, config, now - lookback, now)
+    selected_score = _score(selected, timelines, config, now - lookback, now)
+    advantage = config.switch_advantage
+    assert advantage is not None  # enforced by SerialModelConfig
+    if selected_score > current_score * (Decimal("1") + advantage):
+        _switch(state, selected, selected_tick_size, now)
 
 
 def _advance(
@@ -1020,7 +1061,18 @@ def _advance(
                 eligible_distances=eligible_distances,
                 grid_multiple=grid_multiple,
             )
-            _switch(state, selected, tick_size, exit_event, allow_none=True)
+            if config.strategy == SerialStrategy.RELATIVE_SCORE_HYSTERESIS:
+                _switch_if_score_advantaged(
+                    state,
+                    timelines,
+                    config,
+                    selected,
+                    tick_size,
+                    exit_event,
+                    lookback,
+                )
+            else:
+                _switch(state, selected, tick_size, exit_event, allow_none=True)
 
 
 def _select(
