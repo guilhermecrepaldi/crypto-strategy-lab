@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import subprocess
 from datetime import timedelta
+from decimal import Decimal
 from pathlib import Path
 from typing import Annotated, Literal, cast
 
@@ -42,6 +43,12 @@ from crypto_strategy_lab.data.history_reporting import (
 )
 from crypto_strategy_lab.db.persistence import persist_download_manifest, persist_result
 from crypto_strategy_lab.fixtures import load_fixture
+from crypto_strategy_lab.microstructure.data import download_archive, manifest_for, parse_archive
+from crypto_strategy_lab.microstructure.workflow import (
+    audit_trade_levels,
+    run_s0_fixture,
+    write_artifact,
+)
 from crypto_strategy_lab.ml.candidate_workflow import run_candidate_strategy
 from crypto_strategy_lab.ml.controlled_workflow import (
     run_controlled_training,
@@ -518,6 +525,74 @@ def controlled_evaluate(
         f"VALIDATION observed for {len(report.runs)} frozen runs; "
         f"classification={report.gates.classification}"
     )
+
+
+@app.command("microstructure-download")
+def microstructure_download(
+    date: Annotated[str, typer.Option(help="UTC day as YYYY-MM-DD")],
+    kind: Annotated[Literal["trades", "aggTrades"], typer.Option()] = "aggTrades",
+    symbol: Annotated[str, typer.Option()] = "FDUSDUSDC",
+    destination: Annotated[Path, typer.Option()] = Path("data/raw/binance-microstructure"),
+    manifest_output: Annotated[Path | None, typer.Option()] = None,
+) -> None:
+    """Download and checksum one public, historical Binance Spot trade archive."""
+    normalized = symbol.upper()
+    filename = f"{normalized}-{kind}-{date}.zip"
+    source_url = f"https://data.binance.vision/data/spot/daily/{kind}/{normalized}/{filename}"
+    target = destination / normalized / kind / filename
+    downloaded = download_archive(source_url, target)
+    events = parse_archive(downloaded, kind)
+    manifest = manifest_for(downloaded, events, origin=source_url, period=date)
+    output = manifest_output or downloaded.with_suffix(".manifest.json")
+    write_artifact(manifest, output)
+    typer.echo(f"Archive: {downloaded}")
+    typer.echo(f"SHA256: {manifest.sha256}")
+    typer.echo(f"Records: {manifest.record_count}")
+    typer.echo(f"Manifest: {output}")
+
+
+@app.command("microstructure-s0-fixture")
+def microstructure_s0_fixture(
+    fixture: Annotated[Path, typer.Option(exists=True)] = Path("fixtures/microstructure_s0.json"),
+    output: Annotated[Path, typer.Option()] = Path("reports/runs/microstructure-s0-fixture.json"),
+) -> None:
+    """Verify S0 mechanics on an offline scenario with exact expected outcomes."""
+    artifact = run_s0_fixture(fixture)
+    write_artifact(artifact, output)
+    typer.echo(f"Run ID: {artifact.result.run_id}")
+    typer.echo(f"Edge: {artifact.result.edge_status}")
+    typer.echo(f"Cycles: {artifact.result.metrics['cycle_count']}")
+    typer.echo(f"Output: {output}")
+
+
+@app.command("microstructure-frequency-audit")
+def microstructure_frequency_audit(
+    archive: Annotated[Path, typer.Option(exists=True)],
+    date: Annotated[str, typer.Option(help="UTC day represented by the archive")],
+    kind: Annotated[Literal["trades", "aggTrades"], typer.Option()] = "aggTrades",
+    symbol: Annotated[str, typer.Option()] = "FDUSDUSDC",
+    lower: Annotated[str, typer.Option()] = "0.9988",
+    upper: Annotated[str, typer.Option()] = "0.9989",
+    output: Annotated[Path, typer.Option()] = Path("reports/runs/fdusdusdc-level-frequency.json"),
+) -> None:
+    """Measure level recurrence without mislabeling observed price paths as fills."""
+    normalized = symbol.upper()
+    filename = f"{normalized}-{kind}-{date}.zip"
+    source_url = f"https://data.binance.vision/data/spot/daily/{kind}/{normalized}/{filename}"
+    audit = audit_trade_levels(
+        archive,
+        kind=kind,
+        source_url=source_url,
+        period=date,
+        lower=Decimal(lower),
+        upper=Decimal(upper),
+    )
+    write_artifact(audit, output)
+    typer.echo(f"Run ID: {audit.run_id}")
+    typer.echo(f"Observed lower->upper paths: {audit.completed_observed_paths}")
+    typer.echo("Observed paths are fills: NO")
+    typer.echo(f"Realistic queue: {audit.realistic_queue_status}")
+    typer.echo(f"Output: {output}")
 
 
 @app.command("rl-train")

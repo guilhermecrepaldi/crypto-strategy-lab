@@ -1,0 +1,33 @@
+{
+  "schema_version": "fdusdusdc-data-manifest-v1",
+  "source": "BINANCE_PUBLIC_DATA_SPOT_DAILY_AGGTRADES",
+  "retrieved_at_utc": "2026-09-06T00:00:00Z",
+  "symbol": "FDUSDUSDC",
+  "files": [
+    {
+      "origin": "https://data.binance.vision/data/spot/daily/aggTrades/FDUSDUSDC/FDUSDUSDC-aggTrades-2026-09-04.zip",
+      "period": "2026-09-04",
+      "sha256": "558f9689d7d06e12f63c4daa89e13ef13600b449fd55b3d4383ffef0edd5a374",
+      "record_count": 14965,
+      "first_timestamp": "2026-09-04T00:00:03.186264Z",
+      "last_timestamp": "2026-09-04T23:52:01.028851Z",
+      "id_gaps": [],
+      "duplicates": []
+    },
+    {
+      "origin": "https://data.binance.vision/data/spot/daily/aggTrades/FDUSDUSDC/FDUSDUSDC-aggTrades-2026-09-05.zip",
+      "period": "2026-09-05",
+      "sha256": "7c56db0d95e363fed9f009079eb182aabcd04899843f8ad5c346bec5611e1473",
+      "record_count": 4590,
+      "first_timestamp": "2026-09-05T00:00:48.762689Z",
+      "last_timestamp": "2026-09-05T23:59:24.074865Z",
+      "id_gaps": [],
+      "duplicates": []
+    }
+  ],
+  "records_total": 19555,
+  "coverage_start": "2026-09-04T00:00:03.186264Z",
+  "coverage_end": "2026-09-05T23:59:24.074865Z",
+  "sequenced_l2_order_book_available": false,
+  "queue_conclusion": "INCONCLUSIVE"
+}

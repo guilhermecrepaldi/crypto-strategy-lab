@@ -201,6 +201,31 @@ uv run crypto-lab history-ingest --symbols BTCUSDT,ETHUSDT,SHIBUSDT,BNBUSDT `
   --manifest-path data/manifests/two-year-ready.json --gap-policy STOP
 ```
 
+## Ciclagem passiva FDUSD/USDC
+
+O primeiro corte de microestrutura implementa `S0_FROZEN_LEVELS-v1`: um único lote compra em
+`0.9988` e somente após fill completo vende em `0.9989`. Não existe timeout, stop temporal,
+reprecificação ou saída taker automática. O motor event-driven separa toque, trade e fill; modela
+fila, latência, fill parcial, cancelamento, inventário FDUSD/USDC, taxas maker/taker e `RISK_HALT`.
+
+```powershell
+# prova mecânica offline de resultado exato
+uv run crypto-lab microstructure-s0-fixture
+
+# histórico público oficial, checksum e manifesto
+uv run crypto-lab microstructure-download --date 2026-09-05 --kind aggTrades
+
+# recorrência exploratória; nunca converte percurso de preço em fill
+uv run crypto-lab microstructure-frequency-audit `
+  --archive data/raw/binance-microstructure/FDUSDUSDC/aggTrades/FDUSDUSDC-aggTrades-2026-09-05.zip `
+  --date 2026-09-05 --kind aggTrades
+```
+
+Os documentos canônicos estão em `docs/microstructure/`. A amostra oficial reproduz 48 percursos
+`0.9988 → 0.9989` em 05/09/2026, mas arquivos Spot bulk não fornecem a fila L2 histórica necessária
+para provar nossos fills. A classificação atual é `INCONCLUSIVE`; o cenário com 1 bp maker por
+perna e qualquer cenário testado com perna taker são matematicamente negativos para um tick.
+
 ## Validação
 
 ```powershell

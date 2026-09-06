@@ -1,0 +1,59 @@
+{
+  "config": {
+    "strategy_id": "S0_FROZEN_LEVELS-v1",
+    "symbol": "FDUSDUSDC",
+    "lower": "0.9988",
+    "upper": "0.9989",
+    "quantity_override": null,
+    "initial_usdc": "1000",
+    "lot_mode": "COMPOUNDING_LOT",
+    "fixed_lot_usdc": "1000",
+    "step_size": "0.01",
+    "min_quantity": "0.01",
+    "min_notional": "5",
+    "queue_model": "OPTIMISTIC",
+    "conservative_queue_multiplier": "2",
+    "latency": {
+      "market_data_ms": 10,
+      "decision_ms": 10,
+      "order_submit_ms": 10,
+      "cancel_ms": 10
+    },
+    "fees": {
+      "maker_rate": "0",
+      "taker_rate": "0.001",
+      "buy_fee_asset": "QUOTE",
+      "sell_fee_asset": "QUOTE",
+      "source": "SYNTHETIC_MECHANICS_ONLY"
+    }
+  },
+  "events": [
+    {
+      "type": "snapshot",
+      "timestamp": "2026-09-05T00:00:00Z",
+      "sequence": 1,
+      "update_id": 100,
+      "bids": [{"price": "0.9988", "quantity": "10"}],
+      "asks": [{"price": "0.9989", "quantity": "10"}]
+    },
+    {
+      "type": "trade",
+      "trade_id": 1,
+      "timestamp": "2026-09-05T00:00:01Z",
+      "sequence": 2,
+      "price": "0.9988",
+      "quantity": "2000",
+      "buyer_is_maker": true
+    },
+    {
+      "type": "trade",
+      "trade_id": 2,
+      "timestamp": "2026-09-05T00:00:02Z",
+      "sequence": 3,
+      "price": "0.9989",
+      "quantity": "2000",
+      "buyer_is_maker": false
+    }
+  ],
+  "cancellations": []
+}
