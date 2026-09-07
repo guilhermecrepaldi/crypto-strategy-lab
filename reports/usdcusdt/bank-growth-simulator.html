@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>USDCUSDT · Bank Growth Simulator</title>
+<style>
+:root{--bg:#0b1019;--panel:#121b28;--line:#273448;--ink:#eef4ff;--muted:#a2b1c8;--accent:#73e5bf;--gold:#ffcf7e}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,sans-serif}main{max-width:1440px;margin:auto;padding:36px 32px 60px}header{display:flex;justify-content:space-between;gap:20px;align-items:center}h1{font-size:clamp(27px,3vw,42px);line-height:1.1;letter-spacing:-1.3px;margin:10px 0 14px}h2{font-size:20px;margin:0}p{margin:8px 0;color:var(--muted)}.eyebrow{color:var(--accent);font-size:12px;letter-spacing:2px;font-weight:700}.badge{display:inline-block;border:1px solid var(--line);border-radius:30px;padding:5px 12px;font-size:12px;color:var(--accent)}.notice{border-left:3px solid var(--gold);padding:12px 18px;background:#201f21;margin:24px 0;color:#dacdb9;font-size:13px}.cards{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin:24px 0}.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px}.card{padding:16px 14px;min-width:0}.card small{display:block;font-size:10px;letter-spacing:.8px;color:var(--muted);min-height:32px}.card strong{display:block;font-size:clamp(17px,1.65vw,24px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.card span{font-size:11px;color:var(--muted)}.layout{display:grid;grid-template-columns:275px minmax(0,1fr);gap:20px;align-items:start}.controls{padding:20px;position:sticky;top:16px}.panel{padding:22px;margin-bottom:20px}label{display:block;color:var(--muted);font-size:12px;margin:15px 0 5px}input,select,button{font:inherit;color:var(--ink);border:1px solid #35455f;border-radius:7px;background:#0d1522;padding:9px 10px;max-width:100%}input:not([type=checkbox]):not([type=range]),select{width:100%}input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}button{cursor:pointer}button:hover{border-color:var(--accent)}button.primary{background:var(--accent);color:#09251e;border-color:transparent;font-weight:650}.buttons{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.presets button{font-size:11px;padding:5px 7px}.inline{display:flex;gap:10px;align-items:center}.inline label{margin:0}.check{display:flex;gap:8px;align-items:center;color:var(--ink)}input[type=checkbox]{accent-color:var(--accent)}.subtle{font-size:12px;color:var(--muted)}.warning{color:var(--gold)}.chart-top{display:flex;justify-content:space-between;gap:16px;align-items:start;flex-wrap:wrap}.chart-options{display:flex;gap:8px}.chart-options select{width:auto;font-size:12px}.chart-wrap{position:relative;height:365px;margin-top:14px}canvas{display:block;width:100%;height:100%;touch-action:pan-y;outline-offset:4px}.tooltip{position:absolute;pointer-events:none;background:#080e18ee;border:1px solid #486079;padding:12px;border-radius:9px;font-size:12px;max-width:270px;z-index:2;box-shadow:0 12px 30px #0008}.tooltip strong{color:var(--accent)}.legend{display:flex;gap:8px 14px;flex-wrap:wrap;margin:14px 0}.legend button{font-size:11px;padding:5px 9px;border-color:var(--line)}.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}.legend button[aria-pressed=false]{opacity:.45}.scrub{display:grid;grid-template-columns:1fr auto;gap:15px;align-items:center}input[type=range]{width:100%;accent-color:var(--accent);padding:0}.readout{font-size:13px;min-height:24px;color:var(--accent)}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px;text-align:right;font-variant-numeric:tabular-nums}th,td{padding:11px 12px;border-bottom:1px solid var(--line);white-space:nowrap}th{font-weight:500;color:var(--muted);font-size:11px}th:first-child,td:first-child{text-align:left}tbody tr:hover{background:#1a293b}.section-title{margin:0 0 14px}.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}.two .panel{min-width:0}.formula{font-family:ui-monospace,monospace;color:var(--accent);overflow-wrap:anywhere;font-size:13px}.hidden,[hidden]{display:none!important}#error{padding:10px;background:#562c29;color:#fff;border-radius:7px}.footer{font-size:12px;color:var(--muted);margin-top:18px}.file-label{display:inline-block;color:var(--ink);border:1px solid #35455f;border-radius:7px;padding:8px 12px;cursor:pointer}.file-label input{max-width:240px;font-size:12px}.key{font-size:12px;color:var(--gold)}details summary{cursor:pointer;color:var(--muted);font-size:13px}code{overflow-wrap:anywhere}.num{font-variant-numeric:tabular-nums}a{color:var(--accent)}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(4,1fr)}.two{grid-template-columns:1fr}.layout{grid-template-columns:245px minmax(0,1fr)}}@media(max-width:760px){main{padding:22px 14px 40px}header{align-items:start;flex-direction:column}.cards{grid-template-columns:repeat(2,1fr)}.layout{display:block}.controls{position:static;display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.controls>h2,.controls>.wide{grid-column:1/-1}.panel{padding:16px}.chart-wrap{height:310px}.chart-options{flex-wrap:wrap}.card small{min-height:25px}.card strong{font-size:23px}.scrub{grid-template-columns:1fr}.two{gap:0}}
+</style>
+</head>
+<body><main>
+<header><div><div class="eyebrow">USDCUSDT / RESEARCH TOOLS</div><h1>Tempo. Ciclos. Banca.</h1><p>Explore como a frequência e o edge líquido se traduzem em crescimento teórico.</p></div><span class="badge">OFFLINE · SIMULAÇÃO MATEMÁTICA</span></header>
+<div class="notice"><strong>THIS IS A MATHEMATICAL COMPOUNDING SIMULATOR.</strong> Frequência e edge constantes são hipóteses. A referência M007 não prevê retorno real. Fees variáveis, slippage, partial fills, queue, latency, long holds, capital release, capacidade, depeg e downtime não são incluídos automaticamente. Os ajustes abaixo são hipóteses exploratórias.</div>
+<section class="cards" id="cards" aria-label="Resumo da referência M007"></section>
+<div class="layout">
+<aside class="controls panel" aria-label="Parâmetros de simulação">
+<h2>Seu cenário</h2>
+<div><label for="initial">Initial capital · USDT</label><input id="initial" type="number" min="0.01" max="1000000" step="0.01" value="100"></div>
+<p class="subtle wide" id="ruler">CANONICAL CAMPAIGN RULER = 100 USDT</p>
+<div><label for="rate">Cycles/day · cenário selecionado</label><input id="rate" type="number" min="0" max="1000000" step="0.01" value="1389.94"></div>
+<div><label for="edge">Net edge/cycle · %</label><input id="edge" type="number" min="-10" max="1" step="0.00001" value="0.001"><div class="buttons presets" id="edgePresets"></div></div>
+<div><label for="days">Simulation days</label><input id="days" type="number" min="1" max="730" step="1" value="365"><div class="buttons presets" id="dayPresets"></div></div>
+<div><label for="mode">Capital mode</label><select id="mode"><option value="COMPOUNDING">COMPOUNDING</option><option value="FIXED_NOTIONAL_100">FIXED_NOTIONAL_100</option></select></div>
+<div class="wide"><label class="check"><input type="checkbox" id="degrade"> REALISTIC DEGRADATION</label><p class="subtle">Ajustes de sensibilidade; não constituem calibração de execução real.</p></div>
+<div id="degradation" class="wide" hidden>
+<label for="fill">Fill rate · %</label><input id="fill" type="number" min="0" max="100" value="80">
+<label for="downtime">Downtime · %</label><input id="downtime" type="number" min="0" max="100" value="5">
+<label for="ratio">Effective cycles ratio · %</label><input id="ratio" type="number" min="0" max="100" value="100">
+<label for="fee">Fee drag · pontos percentuais/ciclo</label><input id="fee" type="number" min="0" max="10" step="0.00001" value="0">
+<label for="slippage">Slippage drag · pontos percentuais/ciclo</label><input id="slippage" type="number" min="0" max="10" step="0.00001" value="0">
+<p class="subtle">Descontos adicionais ao edge líquido informado. Evite contar o mesmo custo duas vezes.</p></div>
+<div><label for="release">Release loss/month · %</label><input id="release" type="number" min="0" max="99.99" step="0.01" value="0"></div>
+<div class="wide"><p class="subtle">Perda sobre a equity a cada 30 dias completos, após os ganhos do período. Default 0.</p><p id="effective" class="key"></p><p id="error" role="alert" hidden></p><div class="buttons"><button id="reset">Restaurar defaults</button><button id="export" class="primary">EXPORT CSV</button></div></div>
+</aside>
+<div>
+<section class="panel"><div class="chart-top"><div><span id="modeBadge" class="badge">COMPOUNDING MODE</span><h2 style="margin-top:12px">A banca ao longo do tempo</h2><p class="subtle">Todos os cenários partem da mesma banca. Toque ou explore com o cursor.</p></div><div class="chart-options"><select id="unit" aria-label="Unidade do eixo de tempo"><option value="days">Dias</option><option value="weeks">Semanas</option><option value="months">Meses · 30 dias</option></select><select id="scale" aria-label="Escala vertical"><option value="auto">Y automática</option><option value="linear">LINEAR Y</option><option value="log">LOG Y</option></select></div></div><div id="legend" class="legend"></div><div class="chart-wrap"><canvas id="timeChart" tabindex="0" aria-label="Banca por tempo. Use setas esquerda e direita para explorar." role="img"></canvas><div id="timeTip" class="tooltip" hidden></div></div><p id="scaleNote" class="subtle"></p><div class="scrub"><input id="cursor" type="range" min="0" max="365" value="30" aria-label="Dia para inspecionar"><span id="readout" class="readout" aria-live="polite"></span></div></section>
+<section class="panel"><div class="chart-top"><div><h2>Ciclos acumulados → banca</h2><p class="subtle">Sem perda mensal, a mesma quantidade de ciclos gera a mesma banca em qualquer frequência; as linhas se sobrepõem.</p></div></div><div class="chart-wrap"><canvas id="cycleChart" tabindex="0" aria-label="Banca por ciclos acumulados. Use setas para explorar." role="img"></canvas><div id="cycleTip" class="tooltip" hidden></div></div></section>
+<section class="panel"><div class="chart-top"><h2>Trajetória do cenário selecionado</h2><span id="selectedLabel" class="badge"></span></div><p id="fixedNote" class="subtle"></p><div class="table-wrap"><table><thead><tr><th>DAY / DATA UTC</th><th>CYCLES</th><th>BANK · USDT</th><th>PROFIT</th><th>RETURN</th><th>DOUBLINGS</th><th>ADDITIVE PNL</th></tr></thead><tbody id="trajectory"></tbody></table></div></section>
+</div></div>
+<div class="two"><section class="panel"><h2 class="section-title">Marcos da banca</h2><p class="subtle">Ciclos e primeiro instante em que o cenário selecionado alcança o alvo. Busca limitada a 730 dias, incluindo saltos de perda mensal.</p><div class="table-wrap"><table><thead><tr><th>ALVO · USDT</th><th>CYCLES NEEDED</th><th>DIAS</th></tr></thead><tbody id="milestones"></tbody></table></div></section>
+<section class="panel"><h2 class="section-title">Quanto tempo para duplicar?</h2><p class="subtle">Duplicação da banca inicial por cenário, com ajustes ativos. No composto sem drag mensal: ceil(log(2) / log(1 + r)).</p><div class="table-wrap"><table><thead><tr><th>CYCLES/DAY</th><th>EFFECTIVE/DAY</th><th>DOUBLING TIME</th></tr></thead><tbody id="doubling"></tbody></table></div></section></div>
+<section class="panel"><div class="chart-top"><div><div class="eyebrow">M007_REFERENCE</div><h2 style="margin-top:8px">Uma régua histórica, uma projeção teórica</h2><p>100 USDT · 1.389,94 ciclos/dia · edge padrão 0,001% por ciclo.</p><p class="subtle">Tabela de referência sempre composta, com banca 100 e sem degradação/perda mensal. Acompanha somente o edge escolhido. Não é o backtest M007.</p></div><span class="badge">BASE FIXA DA COMPARAÇÃO: 100 USDT</span></div><div class="table-wrap"><table><thead><tr><th>DAYS</th><th>CYCLES</th><th>BANK · USDT</th><th>RETURN</th></tr></thead><tbody id="reference"></tbody></table></div></section>
+<section class="panel"><h2>Sobreposição opcional de resultados</h2><p class="subtle">Importe <code>real_live_performance.json</code> para sobrepor THEORETICAL × LIVE REAL. A origem é declarada pelo arquivo e não verificada. Nenhuma conta ou API é acessada.</p><label class="file-label">Selecionar JSON local <input id="realFile" type="file" accept=".json,application/json"></label><button id="clearReal">Remover sobreposição</button><p id="realStatus" role="status" class="subtle">Nenhum dado real carregado. Ao abrir via file://, selecione o arquivo ao lado do HTML: navegadores restringem a leitura automática de arquivos vizinhos.</p><details><summary>Formato aceito e premissas matemáticas</summary><p class="subtle">JSON: <code>{"initial_capital":100,"currency":"USDT","start":"2026-01-01","points":[{"day":0,"cycles":0,"bank":100},{"day":1,"cycles":500,"bank":100.5}]}</code>. Até 10.000 pontos ordenados, dias/ciclos não decrescentes, banca finita e não negativa. A comparação exige a mesma banca inicial. Em HTTP(S), a leitura opcional tenta somente o arquivo vizinho uma vez.</p><p class="formula">n = cycles/day × dias × fill_rate × (1 − downtime) × effective_cycles_ratio<br>B(n) = initial × exp(n × log1p(r))<br>r = (net_edge_percent − fee_drag − slippage_drag) / 100</p><p class="subtle">Taxas constantes são expressas como médias: ciclos fracionários representam interpolação teórica. Um mês equivale a 30 dias; datas começam em 01/01/2026 UTC. Perdas mensais multiplicam a equity por (1 − loss). FIXED_NOTIONAL_100 adiciona 100 × r por ciclo, sem reinvestir: PnL aditivo bruto é separado da equity após perdas. É uma régua de exposição; não prova que uma banca menor que 100 financia outro lote de 100. Ao atingir zero, a simulação para e preserva a ruína. Valores maiores que o limite numérico são marcados como overflow, nunca cortados silenciosamente. Duplicações são log2(bank/initial), podendo ser negativas.</p></details></section>
+<footer class="footer">CANONICAL CAMPAIGN RULER = 100 USDT · Ferramenta exploratória local · Nenhum parâmetro altera modelos, registry ou artifacts da campanha.</footer>
+</main>
+<script id="simulator-core">
+'use strict';
+// Pure mathematical functions shared by the page and executable numerical tests.
+const BankMath = (() => {
+ const M007 = 1389.94;
+ function effective(c, rate=c.rate){return {rate:rate*(c.degrade?c.fill/100*(1-c.downtime/100)*c.ratio/100:1),edge:(c.edge-(c.degrade?c.fee+c.slippage:0))/100};}
+ function point(c,day,rate=c.rate){
+  const e=effective(c,rate),loss=c.release/100,months=Math.floor(day/30),tail=day-months*30;
+  let bank=c.initial,cycles=0,additive=0,releaseLoss=0,ruined=false;
+  function advance(days){
+   if(ruined)return;
+   let n=e.rate*days;
+   if(c.mode==='FIXED_NOTIONAL_100'){
+    if(e.edge<0 && bank+100*e.edge*n<=0){n=bank/(-100*e.edge);ruined=true;}
+    const pnl=100*e.edge*n;bank=ruined?0:bank+pnl;additive+=pnl;
+   }else bank*=Math.exp(n*Math.log1p(e.edge));
+   cycles+=n;
+  }
+  for(let m=0;m<months&&!ruined;m++){advance(30);if(!ruined){releaseLoss+=bank*loss;bank*=1-loss;}}
+  advance(tail);
+  const profit=bank-c.initial;
+  return {day,cycles,bank,profit,returnPercent:profit/c.initial*100,doublings:bank>0?Math.log2(bank/c.initial):null,additivePnl:c.mode==='FIXED_NOTIONAL_100'?additive:null,releaseLoss,ruined,overflow:!Number.isFinite(bank)};
+ }
+ function doublingCycles(edge){return edge>0?Math.ceil(Math.log(2)/Math.log1p(edge)):null;}
+ function target(c,targetBank,rate=c.rate){
+  if(targetBank<=c.initial)return {days:0,cycles:0};
+  const e=effective(c,rate);if(e.rate<=0||e.edge<=0)return null;
+  if(c.release===0){const n=c.mode==='COMPOUNDING'?Math.ceil(Math.log(targetBank/c.initial)/Math.log1p(e.edge)):Math.ceil((targetBank-c.initial)/(100*e.edge));return n/e.rate<=730?{days:n/e.rate,cycles:n}:null;}
+  let bank=c.initial,day=0;
+  while(day<730){
+   const n=c.mode==='COMPOUNDING'?Math.ceil(Math.log(targetBank/bank)/Math.log1p(e.edge)):Math.ceil((targetBank-bank)/(100*e.edge));
+   const duration=n/e.rate,window=Math.min(30,730-day);
+   // At an exact monthly boundary the loss applies before the target is assessed.
+   if(duration<window || (duration<=window && (c.release===0 || window<30)))return {days:day+duration,cycles:day*e.rate+n};
+   bank=c.mode==='COMPOUNDING'?bank*Math.exp(e.rate*window*Math.log1p(e.edge)):bank+100*e.edge*e.rate*window;
+   if(window===30)bank*=1-c.release/100;
+   day+=window;
+   if(bank>=targetBank)return {days:day,cycles:day*e.rate};
+  }return null;
+ }
+ function validateReal(data,initial){
+  if(!data||data.currency!=='USDT'||data.start!=='2026-01-01'||data.initial_capital!==initial||!Array.isArray(data.points)||!data.points.length||data.points.length>10000)throw Error('Identidade, banca inicial ou formato incompatível.');
+  let day=-1,cycles=-1;
+  for(const p of data.points){if(!p||![p.day,p.cycles,p.bank].every(Number.isFinite)||p.day<0||p.day>730||p.cycles<0||p.bank<0||p.day<=day||p.cycles<cycles)throw Error('Pontos inválidos ou fora de ordem.');day=p.day;cycles=p.cycles;}
+  const first=data.points[0];if(first.day!==0||first.cycles!==0||first.bank!==initial)throw Error('Primeiro ponto deve registrar dia 0, ciclos 0 e banca inicial.');
+  return data.points.map(p=>({...p,profit:p.bank-initial,returnPercent:(p.bank/initial-1)*100,doublings:p.bank>0?Math.log2(p.bank/initial):null}));
+ }
+ return {M007,effective,point,target,doublingCycles,validateReal};
+})();
+if(typeof module!=='undefined')module.exports=BankMath;
+</script>
+<script>
+'use strict';
+const $=id=>document.getElementById(id),colors=['#8ca2c3','#67b8ff','#73e5bf','#d3a5ff','#ffcf7e','#ff819f'];
+const defaults={initial:100,rate:1389.94,edge:.001,days:365,mode:'COMPOUNDING',degrade:false,fill:80,downtime:5,ratio:100,fee:0,slippage:0,release:0};
+let cfg={...defaults},series=[],real=null,hidden=new Set(),charts={},selectedDay=30;
+const number=(n,d=2)=>n===null?'—':!Number.isFinite(n)?'OVERFLOW':Math.abs(n)>=1e12?n.toExponential(3):n.toLocaleString('pt-BR',{maximumFractionDigits:d});
+const date=day=>new Date(Date.UTC(2026,0,1)+day*86400000).toISOString().slice(0,10);
+const td=items=>'<tr>'+items.map(x=>'<td>'+x+'</td>').join('')+'</tr>';
+function card(label,value,caption=''){return '<div class="card"><small>'+label+'</small><strong>'+value+'</strong><span>'+caption+'</span></div>';}
+function readConfig(){let c={};for(const k of Object.keys(defaults)){const el=$(k);if(typeof defaults[k]==='number'){if(!el.checkValidity()||el.value==='')throw Error('Confira os limites do campo '+k+'.');c[k]=Number(el.value);}else c[k]=typeof defaults[k]==='boolean'?el.checked:el.value;}if(BankMath.effective(c).edge<=-1)throw Error('Edge efetivo deve ser maior que −100%.');return c;}
+function buildSeries(){return [500,1000,1390,2000,3000,cfg.rate].map((rate,i)=>({rate,color:colors[i],label:i===5?'SELECIONADO · '+number(rate):number(rate)+' /dia'+(rate===1390?' · M007_REFERENCE ≈':''),points:Array.from({length:cfg.days+1},(_,d)=>BankMath.point(cfg,d,rate))}));}
+function update(){
+ try{cfg=readConfig();$('error').hidden=true;}catch(e){$('error').textContent=e.message;$('error').hidden=false;return;}
+ $('degradation').hidden=!cfg.degrade;
+ $('ruler').textContent='CANONICAL CAMPAIGN RULER = 100 USDT'+(cfg.initial!==100?' · EXPLORAÇÃO NÃO CANÔNICA':'');$('ruler').classList.toggle('warning',cfg.initial!==100);
+ const eff=BankMath.effective(cfg),r={...cfg,initial:100,rate:BankMath.M007,mode:'COMPOUNDING',degrade:false,release:0},p30=BankMath.point(r,30),double=BankMath.doublingCycles(cfg.edge/100);
+ $('cards').innerHTML=card('INITIAL BANK',number(cfg.initial)+' USDT',cfg.initial===100?'Régua canônica':'Exploração não canônica')+card('NET EDGE/CYCLE',number(cfg.edge,5)+'%','Antes dos ajustes adicionais')+card('M007 AVG CYCLES/DAY','1.389,94','Referência histórica aproximada')+card('30-DAY BANK',number(p30.bank),'M007 · 100 · composto sem drag')+card('30-DAY RETURN',number(p30.returnPercent)+'%','Referência teórica M007')+card('DOUBLING CYCLES',number(double,0),'Composto · edge base')+card('DOUBLING TIME',double===null?'Não alcança':number(double/BankMath.M007)+' dias','M007 · composto sem drag');
+ $('effective').textContent='Effective cycles/day: '+number(eff.rate)+' · effective edge: '+number(eff.edge*100,6)+'%';
+ $('modeBadge').textContent=cfg.mode==='COMPOUNDING'?'COMPOUNDING MODE':'FIXED NOTIONAL MODE · AUXILIARY';
+ $('selectedLabel').textContent=number(cfg.rate)+' cycles/day';
+ $('fixedNote').textContent=cfg.mode==='COMPOUNDING'?'Lucro e perdas pertencem à mesma banca composta.':'FIXED_NOTIONAL_100: exposição de 100 USDT por ciclo; PnL aditivo antes de perdas mensais. A equity não representa viabilidade de financiamento. Simulação para na ruína.';
+ series=buildSeries();$('legend').innerHTML=series.map((s,i)=>'<button data-series="'+i+'" aria-pressed="'+!hidden.has(i)+'"><i style="background:'+s.color+'"></i>'+s.label+'</button>').join('');
+ $('trajectory').innerHTML=[0,7,14,30,60,90,180,365,730].filter(d=>d<=cfg.days).concat([cfg.days]).filter((d,i,a)=>a.indexOf(d)===i).sort((a,b)=>a-b).map(d=>{const p=BankMath.point(cfg,d);return td([d+' · '+date(d),number(p.cycles),number(p.bank),number(p.profit),number(p.returnPercent)+'%',number(p.doublings),number(p.additivePnl)]);}).join('');
+ $('reference').innerHTML=[7,30,60,90,180,365].map(d=>{const p=BankMath.point(r,d);return td([d,number(p.cycles),number(p.bank),number(p.returnPercent)+'%']);}).join('');
+ $('milestones').innerHTML=[110,125,150,200,500,1000].map(v=>{const t=BankMath.target(cfg,v);return td([number(cfg.initial)+' → '+v,t?number(t.cycles,0):'Não alcança em 730d',t?number(t.days):'—']);}).join('');
+ $('doubling').innerHTML=series.map(s=>{const t=BankMath.target(cfg,cfg.initial*2,s.rate);return td([s.label,number(BankMath.effective(cfg,s.rate).rate),t?number(t.days)+' dias':'Não alcança em 730d']);}).join('');
+ $('cursor').max=cfg.days;selectedDay=Math.min(selectedDay,cfg.days);$('cursor').value=selectedDay;
+ if(real&&real[0].bank!==cfg.initial){real=null;$('realStatus').textContent='Sobreposição removida: a banca inicial foi alterada.';}
+ drawAll();readout();
+}
+function visible(){return series.filter((s,i)=>!hidden.has(i));}
+function drawAll(){$('timeTip').hidden=true;$('cycleTip').hidden=true;draw('timeChart','day');draw('cycleChart','cycles');}
+function draw(id,xkey){
+ const canvas=$(id),rect=canvas.getBoundingClientRect(),w=rect.width,h=rect.height,ratio=window.devicePixelRatio||1;canvas.width=w*ratio;canvas.height=h*ratio;const ctx=canvas.getContext('2d');ctx.scale(ratio,ratio);
+ const bounds={l:72,r:w-16,t:12,b:h-40},lines=visible();let all=lines.flatMap(s=>s.points);const overlay=real?real.filter(p=>p.day<=cfg.days):[];all=all.concat(overlay);if(!all.length)all=[{day:0,cycles:0,bank:cfg.initial}];
+ const finite=all.filter(p=>Number.isFinite(p.bank)),maxBank=Math.max(cfg.initial,...finite.map(p=>p.bank)),hasZero=finite.some(p=>p.bank<=0),requested=$('scale').value;let log=(requested==='log'||(requested==='auto'&&maxBank>cfg.initial*10))&&!hasZero;
+ const transform=v=>log?Math.log10(Math.max(v,Number.MIN_VALUE)):v;
+ let lo=log?Math.min(Math.log10(cfg.initial),...finite.map(p=>transform(p.bank))):Math.min(0,...finite.map(p=>p.bank)),hi=transform(maxBank);if(hi===lo)hi=lo+1;const pad=(hi-lo)*.06;hi+=pad;if(log)lo-=pad;
+ const xmax=xkey==='day'?cfg.days:Math.max(1,...all.map(p=>p.cycles)),xp=x=>bounds.l+x/xmax*(bounds.r-bounds.l),yp=v=>bounds.b-(transform(v)-lo)/(hi-lo)*(bounds.b-bounds.t);
+ ctx.clearRect(0,0,w,h);ctx.font='11px system-ui';ctx.lineWidth=1;for(let i=0;i<=5;i++){const y=bounds.b-i/5*(bounds.b-bounds.t),val=lo+i/5*(hi-lo);ctx.strokeStyle='#273448';ctx.beginPath();ctx.moveTo(bounds.l,y);ctx.lineTo(bounds.r,y);ctx.stroke();ctx.fillStyle='#a2b1c8';ctx.textAlign='right';ctx.fillText(number(log?10**val:val,1),bounds.l-9,y+4);const x=bounds.l+i/5*(bounds.r-bounds.l);ctx.textAlign='center';const factor=xkey==='cycles'?1:$('unit').value==='weeks'?7:$('unit').value==='months'?30:1;ctx.fillText(number(i/5*xmax/factor,1),x,bounds.b+21);}
+ ctx.save();ctx.beginPath();ctx.rect(bounds.l,bounds.t,bounds.r-bounds.l,bounds.b-bounds.t);ctx.clip();
+ for(const s of lines){ctx.strokeStyle=s.color;ctx.lineWidth=s===series[5]?2.8:1.7;ctx.setLineDash(s===series[5]?[5,3]:[]);ctx.beginPath();let started=false;for(const p of s.points){if(!Number.isFinite(p.bank)){started=false;continue;}const x=xp(p[xkey]),y=yp(p.bank);if(started)ctx.lineTo(x,y);else ctx.moveTo(x,y);started=true;}ctx.stroke();}
+ if(overlay.length){ctx.setLineDash([8,4]);ctx.strokeStyle='#fff';ctx.lineWidth=2.5;ctx.beginPath();overlay.forEach((p,i)=>i?ctx.lineTo(xp(p[xkey]),yp(p.bank)):ctx.moveTo(xp(p[xkey]),yp(p.bank)));ctx.stroke();}ctx.restore();ctx.setLineDash([]);ctx.fillStyle='#a2b1c8';ctx.textAlign='left';ctx.fillText('USDT'+(log?' · log':' · linear'),bounds.l,11);
+ charts[id]={bounds,xmax,xp,yp,xkey};
+ if(id==='timeChart')$('scaleNote').textContent=(log?'LOG Y':'LINEAR Y')+(hasZero?' · Escala linear necessária: a série alcança zero.':' · Automática usa log quando a banca supera 10× a inicial.')+(all.some(p=>!Number.isFinite(p.bank))?' OVERFLOW: valores fora do limite numérico estão omitidos do desenho e identificados nas tabelas.':'')+(real?' · Branco tracejado = LIVE REAL importado.':'');
+}
+function readout(){const p=BankMath.point(cfg,selectedDay);$('readout').textContent='Dia '+number(selectedDay,1)+' · '+number(p.cycles)+' ciclos · '+number(p.bank)+' USDT';}
+function inspect(id,event){const ch=charts[id],rect=$(id).getBoundingClientRect(),x=Math.max(ch.bounds.l,Math.min(ch.bounds.r,event.clientX-rect.left)),value=(x-ch.bounds.l)/(ch.bounds.r-ch.bounds.l)*ch.xmax;let candidates=visible().map(s=>{const rate=BankMath.effective(cfg,s.rate).rate,day=ch.xkey==='day'?value:rate?value/rate:0;return day<=cfg.days?{s,p:BankMath.point(cfg,day,s.rate)}:null;}).filter(Boolean);if(!candidates.length)return;const y=event.clientY-rect.top;candidates.sort((a,b)=>Math.abs(ch.yp(a.p.bank)-y)-Math.abs(ch.yp(b.p.bank)-y));const {s,p}=candidates[0],tip=$(id==='timeChart'?'timeTip':'cycleTip');tip.innerHTML='<strong>'+s.label+'</strong><br>DAY '+number(p.day)+' · '+date(p.day)+' UTC<br>CYCLES '+number(p.cycles)+'<br>BANK '+number(p.bank)+' USDT<br>RETURN '+number(p.returnPercent)+'%<br>PROFIT '+number(p.profit)+' USDT<br>DOUBLINGS '+number(p.doublings);tip.hidden=false;tip.style.left=Math.max(0,Math.min(x+12,rect.width-265))+'px';tip.style.top=Math.max(5,Math.min(y,rect.height-185))+'px';}
+function exportCsv(){const cols=['scenario','mode','initial_capital','net_edge_percent','release_loss_month_percent','effective_cycles_day','day','date_utc','cycles','bank_usdt','profit_usdt','return_percent','doublings','additive_pnl','release_losses','ruined'];const rows=[cols.join(',')];for(const s of series)for(const p of s.points)rows.push([s.rate,cfg.mode,cfg.initial,BankMath.effective(cfg).edge*100,cfg.release,BankMath.effective(cfg,s.rate).rate,p.day,date(p.day),p.cycles,p.bank,p.profit,p.returnPercent,p.doublings??'',p.additivePnl??'',p.releaseLoss,p.ruined].join(','));const blob=new Blob([rows.join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='usdcusdt-mathematical-simulation.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+for(const edge of [.00025,.0005,.001,.0015,.002]){const b=document.createElement('button');b.textContent=edge+'%';b.addEventListener('click',()=>{$('edge').value=edge;update();});$('edgePresets').append(b);}
+for(const days of [7,30,60,90,180,365,730]){const b=document.createElement('button');b.textContent=days;b.addEventListener('click',()=>{$('days').value=days;update();});$('dayPresets').append(b);}
+for(const k of Object.keys(defaults))$(k).addEventListener('input',update);
+$('reset').addEventListener('click',()=>{for(const [k,v]of Object.entries(defaults)){if(typeof v==='boolean')$(k).checked=v;else $(k).value=v;}$('unit').value='days';$('scale').value='auto';selectedDay=30;hidden.clear();update();});
+$('legend').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const i=Number(b.dataset.series);hidden.has(i)?hidden.delete(i):hidden.add(i);b.setAttribute('aria-pressed',!hidden.has(i));drawAll();});
+for(const id of ['timeChart','cycleChart']){$(id).addEventListener('pointermove',e=>inspect(id,e));$(id).addEventListener('pointerleave',()=>$(id==='timeChart'?'timeTip':'cycleTip').hidden=true);$(id).addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();selectedDay=Math.max(0,Math.min(cfg.days,selectedDay+(e.key==='ArrowRight'?1:-1)));$('cursor').value=selectedDay;readout();});}
+$('cursor').addEventListener('input',()=>{selectedDay=Number($('cursor').value);readout();});for(const id of ['unit','scale'])$(id).addEventListener('change',drawAll);$('export').addEventListener('click',exportCsv);
+async function importReal(text){try{real=BankMath.validateReal(JSON.parse(text),cfg.initial);$('realStatus').textContent='LIVE REAL · '+real.length+' pontos importados. Origem declarada, não verificada.';drawAll();}catch(e){real=null;$('realStatus').textContent='Arquivo rejeitado: '+e.message;drawAll();}}
+$('realFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;if(file.size>2e6){$('realStatus').textContent='Arquivo rejeitado: limite de 2 MB.';return;}await importReal(await file.text());});$('clearReal').addEventListener('click',()=>{real=null;$('realFile').value='';$('realStatus').textContent='Nenhum dado real carregado.';drawAll();});
+if(location.protocol==='http:'||location.protocol==='https:')fetch('real_live_performance.json',{credentials:'omit'}).then(r=>r.ok?r.text():null).then(t=>{if(t)importReal(t);}).catch(()=>{});
+new ResizeObserver(drawAll).observe($('timeChart').parentElement);update();
+</script></body></html>

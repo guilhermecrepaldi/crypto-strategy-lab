@@ -6,6 +6,16 @@ exato, vende, compõe o capital e repete. O corte anterior de rotação com apre
 permanece preservado como histórico do projeto, mas não participa desta campanha. Não existe
 código para autenticar em exchange, usar Testnet ou enviar ordens.
 
+## Simulador matemático da banca
+
+Abra [bank-growth-simulator.html](reports/usdcusdt/bank-growth-simulator.html) diretamente
+no navegador, inclusive offline. O HTML é standalone e compara tempo, ciclos e banca a partir
+de 100 USDT, com compounding, diagnóstico fixed-notional, degradação configurável e exportação
+CSV. A referência de 1.389,94 ciclos/dia não constitui backtest nem previsão de retorno M007.
+Alterar os controles não modifica a campanha. Uma banca diferente de 100 é sinalizada como
+exploração não canônica. Teste o núcleo matemático embarcado com
+`node --test tests/bank-growth-simulator.test.cjs`.
+
 ## Garantias do corte vertical
 
 - Toda consulta de mercado passa por `TemporalMarketData` e aplica
