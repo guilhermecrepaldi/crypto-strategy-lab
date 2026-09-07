@@ -109,6 +109,7 @@ def test_release_closure_preserves_zero_buy_fee_at_large_compounded_notional(mon
 
     assert instance(state, event)
     assert state.release_closures[0].buy_fee_quote == D(0)
+    assert instance.releases[0]["reserve_after"] == str(instance.reserve)
 
 
 @pytest.mark.parametrize("price", ["1", "1.0001"])

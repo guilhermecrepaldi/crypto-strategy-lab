@@ -177,6 +177,7 @@ class RecoveryReserveRuntime:
             net = proceeds - fee
             target = state.cash + state.inventory_cost
             deficit = state.inventory_cost - net
+            reserve_after_release = self.reserve - deficit
         if deficit <= 0:
             return self._keep("NONPOSITIVE_DEFICIT")
         with localcontext() as context:
@@ -186,7 +187,7 @@ class RecoveryReserveRuntime:
             return self._keep("LOSS_CAP")
         if deficit > self.reserve:
             return self._keep("INSUFFICIENT_RESERVE")
-        if self.reserve - deficit < self.config.reserve_floor:
+        if reserve_after_release < self.config.reserve_floor:
             return self._keep("RESERVE_FLOOR")
         tick, distances, multiple = _selection_grid(
             self.parent,
@@ -291,7 +292,7 @@ class RecoveryReserveRuntime:
             "operating_bank_after_sale": str(cash_after_sale),
             "reserve_before": str(self.reserve),
             "reserve_transfer": str(deficit),
-            "reserve_after": str(self.reserve - deficit),
+            "reserve_after": str(reserve_after_release),
             "reserve_floor": str(self.config.reserve_floor),
             "operating_bank_restored": str(target),
             "new_low": str(new_low),
@@ -311,7 +312,7 @@ class RecoveryReserveRuntime:
         with localcontext() as context:
             context.prec = LEDGER_PRECISION
             equity_before_transfer = cash_after_sale + self.reserve
-            self.reserve -= deficit
+            self.reserve = reserve_after_release
             state.cash = cash_after_sale + deficit
             if state.cash != target or state.cash + self.reserve != equity_before_transfer:
                 raise ValueError("RESERVE_ACCOUNTING_RECONCILIATION_FAILED")

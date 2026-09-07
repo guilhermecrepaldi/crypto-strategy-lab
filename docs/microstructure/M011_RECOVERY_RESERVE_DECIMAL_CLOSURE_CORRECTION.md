@@ -26,3 +26,22 @@ The failed scenario is invalid, not a loss. The two earlier completed checkpoint
 attempt are preserved but excluded from scientific comparison because the corrected source must
 produce a new hashed identity and rerun the whole preregistered grid uniformly. No result or
 checkpoint crosses identities.
+
+## Follow-up reserve snapshot correction
+
+The next source-bound attempt at commit `10e5b20` and identity
+`88a08fad8436e7f6519342713457db12ede727bb01809bab3d38ca51e79ab65c` proved that the closure
+fee correction crossed the former failing event. Its independent final audit then failed closed
+at release event `7250076418897391616` (`2026-02-02T13:16:28.207371Z`) because the recorded
+`reserve_after` had separately been derived under Decimal28. The authoritative reserve mutation,
+cash restoration, deficit, and `reserve_before` were all exact.
+
+The audit reconstructed `1104232714470864415585.685494520`; the record contained the rounded
+`1104232714470864415585.685495`. The runtime now computes the post-release reserve once under
+Decimal128 and uses that exact value for the floor gate, serialized evidence, and state mutation.
+The large-notional regression also asserts byte-equivalent decimal values between the record and
+runtime state.
+
+This second attempt is likewise `INVALIDATED_TECHNICAL`. Its two completed checkpoints are
+preserved but excluded, and the corrected source requires a third fresh identity for all 18
+scenarios.

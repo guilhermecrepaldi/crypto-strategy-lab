@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "classification": "INVALIDATED_TECHNICAL",
+  "campaign": "USDCUSDT_EXHAUSTIVE",
+  "model_id": null,
+  "phase": "M011_UNREGISTERED_PHASE_A",
+  "git_commit_sha": "10e5b20e1208f6192599b25711cc1c4127bd6288",
+  "artifact_identity": "88a08fad8436e7f6519342713457db12ede727bb01809bab3d38ca51e79ab65c",
+  "failed_scenario_id": "RRV2_H1_B5_F0",
+  "completed_checkpoints_before_failure": [
+    "RRV2_H1_B2_F0",
+    "RRV2_H1_B2_F2.5"
+  ],
+  "first_mismatch": {
+    "event": 7250076418897391616,
+    "timestamp": "2026-02-02T13:16:28.207371Z",
+    "quantity": "54739000842801254385913.39",
+    "low": "1.00080",
+    "release_price": "1.00070",
+    "reserve_before": "1109706614555144541024.276833520",
+    "reserve_transfer": "5473900084280125438.5913390",
+    "audit_reserve_after": "1104232714470864415585.685494520",
+    "recorded_reserve_after": "1104232714470864415585.685495"
+  },
+  "verified_exact_at_failure": [
+    "buy_fee_quote",
+    "operating_bank_before",
+    "operating_bank_after_sale",
+    "reserve_before",
+    "reserve_transfer",
+    "operating_bank_restored"
+  ],
+  "root_cause": "Serialized reserve_after was independently derived under default Decimal28 while the authoritative reserve mutation used Decimal128.",
+  "scope_decision": "Preserve all checkpoints, exclude the whole attempt from scientific comparison, and rerun all 18 scenarios under a new source-bound identity.",
+  "private_exchange_access": false,
+  "testnet_or_live": false
+}

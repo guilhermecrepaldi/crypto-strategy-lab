@@ -37,3 +37,9 @@ candidate comparison: its two completed checkpoints remain physically preserved 
 attempt evidence, and no checkpoint is reused after the correction. The replacement scan starts
 all 18 scenarios under a new source-bound identity. See the machine-readable correction report
 and `M011_RECOVERY_RESERVE_DECIMAL_CLOSURE_CORRECTION.md`.
+
+The replacement attempt at `10e5b20` / identity `88a08fad8436e7f6519342713457db12ede727bb01809bab3d38ca51e79ab65c`
+also completed two checkpoints before failing the final audit of `RRV2_H1_B5_F0`. This time the
+closure fee was exact, while its independently serialized `reserve_after` was rounded outside
+Decimal128. It is a second `INVALIDATED_TECHNICAL` attempt, excluded wholesale and preserved.
+The next identity must again run every scenario from zero.
