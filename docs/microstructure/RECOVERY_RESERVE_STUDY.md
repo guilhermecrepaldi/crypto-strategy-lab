@@ -43,3 +43,9 @@ also completed two checkpoints before failing the final audit of `RRV2_H1_B5_F0`
 closure fee was exact, while its independently serialized `reserve_after` was rounded outside
 Decimal128. It is a second `INVALIDATED_TECHNICAL` attempt, excluded wholesale and preserved.
 The next identity must again run every scenario from zero.
+
+The third attempt at `8831f6a` / identity `6dd59fd69597bae4f1f9b391e24ee8f56812487ca1bd3d69bbae3069a55f84c6`
+reconciled all 99 release transfers in `RRV2_H1_B5_F0`, then failed its final ledger gate because
+the derived buy fee of the still-open final position was calculated under Decimal28. The
+checkpoint cash and reserve were exact; the result field was not. This attempt is also preserved,
+excluded wholesale as `INVALIDATED_TECHNICAL`, and never resumed after the source correction.

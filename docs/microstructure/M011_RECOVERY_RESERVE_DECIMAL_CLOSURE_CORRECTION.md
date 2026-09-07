@@ -45,3 +45,18 @@ runtime state.
 This second attempt is likewise `INVALIDATED_TECHNICAL`. Its two completed checkpoints are
 preserved but excluded, and the corrected source requires a third fresh identity for all 18
 scenarios.
+
+## Follow-up open-position result correction
+
+The third attempt at commit `8831f6a` and identity
+`6dd59fd69597bae4f1f9b391e24ee8f56812487ca1bd3d69bbae3069a55f84c6` crossed and exactly
+reconciled all 99 release transfers in `RRV2_H1_B5_F0`. Its final audit then found that `_result`
+derived the buy fee of the still-open position outside the configured ledger context. With
+quantity `416179260311448223601828427.25` and LOW `0.99983`, the zero fee was serialized as
+`0.0173675` under Decimal28 rather than `0E-7` under Decimal128.
+
+The checkpoint reconstruction itself exactly matched final cash `0.003306024` and reserve
+`7554208085363787848576692.382940276`; only the derived result field was wrong. `_result` now
+uses its existing `ledger_precision` contract for `open_buy_fee_quote`, and a regression covers
+the physical open position. This third attempt is `INVALIDATED_TECHNICAL`, its two completed
+checkpoints remain preserved and excluded, and the full grid must restart under a fourth identity.

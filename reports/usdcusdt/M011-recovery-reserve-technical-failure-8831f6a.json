@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "classification": "INVALIDATED_TECHNICAL",
+  "campaign": "USDCUSDT_EXHAUSTIVE",
+  "model_id": null,
+  "phase": "M011_UNREGISTERED_PHASE_A",
+  "git_commit_sha": "8831f6ae720444c39b9ccbcc01583d3203ba3a36",
+  "artifact_identity": "6dd59fd69597bae4f1f9b391e24ee8f56812487ca1bd3d69bbae3069a55f84c6",
+  "failed_scenario_id": "RRV2_H1_B5_F0",
+  "completed_checkpoints_before_failure": [
+    "RRV2_H1_B2_F0",
+    "RRV2_H1_B2_F2.5"
+  ],
+  "final_state": {
+    "cash": "0.003306024",
+    "reserve": "7554208085363787848576692.382940276",
+    "inventory": "416179260311448223601828427.25",
+    "inventory_cost": "416108509837195277403816116.4173675",
+    "open_low": "0.99983",
+    "audit_open_buy_fee": "0E-7",
+    "recorded_result_open_buy_fee": "0.0173675"
+  },
+  "verified_exact_before_final_gate": [
+    "all_99_release_deficits",
+    "all_99_operating_bank_restorations",
+    "all_99_reserve_before_values",
+    "all_99_reserve_after_values",
+    "final_checkpoint_cash",
+    "final_checkpoint_reserve"
+  ],
+  "root_cause": "Serial replay result assembly derived open_buy_fee_quote outside the requested Decimal128 ledger context.",
+  "scope_decision": "Preserve all checkpoints, exclude the whole attempt from scientific comparison, and rerun all 18 scenarios under a new source-bound identity.",
+  "private_exchange_access": false,
+  "testnet_or_live": false
+}

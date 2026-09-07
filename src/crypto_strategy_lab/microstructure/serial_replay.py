@@ -1260,11 +1260,12 @@ def _result(
     )
     open_at = _event_to_datetime(state.entry_event) if state.entry_event is not None else None
     open_price = active_low if state.entry_event is not None else None
-    open_buy_fee = (
-        state.inventory_cost - state.inventory * open_price
-        if state.entry_event is not None and open_price is not None
-        else None
-    )
+    with _ledger_context(ledger_precision):
+        open_buy_fee = (
+            state.inventory_cost - state.inventory * open_price
+            if state.entry_event is not None and open_price is not None
+            else None
+        )
     changes = tuple(
         SelectionChange(
             event=event,

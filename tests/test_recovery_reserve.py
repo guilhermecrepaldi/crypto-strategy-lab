@@ -12,6 +12,7 @@ from crypto_strategy_lab.microstructure.serial_replay import (
     SerialScenarioConfig,
     SerialStrategy,
     SerialTape,
+    _result,
     _State,
 )
 
@@ -110,6 +111,40 @@ def test_release_closure_preserves_zero_buy_fee_at_large_compounded_notional(mon
     assert instance(state, event)
     assert state.release_closures[0].buy_fee_quote == D(0)
     assert instance.releases[0]["reserve_after"] == str(instance.reserve)
+
+
+def test_result_preserves_zero_open_buy_fee_at_large_compounded_notional():
+    tape = SerialTape.from_events(
+        [(START, D("0.99983")), (START + timedelta(seconds=1), D("0.99984"))],
+        tick_size=D("0.00001"),
+    )
+    parent = SerialModelConfig(
+        model_id="M007", parent_model_id=None, strategy=SerialStrategy.STATIC, lookback_minutes=1440
+    )
+    scenario = SerialScenarioConfig(tick_size=D("0.00001"), quantity_step=D("0.01"))
+    quantity = D("416179260311448223601828427.25")
+    inventory_cost = D("416108509837195277403816116.4173675")
+    state = _State(
+        cash=D("0.003306024"),
+        candidate=(99983, 1),
+        candidate_tick_size=D("0.00001"),
+        entry_event=int(tape.events[0]),
+        inventory=quantity,
+        inventory_cost=inventory_cost,
+    )
+
+    result = _result(
+        state,
+        tape,
+        parent,
+        scenario,
+        START,
+        START + timedelta(seconds=2),
+        int(tape.events[-1]) + 1,
+        ledger_precision=128,
+    )
+
+    assert result.open_buy_fee_quote == D(0)
 
 
 @pytest.mark.parametrize("price", ["1", "1.0001"])
