@@ -347,7 +347,7 @@ def _run_one(
         ModelStatus.SUPERSEDED,
     }:
         return {"model_id": model.model_id, "status": status.value, "action": "SKIPPED"}, None
-    if status == ModelStatus.INVALIDATED_TECHNICAL:
+    if status == ModelStatus.INVALIDATED_TECHNICAL and model.capital_release_protocol is None:
         return {
             "model_id": model.model_id,
             "status": status.value,
@@ -373,8 +373,10 @@ def _run_one(
             label=scenario.scenario_id,
         ),
     )
-    run_event = registry.append_run(
-        model.model_id,
+    run_event = _append_or_retry_run(
+        registry,
+        model,
+        status,
         RunSpec(
             scenario_hash=scenario_event["payload"]["SCENARIO_HASH"],
             dataset_hash=manifest.dataset_hash,
@@ -580,6 +582,29 @@ def _record_evaluation(
                 "execution_evidence": "INCONCLUSIVE_PRICE_PATH_ONLY",
             },
         ),
+    )
+
+
+def _append_or_retry_run(
+    registry: ModelRegistry,
+    model: SerialModelConfig,
+    status: ModelStatus,
+    run: RunSpec,
+) -> dict[str, Any]:
+    if status != ModelStatus.INVALIDATED_TECHNICAL:
+        return registry.append_run(model.model_id, run)
+    prior_runs = [
+        event["payload"]
+        for event in registry.journal()
+        if event["event_type"] == "RUN_REGISTERED"
+        and event["payload"]["model_id"] == model.model_id
+    ]
+    if not prior_runs or model.model_id != "M010":
+        raise ValueError("NO_AUTHORIZED_TECHNICAL_RETRY")
+    return registry.retry_m010_numpy_failure(
+        str(prior_runs[-1]["RUN_HASH"]),
+        run,
+        reason="Normalize mmap NumPy event scalars to native integers; frozen M010 rule unchanged.",
     )
 
 

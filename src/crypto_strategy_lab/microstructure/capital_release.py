@@ -1,8 +1,8 @@
-"""Causal, read-only CAPITAL_RELEASE diagnostic for the frozen M007 run.
+"""Frozen causal CAPITAL_RELEASE estimator and its M010 runtime application.
 
-This module deliberately does not register a model, replay a model, or attach
-post-checkpoint outcomes to the sealed causal snapshots.  It consumes the
-canonical evaluated-run loader and the existing serial selection primitives.
+The M007 diagnostic remains read-only and sealed without future outcomes.
+The OWNER-authorized M010 runtime applies that same estimator to simulated state.
+Registration and retrospective outcomes remain separate responsibilities.
 """
 
 from __future__ import annotations
@@ -1042,8 +1042,8 @@ def _checkpoint_ages() -> tuple[int, ...]:
 
 def next_checkpoint(entry_event: int, previous: int) -> int:
     """Advance frozen BUY-relative wall-clock landmarks, without event ordinal drift."""
-    entry = entry_event // EVENT_ORDER_SCALE
-    age = (previous // EVENT_ORDER_SCALE - entry) // 1_000_000
+    entry = int(entry_event) // EVENT_ORDER_SCALE
+    age = (int(previous) // EVENT_ORDER_SCALE - entry) // 1_000_000
     next_age = next((item for item in INITIAL_AGES if item > age), age + 86400)
     return (entry + next_age * 1_000_000) * EVENT_ORDER_SCALE
 
@@ -1067,6 +1067,8 @@ class CapitalReleaseRuntime:
 
     def __call__(self, state: _State, checkpoint: int) -> bool:
         assert state.entry_event is not None and state.candidate is not None
+        checkpoint = int(checkpoint)
+        state.entry_event = int(state.entry_event)
         candidate = state.candidate
         if candidate not in self.indexes:
             self.indexes[candidate] = _EpisodeIndex.from_timeline(self.timelines[candidate])
@@ -1273,7 +1275,7 @@ def _day_events() -> int:
 
 def _event_elapsed_micros(later: int, earlier: int) -> int:
     """Return elapsed wall-clock microseconds; event ordinals only break timestamp ties."""
-    return later // EVENT_ORDER_SCALE - earlier // EVENT_ORDER_SCALE
+    return int(later) // EVENT_ORDER_SCALE - int(earlier) // EVENT_ORDER_SCALE
 
 
 def _micros_to_seconds(value: int) -> Decimal:

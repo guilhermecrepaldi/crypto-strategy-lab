@@ -2736,6 +2736,106 @@
         "schema_version": "usdcusdt-model-registry-v2",
         "status": "CREATED"
       }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-07T03:17:23.975990+00:00",
+      "payload": {
+        "SCENARIO_HASH": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8",
+        "label": "PRICE_PATH_HISTORICAL_TICK_ZERO_FEE_V2",
+        "model_id": "M010",
+        "scenario": {
+          "execution_class": "PRICE_PATH_NOT_FILL_EVIDENCE",
+          "forced_terminal_liquidation": false,
+          "historical_tick_catalog_hash": "d577304217e8ca555fbc7e39e8738426cf96f992bb304d133feb2684ed836c55",
+          "historical_tick_policy": "CAUSAL_OBSERVED_GRID_THEN_OFFICIAL_COMPLETION_BOUND",
+          "historical_tick_source_url": "https://www.binance.com/en/support/announcement/detail/1f1ee792db2d445eb967aa09f6c05138",
+          "initial_quote": "100",
+          "latency_assumption": "ZERO_COUNTERFACTUAL",
+          "maker_fee_per_leg": "0",
+          "minimum_notional": "0",
+          "quantity_step": "0.01",
+          "queue_assumption": "NOT_MODELED",
+          "tick_size": "0.00001"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-07T03:17:24.044347+00:00",
+      "payload": {
+        "MODEL_HASH": "13e379401566126ad08cd9f0573e3bc310dbf61008a2c022408c6e29fb96286b",
+        "RUN_HASH": "2ac9d5b1537ed42c2e821e6328f81452523563c5cea3e225fc00a6c56714fff2",
+        "SCENARIO_HASH": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M010\\runs\\2ac9d5b1537ed42c2e821e6328f81452523563c5cea3e225fc00a6c56714fff2",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9",
+        "capital_mode": "COMPOUNDING",
+        "code_commit": "02ecab29051eb4e169f4e27ee4bebc51d07ed138",
+        "currency": "USDT",
+        "dataset_hash": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+        "initial_capital": "100",
+        "interval": {
+          "early_stop": "TECHNICAL_INVALIDITY_ONLY",
+          "end_exclusive": "2026-09-05T23:59:59.783644+00:00",
+          "full_replay": true,
+          "start": "2026-01-01T00:00:00+00:00"
+        },
+        "model_id": "M010",
+        "run": {
+          "capital_mode": "COMPOUNDING",
+          "capital_release_authorization": "OWNER_EXPLORATORY_OVERRIDE",
+          "capital_release_support_tape_hash": "4a5af5dfaf18a4249f9b98c0a4c15d6b2185df68b5148325f23e09878c3ef24f",
+          "currency": "USDT",
+          "execution_class": "PRICE_PATH_NOT_FILL_EVIDENCE",
+          "fixed_notional_auxiliary": {
+            "currency": "USDT",
+            "notional": "100",
+            "status": "AUXILIARY_ONLY"
+          },
+          "initial_capital": "100",
+          "live_accessed": false,
+          "locked_test_accessed": false,
+          "manifest": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+          "tape_cache": {
+            "cache_key": "22307d010fe179b2b834931f839376014423bde9a7751b4f453463de16bdcf18",
+            "schema_version": "usdcusdt-market-tape-v2",
+            "tape_hash": "505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c"
+          },
+          "testnet_accessed": false,
+          "validation_accessed": false
+        },
+        "technical_revision": "full-replay-historical-tick-temporal-regimes-v2"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-07T03:17:24.100335+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M010",
+        "reason": "canonical full DEVELOPMENT replay started",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-07T03:29:25.724329+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M010",
+        "reason": "TypeError: conversion from numpy.int64 to Decimal is not supported",
+        "to": "INVALIDATED_TECHNICAL"
+      }
     }
   ],
   "models": [
@@ -3395,7 +3495,7 @@
         "monthly": null,
         "run_manifest": null
       },
-      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
+      "capital_evidence": "RUN_MANIFEST",
       "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-07T03:13:06.288401Z",
       "currency": "USDT",
@@ -3455,7 +3555,7 @@
       "model_id": "M010",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "INVALIDATED_TECHNICAL"
     }
   ],
   "pair": "USDCUSDT",

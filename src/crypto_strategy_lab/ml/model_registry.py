@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import re
 from collections.abc import Mapping, Sequence
@@ -545,6 +546,151 @@ class ModelRegistry:
         self._write_run_manifest(model_id, calculated, payload)
         self._project()
         return event
+
+    def retry_m010_numpy_failure(
+        self,
+        failed_run_hash: str,
+        replacement_run: RunSpec,
+        reason: str,
+        *,
+        occurred_at: datetime | None = None,
+    ) -> dict[str, Any]:
+        """Authorize the single, evidence-bound retry of the failed M010 run.
+
+        This is deliberately narrower than :meth:`transition`: a technical retry
+        is valid only for the recorded numpy/Decimal failure and reopens no other
+        model or scientific state.
+        """
+        if not reason or not reason.strip():
+            raise ValueError("retry reason is required")
+        if not isinstance(replacement_run, RunSpec):
+            raise TypeError("replacement_run must be a RunSpec")
+        model = self.get("M010")
+        if model.model.get("capital_release_protocol") != "OWNER_EXPLORATORY_OVERRIDE_FROZEN_V1":
+            raise ValueError("M010 retry requires the frozen capital-release protocol")
+        if model.lineage.model_dump(mode="json").get("authorization_class") != (
+            "OWNER_EXPLORATORY_OVERRIDE"
+        ):
+            raise ValueError("M010 retry requires OWNER_EXPLORATORY_OVERRIDE lineage authorization")
+        if self.current_status("M010") != ModelStatus.INVALIDATED_TECHNICAL:
+            raise InvalidStatusTransition(
+                "M010 retry requires current INVALIDATED_TECHNICAL status"
+            )
+
+        m010_runs = [
+            event
+            for event in self._events("RUN_REGISTERED")
+            if event["payload"].get("model_id") == "M010"
+        ]
+        if not m010_runs or m010_runs[-1]["payload"].get("RUN_HASH") != failed_run_hash:
+            raise ValueError("failed_run_hash must match the latest M010 run")
+        old_payload = m010_runs[-1]["payload"]
+        if old_payload.get("MODEL_HASH") != model.model_hash:
+            raise ValueError("latest M010 run model hash does not match M010")
+        if replacement_run.code_commit == old_payload.get("code_commit"):
+            raise ValueError("M010 retry requires a different code_commit")
+        if replacement_run.scenario_hash != old_payload.get("SCENARIO_HASH"):
+            raise ValueError("M010 retry cannot change scenario_hash")
+        for field, old_key in (
+            ("dataset_hash", "dataset_hash"),
+            ("campaign_snapshot_id", "campaign_snapshot_id"),
+            ("interval", "interval"),
+            ("backend", "backend"),
+            ("initial_capital", "initial_capital"),
+            ("currency", "currency"),
+            ("capital_mode", "capital_mode"),
+            ("run", "run"),
+        ):
+            old_value = old_payload.get(old_key)
+            new_value = getattr(replacement_run, field)
+            if field == "backend":
+                old_value = BackendSpec.model_validate(old_value).model_dump(mode="json")
+                new_value = new_value.model_dump(mode="json")
+            elif field == "initial_capital":
+                old_value = Decimal(str(old_value))
+            if old_value != new_value:
+                raise ValueError(f"M010 retry cannot change {field}")
+
+        replacement_hash = compute_run_hash(
+            model_hash=model.model_hash,
+            scenario_hash=replacement_run.scenario_hash,
+            dataset_hash=replacement_run.dataset_hash,
+            campaign_snapshot_id=replacement_run.campaign_snapshot_id,
+            interval=replacement_run.interval,
+            code_commit=replacement_run.code_commit,
+            technical_revision=replacement_run.technical_revision,
+            backend=replacement_run.backend,
+        )
+        _reject_divergent(replacement_run.run_hash, replacement_hash, "RUN_HASH")
+
+        failure_path = run_artifact_dir("M010", failed_run_hash, self.artifact_root) / (
+            "technical-failure.json"
+        )
+        if not failure_path.is_file():
+            raise ValueError("M010 technical-failure.json is missing")
+        try:
+            failure = json.loads(failure_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise ValueError("M010 technical-failure.json is unreadable") from error
+        if (
+            failure.get("classification") != "INVALIDATED_TECHNICAL"
+            or failure.get("error_type") != "TypeError"
+            or failure.get("error") != "conversion from numpy.int64 to Decimal is not supported"
+            or failure.get("run_hash") != failed_run_hash
+        ):
+            raise ValueError("M010 technical-failure evidence does not match numpy failure")
+        evaluations = [
+            event
+            for event in self._events("EVALUATION_RECORDED")
+            if event["payload"].get("model_id") == "M010"
+        ]
+        evaluation_root = (
+            run_artifact_dir("M010", failed_run_hash, self.artifact_root) / "evaluations"
+        )
+        if (
+            evaluations
+            or (evaluation_root.exists() and any(evaluation_root.iterdir()))
+            or any(failure_path.parent.rglob("replay.json"))
+        ):
+            raise ValueError("M010 retry is forbidden after evaluation artifacts")
+        status_events = [
+            event
+            for event in self._events("STATUS_CHANGED")
+            if event["payload"].get("model_id") == "M010"
+        ]
+        if not status_events or status_events[-1]["payload"] != {
+            **status_events[-1]["payload"],
+            "from": ModelStatus.RUNNING.value,
+            "to": ModelStatus.INVALIDATED_TECHNICAL.value,
+        }:
+            raise ValueError("latest M010 status must be RUNNING -> INVALIDATED_TECHNICAL")
+
+        old_failure_sha = hashlib.sha256(failure_path.read_bytes()).hexdigest()
+        retry_payload = {
+            "model_id": "M010",
+            "failed_run_hash": failed_run_hash,
+            "failure_file_sha256": old_failure_sha,
+            "old_code_commit": old_payload.get("code_commit"),
+            "new_code_commit": replacement_run.code_commit,
+            "replacement_run_hash": replacement_hash,
+            "reason": reason,
+            "authorization": "OWNER_EXPLORATORY_OVERRIDE",
+        }
+        self._append_event("TECHNICAL_RETRY_AUTHORIZED", retry_payload, occurred_at)
+        run_event = self.append_run("M010", replacement_run, occurred_at=occurred_at)
+        self._append_event(
+            "STATUS_CHANGED",
+            {
+                "model_id": "M010",
+                "from": ModelStatus.INVALIDATED_TECHNICAL.value,
+                "to": ModelStatus.RUNNING.value,
+                "reason": reason,
+                "retry_run_hash": run_event["payload"]["RUN_HASH"],
+            },
+            occurred_at,
+        )
+        self._project()
+        return run_event
 
     def append_evaluation(
         self,

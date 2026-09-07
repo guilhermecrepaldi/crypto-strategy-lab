@@ -1,0 +1,7 @@
+{
+  "classification": "INVALIDATED_TECHNICAL",
+  "error": "conversion from numpy.int64 to Decimal is not supported",
+  "error_type": "TypeError",
+  "recorded_at": "2026-09-07T03:29:25.722278+00:00",
+  "run_hash": "2ac9d5b1537ed42c2e821e6328f81452523563c5cea3e225fc00a6c56714fff2"
+}

@@ -77,3 +77,13 @@ hash differs from M007 and whose first trade misses the warm-up boundary. It was
 before RUN registration or simulated execution. The corrected command above uses the frozen
 M007 dataset hash `8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91`.
 No strategy parameter or campaign cutoff changed.
+
+## Technical attempt preserved
+
+Run `2ac9d5b1537ed42c2e821e6328f81452523563c5cea3e225fc00a6c56714fff2`, SHA `02ecab2`,
+failed at the first causal checkpoint with `TypeError: conversion from numpy.int64 to Decimal
+is not supported`. No economic result was produced. Its technical-failure artifact and log are
+retained, classified `INVALIDATED_TECHNICAL`. Native event-int normalization fixes this boundary;
+fixtures now require mmap-typed and ordinary arrays to produce identical snapshots and hashes.
+An explicit audited retry is limited to this failure, M010's unchanged identity and a new code
+SHA. Generic terminal invalidation protections remain intact. No threshold is changed.

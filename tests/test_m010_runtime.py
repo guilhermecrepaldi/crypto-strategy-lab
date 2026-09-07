@@ -1,8 +1,10 @@
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pytest
 
 from crypto_strategy_lab.microstructure import capital_release as cr
@@ -190,6 +192,21 @@ def test_physical_frozen_keep_replay_deterministic_and_parent_equivalent() -> No
     assert first.cycles == parent.cycles
     assert first.selection_changes == parent.selection_changes
     assert first.final_cash == parent.final_cash
+    # Match the physical mmap backend, not only Python array('q') fixtures.
+    tape = replace(
+        tape,
+        occurrences={
+            key: np.asarray(value, dtype=np.int64) for key, value in tape.occurrences.items()
+        },
+        events=np.asarray(tape.events, dtype=np.int64),
+        price_ticks=np.asarray(tape.price_ticks, dtype=np.int32),
+    )
+    mmap_typed = replay_serial_model(tape, config(), scenario(), release_support_tape=tape, **args)
+    assert mmap_typed == first
+    for snapshot in mmap_typed.release_evaluations:
+        assert all(
+            type(snapshot[key]) is int for key in ("entry_event", "checkpoint_event", "age_seconds")
+        )
     # Changing a future HIGH cannot change any checkpoint <=300 seconds.
     altered = SerialTape.from_events(
         [

@@ -1030,7 +1030,7 @@ def _advance(
             low_index = bisect_left(timeline.low_events, cursor)
             if low_index >= len(timeline.low_events) or timeline.low_events[low_index] >= end:
                 return
-            entry = timeline.low_events[low_index]
+            entry = int(timeline.low_events[low_index])
             low = _price(state.candidate[0], tape_quantum)
             fee_rate = scenario.maker_fee_per_leg
             affordable = state.cash / (low * (Decimal("1") + fee_rate))
@@ -1068,7 +1068,7 @@ def _advance(
                 continue
         if high_index >= len(timeline.high_events) or timeline.high_events[high_index] >= end:
             return
-        exit_event = timeline.high_events[high_index]
+        exit_event = int(timeline.high_events[high_index])
         low_tick, distance = state.candidate
         low = _price(low_tick, tape_quantum)
         high = _price(low_tick + distance, tape_quantum)
