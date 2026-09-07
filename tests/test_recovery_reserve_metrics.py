@@ -1,0 +1,109 @@
+from datetime import UTC, datetime
+from decimal import Decimal
+from itertools import product
+
+from crypto_strategy_lab.microstructure.recovery_reserve_metrics import (
+    robust_regions,
+    summarize_replay,
+)
+from crypto_strategy_lab.microstructure.serial_replay import SerialReplayResult
+
+
+def _result() -> SerialReplayResult:
+    return SerialReplayResult.model_construct(
+        initial_quote=Decimal("100"),
+        final_cash=Decimal("102"),
+        final_inventory=Decimal("0"),
+        last_price=Decimal("1"),
+        start=datetime(2026, 1, 1, tzinfo=UTC),
+        end_exclusive=datetime(2026, 1, 3, tzinfo=UTC),
+        completed_cycles=2,
+        zero_cycle_days=0,
+        cycles=(),
+        release_closures=(),
+        open_entry_timestamp=None,
+    )
+
+
+def test_summary_uses_24_hour_ruler_and_segregated_reserve():
+    out = summarize_replay(_result(), Decimal("5"), Decimal("5"), Decimal("1"), [])
+    assert out["total_initial_equity"] == Decimal("105")
+    assert out["total_final_equity"] == Decimal("107")
+    assert out["lock_hours"] == Decimal("0")
+    assert out["operating_uptime"] == Decimal("1")
+    assert out["maximum_drawdown"] is None
+    assert out["total_return"] == Decimal("107") / Decimal("105") - 1
+    assert out["hours_gt24h"] == out["lock_hours"]
+
+
+def _row(sid, skim="1", lock="6", loss="5", **kw):
+    return {
+        "scenario_id": sid,
+        "skim_rate": skim,
+        "lock_hours_threshold": lock,
+        "max_loss_bps": loss,
+        "total_final_equity": "106",
+        "operating_uptime": "0.9",
+        "lock_hours": "90",
+        "completed_cycles": 100,
+        "min_reserve_balance": "2",
+        "reserve_depletion_events": 0,
+        "maximum_drawdown": "0.1",
+        "integrity_pass": True,
+        **kw,
+    }
+
+
+def test_single_win_is_not_robust_and_missing_gate_fails_closed():
+    baseline = {
+        "total_final_equity": "105",
+        "operating_uptime": "0.8",
+        "lock_hours": "100",
+        "completed_cycles": 100,
+        "maximum_drawdown": "0.1",
+    }
+    result = robust_regions([_row("center")], baseline)
+    assert result["qualifying_centers"] == []
+    assert result["actual_checks"]["single_win_not_robust"]
+    bad = robust_regions([_row("bad", maximum_drawdown=None)], baseline)
+    assert bad["qualifying_centers"] == []
+
+
+def test_immediate_neighbors_on_all_axes_are_required():
+    baseline = {
+        "total_final_equity": "105",
+        "operating_uptime": "0.8",
+        "lock_hours": "100",
+        "completed_cycles": 100,
+        "maximum_drawdown": "0.1",
+    }
+    rows = []
+    configs = product(("0", "0.01", "0.05"), ("1", "6", "24"), ("2", "5", "10"))
+    for index, (skim, lock, loss) in enumerate(configs):
+        rows.append(_row(str(index), skim=skim, lock=lock, loss=loss))
+    out = robust_regions(rows, baseline)
+    assert out["qualifying_centers"]
+    assert out["qualifying_centers"][0]["axis_neighbors_pass"] == {
+        "skim_rate": True,
+        "lock_hours_threshold": True,
+        "max_loss_bps": True,
+    }
+
+
+def test_equity_gate_accepts_exact_point_one_cent_and_order_is_stable():
+    baseline = {
+        "total_final_equity": "105",
+        "operating_uptime": "0.8",
+        "lock_hours": "100",
+        "completed_cycles": 100,
+        "maximum_drawdown": "0.1",
+    }
+    configs = product(("0", "0.01", "0.05"), ("1", "6", "24"), ("2", "5", "10"))
+    rows = [
+        _row(str(i), skim=s, lock=h, loss=b, total_final_equity="105.01")
+        for i, (s, h, b) in enumerate(configs)
+    ]
+    first = robust_regions(rows, baseline)
+    second = robust_regions(list(reversed(rows)), baseline)
+    assert first["qualifying_centers"]
+    assert first["regions"] == second["regions"]

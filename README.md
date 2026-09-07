@@ -16,12 +16,12 @@ automaticamente os passos seguintes. Prompt 2 foi autorizado posteriormente, mas
 pendente da escolha temporal reportada; seu arquivo de transporte em elaboração não é runtime.
 Comandos históricos abaixo não autorizam novas campanhas.
 
-Pesquisa autorizada separadamente: **HOLD_RISK_SELECTOR**, diagnóstico de todas as decisões
-históricas M007 com prefixo `timestamp < T`, censura explícita e suporte de risco de 30 dias.
-[Protocolo congelado](docs/microstructure/HOLD_RISK_SELECTOR_PROTOCOL.md). Executar offline:
-`uv run python scripts/diagnose_hold_risk.py`. M011 só será registrado se houver sinal
-interpretável e revisão Astra; M007 continua champion e não muda no operador. Dados completos
-ficam em `artifacts/usdcusdt/hold-risk-diagnostics/`, com hashes e resumo versionável.
+Pesquisa histórica prioritária: **RECOVERY_RESERVE**, 100 USDT operacionais + 5 segregados.
+[Pré-registro](docs/microstructure/RECOVERY_RESERVE_PROTOCOL.md): 27 cenários, comparação com
+M007 + 5 parados e seleção somente mediante região robusta e revisão Astra. Implementação
+em andamento; nenhum resultado ou promoção implícitos. O operador M007 permanece congelado.
+HOLD_RISK_SELECTOR está pausado por mudança de prioridade do OWNER, com protocolo e artifacts
+preservados; seu diagnóstico foi interrompido antes de produzir resultados.
 
 ## Simulador matemático da banca
 

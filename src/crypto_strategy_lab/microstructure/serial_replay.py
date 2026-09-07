@@ -1021,6 +1021,8 @@ def _advance(
     tape_quantum: Decimal,
     observed_tick_evidence_event: int | None,
     release_decision: Callable[[_State, int], bool] | None = None,
+    release_schedule: Callable[[int, int | None], int] | None = None,
+    cycle_settled: Callable[[_State, SerialCycle], None] | None = None,
 ) -> None:
     cursor = start
     lookback = _minutes_to_events(config.lookback_minutes)
@@ -1048,8 +1050,10 @@ def _advance(
             state.entry_event = entry
             if release_decision is not None:
                 state.next_release_event = (
-                    entry // EVENT_ORDER_SCALE + 60 * MICROS_PER_SECOND
-                ) * EVENT_ORDER_SCALE
+                    release_schedule(entry, None)
+                    if release_schedule is not None
+                    else (entry // EVENT_ORDER_SCALE + 60 * MICROS_PER_SECOND) * EVENT_ORDER_SCALE
+                )
             cursor = entry + 1
         high_index = bisect_left(timeline.high_events, cursor)
         if release_decision is not None and state.next_release_event is not None:
@@ -1061,10 +1065,17 @@ def _advance(
                 released = release_decision(state, checkpoint)
                 cursor = checkpoint
                 if not released:
-                    from crypto_strategy_lab.microstructure.capital_release import next_checkpoint
-
                     assert state.entry_event is not None
-                    state.next_release_event = next_checkpoint(state.entry_event, checkpoint)
+                    if release_schedule is not None:
+                        state.next_release_event = release_schedule(state.entry_event, checkpoint)
+                    else:
+                        from crypto_strategy_lab.microstructure.capital_release import (
+                            next_checkpoint,
+                        )
+
+                        state.next_release_event = next_checkpoint(state.entry_event, checkpoint)
+                    if state.next_release_event <= checkpoint:
+                        raise ValueError("RELEASE_SCHEDULE_MUST_ADVANCE")
                 continue
         if high_index >= len(timeline.high_events) or timeline.high_events[high_index] >= end:
             return
@@ -1096,6 +1107,8 @@ def _advance(
         state.inventory = Decimal("0")
         state.inventory_cost = Decimal("0")
         state.flat_since = exit_event
+        if cycle_settled is not None:
+            cycle_settled(state, state.cycles[-1])
         cursor = exit_event + 1
         if recalculate_after_exit:
             tick_size, eligible_distances, grid_multiple = _selection_grid(

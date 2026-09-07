@@ -120,10 +120,12 @@ Informe quais modelos foram realmente usados; não alegue troca de modelo que n�
 - Atualização OWNER: Prompt 2 autorizado somente para observação pública SHADOW. Sua
   implementação está pendente da escolha temporal reportada (timestamp estrito versus ordem
   de eventos do M007); não alterar seletor congelado silenciosamente.
-- Pesquisa histórica HOLD_RISK_SELECTOR está autorizada separadamente: diagnóstico causal de
-  todas as decisões M007, segundo `docs/microstructure/HOLD_RISK_SELECTOR_PROTOCOL.md`.
-  M011 só pode ser registrado após sinal interpretável e revisão Astra; pré-registro e push
-  precedem qualquer replay. M007 permanece champion e operador, sem alteração automática.
+- Atualização OWNER: RECOVERY_RESERVE tem prioridade histórica; HOLD_RISK_SELECTOR fica
+  pausado, com pré-registro e artifacts preservados. M011 ainda livre será registrado somente
+  após região robusta e revisão Astra. Seguir `docs/microstructure/RECOVERY_RESERVE_PROTOCOL.md`:
+  100 USDT operacionais, 5 segregados, cobertura exata integral e skim somente de lucro positivo.
+  A grade limitada de cenários é autorizada exclusivamente para essa hipótese. Comparar equity
+  total contra M007 + 5 parados; nenhuma alteração automática do operador/champion.
 - Esta atualização supera a limitação histórica ao Prompt 1 e a proibição de estudar M011,
   apenas nesse escopo. Preserve artifacts M010, sem incorporá-lo ao novo seletor.
 
