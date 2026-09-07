@@ -547,7 +547,7 @@ class ModelRegistry:
         self._project()
         return event
 
-    def retry_m010_numpy_failure(
+    def retry_m010_technical_failure(
         self,
         failed_run_hash: str,
         replacement_run: RunSpec,
@@ -555,11 +555,11 @@ class ModelRegistry:
         *,
         occurred_at: datetime | None = None,
     ) -> dict[str, Any]:
-        """Authorize the single, evidence-bound retry of the failed M010 run.
+        """Authorize an evidence-bound retry of a diagnosed M010 technical failure.
 
         This is deliberately narrower than :meth:`transition`: a technical retry
-        is valid only for the recorded numpy/Decimal failure and reopens no other
-        model or scientific state.
+        is valid only for the two recorded NumPy representation defects and
+        reopens no other model or scientific state.
         """
         if not reason or not reason.strip():
             raise ValueError("retry reason is required")
@@ -632,13 +632,16 @@ class ModelRegistry:
             failure = json.loads(failure_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as error:
             raise ValueError("M010 technical-failure.json is unreadable") from error
+        allowed_failures = {
+            ("TypeError", "conversion from numpy.int64 to Decimal is not supported"),
+            ("ValueError", "ZERO_RELEASE_BEHAVIORAL_DIVERGENCE: cycles,selection_changes"),
+        }
         if (
             failure.get("classification") != "INVALIDATED_TECHNICAL"
-            or failure.get("error_type") != "TypeError"
-            or failure.get("error") != "conversion from numpy.int64 to Decimal is not supported"
+            or (failure.get("error_type"), failure.get("error")) not in allowed_failures
             or failure.get("run_hash") != failed_run_hash
         ):
-            raise ValueError("M010 technical-failure evidence does not match numpy failure")
+            raise ValueError("M010 technical-failure evidence does not match diagnosed failure")
         evaluations = [
             event
             for event in self._events("EVALUATION_RECORDED")

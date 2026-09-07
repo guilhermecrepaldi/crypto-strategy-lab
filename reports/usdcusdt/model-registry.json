@@ -2836,6 +2836,98 @@
         "reason": "TypeError: conversion from numpy.int64 to Decimal is not supported",
         "to": "INVALIDATED_TECHNICAL"
       }
+    },
+    {
+      "event_type": "TECHNICAL_RETRY_AUTHORIZED",
+      "occurred_at": "2026-09-07T03:37:34.694737+00:00",
+      "payload": {
+        "authorization": "OWNER_EXPLORATORY_OVERRIDE",
+        "failed_run_hash": "2ac9d5b1537ed42c2e821e6328f81452523563c5cea3e225fc00a6c56714fff2",
+        "failure_file_sha256": "dec9a04426d9262000342a1b2f4b477f55094cfa9198cfcc2de17205025ac215",
+        "model_id": "M010",
+        "new_code_commit": "356039f1d03fca8046bf8a6d695d8dc624d1f0c7",
+        "old_code_commit": "02ecab29051eb4e169f4e27ee4bebc51d07ed138",
+        "reason": "Normalize mmap NumPy event scalars to native integers; frozen M010 rule unchanged.",
+        "replacement_run_hash": "800cb608c8273edff7fa01521044c3d500b57bbb5caa51e8f9abedcc74cc2592"
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-07T03:37:34.713869+00:00",
+      "payload": {
+        "MODEL_HASH": "13e379401566126ad08cd9f0573e3bc310dbf61008a2c022408c6e29fb96286b",
+        "RUN_HASH": "800cb608c8273edff7fa01521044c3d500b57bbb5caa51e8f9abedcc74cc2592",
+        "SCENARIO_HASH": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M010\\runs\\800cb608c8273edff7fa01521044c3d500b57bbb5caa51e8f9abedcc74cc2592",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9",
+        "capital_mode": "COMPOUNDING",
+        "code_commit": "356039f1d03fca8046bf8a6d695d8dc624d1f0c7",
+        "currency": "USDT",
+        "dataset_hash": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+        "initial_capital": "100",
+        "interval": {
+          "early_stop": "TECHNICAL_INVALIDITY_ONLY",
+          "end_exclusive": "2026-09-05T23:59:59.783644+00:00",
+          "full_replay": true,
+          "start": "2026-01-01T00:00:00+00:00"
+        },
+        "model_id": "M010",
+        "run": {
+          "capital_mode": "COMPOUNDING",
+          "capital_release_authorization": "OWNER_EXPLORATORY_OVERRIDE",
+          "capital_release_support_tape_hash": "4a5af5dfaf18a4249f9b98c0a4c15d6b2185df68b5148325f23e09878c3ef24f",
+          "currency": "USDT",
+          "execution_class": "PRICE_PATH_NOT_FILL_EVIDENCE",
+          "fixed_notional_auxiliary": {
+            "currency": "USDT",
+            "notional": "100",
+            "status": "AUXILIARY_ONLY"
+          },
+          "initial_capital": "100",
+          "live_accessed": false,
+          "locked_test_accessed": false,
+          "manifest": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+          "tape_cache": {
+            "cache_key": "22307d010fe179b2b834931f839376014423bde9a7751b4f453463de16bdcf18",
+            "schema_version": "usdcusdt-market-tape-v2",
+            "tape_hash": "505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c"
+          },
+          "testnet_accessed": false,
+          "validation_accessed": false
+        },
+        "technical_revision": "full-replay-historical-tick-temporal-regimes-v2"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-07T03:37:34.759301+00:00",
+      "payload": {
+        "from": "INVALIDATED_TECHNICAL",
+        "model_id": "M010",
+        "reason": "Normalize mmap NumPy event scalars to native integers; frozen M010 rule unchanged.",
+        "retry_run_hash": "800cb608c8273edff7fa01521044c3d500b57bbb5caa51e8f9abedcc74cc2592",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-07T03:54:01.923328+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M010",
+        "reason": "ValueError: ZERO_RELEASE_BEHAVIORAL_DIVERGENCE: cycles,selection_changes",
+        "to": "INVALIDATED_TECHNICAL"
+      }
     }
   ],
   "models": [

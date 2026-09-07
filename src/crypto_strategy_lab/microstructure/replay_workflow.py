@@ -444,6 +444,18 @@ def _run_one(
             tick_catalog=tick_catalog,
             release_support_tape=release_support_tape,
         )
+        _persist_completed_replay(
+            result,
+            run_root=run_artifact_dir(model.model_id, run_hash, registry.artifact_root),
+            provenance={
+                "model_id": model.model_id,
+                "run_hash": run_hash,
+                "code_commit": code_commit,
+                "scenario_hash": scenario.scenario_hash,
+                "dataset_hash": manifest.dataset_hash,
+                "campaign_snapshot_id": snapshot_id,
+            },
+        )
         print(
             f"REPLAY_COMPLETE model={model.model_id} cycles={result.completed_cycles}", flush=True
         )
@@ -456,7 +468,18 @@ def _run_one(
         release_report = None
         if model.capital_release_protocol is not None:
             release_report = _capital_release_report(
-                result, tape, analysis, market_profile, analysis_context, registry.artifact_root
+                result,
+                tape,
+                analysis,
+                market_profile,
+                analysis_context,
+                registry.artifact_root,
+                scenario=scenario,
+                parent_config=SerialModelConfig.model_validate(registry.get("M007").model),
+                reconstruction_root=run_artifact_dir(
+                    model.model_id, run_hash, registry.artifact_root
+                ),
+                code_commit=code_commit,
             )
             release_report["code_commit"] = code_commit
             release_report["run_hash"] = run_hash
@@ -514,6 +537,32 @@ def _run_one(
             reason=f"{type(error).__name__}: {error}",
         )
         raise
+
+
+def _persist_completed_replay(
+    result: SerialReplayResult,
+    *,
+    run_root: Path,
+    provenance: dict[str, Any],
+) -> Path:
+    """Persist raw computation output before downstream validation can fail."""
+    raw = result.model_dump(mode="json")
+    raw_bytes = json.dumps(raw, sort_keys=True, separators=(",", ":"), default=str).encode()
+    payload = {
+        "status": "COMPUTATION_COMPLETE_PENDING_VALIDATION",
+        "result_sha256": hashlib.sha256(raw_bytes).hexdigest(),
+        "provenance": dict(provenance),
+        "result": raw,
+    }
+    encoded = (json.dumps(payload, indent=2, sort_keys=True, default=str) + "\n").encode()
+    destination = run_root / "completed-replay.json"
+    if destination.exists():
+        if destination.read_bytes() != encoded:
+            raise ValueError("completed-replay.json already exists with different content")
+        return destination
+    run_root.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(encoded)
+    return destination
 
 
 def _record_evaluation(
@@ -601,10 +650,13 @@ def _append_or_retry_run(
     ]
     if not prior_runs or model.model_id != "M010":
         raise ValueError("NO_AUTHORIZED_TECHNICAL_RETRY")
-    return registry.retry_m010_numpy_failure(
+    return registry.retry_m010_technical_failure(
         str(prior_runs[-1]["RUN_HASH"]),
         run,
-        reason="Normalize mmap NumPy event scalars to native integers; frozen M010 rule unchanged.",
+        reason=(
+            "Correct NumPy representation defects; exact reconstructed M007 comparison and "
+            "legacy event-ID audit; frozen M010 scientific rule unchanged."
+        ),
     )
 
 
@@ -615,10 +667,16 @@ def _capital_release_report(
     market_profile: MarketHourlyProfile,
     context: TemporalAnalysisContext,
     artifact_root: Path,
+    *,
+    scenario: SerialScenarioConfig,
+    parent_config: SerialModelConfig,
+    reconstruction_root: Path,
+    code_commit: str,
 ) -> dict[str, Any]:
     from crypto_strategy_lab.microstructure.capital_release import EVALUATION_HASH, REPLAY_HASH
     from crypto_strategy_lab.microstructure.capital_release_analysis import (
         analyze_capital_release,
+        audit_legacy_m007_event_projection,
         compare_zero_release,
     )
 
@@ -635,10 +693,35 @@ def _capital_release_report(
         result.scenario_hash,
     ):
         raise ValueError("M010_PARENT_COMPARISON_IDENTITY_MISMATCH")
-    equivalence = compare_zero_release(parent, result)
+    print("M007_TECHNICAL_RECONSTRUCTION_START", flush=True)
+    reconstructed_parent = replay_serial_model(
+        tape,
+        parent_config,
+        scenario,
+        start=parent.start,
+        end_exclusive=parent.end_exclusive,
+        tick_catalog=USDCUSDT_TICK_CATALOG,
+    )
+    _persist_completed_replay(
+        reconstructed_parent,
+        run_root=reconstruction_root / "M007-technical-reconstruction",
+        provenance={
+            "classification": "TECHNICAL_RECONSTRUCTION_NOT_NEW_EXPERIMENT",
+            "code_commit": code_commit,
+            "original_m007_artifact": str(parent_path),
+            "original_m007_sha256": hashlib.sha256(parent_path.read_bytes()).hexdigest(),
+            "execution_tape_hash": tape.tape_hash,
+            "purpose": "Recover exact event IDs lost by legacy NumPy/Pydantic serialization",
+        },
+    )
+    legacy_audit = audit_legacy_m007_event_projection(parent, reconstructed_parent)
+    equivalence = compare_zero_release(reconstructed_parent, result)
+    equivalence["legacy_m007_event_id_audit"] = legacy_audit
     print("M010_EQUIVALENCE_CHECK_COMPLETE", flush=True)
-    parent_analysis = analyze_replay_temporally(parent, tape, market_profile, context)
-    parent_metrics = analyze_capital_release(parent, tape, temporal_analysis=parent_analysis)
+    parent_analysis = analyze_replay_temporally(reconstructed_parent, tape, market_profile, context)
+    parent_metrics = analyze_capital_release(
+        reconstructed_parent, tape, temporal_analysis=parent_analysis
+    )
     metrics = analyze_capital_release(result, tape, temporal_analysis=analysis)
     print("M010_POST_MORTEM_COMPLETE", flush=True)
     return {

@@ -38,6 +38,63 @@ def _seconds(start: int, end: int) -> Decimal:
     return D(end // EVENT_ORDER_SCALE - start // EVENT_ORDER_SCALE) / D(1000000)
 
 
+def audit_legacy_m007_event_projection(
+    original: SerialReplayResult, corrected: SerialReplayResult
+) -> dict[str, Any]:
+    """Audit only the demonstrated legacy NumPy-to-Pydantic integer precision loss.
+
+    This is a directed evidence projection, never a trading-time conversion or
+    substitute for exact corrected-M007 versus M010 behavioral comparison.
+    """
+    if original.model_id != "M007" or corrected.model_id != "M007":
+        raise ValueError("LEGACY_EVENT_AUDIT_REQUIRES_M007")
+    if corrected.release_closures or corrected.release_evaluations:
+        raise ValueError("TECHNICAL_PARENT_RECONSTRUCTION_MUST_NOT_APPLY_RELEASE")
+    legacy = original.model_dump(mode="json")
+    exact = corrected.model_dump(mode="json")
+    projected = corrected.model_dump(mode="json")
+    changed = {"cycle_entry_event": 0, "cycle_exit_event": 0, "selection_event": 0}
+    examples: list[dict[str, Any]] = []
+
+    def project(row: dict[str, Any], field: str, group: str, index: int) -> None:
+        value = row[field]
+        old_value = int(float(value))
+        if value != old_value:
+            changed[group] += 1
+            if len(examples) < 20:
+                examples.append(
+                    {
+                        "field": group,
+                        "index": index,
+                        "exact_event": value,
+                        "legacy_event": old_value,
+                    }
+                )
+        row[field] = old_value
+
+    for index, cycle in enumerate(projected["cycles"]):
+        for field in ("entry_event", "exit_event"):
+            project(cycle, field, f"cycle_{field}", index)
+    for index, selection in enumerate(projected["selection_changes"]):
+        project(selection, "event", "selection_event", index)
+    if legacy != projected:
+        differences = sorted(
+            key for key in legacy.keys() | projected.keys() if legacy.get(key) != projected.get(key)
+        )
+        raise ValueError("LEGACY_PARENT_RECONSTRUCTION_DIVERGENCE: " + ",".join(differences))
+    return {
+        "classification": "TECHNICAL_EVENT_ID_SERIALIZATION_CORRECTION",
+        "legacy_behavior_hash": canonical_hash(legacy),
+        "reconstructed_behavior_hash": canonical_hash(exact),
+        "legacy_projection_hash": canonical_hash(projected),
+        "projection": "INT_FLOAT_INT_ONLY_CYCLE_AND_SELECTION_EVENT_IDS",
+        "changed_event_id_counts": changed,
+        "examples": examples,
+        "all_other_fields_exactly_equal": True,
+        "immutable_legacy_artifact_modified": False,
+    }
+
+
 def compare_zero_release(
     parent: SerialReplayResult, challenger: SerialReplayResult
 ) -> dict[str, Any]:

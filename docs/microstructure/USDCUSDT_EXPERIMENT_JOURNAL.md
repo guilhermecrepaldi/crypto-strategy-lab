@@ -886,3 +886,14 @@ same full DEVELOPMENT cutoff/tape/scenario; no changes to support, q90, 5bps los
 equivalence against the immutable parent required. No automatic promotion or tuning.
 See [M010_MODEL_SPEC.md](M010_MODEL_SPEC.md). This addition supersedes only the execution
 pause; historical diagnostic decisions remain immutable evidence.
+
+## M010 technical recovery — exact event IDs, 2026-09-07
+
+Physical attempt `800cb608c8273edff7fa01521044c3d500b57bbb5caa51e8f9abedcc74cc2592`
+completed 344704 cycles but its final gate detected old M007 event-ID serialization loss.
+It remains technically invalidated, not a rejected economic hypothesis. Reproduced NumPy /
+Pydantic conversion rounds large integer event ordinals; native integer fields preserve them.
+See [M010_EVENT_ID_TECHNICAL_CORRECTION.md](M010_EVENT_ID_TECHNICAL_CORRECTION.md).
+The next technical attempt must persist raw results before analysis, reconstruct unchanged
+M007 with exact IDs, audit the directed legacy projection, and retain strict full-behavior
+M007/M010 equality. No scientific threshold, configuration or initial capital is changed.

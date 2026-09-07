@@ -1,3 +1,4 @@
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -77,7 +78,7 @@ def _setup(tmp_path: Path) -> tuple[ModelRegistry, str, RunSpec]:
 
 def test_m010_retry_requires_new_code_and_reopens_only_m010(tmp_path: Path) -> None:
     registry, failed_hash, old = _setup(tmp_path)
-    event = registry.retry_m010_numpy_failure(
+    event = registry.retry_m010_technical_failure(
         failed_hash,
         old.model_copy(update={"code_commit": "new-sha"}),
         "normalize runtime integers",
@@ -92,15 +93,15 @@ def test_m010_retry_requires_new_code_and_reopens_only_m010(tmp_path: Path) -> N
 def test_m010_retry_rejects_same_code_changed_identity_or_evaluation(tmp_path: Path) -> None:
     registry, failed_hash, old = _setup(tmp_path)
     with pytest.raises(ValueError, match="different code"):
-        registry.retry_m010_numpy_failure(failed_hash, old, "retry", occurred_at=AT)
+        registry.retry_m010_technical_failure(failed_hash, old, "retry", occurred_at=AT)
     changed = old.model_copy(update={"code_commit": "new", "dataset_hash": "other"})
     with pytest.raises(ValueError, match="dataset_hash"):
-        registry.retry_m010_numpy_failure(failed_hash, changed, "retry", occurred_at=AT)
+        registry.retry_m010_technical_failure(failed_hash, changed, "retry", occurred_at=AT)
     evaluation_dir = run_artifact_dir("M010", failed_hash, registry.artifact_root) / "evaluations"
     evaluation_dir.mkdir()
     (evaluation_dir / "replay.json").write_text("{}", encoding="utf-8")
     with pytest.raises(ValueError, match="evaluation"):
-        registry.retry_m010_numpy_failure(
+        registry.retry_m010_technical_failure(
             failed_hash, old.model_copy(update={"code_commit": "newer"}), "retry", occurred_at=AT
         )
 
@@ -109,3 +110,23 @@ def test_generic_transition_does_not_allow_invalidated_to_running(tmp_path: Path
     registry, _, _ = _setup(tmp_path)
     with pytest.raises(InvalidStatusTransition):
         registry.transition("M010", ModelStatus.RUNNING, reason="generic", occurred_at=AT)
+
+
+def test_retry_accepts_only_diagnosed_legacy_event_projection_failure(tmp_path: Path) -> None:
+    registry, failed_hash, old = _setup(tmp_path)
+    failure = (
+        run_artifact_dir("M010", failed_hash, registry.artifact_root) / "technical-failure.json"
+    )
+    payload = json.loads(failure.read_text())
+    payload.update(error_type="ValueError", error="ZERO_RELEASE_BEHAVIORAL_DIVERGENCE: final_cash")
+    failure.write_text(json.dumps(payload))
+    with pytest.raises(ValueError, match="diagnosed failure"):
+        registry.retry_m010_technical_failure(
+            failed_hash, old.model_copy(update={"code_commit": "new"}), "audit event projection"
+        )
+    payload["error"] = "ZERO_RELEASE_BEHAVIORAL_DIVERGENCE: cycles,selection_changes"
+    failure.write_text(json.dumps(payload))
+    registry.retry_m010_technical_failure(
+        failed_hash, old.model_copy(update={"code_commit": "new"}), "audit event projection"
+    )
+    assert registry.current_status("M010") == ModelStatus.RUNNING

@@ -1,14 +1,17 @@
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal as D
 
+import numpy as np
 import pytest
 
 from crypto_strategy_lab.microstructure.capital_release_analysis import (
     analyze_capital_release,
+    audit_legacy_m007_event_projection,
     compare_zero_release,
 )
 from crypto_strategy_lab.microstructure.serial_replay import (
     EVENT_ORDER_SCALE,
+    SelectionChange,
     SerialCycle,
     SerialModelConfig,
     SerialScenarioConfig,
@@ -59,6 +62,54 @@ def test_zero_release_equivalence_checks_decisions_and_full_economics():
     assert compare_zero_release(parent, child)["M010_BEHAVIORALLY_EQUIVALENT_TO_M007"] == "YES"
     with pytest.raises(ValueError, match="ZERO_RELEASE_BEHAVIORAL_DIVERGENCE"):
         compare_zero_release(parent, child.model_copy(update={"blocked_reselection_checks": 1}))
+
+
+def test_legacy_event_precision_audit_keeps_exact_equivalence_strict():
+    base, _ = _base()
+    # Physical M007-scale event values with a same-microsecond trade ordinal.
+    entry = 7238714823331254273
+    exit_event = 7238714825237311489
+    fields = dict(
+        entry_timestamp=START,
+        exit_timestamp=START + timedelta(seconds=1),
+        low=D("1.00120"),
+        high=D("1.00130"),
+        quantity=D("99.88"),
+        buy_fee_quote=D("0E-7"),
+        sell_fee_quote=D("0E-7"),
+    )
+    exact_cycle = SerialCycle(entry_event=entry, exit_event=exit_event, **fields)
+    old_cycle = SerialCycle(entry_event=np.int64(entry), exit_event=np.int64(exit_event), **fields)
+    selection_fields = dict(
+        timestamp=START,
+        previous_low=D(1),
+        previous_high=D("1.001"),
+        selected_low=D("0.999"),
+        selected_high=D(1),
+    )
+    exact_selection = SelectionChange(event=exit_event, **selection_fields)
+    old_selection = SelectionChange(event=np.int64(exit_event), **selection_fields)
+    assert old_cycle.entry_event != exact_cycle.entry_event
+    exact = base.model_copy(
+        update={"cycles": (exact_cycle,), "selection_changes": (exact_selection,)}
+    )
+    original = base.model_copy(
+        update={"cycles": (old_cycle,), "selection_changes": (old_selection,)}
+    )
+    before = original.model_dump(mode="json")
+    audit = audit_legacy_m007_event_projection(original, exact)
+    assert audit["changed_event_id_counts"] == {
+        "cycle_entry_event": 1,
+        "cycle_exit_event": 1,
+        "selection_event": 1,
+    }
+    assert original.model_dump(mode="json") == before
+    child = exact.model_copy(update={"model_id": "M010"})
+    assert compare_zero_release(exact, child)["M010_BEHAVIORALLY_EQUIVALENT_TO_M007"] == "YES"
+    with pytest.raises(ValueError, match="ZERO_RELEASE_BEHAVIORAL_DIVERGENCE"):
+        compare_zero_release(original, child)
+    with pytest.raises(ValueError, match="LEGACY_PARENT_RECONSTRUCTION_DIVERGENCE"):
+        audit_legacy_m007_event_projection(original, exact.model_copy(update={"final_cash": D(99)}))
 
 
 def test_release_loss_recovery_and_fixed_ruler_are_actual_cash():

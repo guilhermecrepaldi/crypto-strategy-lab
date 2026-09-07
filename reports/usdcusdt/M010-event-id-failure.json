@@ -1,0 +1,7 @@
+{
+  "classification": "INVALIDATED_TECHNICAL",
+  "error": "ZERO_RELEASE_BEHAVIORAL_DIVERGENCE: cycles,selection_changes",
+  "error_type": "ValueError",
+  "recorded_at": "2026-09-07T03:54:01.919788+00:00",
+  "run_hash": "800cb608c8273edff7fa01521044c3d500b57bbb5caa51e8f9abedcc74cc2592"
+}
