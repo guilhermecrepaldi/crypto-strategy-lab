@@ -3,10 +3,12 @@ from __future__ import annotations
 import csv
 import json
 from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
 
+from crypto_strategy_lab.microstructure.campaign import register_active_block
 from crypto_strategy_lab.ml.model_registry import (
     REQUIRED_CREATION_FILES,
     REQUIRED_EVALUATION_FILES,
@@ -20,6 +22,7 @@ from crypto_strategy_lab.ml.model_registry import (
     ModelStatus,
     RunSpec,
     ScenarioSpec,
+    _capital_fields,
     compute_model_hash,
     compute_run_hash,
     evaluation_artifact_dir,
@@ -27,6 +30,71 @@ from crypto_strategy_lab.ml.model_registry import (
 )
 
 AT = datetime(2026, 1, 1, tzinfo=UTC)
+
+
+def test_active_model_scoreboard_has_independent_canonical_capital_contract(
+    tmp_path: Path,
+) -> None:
+    register_active_block(artifact_root=tmp_path / "artifacts", report_root=tmp_path / "reports")
+    projection = json.loads((tmp_path / "reports" / "usdcusdt" / "model-registry.json").read_text())
+    assert {item["model_id"] for item in projection["models"]} == {
+        f"M{index:03}" for index in range(1, 9)
+    }
+    for model in projection["models"]:
+        assert model["initial_capital"] == "100"
+        assert model["currency"] == "USDT"
+        assert model["capital_mode"] == "COMPOUNDING"
+        assert model["capital_evidence"] == "PLANNED_CANONICAL_CONTRACT"
+
+    registry = ModelRegistry(tmp_path / "artifacts", tmp_path / "reports")
+    scenario = registry.append_scenario("M005", {"scenario": {"name": "canonical"}}, occurred_at=AT)
+    with pytest.raises(ValueError, match="INITIAL_CAPITAL_INVARIANT_VIOLATION"):
+        registry.append_run(
+            "M005",
+            RunSpec(
+                scenario_hash=scenario["payload"]["SCENARIO_HASH"],
+                dataset_hash="dataset",
+                campaign_snapshot_id="snapshot",
+                interval={"start": "2026-01-01", "end": "2026-01-02"},
+                code_commit="abc123",
+                technical_revision="technical",
+                backend=BackendSpec(backend="CPU"),
+                initial_capital=Decimal("99"),
+            ),
+            occurred_at=AT,
+        )
+
+
+def test_capital_projection_rejects_conflicting_historical_evidence() -> None:
+    events = [
+        {
+            "event_type": "RUN_REGISTERED",
+            "payload": {
+                "model_id": "M010",
+                "RUN_HASH": "run",
+                "SCENARIO_HASH": "scenario",
+                "run": {},
+            },
+        },
+        {
+            "event_type": "SCENARIO_REGISTERED",
+            "payload": {
+                "model_id": "M010",
+                "SCENARIO_HASH": "scenario",
+                "scenario": {"initial_quote": "100"},
+            },
+        },
+        {
+            "event_type": "EVALUATION_RECORDED",
+            "payload": {
+                "model_id": "M010",
+                "run_hash": "run",
+                "metrics": {"initial_capital": "100", "initial_quote": "99"},
+            },
+        },
+    ]
+    with pytest.raises(ValueError, match="INITIAL_CAPITAL_INVARIANT_VIOLATION"):
+        _capital_fields("M010", events)
 
 
 def spec(seed: int = 11) -> ModelSpec:

@@ -95,8 +95,14 @@ mathematical price-path quantities, not executable evidence.
 The diagnostic estimates a 24-hour restricted residual survival quantity for the same absolute
 LOW/HIGH only. At checkpoint `T` and age `a`, eligible historical episodes entered on or after
 2025-01-01 and strictly before `T`. The focal episode is included exactly once as right-censored
-at `T`; its future exit is never read. A completion strictly before `T` is observed, while every
-episode still open at `T` is right-censored at `T`.
+at `T`; its future exit never contributes to a duration or estimator. A completion strictly
+before `T` is observed, while every episode still open at `T` is right-censored at `T`.
+
+The independently reconstructed same-band serial history and the focal M007 position are
+different observational units. If that history already has another band episode pending at
+`T`, both it and the focal position are retained as right-censored, and the resulting dependence
+is reported rather than pretending the overlapping records are independent. Event ordinals
+break ties only: all ages and residual durations are calculated from wall-clock microseconds.
 
 Condition on episodes still at risk at age `a`. For residual observed/event pairs `(Z_i, delta_i)`,
 the Kaplan-Meier curve is `S(u)=product_(v<=u)(1-d_v/n_v)` and

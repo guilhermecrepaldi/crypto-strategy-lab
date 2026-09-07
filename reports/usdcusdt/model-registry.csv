@@ -1,5 +1,5 @@
-model_id,status,MODEL_HASH,parent,created_at,HYPOTHESIS,PROBLEM_OBSERVED,CHANGE_FROM_PARENT,EXPECTED_IMPROVEMENT,FULL_STRATEGY_SUMMARY,FINAL_RESULT,DECISION,REASON,BEST_1D_CYCLES,BEST_7D_CYCLES,BEST_30D_CYCLES,BEST_MONTH,BEST_REGIME,WORST_MONTH,LONGEST_HOT_STREAK,LONGEST_COLD_STREAK,HOT_PERIOD_COUNT
-M001,SUPERSEDED,a12d09bcf15f5223acf6bf16c75822ef7b85f6ac66aa168837b2109dfc7837a0,,2026-09-06T16:33:02.053424Z,A one-tick pair selected from the preceding 24 hours may retain positive price-path throughput after it is frozen for the standardized replay.,A causal serial reference is required before testing adaptation.,"Initial STATIC model: one tick, 24-hour lookback and no reselection.",Provide an interpretable lower-complexity reference and expose level migration.,"{
+model_id,status,initial_capital,currency,capital_mode,capital_evidence,MODEL_HASH,parent,created_at,HYPOTHESIS,PROBLEM_OBSERVED,CHANGE_FROM_PARENT,EXPECTED_IMPROVEMENT,FULL_STRATEGY_SUMMARY,FINAL_RESULT,DECISION,REASON,BEST_1D_CYCLES,BEST_7D_CYCLES,BEST_30D_CYCLES,BEST_MONTH,BEST_REGIME,WORST_MONTH,LONGEST_HOT_STREAK,LONGEST_COLD_STREAK,HOT_PERIOD_COUNT
+M001,SUPERSEDED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,a12d09bcf15f5223acf6bf16c75822ef7b85f6ac66aa168837b2109dfc7837a0,,2026-09-06T16:33:02.053424Z,A one-tick pair selected from the preceding 24 hours may retain positive price-path throughput after it is frozen for the standardized replay.,A causal serial reference is required before testing adaptation.,"Initial STATIC model: one tick, 24-hour lookback and no reselection.",Provide an interpretable lower-complexity reference and expose level migration.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": null,
@@ -12,7 +12,7 @@ M001,SUPERSEDED,a12d09bcf15f5223acf6bf16c75822ef7b85f6ac66aa168837b2109dfc7837a0
   ""switch_advantage"": null,
   ""symbol"": ""USDCUSDT""
 }",,,Establish the first causal serial benchmark.,,,,,,,,,
-M002,SUPERSEDED,1868ea2a70c1526c615448d95d780e7b42b233721a2602c9b628f86a9e6da561,M001,2026-09-06T16:33:02.083924Z,Hourly causal reselection with the same 24-hour lookback improves throughput without changing tick distance.,A level frozen for the full replay may become stale as activity moves.,Add flat-only PERIODIC_RESELECT at a one-hour decision interval.,Recover activity lost to intraday migration without a time stop.,"{
+M002,SUPERSEDED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,1868ea2a70c1526c615448d95d780e7b42b233721a2602c9b628f86a9e6da561,M001,2026-09-06T16:33:02.083924Z,Hourly causal reselection with the same 24-hour lookback improves throughput without changing tick distance.,A level frozen for the full replay may become stale as activity moves.,Add flat-only PERIODIC_RESELECT at a one-hour decision interval.,Recover activity lost to intraday migration without a time stop.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": 60,
@@ -25,7 +25,7 @@ M002,SUPERSEDED,1868ea2a70c1526c615448d95d780e7b42b233721a2602c9b628f86a9e6da561
   ""switch_advantage"": null,
   ""symbol"": ""USDCUSDT""
 }",,,Test the smallest scheduled adaptation from M001.,,,,,,,,,
-M003,SUPERSEDED,856cd1bad8d3d497b725c5c33baca116589042374308c4e066a2851ceb5d6827,M002,2026-09-06T16:33:02.096429Z,One-minute ALWAYS_BEST causal decisions raise throughput at the cost of more reselections.,Hourly decisions may react too slowly to rapidly migrating activity.,Reduce the flat-only selection interval from one hour to one minute.,Increase completed cycles while quantifying reselection churn.,"{
+M003,SUPERSEDED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,856cd1bad8d3d497b725c5c33baca116589042374308c4e066a2851ceb5d6827,M002,2026-09-06T16:33:02.096429Z,One-minute ALWAYS_BEST causal decisions raise throughput at the cost of more reselections.,Hourly decisions may react too slowly to rapidly migrating activity.,Reduce the flat-only selection interval from one hour to one minute.,Increase completed cycles while quantifying reselection churn.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": 1,
@@ -38,7 +38,7 @@ M003,SUPERSEDED,856cd1bad8d3d497b725c5c33baca116589042374308c4e066a2851ceb5d6827
   ""switch_advantage"": null,
   ""symbol"": ""USDCUSDT""
 }",,,Measure the upper-frequency causal adaptation reference.,,,,,,,,,
-M004,SUPERSEDED,554d1d805205e59505ff89892d4ec00be5868d56636ebd584b80c8724e90fc28,M003,2026-09-06T16:33:02.114135Z,A stay-until-bad policy can preserve most M003 throughput with materially fewer changes.,Continuous best-candidate chasing may create unnecessary thrashing.,"Switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",Retain at least 90% of cycles and 99% of equity with at most half the reselections.,"{
+M004,SUPERSEDED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,554d1d805205e59505ff89892d4ec00be5868d56636ebd584b80c8724e90fc28,M003,2026-09-06T16:33:02.114135Z,A stay-until-bad policy can preserve most M003 throughput with materially fewer changes.,Continuous best-candidate chasing may create unnecessary thrashing.,"Switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",Retain at least 90% of cycles and 99% of equity with at most half the reselections.,"{
   ""confirmation_checks"": 5,
   ""cooldown_minutes"": 60,
   ""decision_interval_minutes"": 1,
@@ -51,7 +51,7 @@ M004,SUPERSEDED,554d1d805205e59505ff89892d4ec00be5868d56636ebd584b80c8724e90fc28
   ""switch_advantage"": ""0.10"",
   ""symbol"": ""USDCUSDT""
 }",,,Test the preregistered anti-thrashing mechanism against M003.,,,,,,,,,
-M005,EVALUATED,c5e2d7a1fc0ea6279fc71f05f5551508ea6ac4a71d391f5854dfe7e6eccc4c62,,2026-09-06T18:37:41.270251Z,"A pair one causally known exchange tick wide, selected from the preceding 24 hours, may retain positive price-path throughput when frozen.",The first tape pass exposed a historical tick transition before any model ran.,"Replace M001's unverified constant-tick assumption with the announcement-bound, causal observed-grid policy; keep STATIC selection and every economic rule.",Restore admissible historical price levels without using a future grid or changing the serial benchmark.,"{
+M005,EVALUATED,100,USDT,COMPOUNDING,HISTORICAL_LINKED_EVIDENCE,c5e2d7a1fc0ea6279fc71f05f5551508ea6ac4a71d391f5854dfe7e6eccc4c62,,2026-09-06T18:37:41.270251Z,"A pair one causally known exchange tick wide, selected from the preceding 24 hours, may retain positive price-path throughput when frozen.",The first tape pass exposed a historical tick transition before any model ran.,"Replace M001's unverified constant-tick assumption with the announcement-bound, causal observed-grid policy; keep STATIC selection and every economic rule.",Restore admissible historical price levels without using a future grid or changing the serial benchmark.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": null,
@@ -319,7 +319,7 @@ M005,EVALUATED,c5e2d7a1fc0ea6279fc71f05f5551508ea6ac4a71d391f5854dfe7e6eccc4c62,
   ""scenario_hash"": ""db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"",
   ""status"": ""PENDING_SCIENTIFIC_REVIEW""
 }",Correct M001 before execution under a new hashed tick semantics.,28779,64564,161749,2026-02,HOT,2026-04,7,7,48
-M006,SUPERSEDED,dc63c807b874044fd9849459d7da0aabd9b99465b8a4fdd3a450160e96311980,M005,2026-09-06T18:37:41.287345Z,Hourly causal reselection with M005's tick-at-selection semantics improves throughput without changing its distance rule.,M005 can become stale as market activity moves.,Add flat-only PERIODIC_RESELECT at a one-hour decision interval to M005.,Recover intraday level migration relative to M005.,"{
+M006,SUPERSEDED,100,USDT,COMPOUNDING,HISTORICAL_LINKED_EVIDENCE,dc63c807b874044fd9849459d7da0aabd9b99465b8a4fdd3a450160e96311980,M005,2026-09-06T18:37:41.287345Z,Hourly causal reselection with M005's tick-at-selection semantics improves throughput without changing its distance rule.,M005 can become stale as market activity moves.,Add flat-only PERIODIC_RESELECT at a one-hour decision interval to M005.,Recover intraday level migration relative to M005.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": 60,
@@ -587,7 +587,7 @@ M006,SUPERSEDED,dc63c807b874044fd9849459d7da0aabd9b99465b8a4fdd3a450160e96311980
   ""scenario_hash"": ""db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"",
   ""status"": ""PENDING_SCIENTIFIC_REVIEW""
 }",Test the smallest scheduled adaptation from M005.,43922,106200,125177,2026-07,HOT,2026-04,15,7,55
-M007,PROMOTED,2cb6c755cad4b805eb6b79e7b7e04fd271e660f285a8c1d6aca4c643dded934f,M006,2026-09-06T18:37:41.302112Z,One-minute ALWAYS_BEST decisions with the same causal tick policy raise throughput at the cost of more reselections.,M006 hourly decisions may react too slowly to migrating activity.,Reduce M006's flat-only selection interval from one hour to one minute.,Increase completed cycles while quantifying reselection churn.,"{
+M007,PROMOTED,100,USDT,COMPOUNDING,HISTORICAL_LINKED_EVIDENCE,2cb6c755cad4b805eb6b79e7b7e04fd271e660f285a8c1d6aca4c643dded934f,M006,2026-09-06T18:37:41.302112Z,One-minute ALWAYS_BEST decisions with the same causal tick policy raise throughput at the cost of more reselections.,M006 hourly decisions may react too slowly to migrating activity.,Reduce M006's flat-only selection interval from one hour to one minute.,Increase completed cycles while quantifying reselection churn.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": 1,
@@ -855,7 +855,7 @@ M007,PROMOTED,2cb6c755cad4b805eb6b79e7b7e04fd271e660f285a8c1d6aca4c643dded934f,M
   ""scenario_hash"": ""db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"",
   ""status"": ""PENDING_SCIENTIFIC_REVIEW""
 }",Measure the upper-frequency adaptation reference against M006.,44788,115521,137665,2026-07,HOT,2026-04,15,7,55
-M008,REJECTED,0c1fa31a6983ab295cfb043be5ef32425cc866d73a880166abeb0fb8d0a8a31d,M007,2026-09-06T18:37:41.317861Z,A stay-until-bad policy can preserve most M007 throughput with materially fewer changes.,M007 may create unnecessary candidate thrashing.,"Relative to M007, switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",Retain at least 90% of M007 cycles and 99% of its equity with at most half its reselections.,"{
+M008,REJECTED,100,USDT,COMPOUNDING,HISTORICAL_LINKED_EVIDENCE,0c1fa31a6983ab295cfb043be5ef32425cc866d73a880166abeb0fb8d0a8a31d,M007,2026-09-06T18:37:41.317861Z,A stay-until-bad policy can preserve most M007 throughput with materially fewer changes.,M007 may create unnecessary candidate thrashing.,"Relative to M007, switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",Retain at least 90% of M007 cycles and 99% of its equity with at most half its reselections.,"{
   ""confirmation_checks"": 5,
   ""cooldown_minutes"": 60,
   ""decision_interval_minutes"": 1,
@@ -1123,7 +1123,7 @@ M008,REJECTED,0c1fa31a6983ab295cfb043be5ef32425cc866d73a880166abeb0fb8d0a8a31d,M
   ""scenario_hash"": ""db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"",
   ""status"": ""PENDING_SCIENTIFIC_REVIEW""
 }",Test the preregistered anti-thrashing mechanism against M007.,40656,94835,137686,2026-02,HOT,2026-04,9,7,46
-M009,REJECTED,1bc2e893ff54a05d79e3035b1820a9cb62cae6d197d5b97e2ed1a20f9d5570ed,M007,2026-09-06T21:46:40.669144Z,A strict 10% causal score advantage can reduce transient M007 switches while preserving its one-minute response and productivity.,"M007 recovered throughput, but 42.7% of its reselections reversed within 24 hours.","Relative to M007, require best_score > 1.10 * incumbent_score for candidate-to-candidate flat switches; add no idle wait, confirmation or cooldown.",Retain at least 90% of M007 cycles and 99% of its equity while reducing reselections to at most 117 and 24-hour reversals to at most 50.,"{
+M009,REJECTED,100,USDT,COMPOUNDING,HISTORICAL_LINKED_EVIDENCE,1bc2e893ff54a05d79e3035b1820a9cb62cae6d197d5b97e2ed1a20f9d5570ed,M007,2026-09-06T21:46:40.669144Z,A strict 10% causal score advantage can reduce transient M007 switches while preserving its one-minute response and productivity.,"M007 recovered throughput, but 42.7% of its reselections reversed within 24 hours.","Relative to M007, require best_score > 1.10 * incumbent_score for candidate-to-candidate flat switches; add no idle wait, confirmation or cooldown.",Retain at least 90% of M007 cycles and 99% of its equity while reducing reselections to at most 117 and 24-hour reversals to at most 50.,"{
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
   ""decision_interval_minutes"": 1,

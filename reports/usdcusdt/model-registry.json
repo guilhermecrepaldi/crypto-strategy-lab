@@ -2685,7 +2685,10 @@
         "monthly": null,
         "run_manifest": null
       },
+      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
+      "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-06T16:33:02.053424Z",
+      "currency": "USDT",
       "hypothesis": {
         "change": "Initial STATIC model: one tick, 24-hour lookback and no reselection.",
         "expected_effect": "Provide an interpretable lower-complexity reference and expose level migration.",
@@ -2693,6 +2696,7 @@
         "observation": "A causal serial reference is required before testing adaptation.",
         "reason_for_new_model": "Establish the first causal serial benchmark."
       },
+      "initial_capital": "100",
       "lineage": {
         "ancestor_chain": [],
         "change_category": "INITIAL",
@@ -2745,7 +2749,10 @@
         "monthly": null,
         "run_manifest": null
       },
+      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
+      "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-06T16:33:02.083924Z",
+      "currency": "USDT",
       "hypothesis": {
         "change": "Add flat-only PERIODIC_RESELECT at a one-hour decision interval.",
         "expected_effect": "Recover activity lost to intraday migration without a time stop.",
@@ -2753,6 +2760,7 @@
         "observation": "A level frozen for the full replay may become stale as activity moves.",
         "reason_for_new_model": "Test the smallest scheduled adaptation from M001."
       },
+      "initial_capital": "100",
       "lineage": {
         "ancestor_chain": [
           "M001"
@@ -2807,7 +2815,10 @@
         "monthly": null,
         "run_manifest": null
       },
+      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
+      "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-06T16:33:02.096429Z",
+      "currency": "USDT",
       "hypothesis": {
         "change": "Reduce the flat-only selection interval from one hour to one minute.",
         "expected_effect": "Increase completed cycles while quantifying reselection churn.",
@@ -2815,6 +2826,7 @@
         "observation": "Hourly decisions may react too slowly to rapidly migrating activity.",
         "reason_for_new_model": "Measure the upper-frequency causal adaptation reference."
       },
+      "initial_capital": "100",
       "lineage": {
         "ancestor_chain": [
           "M001",
@@ -2870,7 +2882,10 @@
         "monthly": null,
         "run_manifest": null
       },
+      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
+      "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-06T16:33:02.114135Z",
+      "currency": "USDT",
       "hypothesis": {
         "change": "Switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",
         "expected_effect": "Retain at least 90% of cycles and 99% of equity with at most half the reselections.",
@@ -2878,6 +2893,7 @@
         "observation": "Continuous best-candidate chasing may create unnecessary thrashing.",
         "reason_for_new_model": "Test the preregistered anti-thrashing mechanism against M003."
       },
+      "initial_capital": "100",
       "lineage": {
         "ancestor_chain": [
           "M001",
@@ -2934,7 +2950,10 @@
         "monthly": null,
         "run_manifest": null
       },
+      "capital_evidence": "HISTORICAL_LINKED_EVIDENCE",
+      "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-06T18:37:41.270251Z",
+      "currency": "USDT",
       "hypothesis": {
         "change": "Replace M001's unverified constant-tick assumption with the announcement-bound, causal observed-grid policy; keep STATIC selection and every economic rule.",
         "expected_effect": "Restore admissible historical price levels without using a future grid or changing the serial benchmark.",
@@ -2942,6 +2961,7 @@
         "observation": "The first tape pass exposed a historical tick transition before any model ran.",
         "reason_for_new_model": "Correct M001 before execution under a new hashed tick semantics."
       },
+      "initial_capital": "100",
       "lineage": {
         "ancestor_chain": [],
         "change_category": "TECHNICAL_CORRECTION",
@@ -3001,7 +3021,10 @@
         "monthly": null,
         "run_manifest": null
       },
+      "capital_evidence": "HISTORICAL_LINKED_EVIDENCE",
+      "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-06T18:37:41.287345Z",
+      "currency": "USDT",
       "hypothesis": {
         "change": "Add flat-only PERIODIC_RESELECT at a one-hour decision interval to M005.",
         "expected_effect": "Recover intraday level migration relative to M005.",
@@ -3009,6 +3032,7 @@
         "observation": "M005 can become stale as market activity moves.",
         "reason_for_new_model": "Test the smallest scheduled adaptation from M005."
       },
+      "initial_capital": "100",
       "lineage": {
         "ancestor_chain": [
           "M005"
@@ -3070,7 +3094,10 @@
         "monthly": null,
         "run_manifest": null
       },
+      "capital_evidence": "HISTORICAL_LINKED_EVIDENCE",
+      "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-06T18:37:41.302112Z",
+      "currency": "USDT",
       "hypothesis": {
         "change": "Reduce M006's flat-only selection interval from one hour to one minute.",
         "expected_effect": "Increase completed cycles while quantifying reselection churn.",
@@ -3078,6 +3105,7 @@
         "observation": "M006 hourly decisions may react too slowly to migrating activity.",
         "reason_for_new_model": "Measure the upper-frequency adaptation reference against M006."
       },
+      "initial_capital": "100",
       "lineage": {
         "ancestor_chain": [
           "M005",
@@ -3140,7 +3168,10 @@
         "monthly": null,
         "run_manifest": null
       },
+      "capital_evidence": "HISTORICAL_LINKED_EVIDENCE",
+      "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-06T18:37:41.317861Z",
+      "currency": "USDT",
       "hypothesis": {
         "change": "Relative to M007, switch only after 30 flat idle minutes, five confirmations, 10% advantage and a 60-minute cooldown.",
         "expected_effect": "Retain at least 90% of M007 cycles and 99% of its equity with at most half its reselections.",
@@ -3148,6 +3179,7 @@
         "observation": "M007 may create unnecessary candidate thrashing.",
         "reason_for_new_model": "Test the preregistered anti-thrashing mechanism against M007."
       },
+      "initial_capital": "100",
       "lineage": {
         "ancestor_chain": [
           "M005",
@@ -3211,7 +3243,10 @@
         "monthly": null,
         "run_manifest": null
       },
+      "capital_evidence": "HISTORICAL_LINKED_EVIDENCE",
+      "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-06T21:46:40.669144Z",
+      "currency": "USDT",
       "hypothesis": {
         "change": "Relative to M007, require best_score > 1.10 * incumbent_score for candidate-to-candidate flat switches; add no idle wait, confirmation or cooldown.",
         "expected_effect": "Retain at least 90% of M007 cycles and 99% of its equity while reducing reselections to at most 117 and 24-hour reversals to at most 50.",
@@ -3219,6 +3254,7 @@
         "observation": "M007 recovered throughput, but 42.7% of its reselections reversed within 24 hours.",
         "reason_for_new_model": "Isolate the already preregistered M008 score-advantage component after rejecting the combined M008 package."
       },
+      "initial_capital": "100",
       "lineage": {
         "ancestor_chain": [
           "M005",

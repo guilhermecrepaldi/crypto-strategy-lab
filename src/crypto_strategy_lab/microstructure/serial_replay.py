@@ -336,6 +336,11 @@ class SerialScenarioConfig(BaseModel):
 
     @model_validator(mode="after")
     def prohibit_forced_close(self) -> SerialScenarioConfig:
+        if self.initial_quote != Decimal("100"):
+            raise ValueError(
+                "INITIAL_CAPITAL_INVARIANT_VIOLATION: canonical USDCUSDT serial "
+                "scenario requires initial_quote=100 USDT"
+            )
         if self.forced_terminal_liquidation:
             raise ValueError("the reference strategy cannot force terminal liquidation")
         catalog_fields = (

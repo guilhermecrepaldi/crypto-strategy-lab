@@ -20,6 +20,9 @@ from decimal import ROUND_CEILING, ROUND_DOWN, Decimal
 from pathlib import Path
 from typing import Any, Final
 
+import numpy as np
+from numpy.typing import NDArray
+
 from crypto_strategy_lab.domain import canonical_hash
 from crypto_strategy_lab.microstructure.data import HistoryManifest
 from crypto_strategy_lab.microstructure.evolution_diagnostics import (
@@ -90,6 +93,23 @@ class _Position:
     terminal: bool = False
 
 
+@dataclass(frozen=True, slots=True)
+class _EpisodeIndex:
+    """Vectorized immutable view of one full timeline, queried by causal prefix."""
+
+    timeline: CandidateTimeline
+    entries: NDArray[np.int64]
+    exits: NDArray[np.int64]
+
+    @classmethod
+    def from_timeline(cls, timeline: CandidateTimeline) -> _EpisodeIndex:
+        entries = np.frombuffer(timeline.cycle_entries, dtype=np.int64)
+        exits = np.frombuffer(timeline.cycle_exits, dtype=np.int64)
+        if entries.shape != exits.shape:
+            raise CapitalReleaseDiagnosticError("timeline entry/exit arrays disagree")
+        return cls(timeline, entries, exits)
+
+
 def kaplan_meier_rmst(
     durations: Sequence[Decimal | int | str],
     events: Sequence[bool],
@@ -136,7 +156,7 @@ def _kaplan_meier(
     previous = Decimal("0")
     at_risk = len(observations)
     index = 0
-    while index < len(observations) and previous < support_end:
+    while index < len(observations) and previous <= support_end:
         time = observations[index][0]
         if time > support_end:
             rmst += (support_end - previous) * survival
@@ -341,6 +361,22 @@ def build_capital_release_snapshots(
         else evidence.model.distances
     )
     timelines = analysis_tape.timelines(distances)
+    relevant_candidates = {
+        (
+            _tick(position.low, analysis_tape.tick_size),
+            _tick(position.high, analysis_tape.tick_size)
+            - _tick(position.low, analysis_tape.tick_size),
+        )
+        for position in positions
+        if position.exit_event is None
+        or _event_elapsed_micros(position.exit_event, position.entry_event)
+        >= INITIAL_AGES[0] * 1_000_000
+    }
+    episode_indexes = {
+        candidate: _EpisodeIndex.from_timeline(timelines[candidate])
+        for candidate in relevant_candidates
+        if candidate in timelines
+    }
     end_exclusive = _parse_dt(evidence.run_manifest["interval"]["end_exclusive"])
     sorted_price_ticks = tuple(sorted(analysis_tape.occurrences))
     snapshots: list[dict[str, Any]] = []
@@ -360,6 +396,7 @@ def build_capital_release_snapshots(
                 checkpoint,
                 age,
                 timelines,
+                episode_indexes,
                 analysis_tape,
                 sorted_price_ticks,
             )
@@ -375,6 +412,7 @@ def _snapshot(
     checkpoint: datetime,
     age: int,
     timelines: dict[tuple[int, int], CandidateTimeline],
+    episode_indexes: Mapping[tuple[int, int], _EpisodeIndex],
     tape: SerialTape,
     sorted_price_ticks: Sequence[int],
 ) -> dict[str, Any]:
@@ -389,6 +427,8 @@ def _snapshot(
     candidate = (low_tick, high_tick - low_tick)
     if candidate not in timelines:
         raise CapitalReleaseDiagnosticError("position band absent from canonical timelines")
+    if candidate not in episode_indexes:
+        raise CapitalReleaseDiagnosticError("position band absent from causal episode index")
     minimum_tick = _minimum_tick_between(
         tape,
         sorted_price_ticks,
@@ -465,12 +505,12 @@ def _snapshot(
     )
     fixed_b = _fixed_recovery_cycles(fixed_release, FIXED_RULER_CAPITAL, fixed_delta)
     fixed_k = _fixed_recovery_cycles(fixed_release, fixed_target, fixed_delta)
-    survival = _same_band_survival(
+    survival = _same_band_survival_indexed(
         candidate,
         checkpoint_event,
         position.entry_event,
         age,
-        timelines[candidate],
+        episode_indexes[candidate],
     )
     first_cycle = _first_cycle_q90(alternative, checkpoint_event, timelines)
     q90 = (
@@ -528,7 +568,6 @@ def _snapshot(
             }
         ),
         "position_index": position.index,
-        "terminal_position": position.terminal,
         "entry_event": position.entry_event,
         "entry_timestamp": position.entry_timestamp.isoformat(),
         "checkpoint_timestamp": checkpoint.isoformat(),
@@ -691,43 +730,83 @@ def _same_band_survival(
     age: int,
     timeline: CandidateTimeline,
 ) -> dict[str, Any]:
+    return _same_band_survival_indexed(
+        candidate,
+        checkpoint_event,
+        focal_entry,
+        age,
+        _EpisodeIndex.from_timeline(timeline),
+    )
+
+
+def _same_band_survival_indexed(
+    candidate: tuple[int, int],
+    checkpoint_event: int,
+    focal_entry: int,
+    age: int,
+    index: _EpisodeIndex,
+) -> dict[str, Any]:
+    del candidate  # identity is bound by the caller's index lookup
+    age_micros = age * 1_000_000
+    causal_start_event = _datetime_to_micros(CAUSAL_START) * EVENT_ORDER_SCALE
+    completed_limit = int(np.searchsorted(index.exits, checkpoint_event, side="left"))
+    prefix_entries = index.entries[:completed_limit]
+    prefix_durations = (
+        index.exits[:completed_limit] // EVENT_ORDER_SCALE - prefix_entries // EVENT_ORDER_SCALE
+    )
+    eligible = (
+        (prefix_entries >= causal_start_event)
+        & (prefix_durations >= age_micros)
+        & (prefix_entries != focal_entry)
+    )
+    selected_entries = prefix_entries[eligible]
+    selected_residuals = prefix_durations[eligible] - age_micros
     residual_durations: list[Decimal] = []
     events: list[bool] = []
-    entry_days: set[str] = set()
-    focal_seen = False
-    for entry, exit_event in _prefix_serial_episodes(timeline, checkpoint_event):
-        is_focal = entry == focal_entry
-        if is_focal and focal_seen:
-            continue
-        focal_seen |= is_focal
-        entry_time = _event_to_datetime(entry)
-        total_duration = _seconds((exit_event or checkpoint_event) - entry)
-        if total_duration < Decimal(age):
-            continue
-        observed = exit_event is not None and not is_focal
-        residual_durations.append(total_duration - Decimal(age))
-        events.append(observed)
-        entry_days.add(entry_time.date().isoformat())
-    if not focal_seen and focal_entry < checkpoint_event:
-        elapsed = _seconds(checkpoint_event - focal_entry)
-        if elapsed >= Decimal(age):
-            residual_durations.append(elapsed - Decimal(age))
+    entry_day_numbers = {
+        int(entry) // EVENT_ORDER_SCALE // 1_000_000 // 86_400 for entry in selected_entries
+    }
+    for residual in selected_residuals:
+        residual_durations.append(_micros_to_seconds(int(residual)))
+        events.append(True)
+
+    previous_exit = int(index.exits[completed_limit - 1]) if completed_limit else -1
+    low_index = bisect_right(index.timeline.low_events, previous_exit)
+    pending_entry = (
+        int(index.timeline.low_events[low_index])
+        if low_index < len(index.timeline.low_events)
+        and int(index.timeline.low_events[low_index]) < checkpoint_event
+        else None
+    )
+    if pending_entry is not None and pending_entry != focal_entry:
+        elapsed_micros = _event_elapsed_micros(checkpoint_event, pending_entry)
+        if pending_entry >= causal_start_event and elapsed_micros >= age_micros:
+            residual_durations.append(_micros_to_seconds(elapsed_micros - age_micros))
             events.append(False)
-            entry_days.add(_event_to_datetime(focal_entry).date().isoformat())
+            entry_day_numbers.add(pending_entry // EVENT_ORDER_SCALE // 1_000_000 // 86_400)
+
+    focal_included = False
+    if focal_entry >= causal_start_event and focal_entry < checkpoint_event:
+        elapsed_micros = _event_elapsed_micros(checkpoint_event, focal_entry)
+        if elapsed_micros >= age_micros:
+            residual_durations.append(_micros_to_seconds(elapsed_micros - age_micros))
+            events.append(False)
+            entry_day_numbers.add(focal_entry // EVENT_ORDER_SCALE // 1_000_000 // 86_400)
+            focal_included = True
     km = _kaplan_meier(residual_durations, events, RMST_CAP_SECONDS) if residual_durations else None
     followup = sum(duration >= RMST_CAP_SECONDS for duration in residual_durations)
-    enough_observations = len(residual_durations) >= 30 and len(entry_days) >= 3
+    enough_observations = len(residual_durations) >= 30 and len(entry_day_numbers) >= 3
     support = enough_observations and km is not None and km.identified
     reasons: list[str] = []
     if len(residual_durations) < 30:
         reasons.append("RISK_SET_LT_30")
-    if len(entry_days) < 3:
+    if len(entry_day_numbers) < 3:
         reasons.append("ENTRY_DAYS_LT_3")
     if km is None or not km.identified:
         reasons.append("RMST_24H_NOT_IDENTIFIED")
     return {
         "risk_set": len(residual_durations),
-        "entry_days": len(entry_days),
+        "entry_days": len(entry_day_numbers),
         "followup_24h_count": followup,
         "support": support,
         "support_reason": None if support else "+".join(reasons),
@@ -735,8 +814,8 @@ def _same_band_survival(
         "rmst24_lower_bound_seconds": _s(km.lower_bound if km else None),
         "rmst24_upper_bound_seconds": _s(km.upper_bound if km else None),
         "maximum_supported_age_seconds": _s(km.maximum_time if km else None),
-        "focal_included_as_right_censored": focal_seen or focal_entry < checkpoint_event,
-        "future_exit_values_read": False,
+        "focal_included_as_right_censored": focal_included,
+        "future_exit_values_contributed": False,
     }
 
 
@@ -782,7 +861,10 @@ def _first_cycle_q90(
     low_limit = bisect_left(timeline.low_events, checkpoint_event)
     high_limit = bisect_left(timeline.high_events, checkpoint_event)
     checkpoint = _event_to_datetime(checkpoint_event)
-    first_hour = checkpoint.replace(minute=0, second=0, microsecond=0) - timedelta(days=30)
+    window_start = checkpoint - timedelta(days=30)
+    first_hour = window_start.replace(minute=0, second=0, microsecond=0)
+    if first_hour < window_start:
+        first_hour += timedelta(hours=1)
     durations: list[Decimal] = []
     observed: list[bool] = []
     days: set[str] = set()
@@ -797,7 +879,7 @@ def _first_cycle_q90(
             if high_index < high_limit:
                 completion_event = int(timeline.high_events[high_index])
         end = completion_event if completion_event is not None else checkpoint_event
-        duration = _seconds(end - origin_event)
+        duration = _event_elapsed_seconds(end, origin_event)
         durations.append(min(RMST_CAP_SECONDS, duration))
         observed.append(completion_event is not None and duration <= RMST_CAP_SECONDS)
         days.add(cursor.date().isoformat())
@@ -1062,10 +1144,17 @@ def _day_events() -> int:
     return 24 * _hour_events()
 
 
-def _seconds(value: int | timedelta) -> Decimal:
-    if isinstance(value, timedelta):
-        return Decimal(str(value.total_seconds()))
-    return Decimal(value) / Decimal(EVENT_ORDER_SCALE * 1_000_000)
+def _event_elapsed_micros(later: int, earlier: int) -> int:
+    """Return elapsed wall-clock microseconds; event ordinals only break timestamp ties."""
+    return later // EVENT_ORDER_SCALE - earlier // EVENT_ORDER_SCALE
+
+
+def _micros_to_seconds(value: int) -> Decimal:
+    return Decimal(value) / Decimal(1_000_000)
+
+
+def _event_elapsed_seconds(later: int, earlier: int) -> Decimal:
+    return _micros_to_seconds(_event_elapsed_micros(later, earlier))
 
 
 def _rate(value: Decimal, notional: Decimal) -> Decimal:

@@ -34,6 +34,14 @@ def test_kaplan_meier_preserves_bounds_when_horizon_is_not_supported() -> None:
     assert result.upper_bound == Decimal("55")
 
 
+def test_kaplan_meier_processes_observed_and_censored_ties_at_zero() -> None:
+    result = _kaplan_meier([0, 0], [True, False], Decimal("100"))
+    assert result.survival_at_support_end == Decimal("0.5")
+    assert result.lower_bound == Decimal("0")
+    assert result.upper_bound == Decimal("50")
+    assert result.identified is False
+
+
 def test_kaplan_meier_q90_returns_unknown_without_tail_event() -> None:
     assert kaplan_meier_q90([1, 2, 3], [True, True, False], Decimal("10")) is None
     assert kaplan_meier_q90([1, 1, 1, 2], [True, True, True, True], Decimal("10")) == Decimal(2)
@@ -97,13 +105,24 @@ def test_same_band_uses_truncated_prefix_and_censors_focal_once() -> None:
     )
     timeline_a.build()
     timeline_b.build()
+    ordinal_lows = array("q", lows)
+    ordinal_lows[-1] = focal_entry + 1
+    timeline_c = CandidateTimeline(
+        1,
+        1,
+        ordinal_lows,
+        array("q", [*highs, _event(checkpoint + timedelta(days=1))]),
+    )
+    timeline_c.build()
     result_a = _same_band_survival((1, 1), _event(checkpoint), focal_entry, 60, timeline_a)
     result_b = _same_band_survival((1, 1), _event(checkpoint), focal_entry, 60, timeline_b)
+    result_c = _same_band_survival((1, 1), _event(checkpoint), focal_entry + 1, 60, timeline_c)
     assert result_a["focal_included_as_right_censored"] is True
     assert result_a["risk_set"] == 31
     assert result_a["rmst24_seconds"] == result_b["rmst24_seconds"]
     assert result_a["followup_24h_count"] == result_b["followup_24h_count"]
-    assert result_a["future_exit_values_read"] is False
+    assert result_c == result_a
+    assert result_a["future_exit_values_contributed"] is False
 
 
 def test_first_cycle_q90_is_unchanged_when_only_future_events_change() -> None:
@@ -135,3 +154,10 @@ def test_first_cycle_q90_is_unchanged_when_only_future_events_change() -> None:
     assert result_a["support"] is True
     assert result_a["q90_seconds"] == "360"
     assert result_a["future_event_values_read"] is False
+
+    off_hour = _first_cycle_q90(
+        (1, 1),
+        _event(checkpoint + timedelta(minutes=30)),
+        {(1, 1): timeline_a},
+    )
+    assert off_hour["origins"] == 719

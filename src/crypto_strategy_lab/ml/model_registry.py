@@ -7,6 +7,7 @@ import json
 import re
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
+from decimal import Decimal
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, Final, Literal, Self
@@ -35,6 +36,10 @@ REQUIRED_EVALUATION_FILES: Final = (
 PROJECTION_FIELDS: Final = (
     "model_id",
     "status",
+    "initial_capital",
+    "currency",
+    "capital_mode",
+    "capital_evidence",
     "MODEL_HASH",
     "parent",
     "created_at",
@@ -220,6 +225,9 @@ class RunSpec(BaseModel):
     code_commit: str = Field(min_length=1)
     technical_revision: str = Field(min_length=1)
     backend: BackendSpec
+    initial_capital: Decimal = Field(default=Decimal("100"), gt=0)
+    currency: Literal["USDT"] = "USDT"
+    capital_mode: Literal["COMPOUNDING"] = "COMPOUNDING"
     run: dict[str, Any] = Field(default_factory=dict)
     run_hash: str | None = Field(
         default=None, validation_alias=AliasChoices("run_hash", "RUN_HASH")
@@ -229,6 +237,11 @@ class RunSpec(BaseModel):
     def validate_interval(self) -> Self:
         if self.interval is None or self.interval == "" or self.interval == {}:
             raise ValueError("interval is required")
+        if self.initial_capital != Decimal("100"):
+            raise ValueError(
+                "INITIAL_CAPITAL_INVARIANT_VIOLATION: canonical USDCUSDT run "
+                "requires initial_capital=100 USDT"
+            )
         return self
 
 
@@ -821,6 +834,7 @@ class ModelRegistry:
             {
                 **model,
                 "status": self.current_status(model["model_id"]).value,
+                **_capital_fields(model["model_id"], events),
                 **_productivity_fields(model["model_id"], events),
             }
             for model in models
@@ -837,6 +851,7 @@ class ModelRegistry:
             {
                 "model_id": model["model_id"],
                 "status": self.current_status(model["model_id"]).value,
+                **_capital_fields(model["model_id"], events),
                 "MODEL_HASH": model["model_hash"],
                 "parent": model["lineage"].get("parent_model_id"),
                 "created_at": model["created_at"],
@@ -989,6 +1004,74 @@ def _productivity_fields(model_id: str, events: Sequence[Mapping[str, Any]]) -> 
     )
     fingerprint = fingerprint_value if isinstance(fingerprint_value, Mapping) else {}
     return {field: fingerprint.get(field) for field in _PRODUCTIVITY_FIELDS}
+
+
+def _capital_fields(model_id: str, events: Sequence[Mapping[str, Any]]) -> dict[str, str]:
+    runs = [
+        event["payload"]
+        for event in events
+        if event.get("event_type") == "RUN_REGISTERED"
+        and event.get("payload", {}).get("model_id") == model_id
+    ]
+    if not runs:
+        return {
+            "initial_capital": "100",
+            "currency": "USDT",
+            "capital_mode": "COMPOUNDING",
+            "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
+        }
+    latest = runs[-1]
+    run_hash = latest.get("RUN_HASH")
+    scenario_hash = latest.get("SCENARIO_HASH")
+    observed: list[Decimal] = []
+    for value in (
+        latest.get("initial_capital"),
+        latest.get("run", {}).get("initial_capital"),
+    ):
+        if value is not None:
+            observed.append(Decimal(str(value)))
+    for event in events:
+        payload = event.get("payload", {})
+        if (
+            event.get("event_type") == "SCENARIO_REGISTERED"
+            and payload.get("model_id") == model_id
+            and payload.get("SCENARIO_HASH") == scenario_hash
+        ):
+            value = payload.get("scenario", {}).get("initial_quote")
+            if value is not None:
+                observed.append(Decimal(str(value)))
+        if (
+            event.get("event_type") == "EVALUATION_RECORDED"
+            and payload.get("model_id") == model_id
+            and payload.get("run_hash") == run_hash
+        ):
+            metrics = payload.get("metrics", {})
+            for key in ("initial_capital", "initial_quote"):
+                value = metrics.get(key)
+                if value is not None:
+                    observed.append(Decimal(str(value)))
+    if not observed:
+        return {
+            "initial_capital": "UNKNOWN",
+            "currency": str(latest.get("currency", "USDT")),
+            "capital_mode": str(latest.get("capital_mode", "COMPOUNDING")),
+            "capital_evidence": "MISSING_EXECUTION_EVIDENCE",
+        }
+    if any(value != Decimal("100") for value in observed):
+        raise ValueError(
+            "INITIAL_CAPITAL_INVARIANT_VIOLATION: registered execution evidence "
+            f"for {model_id} does not start from 100 USDT"
+        )
+    return {
+        "initial_capital": "100",
+        "currency": str(latest.get("currency", "USDT")),
+        "capital_mode": str(latest.get("capital_mode", "COMPOUNDING")),
+        "capital_evidence": (
+            "RUN_MANIFEST"
+            if latest.get("initial_capital") is not None
+            else "HISTORICAL_LINKED_EVIDENCE"
+        ),
+    }
 
 
 def _write_csv(

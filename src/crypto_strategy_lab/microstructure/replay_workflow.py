@@ -9,6 +9,7 @@ import subprocess
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -90,6 +91,7 @@ def run_full_replay_campaign(
     scenario = SerialScenarioConfig(
         scenario_id="PRICE_PATH_HISTORICAL_TICK_ZERO_FEE_V2",
         tick_size=SERIAL_TAPE_QUANTUM,
+        initial_quote=Decimal("100"),
         historical_tick_catalog_hash=USDCUSDT_TICK_CATALOG.catalog_hash,
         historical_tick_source_url=USDCUSDT_TICK_CATALOG.source_url,
         historical_tick_policy="CAUSAL_OBSERVED_GRID_THEN_OFFICIAL_COMPLETION_BOUND",
@@ -339,9 +341,20 @@ def _run_one(
             code_commit=code_commit,
             technical_revision=TECHNICAL_REVISION,
             backend=BackendSpec(backend="CPU"),
+            initial_capital=Decimal("100"),
+            currency="USDT",
+            capital_mode="COMPOUNDING",
             run={
                 "manifest": manifest.dataset_hash,
                 "execution_class": scenario.execution_class,
+                "initial_capital": "100",
+                "currency": "USDT",
+                "capital_mode": "COMPOUNDING",
+                "fixed_notional_auxiliary": {
+                    "status": "AUXILIARY_ONLY",
+                    "notional": "100",
+                    "currency": "USDT",
+                },
                 "validation_accessed": False,
                 "locked_test_accessed": False,
                 "live_accessed": False,
@@ -458,6 +471,14 @@ def _record_evaluation(
             metrics={
                 "completed_cycles": result.completed_cycles,
                 "initial_quote": result.initial_quote,
+                "initial_capital": result.initial_quote,
+                "currency": "USDT",
+                "capital_mode": "COMPOUNDING",
+                "fixed_notional_auxiliary": {
+                    "status": "AUXILIARY_ONLY",
+                    "notional": Decimal("100"),
+                    "currency": "USDT",
+                },
                 "final_marked_equity": result.final_marked_equity,
                 "return_fraction": result.return_fraction,
                 "realized_profit": result.realized_profit,

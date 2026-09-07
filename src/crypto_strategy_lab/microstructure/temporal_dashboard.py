@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import html
 import json
+from decimal import Decimal
 from pathlib import Path
 
 from crypto_strategy_lab.microstructure.temporal_analysis import (
@@ -41,6 +42,7 @@ def write_temporal_dashboard(
     cards = "".join(
         _card(
             item.model_id,
+            *_capital_ruler(item),
             str(item.productivity_fingerprint.get("BEST_MONTH") or "—"),
             str(item.temporal_stability.get("aggregate") or "—"),
             str(item.concentration.get("PROFIT_CONCENTRATION_WARNING", "UNKNOWN")),
@@ -63,6 +65,15 @@ def write_temporal_dashboard(
     monthly_rows = "".join(_monthly_row(item, month_labels) for item in analyses)
     payload = {
         "models": [item.model_id for item in analyses],
+        "financial_ruler": {
+            item.model_id: {
+                "initial_capital": _capital_ruler(item)[0],
+                "final_capital": _capital_ruler(item)[1],
+                "currency": "USDT",
+                "capital_mode": "COMPOUNDING",
+            }
+            for item in analyses
+        },
         "start": min(item.start for item in analyses),
         "end_exclusive": max(item.end_exclusive for item in analyses),
         "cohort_hash": cohort.cohort_hash if cohort is not None else None,
@@ -93,11 +104,34 @@ th,td{{border-bottom:1px solid var(--line);padding:10px;text-align:left;vertical
     return hashlib.sha256(content.encode()).hexdigest()
 
 
-def _card(model: str, month: str, stability: str, warning: str) -> str:
+def _capital_ruler(analysis: TemporalReplayAnalysis) -> tuple[str, str]:
+    if not analysis.daily:
+        raise ValueError(f"{analysis.model_id} has no daily capital evidence")
+    initial = Decimal(str(analysis.daily[0]["start_equity"]))
+    if initial != Decimal("100"):
+        raise ValueError(
+            "INITIAL_CAPITAL_INVARIANT_VIOLATION: dashboard requires every canonical "
+            "model to start from 100 USDT"
+        )
+    return "100", str(Decimal(str(analysis.daily[-1]["end_equity"])))
+
+
+def _card(
+    model: str,
+    initial_capital: str,
+    final_capital: str,
+    month: str,
+    stability: str,
+    warning: str,
+) -> str:
     return (
         "<div class='card'><strong>"
         + html.escape(model)
-        + "</strong><span class='metric'>Best complete month: "
+        + "</strong><span class='metric'>Compounding: "
+        + html.escape(initial_capital)
+        + " → "
+        + html.escape(final_capital)
+        + " USDT</span><span class='metric'>Best complete month: "
         + html.escape(month)
         + "</span><span class='metric'>Temporal stability: "
         + html.escape(stability)

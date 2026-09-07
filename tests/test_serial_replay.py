@@ -75,6 +75,15 @@ def _tape(items: list[tuple[int, str]]) -> SerialTape:
     )
 
 
+def test_canonical_scenario_fails_closed_on_nonstandard_initial_capital() -> None:
+    with pytest.raises(ValueError, match="INITIAL_CAPITAL_INVARIANT_VIOLATION"):
+        _scenario(initial_quote=Decimal("99.99"))
+    assert (
+        _historical_scenario().scenario_hash
+        == "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"
+    )
+
+
 def test_first_block_is_frozen_and_model_hash_excludes_human_identity() -> None:
     models = preregistered_first_block()
 

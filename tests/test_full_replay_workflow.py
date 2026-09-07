@@ -1,3 +1,4 @@
+import json
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -118,8 +119,34 @@ def test_full_replay_writes_complete_evidence_and_never_economic_stops(
         assert all((directory / name).exists() for name in REQUIRED_EVALUATION_FILES)
         assert event["payload"]["decision"]["early_stop"] is False
         assert event["payload"]["decision"]["full_replay_completed"] is True
+        assert event["payload"]["metrics"]["initial_capital"] == "100"
+        assert event["payload"]["metrics"]["currency"] == "USDT"
+        assert event["payload"]["metrics"]["capital_mode"] == "COMPOUNDING"
+    runs = [item for item in registry.journal() if item["event_type"] == "RUN_REGISTERED"]
+    assert {item["payload"]["model_id"] for item in runs} == {
+        f"M{index:03}" for index in range(5, 9)
+    }
+    for event in runs:
+        payload = event["payload"]
+        assert payload["initial_capital"] == "100"
+        assert payload["currency"] == "USDT"
+        assert payload["capital_mode"] == "COMPOUNDING"
+        manifest_payload = json.loads(
+            (Path(payload["artifact_directory"]) / "run-manifest.json").read_text()
+        )
+        assert manifest_payload["initial_capital"] == "100"
+        assert manifest_payload["currency"] == "USDT"
+        assert manifest_payload["capital_mode"] == "COMPOUNDING"
+    scoreboard = (reports / "usdcusdt" / "model-registry.csv").read_text()
+    assert "initial_capital" in scoreboard
+    assert "currency" in scoreboard
+    assert "capital_mode" in scoreboard
     assert (reports / "usdcusdt" / "market-productivity-regime.json").exists()
-    assert (reports / "usdcusdt" / "temporal-productivity.html").exists()
+    dashboard_path = reports / "usdcusdt" / "temporal-productivity.html"
+    assert dashboard_path.exists()
+    dashboard = dashboard_path.read_text()
+    assert "Compounding: 100" in dashboard
+    assert '"initial_capital": "100"' in dashboard.replace("&quot;", '"')
     assert any(item.get("kind") == "MARKET_PRODUCTIVITY_REGIME" for item in records)
     assert not (artifacts / "usdcusdt" / "models" / ".full-replay.lock").exists()
     assert any(

@@ -134,6 +134,19 @@ Informe quais modelos foram realmente usados; não alegue troca de modelo que n�
 - O replay autorizado do sucessor começa com 100 USDT, cobre todo o DEVELOPMENT congelado sem
   early stop e reporta, além da composição, uma régua de notional fixo de 100 USDT.
 
+## Régua financeira canônica
+
+- Todo replay principal de um modelo `Mxxx` começa, de forma independente, com exatamente
+  `100 USDT` em `2026-01-01T00:00:00Z` ou no primeiro evento causal elegível posterior. O
+  capital final do pai nunca é o capital inicial do sucessor.
+- O modelo pode reinvestir seus próprios ganhos durante o replay (`COMPOUNDING`), mas cada nova
+  identidade volta a 100 USDT. Manifest, registry e scoreboard devem registrar
+  `initial_capital=100`, `currency=USDT` e `capital_mode=COMPOUNDING`.
+- Qualquer replay principal que tente iniciar com outro valor é inválido e deve falhar fechado
+  com `INITIAL_CAPITAL_INVARIANT_VIOLATION`; não corrija o valor silenciosamente.
+- `FIXED_NOTIONAL_100` é diagnóstico auxiliar sem compounding. Seus resultados e ledger não
+  podem substituir nem ser misturados com o replay principal composto.
+
 ## Aceleração GPU opcional
 
 - CPU é o backend canônico. GPU é somente acelerador opcional para scanners e cálculos em lote;

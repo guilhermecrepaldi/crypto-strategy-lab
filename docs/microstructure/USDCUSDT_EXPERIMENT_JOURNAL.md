@@ -834,3 +834,15 @@ DIAGNOSTIC_STATUS=PREREGISTERED_NOT_RUN
 SWEEP_AUTHORIZED=NO
 EXECUTABLE_EDGE=NOT_DEMONSTRATED
 ```
+
+## Canonical 100-USDT financial ruler
+
+The OWNER froze one comparable financial origin for every canonical model. Every primary Mxxx
+replay starts independently with exactly `100 USDT` at `2026-01-01T00:00:00Z`, or at the first
+causally eligible event after it. A child never inherits its parent's final equity. Compounding
+is allowed only inside that model's own replay.
+
+New run manifests and registry projections record `initial_capital=100`, `currency=USDT` and
+`capital_mode=COMPOUNDING`. Any different primary starting bank fails closed with
+`INITIAL_CAPITAL_INVARIANT_VIOLATION`. The optional fixed-notional-100 calculation remains an
+auxiliary, non-compounding diagnostic and cannot replace or be combined with primary results.
