@@ -101,8 +101,37 @@ def test_renderer_preserves_exact_values_and_escapes_script(evidence):
     result = dashboard.render_comparison(evidence, output)
     text = output.read_text(encoding="utf-8")
     assert "1000000000000000000000.123456789" in text
-    assert "\\u003cscript>not code\\u003c/script>" in text
+    assert "&lt;script&gt;not code&lt;/script&gt;" in text
     assert "__PAYLOAD__" not in text
-    assert 'role="tablist"' in text
+    assert 'type="radio" name="strategy"' in text
+    assert '<tbody id="results"><tr ' in text
+    assert 'class="strategy-panel"' in text
+    assert "Resultado exato" in text
+    assert "1000000000000000000000.123456789" in text.split("</main>")[0]
     assert len(result["failures"]) == 2
     assert all(p.read_bytes() == content for p, content in before.items())
+
+
+def test_graphs_are_populated_without_running_javascript(evidence):
+    data = dashboard.collect_comparison(evidence)
+    data["rows"].append(
+        {
+            "id": "fixture",
+            "strategy": "M011",
+            "family": "fixture",
+            "group": "principal",
+            "status": "CONCLUÍDO",
+            "cycles": 123,
+            "zero": 4,
+            "lock": "7.5",
+            "note": "fixture",
+        }
+    )
+    template = SCRIPT.with_name("recovery_comparison.html").read_text(encoding="utf-8")
+    text = dashboard.static_comparison(data, template).split("</main>")[0]
+    assert text.count('class="chart"') == 3
+    assert text.count('class="bar"') >= 3
+    assert "fixture" in text and "123" in text
+    assert "<strong>4</strong>" in text
+    assert "<strong>7,5</strong>" in text
+    assert "document.createElement" not in text

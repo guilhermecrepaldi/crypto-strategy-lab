@@ -283,10 +283,191 @@ def collect_comparison(root: Path) -> dict:
 def render_comparison(root: Path, output: Path) -> dict:
     data = collect_comparison(root)
     template = Path(__file__).with_name("recovery_comparison.html").read_text(encoding="utf-8")
-    payload = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
+    content = static_comparison(data, template)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(template.replace("__PAYLOAD__", payload), encoding="utf-8")
+    output.write_text(content, encoding="utf-8")
     return data
+
+
+def display_number(value, percent=False) -> str:
+    if value is None:
+        return "—"
+    number = Decimal(str(value)) * (100 if percent else 1)
+    if not number.is_finite():
+        return str(value)
+    if abs(number) >= Decimal("1e15"):
+        formatted = f"{number:.5E}"
+    else:
+        formatted = f"{number:,.4f}".rstrip("0").rstrip(".")
+    return formatted.translate(str.maketrans({",": ".", ".": ","})) + ("%" if percent else "")
+
+
+def static_comparison(data: dict, template: str) -> str:
+    """Complete content at build time; scripts enhance sorting only, never supply evidence."""
+
+    def details(title, value):
+        text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False, indent=2)
+        return f"<details><summary>{escape(title)}</summary><pre>{escape(text)}</pre></details>"
+
+    indexes = {s["id"]: i for i, s in enumerate(data["strategies"])}
+    table = []
+    for row in data["rows"]:
+        cells = [
+            f"<td>{escape(row['id'])}<small>{escape(row['family'])}</small></td>",
+            f"<td>{escape(row['status'])}</td>",
+        ]
+        for key in [
+            "initial",
+            "cycles",
+            "multiplier",
+            "zero",
+            "active",
+            "uptime",
+            "releases",
+            "operating",
+            "reserve",
+            "equity",
+            "hold",
+            "lock",
+            "drawdown",
+        ]:
+            value = row.get(key)
+            cells.append(
+                f'<td title="{escape(str(value))}">'
+                f"{display_number(value, key in ('uptime', 'drawdown'))}</td>"
+            )
+        attrs = " ".join(
+            f'data-{k}="{escape(str(row.get(k, "")))}"'
+            for k in ("id", "group", "cycles", "zero", "equity")
+        )
+        table.append(f"<tr {attrs}>{''.join(cells)}</tr>")
+
+    charts = []
+    for key, title, explanation in [
+        (
+            "cycles",
+            "Ciclos completos",
+            "Mais ciclos indicam maior frequência; não provam execução.",
+        ),
+        ("zero", "Dias sem ciclos", "Menos é melhor neste objetivo. Meta M011: no máximo 9 dias."),
+        (
+            "lock",
+            "Horas de capital travado",
+            "Soma do tempo em posição além de 24 horas. Menos é melhor.",
+        ),
+    ]:
+        eligible = [r for r in data["rows"] if r["group"] == "principal" and r.get(key) is not None]
+        maximum = max((Decimal(str(r[key])) for r in eligible), default=Decimal(1)) or Decimal(1)
+        bars = []
+        for row in eligible:
+            width = Decimal(str(row[key])) / maximum * 100
+            bars.append(
+                f'<div class="bar-row"><span title="{escape(row["id"])}">'
+                f'{escape(row["id"])}</span><div class="track"><div class="bar" '
+                f'style="width:{width:.6f}%"></div></div>'
+                f"<strong>{display_number(row[key])}</strong></div>"
+            )
+        charts.append(
+            f'<article class="chart"><h3>{title}</h3><p>{explanation}</p>'
+            f"{''.join(bars) or '<p>Dados não publicados.</p>'}</article>"
+        )
+
+    descriptions = {
+        "STATIC": "Seleciona uma faixa e mantém LOW/HIGH fixos, sem reseleção periódica.",
+        "PERIODIC_RESELECT": "Reavalia a faixa no intervalo registrado; preserva um ciclo serial.",
+        "ALWAYS_BEST": "Sem posição aberta, escolhe a faixa de maior score no prefixo causal. "
+        "Depois da compra, mantém LOW/HIGH até a saída normal.",
+        "RELATIVE_SCORE_HYSTERESIS": "Só troca de faixa quando a vantagem relativa do score "
+        "satisfaz os parâmetros registrados.",
+        "IDLE_TRIGGERED": "Usa ociosidade como gatilho de reseleção, com os controles registrados.",
+        "DYNAMIC_CAUSAL_RECOVERY": "Banca de 100 USDT e reserva segregada de 5 USDT. Destina 2% "
+        "de cada lucro positivo à reserva. Exige evidência causal, "
+        "confiança crescente com a perda e cobertura integral para "
+        "liberar a posição. Restaura a banca, fica sem posição e "
+        "espera novo LOW. Ainda não executado.",
+    }
+    radios, labels, panels, css = [], [], [], []
+    for strategy in data["strategies"]:
+        sid = strategy["id"]
+        i = indexes[sid]
+        checked = " checked" if sid == "M011" else ""
+        radios.append(
+            f'<input class="tab-radio" type="radio" name="strategy" id="s{i}"'
+            f' aria-label="{escape(sid)}"{checked}>'
+        )
+        labels.append(f'<label for="s{i}">{escape(sid)}</label>')
+        css.append(
+            f"#s{i}:checked~.panels #p{i}{{display:block}}"
+            f"#s{i}:checked~.tabs label[for=s{i}]{{background:#172235;color:white}}"
+            f"#s{i}:focus-visible~.tabs label[for=s{i}]{{outline:3px solid #245de8}}"
+        )
+        cfg = strategy["config"]
+        description = descriptions.get(
+            cfg.get("strategy"),
+            strategy["hypothesis"].get(
+                "description",
+                "Recovery Reserve histórica; parâmetros originais preservados abaixo.",
+            ),
+        )
+        extra = ""
+        if sid == "M010":
+            extra = (
+                "<p>Acrescenta a regra congelada de capital release ao ancestral M007. "
+                "O replay terminou com zero releases; resultado registrado como inconclusivo.</p>"
+            )
+        if "max_loss_bps" in cfg:
+            extra += f"<p>Revisão após {escape(str(cfg.get('lock_hours')))} horas; limite de perda "
+            extra += f"{escape(str(cfg['max_loss_bps']))} bps "
+            extra += f"({display_number(Decimal(str(cfg['max_loss_bps'])) / 100)}%). "
+            extra += "Esse limite histórico não é a política dinâmica de M011.</p>"
+        body = f"<h3>{escape(sid)}</h3><p>{escape(description)}</p>{extra}"
+        body += '<p class="flow">Selecionar faixa → esperar LOW → um lote → saída normal no HIGH; '
+        body += "release somente quando prevista e aprovada pela regra desta estratégia.</p>"
+        body += f"<p>Status: {escape(strategy['status'])} · Pai: "
+        body += escape(str(strategy["lineage"].get("parent_model_id") or "sem pai")) + "</p>"
+        for row in data["rows"]:
+            if row["strategy"] != sid:
+                continue
+            body += f"<p>{escape(row['note'])}</p>"
+            body += details("Resultado exato · " + row["id"], row)
+            if row.get("monthly"):
+                body += '<h4>Ciclos por mês</h4><div class="table-wrap"><table><tr>'
+                body += "".join(f"<th>{escape(m)}</th>" for m in row["monthly"])
+                body += (
+                    "</tr><tr>"
+                    + "".join(f"<td>{display_number(v)}</td>" for v in row["monthly"].values())
+                    + "</tr></table></div>"
+                )
+        body += details("Parâmetros completos", cfg)
+        body += details("Hipótese e linhagem originais", strategy)
+        if sid == "M011":
+            body += '<p class="warning">Funding de 2% não garante reserva de 5% da banca. '
+            body += "Sem releases, a proporção tende a 2,0408%. Não há resultado novo.</p>"
+            body += details("Pré-registro completo", data["protocol"])
+        panels.append(f'<article class="strategy-panel" id="p{i}">{body}</article>')
+
+    replacements = {
+        "__SCOPE__": escape(data["scope"]),
+        "__COUNT__": str(len(data["rows"])),
+        "__MODEL_COUNT__": str(sum(s["id"].startswith("M") for s in data["strategies"])),
+        "__RR_COUNT__": str(sum(r["status"] == "CONCLUÍDO_SUPERADO" for r in data["rows"])),
+        "__TABLE__": "".join(table),
+        "__CHARTS__": "".join(charts),
+        "__RADIOS__": "".join(radios),
+        "__TABS__": "".join(labels),
+        "__PANELS__": "".join(panels),
+        "__TAB_CSS__": "".join(css),
+        "__FAILURES__": "".join(
+            details(f["data"]["classification"] + " · " + Path(f["source"]).name, f)
+            for f in data["failures"]
+        ),
+        "__SOURCES__": escape(json.dumps(data["sources"], indent=2)),
+        "__GENERATED__": escape(data["generated"]),
+    }
+    # One-pass substitution: source text can never be mistaken for another template token.
+    import re
+
+    return re.sub(r"__[A-Z_]+__", lambda match: replacements[match.group()], template)
 
 
 def render(report_path: Path, scenario_id: str, output: Path) -> None:
