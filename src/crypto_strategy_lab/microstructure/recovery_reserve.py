@@ -234,6 +234,9 @@ class RecoveryReserveRuntime:
             raise ValueError("NONDETERMINISTIC_RECOVERY_SELECTION")
         original = state.candidate
         low = D(original[0]) * self.tape.tick_size
+        with localcontext() as context:
+            context.prec = LEDGER_PRECISION
+            release_buy_fee = state.inventory_cost - state.inventory * low
         closure = SerialCycle(
             entry_event=int(state.entry_event),
             exit_event=event,
@@ -243,7 +246,7 @@ class RecoveryReserveRuntime:
             high=price,
             tick_at_selection=state.candidate_tick_size,
             quantity=state.inventory,
-            buy_fee_quote=state.inventory_cost - state.inventory * low,
+            buy_fee_quote=release_buy_fee,
             sell_fee_quote=fee,
         )
         new_low = D(candidate[0]) * self.tape.tick_size

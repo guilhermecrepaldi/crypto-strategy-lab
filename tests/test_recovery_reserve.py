@@ -1,6 +1,7 @@
 import json
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal as D
+from decimal import localcontext
 
 import pytest
 
@@ -91,6 +92,23 @@ def test_restores_grown_principal_not_100(monkeypatch):
     state.inventory_cost = D(123)
     assert instance(state, event)
     assert state.cash == D(123) and instance.reserve == D("4.9877")
+
+
+def test_release_closure_preserves_zero_buy_fee_at_large_compounded_notional(monkeypatch):
+    instance, state, event = runtime(monkeypatch, price="1.0011")
+    quantity = D("12184490263176792165668.11")
+    low = D("1.00120")
+    with localcontext() as context:
+        context.prec = 128
+        inventory_cost = quantity * low
+    state.candidate = (10012, 1)
+    state.inventory = quantity
+    state.inventory_cost = inventory_cost
+    instance.timelines[(10012, 1)] = "original"
+    instance.reserve = D("100000000000000000000")
+
+    assert instance(state, event)
+    assert state.release_closures[0].buy_fee_quote == D(0)
 
 
 @pytest.mark.parametrize("price", ["1", "1.0001"])

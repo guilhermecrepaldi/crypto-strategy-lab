@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "classification": "INVALIDATED_TECHNICAL",
+  "campaign": "USDCUSDT_EXHAUSTIVE",
+  "model_id": null,
+  "phase": "M011_UNREGISTERED_PHASE_A",
+  "git_commit_sha": "d024746e22e46f1eac8b58ac4d036a52fa60c27d",
+  "artifact_identity": "47851d4b7522d4e3cb600a7220e72105b49b0fef52509e34f40d4fef4cec1c2b",
+  "failed_scenario_id": "RRV2_H1_B5_F0",
+  "completed_checkpoints_before_failure": [
+    "RRV2_H1_B2_F0",
+    "RRV2_H1_B2_F2.5"
+  ],
+  "first_mismatch": {
+    "event": 7249832558710554624,
+    "timestamp": "2026-02-01T20:44:12.028944Z",
+    "position_entry": "2026-01-31T18:44:12.028944Z",
+    "quantity": "12184490263176792165668.11",
+    "low": "1.00120",
+    "recorded_reserve_transfer": "4873796105270716866.2672440",
+    "audit_reconstructed_reserve_transfer": "4873796105270716866.2672460",
+    "difference": "-0.0000020",
+    "spurious_buy_fee_quote": "0.0000020"
+  },
+  "root_cause": "Release closure buy_fee_quote was derived under default Decimal28 after the authoritative deficit had been computed under Decimal128.",
+  "scope_decision": "Preserve all checkpoints, exclude the whole attempt from scientific comparison, and rerun all 18 scenarios under a new source-bound identity.",
+  "private_exchange_access": false,
+  "testnet_or_live": false
+}

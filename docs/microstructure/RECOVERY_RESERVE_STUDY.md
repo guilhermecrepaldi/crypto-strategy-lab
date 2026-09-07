@@ -1,6 +1,6 @@
 # Recovery Reserve study
 
-Status: V2_PREREGISTERED_PENDING_PUBLISHED_MILESTONE_1. No M011 registered or promoted.
+Status: V2_PREREGISTERED; FIRST_ATTEMPT_INVALIDATED_TECHNICAL. No M011 registered or promoted.
 
 The canonical protocol is `RECOVERY_RESERVE_PROTOCOL.md`. The previous v1 grid completed 10/27
 scenarios at commit `515eddeb`; it is preserved as superseded partial evidence and must not resume.
@@ -22,3 +22,18 @@ timelines, uses an OS-owned single-instance lock and atomic checkpoints, and wri
 Artifacts live under `artifacts/usdcusdt/recovery-reserve/<v2-identity>/`. They are unregistered
 Phase A scenarios, not M011 and not operational evidence. Do not delete checkpoints to bypass an
 identity mismatch. No private exchange API is used.
+
+## Technical attempt ledger
+
+The first v2 attempt at published commit `d024746e` used artifact identity
+`47851d4b7522d4e3cb600a7220e72105b49b0fef52509e34f40d4fef4cec1c2b`. It completed two
+checkpoints and failed closed while independently auditing `RRV2_H1_B5_F0`. At event
+`7249832558710554624`, default Decimal precision reconstructed a spurious `0.0000020` buy fee in
+the release closure even though the configured acquisition fee was zero. The deficit itself had
+been computed under Decimal128, so the serialized closure did not exactly reconcile.
+
+This is `INVALIDATED_TECHNICAL`, not an economic result. The entire attempt is excluded from
+candidate comparison: its two completed checkpoints remain physically preserved as superseded
+attempt evidence, and no checkpoint is reused after the correction. The replacement scan starts
+all 18 scenarios under a new source-bound identity. See the machine-readable correction report
+and `M011_RECOVERY_RESERVE_DECIMAL_CLOSURE_CORRECTION.md`.
