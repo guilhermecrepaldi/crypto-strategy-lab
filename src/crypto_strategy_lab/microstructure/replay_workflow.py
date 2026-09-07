@@ -340,6 +340,32 @@ def _run_one(
     release_support_tape: SerialTape | None = None,
 ) -> tuple[dict[str, Any], TemporalReplayAnalysis | None]:
     status = registry.current_status(model.model_id)
+    if model.model_id == "M010" and status == ModelStatus.INVALIDATED_TECHNICAL:
+        prior_runs = [
+            event["payload"]
+            for event in registry.journal()
+            if event["event_type"] == "RUN_REGISTERED" and event["payload"]["model_id"] == "M010"
+        ]
+        if prior_runs:
+            prior_run = prior_runs[-1]
+            raw_path = (
+                run_artifact_dir("M010", prior_run["RUN_HASH"], registry.artifact_root)
+                / "completed-replay.json"
+            )
+            if raw_path.exists():
+                return _recover_m010_postprocessing(
+                    registry,
+                    model,
+                    scenario,
+                    tape,
+                    manifest,
+                    snapshot_id,
+                    end_exclusive,
+                    market_profile,
+                    analysis_context,
+                    prior_run,
+                    raw_path,
+                )
     if status in {
         ModelStatus.EVALUATED,
         ModelStatus.PROMOTED,
@@ -475,7 +501,7 @@ def _run_one(
                 analysis_context,
                 registry.artifact_root,
                 scenario=scenario,
-                parent_config=SerialModelConfig.model_validate(registry.get("M007").model),
+                parent_config=_registered_parent_config(registry),
                 reconstruction_root=run_artifact_dir(
                     model.model_id, run_hash, registry.artifact_root
                 ),
@@ -537,6 +563,136 @@ def _run_one(
             reason=f"{type(error).__name__}: {error}",
         )
         raise
+
+
+def _registered_parent_config(registry: ModelRegistry) -> SerialModelConfig:
+    parent = registry.get("M007")
+    return SerialModelConfig.model_validate(
+        {
+            **parent.model,
+            "model_id": parent.model_id,
+            "parent_model_id": parent.lineage.parent_model_id,
+        }
+    )
+
+
+def _recover_m010_postprocessing(
+    registry: ModelRegistry,
+    model: SerialModelConfig,
+    scenario: SerialScenarioConfig,
+    tape: SerialTape,
+    manifest: HistoryManifest,
+    snapshot_id: str,
+    end_exclusive: datetime,
+    market_profile: MarketHourlyProfile,
+    analysis_context: TemporalAnalysisContext,
+    prior_run: dict[str, Any],
+    raw_path: Path,
+) -> tuple[dict[str, Any], TemporalReplayAnalysis]:
+    """Recover only the known identity-loading failure; never simulate M010 again."""
+    analysis_sha = _git_head()
+    remote_sha = subprocess.check_output(
+        ["git", "ls-remote", "origin", "refs/heads/main"], text=True
+    ).split()[0]
+    if (
+        remote_sha != analysis_sha
+        or subprocess.check_output(
+            ["git", "status", "--porcelain", "--untracked-files=no"], text=True
+        ).strip()
+    ):
+        raise ValueError("M010_REQUIRES_CLEAN_PUBLISHED_ANALYSIS_SHA")
+    raw = json.loads(raw_path.read_text(encoding="utf-8"))
+    serialized = json.dumps(
+        raw["result"], sort_keys=True, separators=(",", ":"), default=str
+    ).encode()
+    if raw["result_sha256"] != hashlib.sha256(serialized).hexdigest():
+        raise ValueError("M010_COMPLETED_REPLAY_HASH_MISMATCH")
+    failure = json.loads((raw_path.parent / "technical-failure.json").read_text())
+    if failure["error_type"] != "ValidationError" or not all(
+        text in failure["error"] for text in ("model_id", "parent_model_id", "Field required")
+    ):
+        raise ValueError("M010_POSTPROCESSING_FAILURE_NOT_RECOGNIZED")
+    expected = {
+        "model_id": "M010",
+        "run_hash": prior_run["RUN_HASH"],
+        "code_commit": prior_run["code_commit"],
+        "scenario_hash": scenario.scenario_hash,
+        "dataset_hash": manifest.dataset_hash,
+        "campaign_snapshot_id": snapshot_id,
+    }
+    if raw["provenance"] != expected or raw["status"] != "COMPUTATION_COMPLETE_PENDING_VALIDATION":
+        raise ValueError("M010_COMPLETED_REPLAY_PROVENANCE_MISMATCH")
+    result = SerialReplayResult.model_validate(raw["result"])
+    if (
+        result.model_id,
+        result.model_hash,
+        result.initial_quote,
+        result.start,
+        result.end_exclusive,
+        result.scenario_hash,
+    ) != (
+        "M010",
+        model.model_hash,
+        Decimal("100"),
+        REPLAY_START,
+        end_exclusive,
+        scenario.scenario_hash,
+    ):
+        raise ValueError("M010_COMPLETED_REPLAY_IDENTITY_MISMATCH")
+    print(
+        f"M010_POSTPROCESSING_RECOVERY source_run={prior_run['RUN_HASH']} "
+        f"analysis_sha={analysis_sha}",
+        flush=True,
+    )
+    analysis = analyze_replay_temporally(result, tape, market_profile, analysis_context)
+    report = _capital_release_report(
+        result,
+        tape,
+        analysis,
+        market_profile,
+        analysis_context,
+        registry.artifact_root,
+        scenario=scenario,
+        parent_config=_registered_parent_config(registry),
+        reconstruction_root=raw_path.parent,
+        code_commit=analysis_sha,
+    )
+    report.update(
+        code_commit=prior_run["code_commit"],
+        analysis_code_commit=analysis_sha,
+        run_hash=prior_run["RUN_HASH"],
+        computation_reused_without_replay=True,
+        completed_replay_sha256=raw["result_sha256"],
+    )
+    _record_evaluation(
+        registry,
+        model,
+        scenario,
+        result,
+        analysis,
+        snapshot_id=snapshot_id,
+        run_hash=prior_run["RUN_HASH"],
+        release_report=report,
+    )
+    evaluation = [
+        event["payload"]
+        for event in registry.journal()
+        if event["event_type"] == "EVALUATION_RECORDED" and event["payload"]["model_id"] == "M010"
+    ][-1]
+    registry.complete_m010_report_recovery(
+        prior_run["RUN_HASH"], evaluation["EVALUATION_HASH"], analysis_sha
+    )
+    (registry.report_root / "usdcusdt" / "M010-capital-release.json").write_text(
+        json.dumps(report, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8"
+    )
+    return {
+        "model_id": "M010",
+        "status": "EVALUATED",
+        "run_hash": prior_run["RUN_HASH"],
+        "action": "POSTPROCESSING_RECOVERED_NO_REPLAY",
+        "completed_cycles": result.completed_cycles,
+        "final_marked_equity": str(result.final_marked_equity),
+    }, analysis
 
 
 def _persist_completed_replay(

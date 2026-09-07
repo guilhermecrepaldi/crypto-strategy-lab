@@ -770,6 +770,132 @@ class ModelRegistry:
         self._project()
         return event
 
+    def complete_m010_report_recovery(
+        self, run_hash: str, evaluation_hash: str, analysis_code_commit: str
+    ) -> dict[str, Any]:
+        """Seal a post-processing recovery from an invalidated M010 replay."""
+        model = self.get("M010")
+        if self.current_status("M010") != ModelStatus.INVALIDATED_TECHNICAL:
+            raise InvalidStatusTransition("M010 report recovery requires INVALIDATED_TECHNICAL")
+        if model.model.get("capital_release_protocol") != "OWNER_EXPLORATORY_OVERRIDE_FROZEN_V1":
+            raise ValueError("M010 report recovery requires the frozen capital-release protocol")
+        if (
+            model.lineage.model_dump(mode="json").get("authorization_class")
+            != "OWNER_EXPLORATORY_OVERRIDE"
+        ):
+            raise ValueError(
+                "M010 report recovery requires OWNER_EXPLORATORY_OVERRIDE lineage authorization"
+            )
+        runs = [e for e in self._events("RUN_REGISTERED") if e["payload"].get("model_id") == "M010"]
+        if not runs or runs[-1]["payload"].get("RUN_HASH") != run_hash:
+            raise ValueError("run_hash must match the latest M010 run")
+        run_payload = runs[-1]["payload"]
+        run_root = run_artifact_dir("M010", run_hash, self.artifact_root)
+        manifest = json.loads((run_root / "run-manifest.json").read_text(encoding="utf-8"))
+        for key in (
+            "MODEL_HASH",
+            "RUN_HASH",
+            "SCENARIO_HASH",
+            "dataset_hash",
+            "campaign_snapshot_id",
+            "code_commit",
+        ):
+            if manifest.get(key) != run_payload.get(key):
+                raise ValueError("run manifest does not match registered run")
+        completed = json.loads((run_root / "completed-replay.json").read_text(encoding="utf-8"))
+        raw = completed.get("result")
+        expected_sha = hashlib.sha256(
+            json.dumps(raw, sort_keys=True, separators=(",", ":"), default=str).encode()
+        ).hexdigest()
+        if (
+            completed.get("status") != "COMPUTATION_COMPLETE_PENDING_VALIDATION"
+            or completed.get("result_sha256") != expected_sha
+        ):
+            raise ValueError("completed replay provenance or hash is invalid")
+        expected_provenance = {
+            "model_id": "M010",
+            "run_hash": run_hash,
+            "code_commit": manifest.get("code_commit"),
+            "dataset_hash": manifest.get("dataset_hash"),
+            "scenario_hash": manifest.get("SCENARIO_HASH"),
+            "campaign_snapshot_id": manifest.get("campaign_snapshot_id"),
+        }
+        if any(
+            completed.get("provenance", {}).get(key) != value
+            for key, value in expected_provenance.items()
+        ):
+            raise ValueError("completed replay provenance does not match run")
+        failure_path = run_root / "technical-failure.json"
+        failure = json.loads(failure_path.read_text(encoding="utf-8"))
+        if (
+            failure.get("classification") != "INVALIDATED_TECHNICAL"
+            or failure.get("run_hash") != run_hash
+            or failure.get("error_type") != "ValidationError"
+            or not all(
+                term in str(failure.get("error", ""))
+                for term in ("model_id", "parent_model_id", "Field required")
+            )
+        ):
+            raise ValueError("M010 report recovery requires the recorded report ValidationError")
+        evaluations = [
+            e
+            for e in self._events("EVALUATION_RECORDED")
+            if e["payload"].get("model_id") == "M010" and e["payload"].get("run_hash") == run_hash
+        ]
+        evaluation = next(
+            (e for e in evaluations if e["payload"].get("EVALUATION_HASH") == evaluation_hash), None
+        )
+        if evaluation is None:
+            raise ValueError("evaluation does not match M010 run")
+        payload = evaluation["payload"]
+        if payload.get("scenario_hash") != run_payload.get("SCENARIO_HASH") or payload.get(
+            "campaign_snapshot_id"
+        ) != run_payload.get("campaign_snapshot_id"):
+            raise ValueError("evaluation identity does not match run")
+        evaluation_root = Path(payload["artifact_directory"])
+        if json.loads((evaluation_root / "replay.json").read_text(encoding="utf-8")) != raw:
+            raise ValueError("evaluation replay does not exactly match completed replay")
+        capital = payload.get("metrics", {}).get("capital_release", {})
+        equivalence = capital.get("equivalence", {})
+        if (
+            equivalence.get("M010_BEHAVIORALLY_EQUIVALENT_TO_M007") != "YES"
+            or equivalence.get("legacy_m007_event_id_audit", {}).get(
+                "all_other_fields_exactly_equal"
+            )
+            is not True
+        ):
+            raise ValueError("M010 recovery equivalence gate failed")
+        report = capital
+        if (
+            report.get("code_commit") != run_payload.get("code_commit")
+            or report.get("analysis_code_commit") != analysis_code_commit
+            or report.get("code_commit") == analysis_code_commit
+        ):
+            raise ValueError("M010 report code provenance mismatch")
+        evidence = {
+            "model_id": "M010",
+            "run_hash": run_hash,
+            "evaluation_hash": evaluation_hash,
+            "raw_result_sha256": completed["result_sha256"],
+            "failure_file_sha256": hashlib.sha256(failure_path.read_bytes()).hexdigest(),
+            "simulation_code_commit": run_payload.get("code_commit"),
+            "analysis_code_commit": analysis_code_commit,
+        }
+        self._append_event("POSTPROCESSING_RECOVERY_COMPLETED", evidence, None)
+        event = self._append_event(
+            "STATUS_CHANGED",
+            {
+                "model_id": "M010",
+                "from": ModelStatus.INVALIDATED_TECHNICAL.value,
+                "to": ModelStatus.EVALUATED.value,
+                "reason": "validated report recovery",
+                "evaluation_hash": evaluation_hash,
+            },
+            None,
+        )
+        self._project()
+        return event
+
     def transition(
         self,
         model_id: str,

@@ -38,3 +38,23 @@ restricted to these diagnosed M010 representation failures; generic invalidation
 Scientific hypothesis, authorization class, 100-USDT starting bank, support requirements,
 5-bps cap, 25% margin, causal lookback and checkpoints are unchanged. Pre-run commit/push
 is required again before executing the corrected workflow.
+
+## Postprocessing recovery without another M010 simulation
+
+Run `5a53ab7dcebbdaf0f4697148c54d3e71b098575b6abc1a3b299c45312a5f4f0c`,
+simulation SHA `1e4b85da2dcaf3e6a1ee4ff043c6870d207da0a5`, saved its full computation
+before analysis. A downstream configuration-loading defect then omitted `model_id` and
+`parent_model_id` when assembling the technical M007 reference. The failure remains recorded.
+
+The completed result is retained unchanged, SHA256 of canonical inner result
+`4b781fe79f8c61bd8991c32a6b45e4070d0f3dd159ebd8d059160935f08ef7e9`.
+The same canonical command now recognizes only this known failure and recovers analysis
+from the hash-validated raw result. It must not simulate M010 or register a replacement run.
+Original simulation SHA and RUN_HASH remain unchanged; the analysis SHA is recorded separately.
+Only successful exact reconstruction/equivalence and an evaluation whose full replay equals
+the saved raw result permit the explicit `POSTPROCESSING_RECOVERY_COMPLETED` event. Generic
+technical invalidation transitions stay terminal. Original failures are never overwritten.
+
+The independently verified snapshot audit found 1439 valid causal checkpoints in 461
+positions, zero releases and zero identified destination q90 support. This establishes
+`FROZEN_RULE_DID_NOT_TRIGGER`, not exact parent equivalence before its physical reconstruction.

@@ -897,3 +897,14 @@ See [M010_EVENT_ID_TECHNICAL_CORRECTION.md](M010_EVENT_ID_TECHNICAL_CORRECTION.m
 The next technical attempt must persist raw results before analysis, reconstruct unchanged
 M007 with exact IDs, audit the directed legacy projection, and retain strict full-behavior
 M007/M010 equality. No scientific threshold, configuration or initial capital is changed.
+
+## M010 completed computation and report-only recovery — 2026-09-07
+
+Run `5a53ab7dcebbdaf0f4697148c54d3e71b098575b6abc1a3b299c45312a5f4f0c`
+saved its complete replay at simulation SHA `1e4b85d`. A missing-identity-field error occurred
+only in subsequent parent reconstruction setup. Recover analysis from the saved result;
+do not rerun M010, replace its simulation SHA, or erase the original failure.
+The raw-result checksum and all 1439 causal snapshot checks passed independently. No
+destination first-cycle q90 was identifiable; no release occurred. The economic hypothesis
+remains inconclusive. Full exact reconstructed-parent comparison is still pending.
+See `reports/usdcusdt/M010-causal-audit.json` and the technical correction document.

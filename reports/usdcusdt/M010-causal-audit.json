@@ -1,0 +1,52 @@
+{
+  "schema_version": "m010-causal-audit-v1",
+  "classification": "READ_ONLY_POST_REPLAY_CAUSAL_SNAPSHOT_AUDIT",
+  "raw_artifact": "artifacts/usdcusdt/models/M010/runs/5a53ab7dcebbdaf0f4697148c54d3e71b098575b6abc1a3b299c45312a5f4f0c/completed-replay.json",
+  "raw_sha256": "af6a1297144dbb31396d7ca9c51301e4d6d59199b7541ccbb26e00c75a84a9c4",
+  "raw_bytes": 149396818,
+  "result_sha256_claimed": "4b781fe79f8c61bd8991c32a6b45e4070d0f3dd159ebd8d059160935f08ef7e9",
+  "result_sha256_computed": "4b781fe79f8c61bd8991c32a6b45e4070d0f3dd159ebd8d059160935f08ef7e9",
+  "result_sha256_verified": true,
+  "provenance": {
+    "campaign_snapshot_id": "b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9",
+    "code_commit": "1e4b85da2dcaf3e6a1ee4ff043c6870d207da0a5",
+    "dataset_hash": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+    "model_id": "M010",
+    "run_hash": "5a53ab7dcebbdaf0f4697148c54d3e71b098575b6abc1a3b299c45312a5f4f0c",
+    "scenario_hash": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"
+  },
+  "completed_cycles": 344704,
+  "release_closures_count": 0,
+  "snapshots": 1439,
+  "positions_with_checkpoints": 461,
+  "snapshot_hash_failures": [],
+  "strict_prefix_failures": [],
+  "integer_type_failures": [],
+  "release_rule_conjunction_failures": [],
+  "reason_counts": {
+    "KEEP_NO_PRODUCTIVE_ALTERNATIVE": 1127,
+    "KEEP_INSUFFICIENT_CAUSAL_HISTORY": 312
+  },
+  "rule_true_counts": {
+    "activity_support": 1033,
+    "alternative_differs": 312,
+    "exact_target_recovery_support": 1439,
+    "first_cycle_q90_support": 0,
+    "loss_support": 1006,
+    "strict_rmst_comparison": 0,
+    "survival_support_identified": 1015,
+    "would_release": 0
+  },
+  "other_gates_pass_excluding_q90_and_comparison": 39,
+  "q90_identified": 0,
+  "initial_quote": "100",
+  "final_marked_equity": "900637402983.4181046",
+  "open_cycle_censored": true,
+  "end_exclusive": "2026-09-05T23:59:59.783644Z",
+  "FROZEN_RULE_DID_NOT_TRIGGER": true,
+  "scientific_draft": "The frozen rule produced zero releases. No checkpoint identified the destination first-cycle q90 required by preregistration. Thirty-nine checkpoints passed the other five support and loss gates, but q90 remained unidentified. Zero releases is a valid policy result, not a reason to relax thresholds. Release economics and actual B/K recovery remain unobserved, so the capital-release economic hypothesis remains inconclusive. Exact behavioral equivalence is pending the separate canonical reconstruction audit.",
+  "equivalence_status": "PENDING_SEPARATE_CANONICAL_WORKFLOW_AUDIT",
+  "audit_scope_limit": "Snapshot hashes, declared scalar types, strict last-trade prefix ordering, and frozen Boolean conjunction were verified from saved raw output. This audit does not independently replay estimators or establish full behavioral equivalence.",
+  "executable_release_loss": "UNKNOWN",
+  "promotion_authorized": false
+}

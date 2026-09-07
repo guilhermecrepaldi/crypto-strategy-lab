@@ -2928,6 +2928,98 @@
         "reason": "ValueError: ZERO_RELEASE_BEHAVIORAL_DIVERGENCE: cycles,selection_changes",
         "to": "INVALIDATED_TECHNICAL"
       }
+    },
+    {
+      "event_type": "TECHNICAL_RETRY_AUTHORIZED",
+      "occurred_at": "2026-09-07T04:01:07.364515+00:00",
+      "payload": {
+        "authorization": "OWNER_EXPLORATORY_OVERRIDE",
+        "failed_run_hash": "800cb608c8273edff7fa01521044c3d500b57bbb5caa51e8f9abedcc74cc2592",
+        "failure_file_sha256": "eaa68fd00aeba9b78743100a5b05bd136e4aee960191e8a4ca601d8d5d31675c",
+        "model_id": "M010",
+        "new_code_commit": "1e4b85da2dcaf3e6a1ee4ff043c6870d207da0a5",
+        "old_code_commit": "356039f1d03fca8046bf8a6d695d8dc624d1f0c7",
+        "reason": "Correct NumPy representation defects; exact reconstructed M007 comparison and legacy event-ID audit; frozen M010 scientific rule unchanged.",
+        "replacement_run_hash": "5a53ab7dcebbdaf0f4697148c54d3e71b098575b6abc1a3b299c45312a5f4f0c"
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-07T04:01:07.364515+00:00",
+      "payload": {
+        "MODEL_HASH": "13e379401566126ad08cd9f0573e3bc310dbf61008a2c022408c6e29fb96286b",
+        "RUN_HASH": "5a53ab7dcebbdaf0f4697148c54d3e71b098575b6abc1a3b299c45312a5f4f0c",
+        "SCENARIO_HASH": "db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M010\\runs\\5a53ab7dcebbdaf0f4697148c54d3e71b098575b6abc1a3b299c45312a5f4f0c",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9",
+        "capital_mode": "COMPOUNDING",
+        "code_commit": "1e4b85da2dcaf3e6a1ee4ff043c6870d207da0a5",
+        "currency": "USDT",
+        "dataset_hash": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+        "initial_capital": "100",
+        "interval": {
+          "early_stop": "TECHNICAL_INVALIDITY_ONLY",
+          "end_exclusive": "2026-09-05T23:59:59.783644+00:00",
+          "full_replay": true,
+          "start": "2026-01-01T00:00:00+00:00"
+        },
+        "model_id": "M010",
+        "run": {
+          "capital_mode": "COMPOUNDING",
+          "capital_release_authorization": "OWNER_EXPLORATORY_OVERRIDE",
+          "capital_release_support_tape_hash": "4a5af5dfaf18a4249f9b98c0a4c15d6b2185df68b5148325f23e09878c3ef24f",
+          "currency": "USDT",
+          "execution_class": "PRICE_PATH_NOT_FILL_EVIDENCE",
+          "fixed_notional_auxiliary": {
+            "currency": "USDT",
+            "notional": "100",
+            "status": "AUXILIARY_ONLY"
+          },
+          "initial_capital": "100",
+          "live_accessed": false,
+          "locked_test_accessed": false,
+          "manifest": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+          "tape_cache": {
+            "cache_key": "22307d010fe179b2b834931f839376014423bde9a7751b4f453463de16bdcf18",
+            "schema_version": "usdcusdt-market-tape-v2",
+            "tape_hash": "505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c"
+          },
+          "testnet_accessed": false,
+          "validation_accessed": false
+        },
+        "technical_revision": "full-replay-historical-tick-temporal-regimes-v2"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-07T04:01:07.426390+00:00",
+      "payload": {
+        "from": "INVALIDATED_TECHNICAL",
+        "model_id": "M010",
+        "reason": "Correct NumPy representation defects; exact reconstructed M007 comparison and legacy event-ID audit; frozen M010 scientific rule unchanged.",
+        "retry_run_hash": "5a53ab7dcebbdaf0f4697148c54d3e71b098575b6abc1a3b299c45312a5f4f0c",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-07T04:17:30.829097+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M010",
+        "reason": "ValidationError: 2 validation errors for SerialModelConfig\nmodel_id\n  Field required [type=missing, input_value={'confirmation_checks': N...US_CAUSAL_TRADE_PREFIX'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nparent_model_id\n  Field required [type=missing, input_value={'confirmation_checks': N...US_CAUSAL_TRADE_PREFIX'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing",
+        "to": "INVALIDATED_TECHNICAL"
+      }
     }
   ],
   "models": [

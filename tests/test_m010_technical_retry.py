@@ -1,3 +1,4 @@
+import hashlib
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -130,3 +131,76 @@ def test_retry_accepts_only_diagnosed_legacy_event_projection_failure(tmp_path: 
         failed_hash, old.model_copy(update={"code_commit": "new"}), "audit event projection"
     )
     assert registry.current_status("M010") == ModelStatus.RUNNING
+
+
+@pytest.mark.parametrize("tamper", [None, "hash", "evaluation", "analysis_sha"])
+def test_completed_report_recovery_is_evidence_bound(tmp_path: Path, tamper: str | None) -> None:
+    registry, run_hash, run = _setup(tmp_path)
+    root = run_artifact_dir("M010", run_hash, registry.artifact_root)
+    raw = {"model_id": "M010", "initial_quote": "100", "completed_cycles": 3}
+    payload = {
+        "status": "COMPUTATION_COMPLETE_PENDING_VALIDATION",
+        "result": raw,
+        "result_sha256": hashlib.sha256(
+            json.dumps(raw, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest(),
+        "provenance": {
+            "model_id": "M010",
+            "run_hash": run_hash,
+            "code_commit": "old-sha",
+            "scenario_hash": run.scenario_hash,
+            "dataset_hash": run.dataset_hash,
+            "campaign_snapshot_id": run.campaign_snapshot_id,
+        },
+    }
+    (root / "completed-replay.json").write_text(json.dumps(payload))
+    failure = {
+        "classification": "INVALIDATED_TECHNICAL",
+        "run_hash": run_hash,
+        "error_type": "ValidationError",
+        "error": "model_id parent_model_id Field required",
+    }
+    (root / "technical-failure.json").write_text(json.dumps(failure))
+    event = registry.append_evaluation(
+        "M010",
+        {
+            "run_hash": run_hash,
+            "scenario_hash": run.scenario_hash,
+            "campaign_snapshot_id": run.campaign_snapshot_id,
+            "comparison": {},
+            "criteria": {},
+            "replay": raw,
+            "metrics": {
+                "capital_release": {
+                    "code_commit": "old-sha",
+                    "analysis_code_commit": "new-sha",
+                    "equivalence": {
+                        "M010_BEHAVIORALLY_EQUIVALENT_TO_M007": "YES",
+                        "legacy_m007_event_id_audit": {"all_other_fields_exactly_equal": True},
+                    },
+                }
+            },
+        },
+    )
+    if tamper == "hash":
+        payload["result_sha256"] = "invalid"
+        (root / "completed-replay.json").write_text(json.dumps(payload))
+    if tamper == "evaluation":
+        (Path(event["payload"]["artifact_directory"]) / "replay.json").write_text("{}")
+    if tamper is not None:
+        with pytest.raises(ValueError):
+            registry.complete_m010_report_recovery(
+                run_hash,
+                event["payload"]["EVALUATION_HASH"],
+                "old-sha" if tamper == "analysis_sha" else "new-sha",
+            )
+        assert registry.current_status("M010") == ModelStatus.INVALIDATED_TECHNICAL
+        return
+    registry.complete_m010_report_recovery(run_hash, event["payload"]["EVALUATION_HASH"], "new-sha")
+    assert registry.current_status("M010") == ModelStatus.EVALUATED
+    assert json.loads((root / "technical-failure.json").read_text()) == failure
+    assert registry.journal()[-2]["event_type"] == "POSTPROCESSING_RECOVERY_COMPLETED"
+    with pytest.raises(InvalidStatusTransition):
+        registry.complete_m010_report_recovery(
+            run_hash, event["payload"]["EVALUATION_HASH"], "new-sha"
+        )
