@@ -1,8 +1,9 @@
-from datetime import UTC, datetime
-from decimal import Decimal
+from datetime import UTC, datetime, timedelta
+from decimal import Decimal, localcontext
 from itertools import product
 
 from crypto_strategy_lab.microstructure.recovery_reserve_metrics import (
+    _duration_hours,
     robust_regions,
     summarize_replay,
 )
@@ -37,6 +38,14 @@ def test_summary_uses_24_hour_ruler_and_segregated_reserve():
         "0.0190476190"
     )
     assert out["hours_gt24h"] == out["lock_hours"]
+
+
+def test_duration_uses_integer_microseconds_without_float_round_trip():
+    start = datetime(2026, 1, 1, tzinfo=UTC)
+    with localcontext() as context:
+        context.prec = 128
+        expected = Decimal(1) / Decimal(3_600_000_000)
+    assert _duration_hours(start, start + timedelta(microseconds=1)) == expected
 
 
 def _row(sid, lock="4", loss="5", floor="2.5", **kw):
@@ -123,3 +132,27 @@ def test_equity_gate_accepts_exact_point_one_cent_and_order_is_stable():
     second = robust_regions(list(reversed(rows)), baseline)
     assert first["qualifying_centers"]
     assert first["regions"] == second["regions"]
+
+
+def test_large_equity_gate_does_not_round_away_exact_cent_threshold():
+    baseline = {
+        "total_final_equity": "123456789012345678901234567.894",
+        "operating_uptime": "0.8",
+        "lock_hours": "100",
+        "completed_cycles": 100,
+        "zero_cycle_days": 10,
+        "hold_p99_hours": "24",
+        "maximum_drawdown": "0.1",
+    }
+    configs = list(product(("1", "4", "12"), ("2", "5", "10"), ("0", "2.5")))
+    below = [
+        _row(str(i), lock=h, loss=b, floor=f, total_final_equity="123456789012345678901234567.903")
+        for i, (h, b, f) in enumerate(configs)
+    ]
+    exact = [
+        _row(str(i), lock=h, loss=b, floor=f, total_final_equity="123456789012345678901234567.904")
+        for i, (h, b, f) in enumerate(configs)
+    ]
+
+    assert robust_regions(below, baseline)["qualifying_centers"] == []
+    assert robust_regions(exact, baseline)["qualifying_centers"]

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "classification": "INVALIDATED_TECHNICAL_PRE_OUTPUT",
+  "campaign": "USDCUSDT_EXHAUSTIVE",
+  "model_id": null,
+  "phase": "M011_UNREGISTERED_PHASE_A",
+  "git_commit_sha": "2c1fef97ee0a33ababdc36fa0b83cff7f5f549c5",
+  "artifact_identity": "c7ee9d04d56e586c06b06d34d114ff9989ff6fb9849b516ba8f33ebc9aa3aeb5",
+  "completed_checkpoints_before_stop": ["RRV2_H1_B2_F0"],
+  "partial_scenario_at_stop": "RRV2_H1_B2_F2.5",
+  "trigger": "Read-only mechanical audit identified Decimal28 arithmetic in monetary post-processing gates, efficiency metrics, and robust ranking.",
+  "risk": "At compounded magnitudes near 1e26, low-order equity increments could be rounded before threshold comparison or ranking.",
+  "scope_decision": "Stop before producing a complete grid or selection, preserve checkpoints, exclude the attempt, and rerun all 18 scenarios under a source-bound identity with Decimal128 post-processing.",
+  "private_exchange_access": false,
+  "testnet_or_live": false
+}

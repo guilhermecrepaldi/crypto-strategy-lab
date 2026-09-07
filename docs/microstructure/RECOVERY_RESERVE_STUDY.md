@@ -49,3 +49,9 @@ reconciled all 99 release transfers in `RRV2_H1_B5_F0`, then failed its final le
 the derived buy fee of the still-open final position was calculated under Decimal28. The
 checkpoint cash and reserve were exact; the result field was not. This attempt is also preserved,
 excluded wholesale as `INVALIDATED_TECHNICAL`, and never resumed after the source correction.
+
+The fourth attempt at `2c1fef9` / identity `c7ee9d04d56e586c06b06d34d114ff9989ff6fb9849b516ba8f33ebc9aa3aeb5`
+was stopped during its second scenario after a read-only mechanical audit found that monetary
+post-processing gates and ranking still used Decimal28. No final grid or scientific selection was
+produced. Its first completed checkpoint and partial second checkpoint are preserved and excluded
+as `INVALIDATED_TECHNICAL_PRE_OUTPUT`; the next identity restarts the entire grid.

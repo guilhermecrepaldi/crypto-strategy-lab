@@ -8,7 +8,7 @@ import json
 import subprocess
 import time
 from datetime import datetime
-from decimal import Decimal
+from decimal import Decimal, localcontext
 from pathlib import Path
 from typing import Any
 
@@ -400,33 +400,79 @@ def run_study() -> dict[str, Any]:
             D(audit["maximum_drawdown"]),
         )
         consumed = D(audit["total_release_loss"])
-        interval_days = D(
-            _datetime_to_micros(result.end_exclusive) - _datetime_to_micros(result.start)
-        ) / D(86_400_000_000)
         reserve_max = max((D(point["reserve"]) for point in audit["series"]), default=D(5))
         replenishment_seconds = [
             D(item["time_to_replenish_seconds"])
             for item in runtime.replenishments
             if item["time_to_replenish_seconds"] is not None
         ]
-        holds = [
-            D(_datetime_to_micros(c.exit_timestamp) - _datetime_to_micros(c.entry_timestamp))
-            / 3_600_000_000
-            for c in (*result.cycles, *result.release_closures)
-        ]
-        if result.open_entry_timestamp is not None:
-            holds.append(
-                D(
-                    _datetime_to_micros(result.end_exclusive)
-                    - _datetime_to_micros(result.open_entry_timestamp)
-                )
-                / 3_600_000_000
+        with localcontext() as context:
+            context.prec = LEDGER_PRECISION
+            interval_microseconds = D(
+                _datetime_to_micros(result.end_exclusive)
+                - _datetime_to_micros(result.start)
             )
-        threshold_lock = sum((max(D(0), duration - config.lock_hours) for duration in holds), D(0))
-        interval_hours = (
-            D(_datetime_to_micros(result.end_exclusive) - _datetime_to_micros(result.start))
-            / 3_600_000_000
-        )
+            interval_days = interval_microseconds / D(86_400_000_000)
+            interval_hours = interval_microseconds / D(3_600_000_000)
+            holds = [
+                D(
+                    _datetime_to_micros(c.exit_timestamp)
+                    - _datetime_to_micros(c.entry_timestamp)
+                )
+                / D(3_600_000_000)
+                for c in (*result.cycles, *result.release_closures)
+            ]
+            if result.open_entry_timestamp is not None:
+                holds.append(
+                    D(
+                        _datetime_to_micros(result.end_exclusive)
+                        - _datetime_to_micros(result.open_entry_timestamp)
+                    )
+                    / D(3_600_000_000)
+                )
+            threshold_lock = sum(
+                (max(D(0), duration - config.lock_hours) for duration in holds), D(0)
+            )
+            attributable_profit = (
+                result.realized_profit + consumed - baseline_result.realized_profit
+            )
+            burn_per_day = consumed / interval_days
+            burn_per_30_days = burn_per_day * D(30)
+            burn_per_100k_cycles = (
+                consumed / D(result.completed_cycles) * D(100_000)
+                if result.completed_cycles
+                else None
+            )
+            contribution_per_day = runtime.total_skim / interval_days
+            contribution_per_30_days = contribution_per_day * D(30)
+            contribution_per_100k_cycles = (
+                runtime.total_skim / D(result.completed_cycles) * D(100_000)
+                if result.completed_cycles
+                else None
+            )
+            funding_minus_consumption = runtime.total_skim - consumed
+            reserve_to_operating = runtime.reserve / row["final_operating_equity"]
+            zero_days_per_reserve = (
+                D(baseline_result.zero_cycle_days - result.zero_cycle_days) / consumed
+                if consumed
+                else None
+            )
+            lock_hours_per_reserve = (
+                (baseline["lock_hours"] - row["lock_hours"]) / consumed
+                if consumed
+                else None
+            )
+            reserve_efficiency = attributable_profit / consumed if consumed else None
+            cycles_per_reserve = (
+                D(result.completed_cycles - baseline_result.completed_cycles) / consumed
+                if consumed
+                else None
+            )
+            equity_gain_per_reserve = (
+                (row["total_final_equity"] - baseline["total_final_equity"]) / consumed
+                if consumed
+                else None
+            )
         row.update(
             {
                 "scenario_id": config.scenario_id,
@@ -459,9 +505,7 @@ def run_study() -> dict[str, Any]:
                 ),
                 "threshold_specific_lock_hours": threshold_lock,
                 "threshold_specific_operating_uptime": 1 - threshold_lock / interval_hours,
-                "additional_profit_attributable_to_released_capital": (
-                    result.realized_profit + consumed - baseline_result.realized_profit
-                ),
+                "additional_profit_attributable_to_released_capital": attributable_profit,
                 "reserve_dollars_consumed": consumed,
                 "reserve_depletion_events": audit["reserve_depletion_events"],
                 "reserve_empty_fraction": audit["reserve_empty_fraction"],
@@ -479,25 +523,14 @@ def run_study() -> dict[str, Any]:
                     item["time_to_replenish_seconds"] is None
                     for item in runtime.replenishments
                 ),
-                "reserve_burn_rate_per_day": consumed / interval_days,
-                "reserve_burn_rate_per_30_days": consumed / interval_days * D(30),
-                "reserve_burn_rate_per_100k_cycles": (
-                    consumed / D(result.completed_cycles) * D(100_000)
-                    if result.completed_cycles
-                    else None
-                ),
-                "reserve_contribution_rate_per_day": runtime.total_skim / interval_days,
-                "reserve_contribution_rate_per_30_days": runtime.total_skim
-                / interval_days
-                * D(30),
-                "reserve_contribution_rate_per_100k_cycles": (
-                    runtime.total_skim / D(result.completed_cycles) * D(100_000)
-                    if result.completed_cycles
-                    else None
-                ),
-                "reserve_funding_minus_consumption": runtime.total_skim - consumed,
-                "reserve_to_operating_ratio": runtime.reserve
-                / row["final_operating_equity"],
+                "reserve_burn_rate_per_day": burn_per_day,
+                "reserve_burn_rate_per_30_days": burn_per_30_days,
+                "reserve_burn_rate_per_100k_cycles": burn_per_100k_cycles,
+                "reserve_contribution_rate_per_day": contribution_per_day,
+                "reserve_contribution_rate_per_30_days": contribution_per_30_days,
+                "reserve_contribution_rate_per_100k_cycles": contribution_per_100k_cycles,
+                "reserve_funding_minus_consumption": funding_minus_consumption,
+                "reserve_to_operating_ratio": reserve_to_operating,
                 "zero_days_avoided_per_intervention": (
                     D(baseline_result.zero_cycle_days - result.zero_cycle_days)
                     / D(len(runtime.releases))
@@ -516,16 +549,8 @@ def run_study() -> dict[str, Any]:
                     if runtime.releases
                     else None
                 ),
-                "zero_days_avoided_per_reserve_usdt": (
-                    D(baseline_result.zero_cycle_days - result.zero_cycle_days) / consumed
-                    if consumed
-                    else None
-                ),
-                "lock_hours_avoided_per_reserve_usdt": (
-                    (baseline["lock_hours"] - row["lock_hours"]) / consumed
-                    if consumed
-                    else None
-                ),
+                "zero_days_avoided_per_reserve_usdt": zero_days_per_reserve,
+                "lock_hours_avoided_per_reserve_usdt": lock_hours_per_reserve,
                 "decision_counts": dict(runtime.evaluations),
                 "monthly": monthly_metrics(
                     result, audit, runtime.releases, config.skim_rate
@@ -533,36 +558,11 @@ def run_study() -> dict[str, Any]:
                 "efficiency_classification": (
                     "RETROSPECTIVE_POLICY_COMPARISON_PROXY_NOT_IDENTIFIED_CAUSAL_EFFECT"
                 ),
-                "reserve_efficiency": (
-                    result.realized_profit + consumed - baseline_result.realized_profit
-                )
-                / consumed
-                if consumed
-                else None,
-                "additional_cycles_per_reserve_dollar": D(
-                    result.completed_cycles - baseline_result.completed_cycles
-                )
-                / consumed
-                if consumed
-                else None,
-                "cycles_gained_per_reserve_usdt": D(
-                    result.completed_cycles - baseline_result.completed_cycles
-                )
-                / consumed
-                if consumed
-                else None,
-                "net_equity_gain_per_reserve_dollar": (
-                    row["total_final_equity"] - baseline["total_final_equity"]
-                )
-                / consumed
-                if consumed
-                else None,
-                "additional_total_equity_per_reserve_usdt_consumed": (
-                    row["total_final_equity"] - baseline["total_final_equity"]
-                )
-                / consumed
-                if consumed
-                else None,
+                "reserve_efficiency": reserve_efficiency,
+                "additional_cycles_per_reserve_dollar": cycles_per_reserve,
+                "cycles_gained_per_reserve_usdt": cycles_per_reserve,
+                "net_equity_gain_per_reserve_dollar": equity_gain_per_reserve,
+                "additional_total_equity_per_reserve_usdt_consumed": equity_gain_per_reserve,
             }
         )
         replay_hash = write_replay(path / "replay.json.gz", result)

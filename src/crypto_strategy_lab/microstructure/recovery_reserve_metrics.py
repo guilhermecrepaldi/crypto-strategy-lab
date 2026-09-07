@@ -32,8 +32,14 @@ def _duration_hours(start: Any, end: Any) -> Decimal | None:
     if start is None or end is None:
         return None
     try:
-        seconds = D(str((end - start).total_seconds()))
-        return seconds / D(3600)
+        duration = end - start
+        microseconds = (
+            (duration.days * 86_400 + duration.seconds) * 1_000_000
+            + duration.microseconds
+        )
+        with localcontext() as context:
+            context.prec = _LEDGER_PRECISION
+            return D(microseconds) / D(3_600_000_000)
     except Exception:
         return None
 
@@ -67,12 +73,6 @@ def summarize_replay(
         if open_hours is not None:
             holds.append(max(D(0), open_hours))
     interval = _duration_hours(result.start, result.end_exclusive)
-    lock_hours = sum((max(D(0), h - _DAY) for h in holds), D(0))
-    hours_gt1 = sum((max(D(0), h - D(1)) for h in holds), D(0))
-    hours_gt6 = sum((max(D(0), h - D(6)) for h in holds), D(0))
-    inventory_hours = sum(holds, D(0))
-    uptime = None if interval is None or interval <= 0 else D(1) - lock_hours / interval
-    inventory_fraction = None if interval is None or interval <= 0 else inventory_hours / interval
     release_losses_raw = [_dec(r.get("loss_usdt")) for r in releases]
     release_losses: list[Decimal] = [x for x in release_losses_raw if x is not None and x > 0]
     depletion = 0
@@ -92,15 +92,41 @@ def summarize_replay(
         return ordered_holds[max(0, index - 1)]
 
     release_events = sorted(int(row["event"]) for row in releases if row.get("event") is not None)
-    intervals = [
-        D(right - left) / D(4096 * 1_000_000 * 3600)
-        for left, right in pairwise(release_events)
-    ]
     with localcontext() as context:
         context.prec = _LEDGER_PRECISION
+        lock_hours = sum((max(D(0), h - _DAY) for h in holds), D(0))
+        hours_gt1 = sum((max(D(0), h - D(1)) for h in holds), D(0))
+        hours_gt6 = sum((max(D(0), h - D(6)) for h in holds), D(0))
+        inventory_hours = sum(holds, D(0))
+        uptime = None if interval is None or interval <= 0 else D(1) - lock_hours / interval
+        inventory_fraction = (
+            None if interval is None or interval <= 0 else inventory_hours / interval
+        )
+        intervals = [
+            D(right - left) / D(4096 * 1_000_000 * 3600)
+            for left, right in pairwise(release_events)
+        ]
+        release_loss_total = sum(release_losses, D(0))
+        mean_intervention_hours = (
+            sum(intervals, D(0)) / D(len(intervals)) if intervals else None
+        )
+        median_intervention_hours = (
+            sorted(intervals)[len(intervals) // 2]
+            if len(intervals) % 2 == 1
+            else (
+                sum(
+                    sorted(intervals)[len(intervals) // 2 - 1 : len(intervals) // 2 + 1],
+                    D(0),
+                )
+                / D(2)
+                if intervals
+                else None
+            )
+        )
         final_operating = result.final_cash + result.final_inventory * result.last_price
         total_equity = final_operating + reserve_final
         total_return = total_equity / D(105) - D(1)
+        max_hold_days = max(holds, default=D(0)) / D(24)
     return {
         "initial_capital": D(100),
         "currency": "USDT",
@@ -126,7 +152,7 @@ def summarize_replay(
         "operating_uptime": uptime,
         "inventory_open_fraction": inventory_fraction,
         "max_hold_hours": max(holds, default=D(0)),
-        "max_hold_days": max(holds, default=D(0)) / D(24),
+        "max_hold_days": max_hold_days,
         "hold_p95_hours": percentile(D("0.95")),
         "hold_p99_hours": percentile(D("0.99")),
         "reserve_final": reserve_final,
@@ -134,20 +160,9 @@ def summarize_replay(
         "min_reserve_balance": reserve_min,
         "total_skim": total_skim,
         "reserve_depletion_events": depletion,
-        "reserve_dollars_consumed": sum(release_losses, D(0)),
-        "mean_time_between_interventions_hours": (
-            sum(intervals, D(0)) / D(len(intervals)) if intervals else None
-        ),
-        "median_time_between_interventions_hours": (
-            sorted(intervals)[len(intervals) // 2]
-            if len(intervals) % 2 == 1
-            else (
-                sum(sorted(intervals)[len(intervals) // 2 - 1 : len(intervals) // 2 + 1], D(0))
-                / D(2)
-                if intervals
-                else None
-            )
-        ),
+        "reserve_dollars_consumed": release_loss_total,
+        "mean_time_between_interventions_hours": mean_intervention_hours,
+        "median_time_between_interventions_hours": median_intervention_hours,
         "maximum_drawdown": maximum_drawdown,
         "integrity_pass": None,
     }
@@ -242,20 +257,22 @@ def _gate(row: dict[str, Any], baseline: dict[str, Any]) -> tuple[bool, dict[str
     nr, nde = n("reserve_final"), n("reserve_depletion_events")
     nz, bz = n("zero_cycle_days"), b("zero_cycle_days")
     funding, consumed = n("total_skim"), n("reserve_dollars_consumed")
-    checks = {
-        "total_final_equity": ne is not None and be is not None and ne >= be + D("0.01"),
-        "zero_cycle_days": nz is not None and bz is not None and nz < bz,
-        "operating_uptime": nu is not None and bu is not None and nu > bu,
-        "lock_hours": nl is not None and bl is not None and nl < bl,
-        "completed_cycles": nc is not None and bc is not None and nc > bc,
-        "reserve_final": nr is not None and nr >= D(5),
-        "funding_covers_consumption": (
-            funding is not None and consumed is not None and funding >= consumed
-        ),
-        "reserve_depletion_events": nde is not None and nde == 0,
-        "maximum_drawdown": nd is not None and bd is not None and nd <= bd + D("0.01"),
-        "integrity_pass": row.get("integrity_pass") is True,
-    }
+    with localcontext() as context:
+        context.prec = _LEDGER_PRECISION
+        checks = {
+            "total_final_equity": ne is not None and be is not None and ne >= be + D("0.01"),
+            "zero_cycle_days": nz is not None and bz is not None and nz < bz,
+            "operating_uptime": nu is not None and bu is not None and nu > bu,
+            "lock_hours": nl is not None and bl is not None and nl < bl,
+            "completed_cycles": nc is not None and bc is not None and nc > bc,
+            "reserve_final": nr is not None and nr >= D(5),
+            "funding_covers_consumption": (
+                funding is not None and consumed is not None and funding >= consumed
+            ),
+            "reserve_depletion_events": nde is not None and nde == 0,
+            "maximum_drawdown": nd is not None and bd is not None and nd <= bd + D("0.01"),
+            "integrity_pass": row.get("integrity_pass") is True,
+        }
     return all(checks.values()), checks
 
 
@@ -378,35 +395,39 @@ def robust_regions(rows: list[dict[str, Any]], baseline: dict[str, Any]) -> dict
             parsed = [value for value in values if value is not None]
             return min(base - value if inverse else value - base for value in parsed)
 
-        zero = worst_improvement("zero_cycle_days", baseline_zero, inverse=True)
-        cycles = worst_improvement("completed_cycles", baseline_cycles)
-        uptime = worst_improvement("operating_uptime", baseline_uptime)
-        equity = worst_improvement("total_final_equity", baseline_equity)
-        hold_tail = worst_improvement("hold_p99_hours", baseline_hold_p99, inverse=True)
-        releases = max((_dec(row.get("release_count")) or D(0) for row in peer_rows), default=D(0))
-        sustainability = min(
-            (
-                (_dec(row.get("total_skim")) or D(0))
-                - (_dec(row.get("reserve_dollars_consumed")) or D(0))
-                for row in peer_rows
-            ),
-            default=D("-Infinity"),
-        )
-        loss = _dec(center["config"].get("max_loss_bps")) or D(0)
-        lock = _dec(center["config"].get("lock_hours_threshold")) or D(0)
-        floor = _dec(center["config"].get("reserve_floor")) or D(0)
-        return (
-            zero,
-            cycles,
-            uptime,
-            equity,
-            hold_tail,
-            -releases,
-            sustainability,
-            -loss,
-            lock,
-            floor,
-        )
+        with localcontext() as context:
+            context.prec = _LEDGER_PRECISION
+            zero = worst_improvement("zero_cycle_days", baseline_zero, inverse=True)
+            cycles = worst_improvement("completed_cycles", baseline_cycles)
+            uptime = worst_improvement("operating_uptime", baseline_uptime)
+            equity = worst_improvement("total_final_equity", baseline_equity)
+            hold_tail = worst_improvement("hold_p99_hours", baseline_hold_p99, inverse=True)
+            releases = max(
+                (_dec(row.get("release_count")) or D(0) for row in peer_rows), default=D(0)
+            )
+            sustainability = min(
+                (
+                    (_dec(row.get("total_skim")) or D(0))
+                    - (_dec(row.get("reserve_dollars_consumed")) or D(0))
+                    for row in peer_rows
+                ),
+                default=D("-Infinity"),
+            )
+            loss = _dec(center["config"].get("max_loss_bps")) or D(0)
+            lock = _dec(center["config"].get("lock_hours_threshold")) or D(0)
+            floor = _dec(center["config"].get("reserve_floor")) or D(0)
+            return (
+                zero,
+                cycles,
+                uptime,
+                equity,
+                hold_tail,
+                -releases,
+                sustainability,
+                -loss,
+                lock,
+                floor,
+            )
 
     selected = max(qualifying, key=ranking)["config"] if qualifying else None
     return {
