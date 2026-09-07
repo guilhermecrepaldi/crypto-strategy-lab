@@ -1,5 +1,11 @@
 # M011 target — self-funded recovery reserve v2
 
+> HISTORICAL_SUPERSEDED_PREREGISTRATION. This document recorded an unregistered target ID
+> for V2, not a registered M011 strategy. The OWNER override retired that hypothesis before
+> registration. Current complete-strategy M011 authority is `RECOVERY_DYNAMIC_PREREGISTRATION.md`
+> and `M011_MODEL_SPEC.json`; handoff is `CURRENT_STRATEGY.md`. The original text below is
+> preserved as historical evidence and confers no execution or ID-reservation authority.
+
 Status: TARGET_ID_FREE_NOT_REGISTERED. Parent and current champion: M007.
 
 This is the requested M011-named entrypoint. The single scientific authority is the

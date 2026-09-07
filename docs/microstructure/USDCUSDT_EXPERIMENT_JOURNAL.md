@@ -953,3 +953,48 @@ The canonical command now skips an already completed inconclusive run; it does n
 restart M010. With the documented failed-analysis state, it validates and recovers the saved
 computation without another M010 simulation. Rebuilding raw market data follows the existing
 official-download manifest, not invented candles. No large tape/replay is stored in Git.
+
+## OWNER strategy supersession and M011 preregistration — 2026-09-07
+
+Authority: `OWNER_STRATEGY_OVERRIDE.md`; handoff: `CURRENT_STRATEGY.md`. This append-only
+decision supersedes conflicting prior continuation/promotion terminology, not historical
+evidence. M007 is HISTORICAL_BASELINE / SCIENTIFIC_ANCESTOR and unchanged SHADOW_MODEL.
+The new complete-strategy research identity is M011, parent M007, status CREATED / NOT_RUN;
+M010 is not a parent and its controls are not imported. The physical registry had M001–M010;
+the older draft filename mentioning M011 was not a registration.
+
+Observation: M007's 193 zero-cycle days and concentrated capital lock motivate reserve-backed
+release. The published V2 identity `097abdab8225038b091cb721bdd36bedb8a636c94bed1c87120adc0c9e10953a`
+has 9/18 completed scenarios. Its last completed H4_B5_F0 has 853616 cycles, 120 zero days,
+128 active days, 69 releases, 2659-hour max hold and 2801 lock hours. Its H1_B10 configurations
+have 3580880 cycles and 3 zero days. These remain theoretical historical results, not M011.
+See the complete exact scoreboard and integrity limits in
+`reports/usdcusdt/OWNER-strategy-transition-evidence.json`.
+
+Decision: retire predecessor V2/V3 work under SUPERSEDED_BY_OWNER_STRATEGY_UPDATE, not FAIL.
+No matching writer existed at preflight; no process termination by this delivery is claimed.
+The old continuation automation is PAUSED, all checkpoints/artifacts preserved and no replay
+restarted. Previous technical findings remain independently scoped and are not erased.
+
+New hypothesis: stronger strictly causal destination productivity can repay fully covered
+local releases and increase compounding cycle uptime. Freeze 100 operating + 5 reserve,
+2% of every positive realized cycle profit, 5% target, 10% cap with overflow, one lot and
+dynamic monotone confidence/loss rules. Full equations and bounded seven-policy region plus
+matched passive control: `RECOVERY_DYNAMIC_PREREGISTRATION.md`. Every material alternative
+requires its own next-free Mn. Only the center M011 is registered now.
+
+Expected effect: more cycles and uptime, fewer locks/zero days, seek <=9 zero days without
+inferior total equity or unreplenished reserve spending. Risks: uncalibrated causal confidence,
+constant-rate recovery assumptions, peg risk, parameter cliffs, capacity-unbounded zero-fee
+price-path compounding, and DEVELOPMENT overfit. The 2% skim tends to 2/98 reserve/bank ratio;
+5% is not mathematically maintained. Do not alter funding or claim a guaranteed 5–10% band.
+
+Quality-first supersedes the cost-priority routing policy; original policy preserved in
+`MODEL_ROUTING_POLICY_HISTORY.md`. GPT-6 Astra High performed scientific preregistration;
+GPT-5.6 Terra High audited physical evidence. Python remains the calculator.
+
+Delivery gate: commit/push authority, registry projection and preregistration, then STOP.
+New runtime NOT_IMPLEMENTED, no new campaign authorized or started. First future scenario is
+the separately registered matched passive control, then M011 center, after explicit execution
+authority and validated/published implementation. No account, Testnet, live, deployment,
+second lot, additional pair or SHADOW migration.

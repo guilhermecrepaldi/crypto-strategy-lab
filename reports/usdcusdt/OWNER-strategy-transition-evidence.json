@@ -1,0 +1,108 @@
+{
+  "schema": "owner-strategy-transition-evidence-v1",
+  "observation_scope": "read-only mechanical audit; no replay, trainer, or market operation was launched",
+  "snapshot_basis": "Directory and process snapshot after the OWNER override was supplied; partial checkpoint modified 2026-09-07T16:37:27-03:00.",
+  "owner_override": {
+    "source_attachment": "C:\\Users\\Home\\.codex\\attachments\\16916c97-609d-4172-93bd-4f4f9535688b\\pasted-text.txt",
+    "identity_status": "SUPERSEDED_BY_OWNER_STRATEGY_UPDATE",
+    "completed_results_status": "VALID_HISTORICAL_EVIDENCE",
+    "status_scope": "The override supersedes the unregistered Phase A recovery-reserve identity. It does not alter or erase any completed scenario artifact."
+  },
+  "run": {
+    "path": "artifacts/usdcusdt/recovery-reserve/097abdab8225038b091cb721bdd36bedb8a636c94bed1c87120adc0c9e10953a",
+    "identity_sha256": "98510e996450abd3d5074aa165cdd6b2ab281cbcdb4be6bba30ee5749365d1e6",
+    "progress_sha256": "97294e800598951d4534a85b9964066e782b187556280550ffd49ac73d6521ad",
+    "model_id": "NOT_REGISTERED_PHASE_A",
+    "parent_model": "M007",
+    "schema": "recovery-reserve-study-2",
+    "git_commit_sha": "c83d768d5b336f1052d34f5a064a7e6ebbb5cda3",
+    "phase": "DEVELOPMENT",
+    "trading_enabled": false,
+    "initial_operating": "100",
+    "initial_reserve": "5",
+    "total_initial_equity": "105",
+    "completed_count": 9,
+    "total_count": 18,
+    "last_completed_scenario": "RRV2_H4_B5_F0",
+    "next_unwritten_grid_scenario": "RRV2_H4_B5_F2.5",
+    "incomplete_scenario_directory_present": true,
+    "partial_scenario": {
+      "scenario": "RRV2_H4_B5_F2.5",
+      "path": "artifacts/usdcusdt/recovery-reserve/097abdab8225038b091cb721bdd36bedb8a636c94bed1c87120adc0c9e10953a/RRV2_H4_B5_F2.5/checkpoint.json",
+      "bytes": 199996232,
+      "last_write_local": "2026-09-07T16:37:27-03:00",
+      "cursor": 7301138350080000000,
+      "cycles_settled": 614174,
+      "checkpoint_payload_sha256": "3a2d3ca8e9faa8265b0abb4efaaa0f0c203e1353fd72eeaa6fbfba8178c52774",
+      "completed_json_present": false
+    },
+    "checkpoint_observation": "Each of the nine completed scenario directories contains checkpoint.json and completed.json. The partial scenario contains checkpoint.json only. Completed sidecars validate their audit.json and runtime.json SHA-256 values."
+  },
+  "baseline": {
+    "path": "artifacts/usdcusdt/recovery-reserve/097abdab8225038b091cb721bdd36bedb8a636c94bed1c87120adc0c9e10953a/baseline.json",
+    "sha256": "dd5cc88e9daa57bc3dda0d84308cdc4bbb6e4f1481373fa174c8ddf18e5a1ba5",
+    "integrity_pass": true,
+    "cycles": 344704,
+    "zero_cycle_days": 193,
+    "active_days": 55,
+    "operating_uptime": "0.23197288133688604738478745090273454896169523200215303983058090117164918672963949765148424217277687703168468148274954015838558048",
+    "release_count": 0,
+    "operating_equity": "900637402983.4181046",
+    "reserve": "5",
+    "total_equity": "900637402988.4181046",
+    "max_hold_hours": "2670.7074896425",
+    "lock_hours": "4571.2973641252777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777779",
+    "maximum_drawdown": "0.0026851666998865205319425947212889983745037424483673091110571020459823266011085936727562997355598440534196902809601802276137094369"
+  },
+  "completed_scenarios": [
+    {"scenario":"RRV2_H1_B10_F0","cycles":3580880,"zero_cycle_days":3,"active_days":245,"operating_uptime":"0.99932795698246151904576633506318236582147382484276017620968771860173966014215510704693615312532287679129127142401313845083756080","release_count":156,"operating_equity":"99170166487375290747346675900175339794777916385797189342362864668707871261459857703644710262920090089764562804067230702578807168","reserve":"1800285862682184571529398112791555740195900762535901847874236552463335643490873253824810493930209033525954044232434277776550729.7","total_equity":"1.0097045235005747531887607401296689553497381714833309119023710122117120690495073095746952075685029912329051684829966498035535790E+128","max_hold_hours":"26","lock_hours":"4","maximum_drawdown":"0.0016636260426529774342554303419788245319139994475795993089457440281658813087893212465642632174366959844374366400461230883011487419","payload_sha256":"7426023f35d82d018a0d521e58021efd06768bad05d6d0c3eb11db0dd87c272c","replay_sha256":"2b08d28152b27000120f6c503838ff1c8ed7da12c33d34892826c41c3da98e51","integrity_pass":true,"audit_hash_match":true,"runtime_hash_match":true},
+    {"scenario":"RRV2_H1_B10_F2.5","cycles":3580880,"zero_cycle_days":3,"active_days":245,"operating_uptime":"0.99932795698246151904576633506318236582147382484276017620968771860173966014215510704693615312532287679129127142401313845083756080","release_count":156,"operating_equity":"99170166487375290747346675900175339794777916385797189342362864668707871261459857703644710262920090089764562804067230702578807168","reserve":"1800285862682184571529398112791555740195900762535901847874236552463335643490873253824810493930209033525954044232434277776550729.7","total_equity":"1.0097045235005747531887607401296689553497381714833309119023710122117120690495073095746952075685029912329051684829966498035535790E+128","max_hold_hours":"26","lock_hours":"4","maximum_drawdown":"0.0016636260426529774342554303419788245319139994475795993089457440281658813087893212465642632174366959844374366400461230883011487419","payload_sha256":"1a846ebd9bf144e99dba011a194dd057186e2333fbb44f54db3c566d5d4de035","replay_sha256":"62c103a1fcfb96160ece0a5bdae5cd6655fb0c90faf4182c8a5ce985dea9c732","integrity_pass":true,"audit_hash_match":true,"runtime_hash_match":true},
+    {"scenario":"RRV2_H1_B2_F0","cycles":615743,"zero_cycle_days":157,"active_days":91,"operating_uptime":"0.38474596194757585420072251677547793643011239985968294429704128847122652556006786533350335424579281059600644644701924318115737835","release_count":65,"operating_equity":"9070138325626596334.520173646","reserve":"174764542492085111.905211654","total_equity":"9244902868118681446.425385300","max_hold_hours":"2670.7074896425","lock_hours":"3661.9919975119444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444445","maximum_drawdown":"0.0026314633661966403149994206447127588574875796424574362932586005842797825462386411437487001083982234205417889095140731474727232711","payload_sha256":"ae259cb41dba0ef42dc6d3414897b3938ea05ab15e3412e1f168f6c36d9f02e7","replay_sha256":"d66b2f6eb40c5bc8a27999ae8db97b64ca00baca2d0c1f2c2d5e936107b66062","integrity_pass":true,"audit_hash_match":true,"runtime_hash_match":true},
+    {"scenario":"RRV2_H1_B2_F2.5","cycles":615743,"zero_cycle_days":157,"active_days":91,"operating_uptime":"0.38474596194757585420072251677547793643011239985968294429704128847122652556006786533350335424579281059600644644701924318115737835","release_count":65,"operating_equity":"9070138325626596334.520173646","reserve":"174764542492085111.905211654","total_equity":"9244902868118681446.425385300","max_hold_hours":"2670.7074896425","lock_hours":"3661.9919975119444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444445","maximum_drawdown":"0.0026314633661966403149994206447127588574875796424574362932586005842797825462386411437487001083982234205417889095140731474727232711","payload_sha256":"cca4af01c55ac7fa579f2cd2a9cfb41a354e3169a627d914b183eae2c3fd5050","replay_sha256":"bbc1ad6edb29c9731407dc8bd425feaa439e4fb1762d508ccdeb45b4e8f01a2f","integrity_pass":true,"audit_hash_match":true,"runtime_hash_match":true},
+    {"scenario":"RRV2_H1_B5_F0","cycles":895427,"zero_cycle_days":119,"active_days":129,"operating_uptime":"0.52940187696867871179787612799345166648704584614281339083382495086819701454411370961704122600734447310171281466520020019900194679","release_count":99,"operating_equity":"416108509837195277403816116.420673524","reserve":"7554208085363787848576692.382940276","total_equity":"423662717922559065252392808.803613800","max_hold_hours":"2659","lock_hours":"2801","maximum_drawdown":"0.0026314694415252390357562810608120552680767975219324833370385681860427553220906750383603602566795148159815446466552675349313043509","payload_sha256":"75d0ffa5cf944df97098db536c2659a65ccbb7309fd837260d915c382ef6f231","replay_sha256":"32c15de43f7880f0625e6fd9dbe25090a6d0fb5d46579468897db01dfb5c8d86","integrity_pass":true,"audit_hash_match":true,"runtime_hash_match":true},
+    {"scenario":"RRV2_H1_B5_F2.5","cycles":895427,"zero_cycle_days":119,"active_days":129,"operating_uptime":"0.52940187696867871179787612799345166648704584614281339083382495086819701454411370961704122600734447310171281466520020019900194679","release_count":99,"operating_equity":"416108509837195277403816116.420673524","reserve":"7554208085363787848576692.382940276","total_equity":"423662717922559065252392808.803613800","max_hold_hours":"2659","lock_hours":"2801","maximum_drawdown":"0.0026314694415252390357562810608120552680767975219324833370385681860427553220906750383603602566795148159815446466552675349313043509","payload_sha256":"b9dbe56c242866fb52f6a2d8ca455bd89861defe39ba5f209df11e2656beaba3","replay_sha256":"40d75ee72f15214ad0ed0bfc11360c2f272ac72618fc0bce9b9e8240c79d742e","integrity_pass":true,"audit_hash_match":true,"runtime_hash_match":true},
+    {"scenario":"RRV2_H4_B2_F0","cycles":580653,"zero_cycle_days":158,"active_days":90,"operating_uptime":"0.38278840811863280442217924103779363957833411199830379776662449921575428204915870701854564365406872005766931735350875640941142574","release_count":42,"operating_equity":"1094822678054765627.905104868","reserve":"21275300465460439.936626732","total_equity":"1116097978520226067.841731600","max_hold_hours":"2670.7074896425","lock_hours":"3673.6433577841666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666667","maximum_drawdown":"0.0026314633662228824527481941913158237231588384863164516634151869688321708817355306678510309939123730471678048072934486726528016493","payload_sha256":"ae4a45530d452d9168a41ca2c9fa50096ea96ce88cdddcb60a2071befa9cd5f2","replay_sha256":"3c60d81a5ebb21394cb81d0df959e76c0f2754148b083aa5ee6a48c48ad91939","integrity_pass":true,"audit_hash_match":true,"runtime_hash_match":true},
+    {"scenario":"RRV2_H4_B2_F2.5","cycles":580653,"zero_cycle_days":158,"active_days":90,"operating_uptime":"0.38278840811863280442217924103779363957833411199830379776662449921575428204915870701854564365406872005766931735350875640941142574","release_count":42,"operating_equity":"1094822678054765627.905104868","reserve":"21275300465460439.936626732","total_equity":"1116097978520226067.841731600","max_hold_hours":"2670.7074896425","lock_hours":"3673.6433577841666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666667","maximum_drawdown":"0.0026314633662228824527481941913158237231588384863164516634151869688321708817355306678510309939123730471678048072934486726528016493","payload_sha256":"a6aff590d0bc56a3c6334a6a1bf49ddaf2f592f470d638478ada872b6cf0de47","replay_sha256":"e2c6439f0779581429d2556edc1a6a3592c8252fdbee492a2ddc9fa050251db5","integrity_pass":true,"audit_hash_match":true,"runtime_hash_match":true},
+    {"scenario":"RRV2_H4_B5_F0","cycles":853616,"zero_cycle_days":120,"active_days":128,"operating_uptime":"0.52940187696867871179787612799345166648704584614281339083382495086819701454411370961704122600734447310171281466520020019900194679","release_count":69,"operating_equity":"42703590628952142570393713.536842724","reserve":"788273846327940535536529.522650776","total_equity":"43491864475280083105930243.059493500","max_hold_hours":"2659","lock_hours":"2801","maximum_drawdown":"0.0026314734578509362504668982412097753198479563591891764855567834587493651679725151332665229060711408388064432606674523272769028371","payload_sha256":"3e5f85cf2f51bc29540b05768fb73d45431389d1f66eb8e9bc5e1f82d70a9e77","replay_sha256":"089187dc42c745b03a00c1c7948d63f5b60b73c647585643b8049179dd3052b2","integrity_pass":true,"audit_hash_match":true,"runtime_hash_match":true}
+  ],
+  "frozen_source_hash_verification": {
+    "all_match": true,
+    "files": {
+      "scripts/study_recovery_reserve.py": "c6761f05fe4480b93388db6321758820d120cf5d86ce36333a7dad30cdae215c",
+      "src/crypto_strategy_lab/microstructure/recovery_reserve.py": "0882b2d465ed0fc7c163e00046a5ac5b7127b57f586082d222ac05f9b57c9dd5",
+      "src/crypto_strategy_lab/microstructure/recovery_reserve_audit.py": "082ee589eea76e549c93bc1dde19a67ea0ef9fcc8ea57a69d1a6bd59f807abee",
+      "src/crypto_strategy_lab/microstructure/recovery_reserve_metrics.py": "39de60fd2624dd1b05e7ecd014699837431defe792b53cc60aa86b65b6d5228a",
+      "src/crypto_strategy_lab/microstructure/recovery_reserve_study.py": "6a702dfcfd5130e5cb0308472f5e4237ced54abeff1670ec3623c6591e4045f9",
+      "src/crypto_strategy_lab/microstructure/serial_replay.py": "8515862b88842565cfb99295da651521a27eef28290f0e2b0ca742851b924ab0"
+    }
+  },
+  "registry_pre_new_registration": {
+    "canonical_journal_path": "artifacts/usdcusdt/models/registry.jsonl",
+    "canonical_journal_sha256": "f053d0e26bbc658d610f51f29277ef879c0c5daab8ec8119ef5e683b57543e1f",
+    "canonical_journal_lines": 66,
+    "derived_projection_path": "reports/usdcusdt/model-registry.json",
+    "derived_projection_sha256": "307a856355453e37e29c5d07fd0d74f98094dade7a3019275abc9233a811cbd5",
+    "event_count": 66,
+    "registered_model_ids": ["M001", "M002", "M003", "M004", "M005", "M006", "M007", "M008", "M009", "M010"],
+    "next_free_model_id": "M011",
+    "M010_zero_based_journal_line_indices": [48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65]
+  },
+  "other_recovery_reserve_identities": [
+    {"run":"47851d4b7522d4e3cb600a7220e72105b49b0fef52509e34f40d4fef4cec1c2b","identity_sha256":"a15ba4dd78e0342b21ad0ac592851d07c6c3f623cfe5be204fe56d4ad11d993e","schema":"recovery-reserve-study-2","phase":"DEVELOPMENT","model_id":"NOT_REGISTERED_PHASE_A","completed":2,"total":18,"owner_transition_status":"SUPERSEDED_BY_OWNER_STRATEGY_UPDATE"},
+    {"run":"6dd59fd69597bae4f1f9b391e24ee8f56812487ca1bd3d69bbae3069a55f84c6","identity_sha256":"c20c9a44674aa68a6c8b14aed85239a9786f5d1bf741a42d1ebd21a8b0966b31","schema":"recovery-reserve-study-2","phase":"DEVELOPMENT","model_id":"NOT_REGISTERED_PHASE_A","completed":2,"total":18,"owner_transition_status":"SUPERSEDED_BY_OWNER_STRATEGY_UPDATE"},
+    {"run":"8437a909e56a54ea311196227a411abddfc4849728a1bf690a13e6d0a2b2497e","identity_sha256":"7b26df9795b2d2cf356f932f10c5cf1bb1b332604b65f2d49a8df377210c41f9","schema":"recovery-reserve-study-1","phase":"DEVELOPMENT","model_id":"NOT_REGISTERED_PHASE_A","completed":10,"total":27,"owner_transition_status":"SUPERSEDED_BY_OWNER_STRATEGY_UPDATE"},
+    {"run":"88a08fad8436e7f6519342713457db12ede727bb01809bab3d38ca51e79ab65c","identity_sha256":"fb9e0d920dd3284a7ac1615f0f22acd5ac93a243af9f9624964c4c6b72ed6dfb","schema":"recovery-reserve-study-2","phase":"DEVELOPMENT","model_id":"NOT_REGISTERED_PHASE_A","completed":2,"total":18,"owner_transition_status":"SUPERSEDED_BY_OWNER_STRATEGY_UPDATE"},
+    {"run":"c7ee9d04d56e586c06b06d34d114ff9989ff6fb9849b516ba8f33ebc9aa3aeb5","identity_sha256":"5914fdcd45c11a3b306f672edce8e48bd81f217dd5341184f0e905912ef20012","schema":"recovery-reserve-study-2","phase":"DEVELOPMENT","model_id":"NOT_REGISTERED_PHASE_A","completed":1,"total":18,"owner_transition_status":"SUPERSEDED_BY_OWNER_STRATEGY_UPDATE"}
+  ],
+  "routing_policy": {
+    "path": "docs/microstructure/MODEL_ROUTING_POLICY_HISTORY.md",
+    "owner_override_requires": "SUPERSEDED_BY_OWNER; QUALITY_FIRST=ON; TOKEN_SAVING_PRIORITY=OFF",
+    "audit_action": "No historical policy file was modified."
+  },
+  "process_observation": {
+    "writer_present": false,
+    "observed_python_or_recovery_reserve_writer": false,
+    "session_83711": "unknown; no termination, owner-stop, or failure reason is asserted by this audit"
+  },
+  "audit_limit": "Completed sidecar schemas, stored integrity_pass values, audit/runtime SHA-256 values, frozen source SHA-256 values, and checkpoint presence were checked while no writer was observed. This audit did not rerun the financial reconstruction or decompress/re-hash whole replay payloads."
+}

@@ -1,5 +1,27 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER vigente — 2026-09-07
+
+`docs/microstructure/OWNER_STRATEGY_OVERRIDE.md` supera todas as regras conflitantes abaixo.
+O handoff atual é `docs/microstructure/CURRENT_STRATEGY.md`. Regras históricas deste arquivo
+permanecem como proveniência, não como autorização para retomar hipóteses superadas.
+
+- QUALITY_FIRST=ON; TOKEN_SAVING_PRIORITY=OFF. A antiga política de roteamento econômico
+  está preservada como HISTORICAL_SUPERSEDED_POLICY em MODEL_ROUTING_POLICY_HISTORY.md.
+- Cada estratégia materialmente diferente exige um novo Mn no registry existente, incluindo
+  mecanismo de reserva, funding, cap, release, parâmetros materiais e semântica de execução.
+- M007 é HISTORICAL_BASELINE / SCIENTIFIC_ANCESTOR e permanece SHADOW_MODEL; não é a
+  ACTIVE_RESEARCH_STRATEGY. Promoção passada continua evidência imutável no registry.
+- Campanhas superadas pelo OWNER podem ser encerradas com checkpoints preservados e status
+  SUPERSEDED_BY_OWNER_STRATEGY_UPDATE, nunca FAIL por esse motivo. Nenhum replay econômico
+  pode ser encurtado oportunisticamente; regras de domínio/stop exigem pré-registro.
+- A primeira entrega atual termina após publicar linhagem, placar histórico e pré-registro
+  da nova estratégia. Nenhuma automação antiga pode iniciar a nova campanha.
+- Mantenha detalhe científico e placar econômico; use revisores fortes em decisões materiais
+  e Python para cálculo. Não use Astra para aguardar processos.
+- Permanecem um lote operacional, USDCUSDT, DEVELOPMENT, conta privada/Testnet/Live fechados,
+  SHADOW M007 inalterado, capacity/duas bancas/segunda paridade somente roadmap.
+
 Estas instruções especializam as regras globais para o repositório
 `guilhermecrepaldi/crypto-strategy-lab`. Dentro deste diretório, a autoridade canônica é este
 projeto; a prioridade global do KNOTEN permanece inalterada fora dele.

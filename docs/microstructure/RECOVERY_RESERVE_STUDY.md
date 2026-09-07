@@ -1,5 +1,12 @@
 # Recovery Reserve study
 
+> CURRENT_STATUS=SUPERSEDED_BY_OWNER_STRATEGY_UPDATE (OWNER override, 2026-09-07).
+> All V2 identities and completed artifacts remain historical evidence. Do not resume the
+> old grid. See `CURRENT_STRATEGY.md` and `reports/usdcusdt/OWNER-strategy-transition-evidence.json`
+> for observed completion counts, process state and preservation hashes. This owner retirement
+> is not an economic FAIL and does not retroactively invalidate individually audited results.
+> Older status entries below describe their respective attempts only.
+
 Status: V2_PREREGISTERED; FIRST_ATTEMPT_INVALIDATED_TECHNICAL. No M011 registered or promoted.
 
 The canonical protocol is `RECOVERY_RESERVE_PROTOCOL.md`. The previous v1 grid completed 10/27

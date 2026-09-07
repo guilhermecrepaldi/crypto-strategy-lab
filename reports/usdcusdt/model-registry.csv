@@ -2152,3 +2152,59 @@ M010,INCONCLUSIVE,100,USDT,COMPOUNDING,RUN_MANIFEST,13e379401566126ad08cd9f0573e
   ""scientific_reviewer"": ""gpt-6-astra"",
   ""status"": ""INCONCLUSIVE""
 }","OWNER_EXPLORATORY_OVERRIDE authorizes execution, not SCIENTIFIC_GATE_PASS. No retrospective tuning.",44788,115521,137665,2026-07,HOT,2026-04,15,7,55
+M011,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,51b46f5fe064827a0cc3cc60a3b881b4bc3eeb863ef4ee60e7f08c38027588b7,M007,2026-09-07T20:07:20.901134Z,A causally stronger persistent destination can repay fully covered local losses and increase compounding cycle uptime under exact 2% profit reserve funding.,M007 has 193 zero-cycle days; a few long holds dominate capital lock. Prior reserve grids are historical and use superseded policies.,"Complete reserve-funded dynamic-release strategy with monotone confidence tiers, cost-basis cap, strict causal timestamps and a matched passive control.","Increase cycles and uptime, reduce lock and zero days toward <=9, subject to total-equity, drawdown, absolute reserve self-funding and robustness gates.","{
+  ""actual_loss_above_two_percent_requires_top_tier"": true,
+  ""capital_mode"": ""COMPOUNDING"",
+  ""causal_boundary"": ""TIMESTAMP_STRICTLY_LESS_THAN_T"",
+  ""confidence_is_calibrated_probability"": false,
+  ""currency"": ""USDT"",
+  ""execution_evidence"": ""THEORETICAL_PRICE_PATH_NOT_EXECUTABLE_FILL_PROOF"",
+  ""fees_buy_fraction"": ""0"",
+  ""fees_sell_fraction"": ""0"",
+  ""flat_reselection_minutes"": 1,
+  ""initial_capital"": ""100"",
+  ""initial_recovery_reserve"": ""5"",
+  ""ledger_and_gate_decimal_precision"": 128,
+  ""lookback_minutes"": 1440,
+  ""minimum_position_age_hours"": ""1"",
+  ""operating_lots"": 1,
+  ""preregistration"": {
+    ""hash_encoding"": ""UTF8_LF_NO_BOM"",
+    ""path"": ""docs/microstructure/RECOVERY_DYNAMIC_PREREGISTRATION.md"",
+    ""semantics"": ""All protocol rules are mandatory model configuration; missing or mismatched protocol fails closed"",
+    ""sha256"": ""1bae95bf418e6ffab2d96cb7f9db8cbbde5296a902cb8bbe5e52ecc94dc30778""
+  },
+  ""release_confidence_minimums"": [
+    ""0.60"",
+    ""0.72"",
+    ""0.84"",
+    ""0.93""
+  ],
+  ""release_enabled"": true,
+  ""release_full_coverage_required"": true,
+  ""release_loss_upper_fractions"": [
+    ""0.0025"",
+    ""0.01"",
+    ""0.02"",
+    ""0.03""
+  ],
+  ""release_max_reserve_spend_fraction"": ""0.75"",
+  ""release_reentry_boundary"": ""NEW_LOW_AT_TIMESTAMP_STRICTLY_GREATER_THAN_RELEASE_T"",
+  ""release_restore_operating_cost_basis"": true,
+  ""release_review_minutes"": 15,
+  ""reserve_cap_operating_cost_basis_fraction"": ""0.10"",
+  ""reserve_cap_overflow_destination"": ""OPERATING_BANK"",
+  ""reserve_funding_positive_realized_profit_fraction"": ""0.02"",
+  ""reserve_target_operating_cost_basis_fraction"": ""0.05"",
+  ""reserve_trades"": false,
+  ""scenario_role"": ""CENTER_FULL"",
+  ""selection_ancestor"": ""M007"",
+  ""selection_distances"": [
+    1
+  ],
+  ""selector_decimal_precision"": 28,
+  ""strategy"": ""DYNAMIC_CAUSAL_RECOVERY"",
+  ""strategy_scope"": ""COMPLETE_STRATEGY"",
+  ""symbol"": ""USDCUSDT"",
+  ""total_initial_equity"": ""105""
+}",,,OWNER requires a distinct Mn for every materially different full strategy. M007 is historical ancestor; M010 contributes no controls. This preregistration does not authorize a long run.,,,,,,,,,
