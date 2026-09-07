@@ -115,7 +115,18 @@ Informe quais modelos foram realmente usados; não alegue troca de modelo que n�
 - A estratégia ativa preserva uma banca, um lote, um LOW, um HIGH e um único ciclo serial. Não
   introduza grid, múltiplos lotes, alavancagem, martingale, DCA, RL ou LLM por evento.
 
-## Linha autorizada de capital release
+## Gate atual — operador M007 congelado
+
+- O protocolo mais recente limita esta entrega ao Prompt 1: especificação M007, contrato
+  `SHADOW_ONLY`, state machine, testes, commit e push. Parar após esse milestone.
+- A autoridade é o M007 existente, sem melhoria científica ou novo Mxxx. M008/M009 não são
+  utilizados; M010 concluído é evidência histórica, sem autorização de nova execução.
+- TESTNET e LIVE falham fechado; `TRADING_ENABLED=false`. Não conectar market data neste
+  passo. Streaming, persistência e runtime shadow pertencem ao Prompt 2, ainda pendente.
+- Consultar `docs/live/M007_OPERATOR_SPEC.md`, `LIVE_ARCHITECTURE.md` e `STATE_MACHINE.md`.
+  Price-touch não é fill; estados reservados não são capacidades de execução já implementadas.
+
+## Linha histórica de capital release — não reabrir neste gate
 
 - O OWNER reabriu a evolução price-path exclusivamente para investigar `CAPITAL_RELEASE`, com
   parent científico `M007` e problema `LONG_HOLD_CAPITAL_LOCK`. M008 e M009 permanecem

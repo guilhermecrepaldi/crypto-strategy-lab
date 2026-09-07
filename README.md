@@ -6,6 +6,14 @@ exato, vende, compõe o capital e repete. O corte anterior de rotação com apre
 permanece preservado como histórico do projeto, mas não participa desta campanha. Não existe
 código para autenticar em exchange, usar Testnet ou enviar ordens.
 
+Gate atual: **M007 congelado, especificação do operador SHADOW_ONLY**. Contrato de modo,
+banca inicial e topologia de estados implementados/testados; runtime shadow, streaming,
+persistência e recovery ainda pendentes. TESTNET/LIVE falham fechado. Documentação:
+[M007_OPERATOR_SPEC](docs/live/M007_OPERATOR_SPEC.md),
+[LIVE_ARCHITECTURE](docs/live/LIVE_ARCHITECTURE.md),
+[STATE_MACHINE](docs/live/STATE_MACHINE.md). Parar após o milestone do Prompt 1; não iniciar
+automaticamente os passos seguintes. Comandos históricos abaixo não autorizam novas campanhas.
+
 ## Simulador matemático da banca
 
 Abra [bank-growth-simulator.html](reports/usdcusdt/bank-growth-simulator.html) diretamente
@@ -237,8 +245,9 @@ autoriza liquidação automática.
 M001-M004 foram preservados como pré-registros superados antes de qualquer replay: eles tratavam
 o tick como constante, enquanto a Binance reduziu oficialmente o tick de USDCUSDT de `0.0001`
 para `0.00001` em `2026-04-14T05:00:00Z`. M005 é o baseline estático corrigido e já foi avaliado;
-M006 é o próximo challenger autorizado, com reseleção horária somente quando flat. M007 e M008
-foram registrados antes do gate evolutivo e não estão automaticamente autorizados. Todo replay
+M007 é o champion congelado, com reseleção a cada minuto quando FLAT e imediatamente após saída.
+M008/M009 permanecem rejeitados; M010 terminou INCONCLUSIVE e fica preservado como histórico,
+sem autorização de nova execução ou incorporação ao operador. Todo replay
 reinicia com 100 USDT em `2026-01-01T00:00:00Z` e usa o mesmo cutoff físico. O intervalo inteiro é
 DEVELOPMENT; `VALIDATION` e `LOCKED_TEST` permanecem fechados.
 
@@ -257,10 +266,8 @@ uv run crypto-lab microstructure-build-tape `
   --manifest data/manifests/usdcusdt-trades-2025-2026.json `
   --artifact-root artifacts
 
-# um modelo explicitamente autorizado por vez; sempre seguido por autópsia
-uv run crypto-lab microstructure-full-replay `
-  --manifest data/manifests/usdcusdt-trades-2025-2026.json `
-  --artifact-root artifacts --report-root reports --models M006
+# gate atual: conferir somente o contrato offline, sem iniciar operador ou replay
+uv run python -c "from crypto_strategy_lab.microstructure.operator import M007OperatorSpec; print(M007OperatorSpec())"
 ```
 
 O downloader é incremental, idempotente e valida o `.CHECKSUM` oficial. Gaps não são preenchidos.
@@ -325,11 +332,14 @@ testes unitários e migration em banco limpo.
 
 ## Gates futuros
 
-1. executar walk-forward curto predefinido e robustez por regime sem abrir `LOCKED_TEST`;
-2. shadow mode sem ordens;
-3. paper trading por período suficiente;
-4. revisão humana de risco, chaves, permissões e kill switch;
-5. capital mínimo com limites rígidos, somente após autorização separada.
+1. atual: especificação congelada M007 e contrato SHADOW_ONLY; parar após commit/push;
+2. próximo, ainda pendente: operador shadow público, sem ordens, com persistência e recovery;
+3. coleta L2 e estudo de executabilidade, sem alterar M007;
+4. Testnet segregada após os gates anteriores e continuação autorizada;
+5. readiness live sem ordens, com revisão humana e limite de capital de 100 USDT;
+6. live 100 USDT somente após autorização explícita posterior e readiness aprovado.
+
+Nenhuma etapa libera a seguinte automaticamente; aumento para 1.000 USDT permanece proibido.
 
 ## Segurança operacional
 
