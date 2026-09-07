@@ -1,0 +1,104 @@
+{
+  "schema": "b10-a-1128-prefix-reconciliation-v1",
+  "status": "RECONCILED_FROM_DURABLE_AUDIT_PREFIX",
+  "strategy": "B10_FROZEN",
+  "execution_profile": "A_OBSERVED_BEST_SUPPORTED",
+  "result_class": "CONDITIONAL_PARAMETERIZED_EXECUTION_PREFIX_NOT_PROSPECTIVE_PROFIT",
+  "cutoff_us_inclusive": 1772390995609552,
+  "cutoff_utc": "2026-03-01T18:49:55.609552+00:00",
+  "price_path_opportunities_same_prefix": 1474430,
+  "reality_retention_same_prefix": "0.0007650414058314060348744938722",
+  "reference_prefix_evidence": {
+    "manifest": "artifacts/binance/b10-reference-prefix/exit-events.json",
+    "index_sha256": "ab640c6396978ae8592c271252f26c01ba6f52b469be228d3098a4a52e053fce",
+    "source_sha256": "2b08d28152b27000120f6c503838ff1c8ed7da12c33d34892826c41c3da98e51",
+    "count_before_timestamp": 1474430,
+    "count_through_timestamp": 1474430,
+    "semantics": "No original cycle exit at this microsecond; missing old ordinal does not change exact denominator. Releases excluded from ordinary cycle ratio."
+  },
+  "start_utc": "2026-01-01T00:00:00+00:00",
+  "evidence": {
+    "audit_path": "artifacts/binance/b10-reality-runs/a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d/A_OBSERVED_BEST_SUPPORTED/execution-audit.jsonl",
+    "checkpoint_path": "artifacts/binance/b10-reality-runs/a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d/A_OBSERVED_BEST_SUPPORTED/checkpoint.json",
+    "checkpoint_snapshot_sha256": "a3682ff02b4db3fc10acc918b67f3c488399cf96d175823190e087b0fac113e2",
+    "checkpoint_bound_bytes": 1754119147,
+    "checkpoint_bound_sha256": "020429c63c2248a0649302b26257c18b83fe83b106de30a664b517e83526659d",
+    "checkpoint_bound_sha256_verified": true,
+    "old_prefix_physical_bytes": 878113569,
+    "old_prefix_physical_sha256": "1c20d01051bdd0eefde67d88c1dbc0db19b9137239b13438c623eb803d359ac7",
+    "audit_rows_used": 3942178,
+    "historical_checkpoint_used": false,
+    "writer_lock_acquired": false,
+    "engine_runner_config_modified": false,
+    "independent_reconstructor": "scripts/audit_b10_reality.py:reconstruct",
+    "ledger_decimal_precision": 128
+  },
+  "economics": {
+    "full_cycles": 1128,
+    "net_positive_cycles": 1128,
+    "releases_filled": 27,
+    "releases_gt10bps_executed_lot": 0,
+    "releases_gt10bps_signal_bank": 0,
+    "gross_realized_pnl_usdt": "10.5359000000000",
+    "net_realized_pnl_usdt": "10.5359000000000",
+    "net_ordinary_pnl_usdt": "11.1896000000000",
+    "net_release_pnl_usdt": "-0.6537000000000",
+    "fees_quote_usdt": "0",
+    "operating_cash_usdt": "110.965808000000000",
+    "reserve_initial_usdt": "5",
+    "reserve_final_usdt": "4.570092000000000",
+    "reserve_min_usdt": "4.549892000000000",
+    "reserve_funding_usdt": "0.223792000000000",
+    "reserve_consumption_usdt": "0.6537000000000",
+    "open_inventory_usdc": "0",
+    "open_cost_basis_usdt": "0",
+    "dust_usdc": "0",
+    "total_cash_and_reserve_usdt": "115.535900000000000"
+  },
+  "continuity": {
+    "closed_utc_days": 59,
+    "active_closed_utc_days": 58,
+    "zero_closed_utc_days": 1,
+    "current_partial_utc_day_excluded_from_day_counts": "2026-03-01",
+    "max_hold_hours_through_T": "26.001066533611111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",
+    "lock_hours_gt24_through_T": "2.0010665336111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "order_fill_categories_at_T": {
+    "BUY": {
+      "submitted": 228719,
+      "full": 1155,
+      "partial_only": 0,
+      "no_fill": 227564
+    },
+    "SELL": {
+      "submitted": 1182,
+      "full": 1155,
+      "partial_only": 0,
+      "no_fill": 27
+    }
+  },
+  "definitions": {
+    "prefix_filter": "Read only up to the captured checkpoint byte bound. Stop material event inclusion after T. Future CANCEL_ACK_SCHEDULED timestamps do not terminate the scan because these are scheduled notifications, not future executed fills.",
+    "physical_prefix_hash": "Hash of original complete JSONL rows preceding the first post-T SUBMIT/FILL/QUEUE_FLOW/SETTLEMENT/RELEASE_SIGNAL. Rows with explicit future timestamps are excluded from reconstructed state even when physically recorded earlier as schedules.",
+    "net_realized_pnl": "Sum of ordinary and release settlement net PnL. Reserve transfers are internal and not extra profit. Unsold inventory basis is not realized loss.",
+    "fees": "Zero under this frozen conditional profile; not evidence of exact account-specific historical Binance commission.",
+    "closed_utc_days": "Jan 1 through Feb 28 inclusive. A day is active when at least one ordinary full cycle settled; March 1 is excluded because T falls within it.",
+    "holding": "First executed BUY fill to settlement. An unsettled position would be censored at T. Lock >24h sums only duration beyond 24h for each position.",
+    "order_categories": "Mutually exclusive cumulative fill status at T for every submitted order. Full means filled quantity equals ordered quantity; partial_only means strictly between zero and full; no_fill includes zero-fill canceled/rejected/pending orders. SELL includes aggressive release orders. These are not counts of historical price-path opportunities.",
+    "partial_only": "Does not assert that fully filled orders never experienced intermediate partial fills.",
+    "release_denominators": "Executed-lot basis and original signal operating-bank basis are reported separately; both greater-than-10bps counts are zero at this T."
+  },
+  "old_claim": {
+    "full_cycles": 1128,
+    "net_positive_cycles": 1128,
+    "releases": 27,
+    "releases_gt10bps": 0
+  },
+  "old_claim_matches_reconstruction": true,
+  "inconsistencies": [],
+  "limitations": [
+    "This reconstructs the old observation from a newer durable audit bound; it does not invent or reuse a historical checkpoint at T.",
+    "This is independent financial reconstruction, not a new full raw-trade support audit or historical L2 proof.",
+    "The live checkpoint path continues changing; this report pins the exact captured snapshot hash and durable audit bound used."
+  ]
+}

@@ -1029,3 +1029,24 @@ Models actually used: Astra for scientific research, execution review/design and
 audit; Luna for bounded physical inventory/audit and mechanical collector work. Main-agent
 review caught and corrected collector raw-trade/time-weighting integration errors before the
 second capture. No LLM per trade, no account, key, Testnet, live order or deployment.
+
+## 2026-09-07 — B10 full-span replay started; preliminary prefix audit only
+
+Published preconfiguration/source a91811a853bfc5225ce5a2d13750905b6af74991 was confirmed
+equal to origin/main before starting the four-profile sequential runner at19:07 local.
+Final profile-config SHA256 is a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d.
+No execution numerics or B10 logic changed after startup. Original raw data remain immutable.
+
+Independent Astra auditor verified A's first durable checkpoint prefix:399 ordinary
+settlements, first100 ordinary plus all13 releases supported by raw trades;221 cumulative
+queue checks; all balances reconciled. Proof: B10-A-preliminary-prefix-audit.json. This is
+not full-span result acceptance, not a final PnL and not historical fill certification.
+
+Post-processing gained all-signal release autopsy and actual-order funnels. Historical
+3580880 denominator yields a productivity ratio, not an identified surviving subset.
+Luna's report generator required main-agent corrections for JSONL/report confusion,
+real artifact field names, SHA binding, aggregate completion and audit/verdict separation.
+93 focused tests and Ruff passed. No economics-driven changes. Remaining work: complete
+four full replays, independent final audits/autopsies, scientific interpretation, result
+reconciliation and publication. D is uncalibrated/inconclusive, not numerically fabricated.
+Thread heartbeat concluir-b10-binance-reality-gauntlet continues every30min; old V2/V3 stays paused.

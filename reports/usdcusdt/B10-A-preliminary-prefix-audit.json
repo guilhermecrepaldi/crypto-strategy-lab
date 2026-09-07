@@ -1,0 +1,132 @@
+{
+  "status": "PASS_PRELIMINARY_DURABLE_PREFIX_ONLY",
+  "completion_acceptance": false,
+  "checkpoint_sha256": "6c6b81eda0328514fb598bb26b73d9271f202197210674fa699b87aec9bbe297",
+  "config_sha256": "a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d",
+  "audit_prefix": {
+    "bytes": 299342914,
+    "sha256": "e7e1034c673d289e512ad06a903fc206e60e49635a8631301329fd98001ddd7f"
+  },
+  "balances": {
+    "cash": "103.875018000000000",
+    "reserve": "4.732582000000000",
+    "inventory": "0",
+    "basis": "0",
+    "dust": "0E-8",
+    "dust_basis": "0E-13",
+    "fees": "0E-13",
+    "funding": "0.079082000000000",
+    "consumption": "0.3465000000000"
+  },
+  "ordinary_settlements": 399,
+  "ordinary_raw_sample": 100,
+  "release_settlements": 13,
+  "release_signals": 13,
+  "raw_support": {
+    "selected_fills": 247,
+    "raw_source_ids_found": 234,
+    "queue_cumulative_checks": 221,
+    "archives_read_once": [
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-01.zip",
+        "sha256": "a7d8a5f44fffecc1e29294926a23f936e82c82b87915ad40c740504edfe391a4",
+        "rows_examined": 158039
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-02.zip",
+        "sha256": "c0e3c17205db87315237638761f889fd7f0430460aee1f7908bc1fa3eab97b38",
+        "rows_examined": 100251
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-03.zip",
+        "sha256": "1183e1cc96fd0c5825fbc7330c81ca00c61fa811eeda3bc96081fed4172cdd9e",
+        "rows_examined": 249021
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-04.zip",
+        "sha256": "62ea8a6db1335175d1b06524d4fcc7d815de155b32322acc16ee34923a10b8e2",
+        "rows_examined": 285429
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-05.zip",
+        "sha256": "b37ec1e39d6c9278c6f5fb6a98cc7d0727707ceec99a87566d0306af37d9c940",
+        "rows_examined": 418179
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-06.zip",
+        "sha256": "b77a51c500237627c7c95c2885b029f1f0940e87136fe06bff69b92b686a5e5b",
+        "rows_examined": 327501
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-07.zip",
+        "sha256": "72a1dec48f0b73b34254a4a37605dc0125da8f320e1bf32159b6234c3517cb63",
+        "rows_examined": 217546
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-08.zip",
+        "sha256": "6ded1a668e7c8f8324ba44b0bb0d3918f9fd5cf14192055c9d40a73717a667b0",
+        "rows_examined": 417263
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-09.zip",
+        "sha256": "c4c2e07ec590b8f733a3f36821235fe9a9cbf1fbe64770fbd60af4809b2d5f23",
+        "rows_examined": 184039
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-12.zip",
+        "sha256": "99d611f4657994d1b877dbe6b37dc1438a6b74fb4339aedd1ece03a238fa14a8",
+        "rows_examined": 99204
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-13.zip",
+        "sha256": "d7aab01323b1f44b8d74e7adb77fcdcc06cb6c6d15f58801c0f6f1087a6936bb",
+        "rows_examined": 239957
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-14.zip",
+        "sha256": "7974ed7e480ece48aa4a39e35f3712c4fd02a648f7506530dd374cef209a7b93",
+        "rows_examined": 271561
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-15.zip",
+        "sha256": "8a7e5df70d5e9b2322983a2d29207ee488e0988c620af6be9a2770bb93a186c9",
+        "rows_examined": 39500
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-17.zip",
+        "sha256": "735f99565b44d1d4402b4fdd2e8111198aa3a3d480344b5253c3f3c557760aa8",
+        "rows_examined": 206641
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-22.zip",
+        "sha256": "928a55bb14216cb298ae64b37cf565957993e3f6ea7ad92864a28e8190821b01",
+        "rows_examined": 106566
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-23.zip",
+        "sha256": "3eab3d6ee501f3d255cd8f89e28747898d279f60715e244c34cdf2a3b0aea0e5",
+        "rows_examined": 366430
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-25.zip",
+        "sha256": "ad4b7e95f3c8f8ceedb50324b63657013b97d97a972145c08fc64ae516695af2",
+        "rows_examined": 166142
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-26.zip",
+        "sha256": "87025df8b28c5820d675807734671fffe80de9d606d61f54ff65647100f08e3a",
+        "rows_examined": 77810
+      },
+      {
+        "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-27.zip",
+        "sha256": "78be351a89bce86b1dfc0bae922d420f3e74b336ca1b7d24857c9ce6111ab1e6",
+        "rows_examined": 232342
+      }
+    ],
+    "release_book_support": "RAW_EVENT_ANCHOR_ONLY; historical depth remains parameterized"
+  },
+  "limitations": [
+    "Only the captured atomic checkpoint prefix is audited.",
+    "Complete replay audit remains required; release BOOK support is a conditional envelope, not historical L2."
+  ]
+}

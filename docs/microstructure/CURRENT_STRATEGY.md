@@ -1,5 +1,9 @@
 # Current research — B10 Binance Reality Gauntlet, 2026-09-07
 
+Handoff operacional/econômico canônico: [CURRENT_STATE](../research/CURRENT_STATE.md).
+História contínua: [B10_JOURNAL](../research/B10_JOURNAL.md). Este documento mantém apenas
+o escopo/linhagem e notas históricas; números correntes pertencem ao CURRENT_STATE.
+
 Autoridade vigente: [diretiva OWNER B10](B10_REALITY_GAUNTLET_OWNER_DIRECTIVE.md).
 Único objeto: `B10_FROZEN`, cenário histórico `RRV2_H1_B10_F0`, ambiente
 `BINANCE_REALITY_V1`. M011 permanece CREATED, preservado e sem execução; sua direção
@@ -11,8 +15,35 @@ e reserva5, usando custos/fills/latência/fila explícitos. Protocolo e estado r
 Referência reconciliada:3580880 ciclos teóricos; isso não representa fills executáveis.
 Pesquisa e coleta concluídas; simulador validado em fixtures e quatro perfis condicionais
 pré-registrados (A/B/C e sensibilidade B sem promoção). D sem calibração de peg-stress.
-Nenhum resultado econômico realista aceito; replay integral e auditoria ainda pendentes.
+Nenhum resultado econômico realista integral aceito; replay em execução e auditoria final pendente.
 Não retomar campanhas anteriores. Nenhuma conta, ordem, Testnet ou live autorizado.
+
+## Continuidade registrada às19:23 — histórico; estado corrente em docs/research/CURRENT_STATE.md
+
+- Fonte/config publicados antes do replay: `a91811a853bfc5225ce5a2d13750905b6af74991`.
+- Config `artifacts/binance/b10-reality-profiles.json`, SHA256
+  `a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d`.
+- Run `artifacts/binance/b10-reality-runs/a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d`.
+- Runner iniciado às19:07, sessão97150; quatro perfis sequenciais. Confirmar processos/estado
+  atuais, não lançar um segundo runner. Preload demorou cerca de4min; primeiro ritmo real
+  ~30–35mil trades/s. Não mudar para paralelo no meio do replay.
+- Primeira auditoria independente de prefixo:399 ordinary settlements,100 comuns amostrados,
+  todas13 releases e221 verificações de fluxo/fila. Caixa103.875018, reserva4.732582,
+  inventário/dust zero no checkpoint. `B10-A-preliminary-prefix-audit.json` é somente prefixo,
+  NÃO aceitação econômica integral. Não extrapolar esses valores ao cutoff.
+- Pós-processamento canônico: `scripts/audit_b10_reality.py` produz `independent-audit.json`
+  por perfil; `scripts/report_b10_opportunity_funnel.py` produz `opportunity-funnel.json`;
+  `scripts/report_b10_reality.py` gera placar/relatório. Usar `.venv/Scripts/python.exe`.
+  Não interpretar o JSONL bruto como JSON de relatório da auditoria.
+-93 testes focados passaram após o delta de relatórios; Ruff passou. Esses deltas locais de
+  pós-processamento ainda aguardam publicação junto à reconciliação dos resultados.
+- Não alterar engine/runner/config ativos. Checkpoint vincula SHA original; um restart exige
+  rever o gate de árvore rastreada limpa e preservar aquela identidade. Não trocar SHA,
+  fazer reset/stash ou remover deltas para contornar o gate. Investigar antes de retomar.
+- Acompanhamento nesta tarefa: `concluir-b10-binance-reality-gauntlet` (cadência histórica30min;
+  nova regra OWNER exige verificar a cada5min e publicar somente deltas materiais),
+  até replays/auditorias/relatório/publicação; pausar ao concluir ou em gate humano real.
+  D permanece não calibrado e pode encerrar honestamente inconclusivo, sem parâmetros inventados.
 
 ## Handoff anterior — HISTORICAL_SUPERSEDED, preservado integralmente
 

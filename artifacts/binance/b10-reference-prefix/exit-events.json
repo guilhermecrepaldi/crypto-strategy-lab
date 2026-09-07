@@ -1,0 +1,11 @@
+{
+  "source": "artifacts\\usdcusdt\\recovery-reserve\\097abdab8225038b091cb721bdd36bedb8a636c94bed1c87120adc0c9e10953a\\RRV2_H1_B10_F0\\replay.json.gz",
+  "source_sha256": "2b08d28152b27000120f6c503838ff1c8ed7da12c33d34892826c41c3da98e51",
+  "index": "artifacts\\binance\\b10-reference-prefix\\exit-events.npy",
+  "index_sha256": "ab640c6396978ae8592c271252f26c01ba6f52b469be228d3098a4a52e053fce",
+  "count": 3580880,
+  "first_exit_event": 7238714825237311488,
+  "last_exit_event": 7326316838739640320,
+  "event_order_scale": 4096,
+  "semantics": "Original completed ordinary cycle exits; no survivor mapping; no rerun"
+}

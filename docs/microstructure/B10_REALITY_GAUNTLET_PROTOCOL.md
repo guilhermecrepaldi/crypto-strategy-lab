@@ -1,6 +1,6 @@
 # B10 Binance Reality Gauntlet protocol
 
-Status: **execution protocol; numeric profiles pending calibration; not an economic result**. The OWNER's B10 directive supersedes conflicting M011 continuation. Only `B10_FROZEN` is tested under `BINANCE_REALITY_V1`. No M011, strategy optimization, second pair, second lot, private API, Testnet or live order is authorized. Official rule evidence is [Binance execution authority](../binance/BINANCE_USDCUSDT_EXECUTION_AUTHORITY.md).
+Status: **four conditional-pilot profiles frozen and published; full-span replay in progress; no accepted economic result**. The numeric freeze is `artifacts/binance/b10-reality-profiles.json`, SHA256 `a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d`, published with execution source at `a91811a853bfc5225ce5a2d13750905b6af74991`. A/B/C and the B promotion-absent fee counterfactual are runnable; D remains NOT_CALIBRATED. The OWNER's B10 directive supersedes conflicting M011 continuation. Only `B10_FROZEN` is tested under `BINANCE_REALITY_V1`. No M011, strategy optimization, second pair, second lot, private API, Testnet or live order is authorized. Official rule evidence is [Binance execution authority](../binance/BINANCE_USDCUSDT_EXECUTION_AUTHORITY.md).
 
 ## Freeze and provenance
 

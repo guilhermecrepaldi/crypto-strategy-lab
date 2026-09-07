@@ -55,12 +55,15 @@ def reconstruct(rows, profile):
     orders, fills, settlements = {}, [], []
     terminal = set()
     release_evaluations = []
+    signal_records = {}
     cycle_orders = set()
     released = False
     with localcontext() as context:
         context.prec = 128
         for index, row in enumerate(rows):
             kind = row["kind"]
+            if kind == "RELEASE_SIGNAL":
+                signal_records[row["signal_id"]] = row
             if kind in {"IOC_EXPIRED", "CANCELED", "REJECTION"} and "order_id" in row:
                 terminal.add(row["order_id"])
             if kind == "CANCELED":
@@ -128,6 +131,19 @@ def reconstruct(rows, profile):
                 same(row["sold_cost"], sold_basis, "SOLD_COST")
                 if row["release"] != released:
                     raise ValueError("RELEASE_CLASSIFICATION")
+                deficit = max(D(0), -profit) if released else D(0)
+                lot_bps = deficit / sold_basis * 10000 if sold_basis else D(0)
+                signal_id = row.get("release_signal_id")
+                bank_bps = None
+                if signal_id is not None:
+                    signal_bank = number(signal_records[signal_id]["operating_bank_before"])
+                    same(row["release_signal_bank"], signal_bank, "SIGNAL_BANK_BINDING")
+                    bank_bps = deficit / signal_bank * 10000
+                if "actual_release_loss" in row:
+                    same(row["actual_release_loss"], deficit, "ACTUAL_RELEASE_DEFICIT")
+                    same(row["actual_loss_bps_executed_lot"], lot_bps, "ACTUAL_LOT_BPS")
+                    if bank_bps is not None:
+                        same(row["actual_loss_bps_signal_bank"], bank_bps, "ACTUAL_BANK_BPS")
                 if released:
                     transfer = min(max(D(0), -profit), reserve)
                     reserve -= transfer
@@ -155,6 +171,13 @@ def reconstruct(rows, profile):
                         "order_ids": sorted(cycle_orders),
                         "release": released,
                         "net_profit": str(profit),
+                        "release_signal_id": signal_id,
+                        "executed_deficit": str(deficit),
+                        "actual_loss_bps_executed_lot": str(lot_bps),
+                        "actual_loss_bps_signal_bank": str(bank_bps)
+                        if bank_bps is not None
+                        else None,
+                        "reserve_transfer": str(transfer),
                     }
                 )
                 inventory = basis = sold_basis = sale_net = D(0)
@@ -176,6 +199,7 @@ def reconstruct(rows, profile):
         "terminal": terminal,
         "release_evaluations": release_evaluations,
         "open_cycle_orders": cycle_orders,
+        "signal_records": signal_records,
     }
 
 
@@ -406,6 +430,26 @@ def audit(config_path, folder, *, sample=100):
         if key not in ledger["terminal"]
         and ledger["orders"][key]["audit_filled"] < number(ledger["orders"][key]["quantity"])
     ]
+    autopsy = []
+    for signal_id, signal in enumerate(signals):
+        settlement = next(
+            (row for row in ledger["settlements"] if row["release_signal_id"] == signal_id), None
+        )
+        autopsy.append(
+            {
+                "signal_id": signal_id,
+                "signal_time_us": signal["event"] // 4096,
+                "theoretical_loss_usdt": signal["loss_usdt"],
+                "theoretical_loss_bps_operating_bank": signal["loss_bps"],
+                "signal_operating_bank": signal["operating_bank_before"],
+                "outcome": (
+                    "EXECUTED_RELEASE" if settlement["release"] else "ORDINARY_EXIT_WON_RACE"
+                )
+                if settlement
+                else "UNSETTLED_AT_CUTOFF",
+                "independent_settlement": settlement,
+            }
+        )
     return {
         "schema": "b10-independent-execution-audit-v1",
         "status": "PASS_CONDITIONAL",
@@ -419,6 +463,7 @@ def audit(config_path, folder, *, sample=100):
         "release_signals": len(signals),
         "release_orders": len(release_orders),
         "release_book_evaluations": len(ledger["release_evaluations"]),
+        "release_autopsy": autopsy,
         "pending_or_uninstrumented_release_orders": pending,
         "raw_support": support,
         "limitations": [

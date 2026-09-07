@@ -1,5 +1,19 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Handoff e placar OWNER — GitHub canônico, 2026-09-07
+
+Ler primeiro `docs/research/CURRENT_STATE.md`, `docs/research/B10_JOURNAL.md`,
+`reports/usdcusdt/B10-reality-scoreboard.json` e os últimos commits.
+Autoridade de publicação: `docs/research/GITHUB_RESEARCH_JOURNAL_OWNER_DIRECTIVE.md`.
+O diário B10 é append-only. Publicar checkpoints econômicos materiais, inclusive durante
+o run, sem depender do chat. Nunca comparar ciclos parciais a3580880 do período inteiro:
+usar saídas B10 históricas até o MESMO evento canônico do checkpoint como denominador.
+Separar testes de software, progresso, economia parcial e conclusão final. Enquanto
+incompleto, `VERDICT=PENDING`; testes aprovados nunca significam estratégia aprovada.
+Não interromper/mudar B10, profiles ou parâmetros para alterar desempenho.
+Commits de journal/reporting não alteram o SHA de execução já gravado nos checkpoints.
+Uma eventual retomada deve preservar esse vínculo; não trocar SHA silenciosamente.
+
 ## Autoridade OWNER vigente — B10 Binance Reality Gauntlet, 2026-09-07
 
 `docs/microstructure/B10_REALITY_GAUNTLET_OWNER_DIRECTIVE.md` supera as autoridades
@@ -15,7 +29,8 @@ Protocolo: `docs/microstructure/B10_REALITY_GAUNTLET_PROTOCOL.md`.
   autópsia de releases e revisão independente estão autorizados. Preservar B10 original.
 - Queue, latency e regras históricas desconhecidas devem ser explícitas; touch não é fill.
 - Zero acesso a conta, chave privada, Testnet, ordens live ou deploy.
-- Atualizações materiais seguem todos os campos da seção53 da diretiva.
+- Atualizações materiais seguem o placar econômico prefix-to-prefix mais recente do OWNER;
+  a seção53 anterior é superada pelo formato de progresso/economia do novo journal.
 
 ## Autoridade OWNER anterior — preservada como histórico
 
