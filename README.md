@@ -6,13 +6,22 @@ exato, vende, compõe o capital e repete. O corte anterior de rotação com apre
 permanece preservado como histórico do projeto, mas não participa desta campanha. Não existe
 código para autenticar em exchange, usar Testnet ou enviar ordens.
 
-Gate atual: **M007 congelado, especificação do operador SHADOW_ONLY**. Contrato de modo,
+Operador: **M007 congelado, especificação SHADOW_ONLY**. Contrato de modo,
 banca inicial e topologia de estados implementados/testados; runtime shadow, streaming,
 persistência e recovery ainda pendentes. TESTNET/LIVE falham fechado. Documentação:
 [M007_OPERATOR_SPEC](docs/live/M007_OPERATOR_SPEC.md),
 [LIVE_ARCHITECTURE](docs/live/LIVE_ARCHITECTURE.md),
 [STATE_MACHINE](docs/live/STATE_MACHINE.md). Parar após o milestone do Prompt 1; não iniciar
-automaticamente os passos seguintes. Comandos históricos abaixo não autorizam novas campanhas.
+automaticamente os passos seguintes. Prompt 2 foi autorizado posteriormente, mas permanece
+pendente da escolha temporal reportada; seu arquivo de transporte em elaboração não é runtime.
+Comandos históricos abaixo não autorizam novas campanhas.
+
+Pesquisa autorizada separadamente: **HOLD_RISK_SELECTOR**, diagnóstico de todas as decisões
+históricas M007 com prefixo `timestamp < T`, censura explícita e suporte de risco de 30 dias.
+[Protocolo congelado](docs/microstructure/HOLD_RISK_SELECTOR_PROTOCOL.md). Executar offline:
+`uv run python scripts/diagnose_hold_risk.py`. M011 só será registrado se houver sinal
+interpretável e revisão Astra; M007 continua champion e não muda no operador. Dados completos
+ficam em `artifacts/usdcusdt/hold-risk-diagnostics/`, com hashes e resumo versionável.
 
 ## Simulador matemático da banca
 

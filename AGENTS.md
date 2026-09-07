@@ -117,12 +117,22 @@ Informe quais modelos foram realmente usados; não alegue troca de modelo que n�
 
 ## Gate atual — operador M007 congelado
 
-- O protocolo mais recente limita esta entrega ao Prompt 1: especificação M007, contrato
+- Atualização OWNER: Prompt 2 autorizado somente para observação pública SHADOW. Sua
+  implementação está pendente da escolha temporal reportada (timestamp estrito versus ordem
+  de eventos do M007); não alterar seletor congelado silenciosamente.
+- Pesquisa histórica HOLD_RISK_SELECTOR está autorizada separadamente: diagnóstico causal de
+  todas as decisões M007, segundo `docs/microstructure/HOLD_RISK_SELECTOR_PROTOCOL.md`.
+  M011 só pode ser registrado após sinal interpretável e revisão Astra; pré-registro e push
+  precedem qualquer replay. M007 permanece champion e operador, sem alteração automática.
+- Esta atualização supera a limitação histórica ao Prompt 1 e a proibição de estudar M011,
+  apenas nesse escopo. Preserve artifacts M010, sem incorporá-lo ao novo seletor.
+
+- O protocolo do milestone anterior limitou aquela entrega ao Prompt 1: especificação M007, contrato
   `SHADOW_ONLY`, state machine, testes, commit e push. Parar após esse milestone.
 - A autoridade é o M007 existente, sem melhoria científica ou novo Mxxx. M008/M009 não são
   utilizados; M010 concluído é evidência histórica, sem autorização de nova execução.
-- TESTNET e LIVE falham fechado; `TRADING_ENABLED=false`. Não conectar market data neste
-  passo. Streaming, persistência e runtime shadow pertencem ao Prompt 2, ainda pendente.
+- TESTNET e LIVE falham fechado; `TRADING_ENABLED=false`. Market data público pertence somente
+  ao Prompt 2. O diagnóstico HOLD_RISK_SELECTOR é offline, sem conexão a mercado ou conta.
 - Consultar `docs/live/M007_OPERATOR_SPEC.md`, `LIVE_ARCHITECTURE.md` e `STATE_MACHINE.md`.
   Price-touch não é fill; estados reservados não são capacidades de execução já implementadas.
 
