@@ -1,0 +1,7 @@
+{
+  "change": "New complete strategy:5% profit funding, dynamic5% target/nonzerofloor, mandatory24h unlock state, current available bank compound sizing, reality execution.",
+  "expected_effect": "Reduce zero days and long holds while reinvesting95% of realized positive profit; test sustainability without guaranteeing liquidity.",
+  "hypothesis": "A5% funded dynamic recovery reserve and causal12/18/24h urgency can preserve motor uptime with compounding capital and nonzero reserve.",
+  "observation": "Frozen B10 reality A accumulated multi-day capital lock and101 zero days by86.54% of frozen DEVELOPMENT; fixed100 results are auxiliary only.",
+  "reason_for_new_model": "Material OWNER strategy and capital-policy update; historical B10 remains immutable. M011 occupied and unchanged."
+}

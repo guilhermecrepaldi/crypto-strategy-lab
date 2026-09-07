@@ -1,0 +1,15 @@
+{
+  "ancestor_chain": [
+    "M005",
+    "M006",
+    "M007"
+  ],
+  "change_category": "OWNER_HIGH_UPTIME_COMPOUNDING_RECOVERY",
+  "change_summary": "B10 recovery-policy successor; M007 canonical selector ancestry; not M011 mutation.",
+  "parent_model_id": "M007",
+  "parent_run_hash": null,
+  "references": {
+    "artifact": "097abdab8225038b091cb721bdd36bedb8a636c94bed1c87120adc0c9e10953a",
+    "historical_parent": "B10_FROZEN / RRV2_H1_B10_F0"
+  }
+}

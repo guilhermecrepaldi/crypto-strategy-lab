@@ -4,3 +4,5 @@ artifacts/binance/** -text whitespace=cr-at-eol
 artifacts/binance/official-sources/** -text -whitespace
 reports/usdcusdt/B10-* -text whitespace=cr-at-eol
 data/manifests/usdcusdt-trades-2025-2026.json -text whitespace=cr-at-eol
+# Preserve exact superseded design bytes as historical evidence.
+/docs/microstructure/historical/M012_FIXED_NOTIONAL_DRAFT_* -text
