@@ -68,3 +68,9 @@ TEST_SUITE_PASS_IS_STRATEGY_PASS=NO
 DECISION=Publish validated implementation and reviewed source hashes, then start the first OWNER-authorized compound replay without further permission.
 EVIDENCE=reports/usdcusdt/M012-preflight-independent-review.md
 COMMIT=Containing implementation commit.
+
+## Publication whitespace correction — before execution
+
+TYPE=ERROR
+EVENT=Implementation publication command did not stop on two whitespace-only diff-check findings in historical archival helper. No kernel or economic semantics affected; no M012 run started.
+DECISION=Remove trailing whitespace, enforce command failure checks, publish correction before execution.

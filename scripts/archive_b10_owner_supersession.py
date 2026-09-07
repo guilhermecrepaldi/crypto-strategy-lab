@@ -277,10 +277,8 @@ def main() -> int:
         "--runs",
         type=Path,
         default=Path(
-            
-                "artifacts/binance/b10-reality-runs/a77e0c67fdff8c618cbfc28fd"
-                "d3d49d2fa831626560aed7fe1ec27007293537d"
-            
+            "artifacts/binance/b10-reality-runs/a77e0c67fdff8c618cbfc28fd"
+            "d3d49d2fa831626560aed7fe1ec27007293537d"
         ),
     )
     parser.add_argument(
