@@ -1,10 +1,292 @@
 """Standalone retrospective visualization. Never imported by the experimental runtime."""
 
 import argparse
+import csv
 import hashlib
 import json
+from datetime import UTC, datetime
+from decimal import Decimal
 from html import escape
 from pathlib import Path
+
+
+def collect_comparison(root: Path) -> dict:
+    """Read lightweight evidence only. Never run a simulation or read giant replay files."""
+    sources = {}
+
+    def read(path: Path) -> dict:
+        raw = path.read_bytes()
+        sources[path.relative_to(root).as_posix()] = hashlib.sha256(raw).hexdigest()
+        return json.loads(raw)
+
+    registry = read(root / "reports/usdcusdt/model-registry.json")
+    transition = read(root / "reports/usdcusdt/OWNER-strategy-transition-evidence.json")
+    release_report = read(root / "reports/usdcusdt/M010-capital-release.json")
+    strategies, rows, failures = [], [], []
+    for model in registry["models"]:
+        mid = model["model_id"]
+        strategies.append(
+            {
+                "id": mid,
+                "config": model["model"],
+                "hypothesis": model["hypothesis"],
+                "lineage": model["lineage"],
+                "status": model["status"],
+                "hash": model["model_hash"],
+            }
+        )
+        evaluations = [
+            e["payload"]
+            for e in registry["events"]
+            if e["event_type"] == "EVALUATION_RECORDED" and e["payload"]["model_id"] == mid
+        ]
+        for i, ev in enumerate(evaluations or [None]):
+            row = {
+                "id": mid,
+                "strategy": mid,
+                "family": "Modelos",
+                "initial": model["model"].get("total_initial_equity", "100"),
+                "status": model["status"],
+                "group": "principal",
+                "source": "registry",
+                "note": "Capital inicial 100 USDT; sem reserva segregada.",
+                "metrics": {},
+            }
+            if ev is None:
+                row.update(status="NOT_RUN", note="Identidade registrada; sem avaliação publicada.")
+                if model["status"] == "SUPERSEDED":
+                    row.update(status="SUPERADO_SEM_EXECUÇÃO", group="historico")
+                if mid == "M011":
+                    row["note"] = "Pré-registro: 100 operacional + 5 reserva. Não executado."
+                rows.append(row)
+                continue
+            directory = root / ev["artifact_directory"].replace("\\", "/")
+            metrics = read(directory / "metrics.json")
+            row.update(
+                source=(directory / "metrics.json").relative_to(root).as_posix(),
+                evaluation=ev["EVALUATION_HASH"],
+                metrics=metrics,
+            )
+            if i != len(evaluations) - 1:
+                row.update(
+                    group="historico",
+                    status="AVALIAÇÃO_ANTERIOR",
+                    note="Avaliação anterior preservada; não duplicar na comparação principal.",
+                )
+            if model["status"] == "INVALIDATED":
+                row.update(group="historico", note="Modelo invalidado; números não elegíveis.")
+            row.update(
+                cycles=metrics.get("completed_cycles"),
+                equity=metrics.get("final_marked_equity"),
+                operating=metrics.get("final_marked_equity"),
+                reserve="0",
+                releases=0,
+                fees=metrics.get("fees_quote"),
+            )
+            daily_path = directory / "daily.csv"
+            if daily_path.exists():
+                raw = daily_path.read_bytes()
+                sources[daily_path.relative_to(root).as_posix()] = hashlib.sha256(raw).hexdigest()
+                daily = list(csv.DictReader(raw.decode("utf-8").splitlines()))
+                counts = [int(d["completed_cycles"]) for d in daily]
+                row.update(
+                    zero=sum(c == 0 for c in counts),
+                    active=sum(c > 0 for c in counts),
+                    days=len(counts),
+                    monthly={},
+                    mean=str(Decimal(sum(counts)) / len(counts)) if counts else None,
+                )
+                for d in daily:
+                    month = d["period"][:7]
+                    row["monthly"][month] = row["monthly"].get(month, 0) + int(
+                        d["completed_cycles"]
+                    )
+            if mid in release_report and i == len(evaluations) - 1:
+                extra = release_report[mid]
+                row.update(
+                    lock=extra.get("HOURS_POSITION_OLDER_THAN_24H"),
+                    hold=str(Decimal(extra["MAX_HOLD"]) / 3600),
+                    drawdown=extra.get("MAX_DRAWDOWN"),
+                    releases=extra.get("CAPITAL_RELEASE_COUNT"),
+                    median=extra.get("MEDIAN_CYCLES_DAY"),
+                )
+            rows.append(row)
+
+    invalid_identities = {}
+    failure_paths = set((root / "reports/usdcusdt").glob("*technical-failure*.json"))
+    failure_paths.update(
+        root / "reports/usdcusdt" / name
+        for name in ("M010-event-id-failure.json", "M011-recovery-reserve-precision-audit.json")
+    )
+    for path in sorted(failure_paths):
+        failure = read(path)
+        failure.setdefault("classification", "AUDITORIA_TÉCNICA")
+        failures.append({"source": path.relative_to(root).as_posix(), "data": failure})
+        if failure.get("artifact_identity"):
+            invalid_identities[failure["artifact_identity"]] = failure.get(
+                "scope_decision", "INVALIDATED_TECHNICAL"
+            )
+    current_identity = Path(transition["run"]["path"]).name
+    for directory in sorted((root / "artifacts/usdcusdt/recovery-reserve").iterdir()):
+        if not (directory / "identity.json").exists():
+            continue
+        identity = read(directory / "identity.json")
+        rid = directory.name
+        for path in sorted(directory.glob("*/completed.json")):
+            completed = read(path)
+            summary = completed["summary"]
+            sid = path.parent.name
+            key = f"{sid} · {rid[:8]}"
+            config = completed["identity"].get("reserve_config", {})
+            strategies.append(
+                {
+                    "id": key,
+                    "config": config,
+                    "hash": rid,
+                    "status": "SUPERSEDED_BY_OWNER_STRATEGY_UPDATE",
+                    "hypothesis": {
+                        "description": (
+                            "M007 + reserva: cobrir integralmente uma release, restaurar a banca "
+                            "e esperar novo LOW. B = limite em basis points (10 bps = 0,10%, "
+                            "não 10%). H = horas; F = piso da reserva em USDT. "
+                            "Esta regra histórica não é o M011 dinâmico."
+                        )
+                    },
+                    "lineage": {"parent_model_id": "M007", "schema": identity["schema"]},
+                }
+            )
+            valid = summary.get("integrity_pass") is True
+            hashes_ok = bool(completed.get("artifact_hashes"))
+            for filename, expected in completed.get("artifact_hashes", {}).items():
+                target = path.parent / filename
+                # Existing lightweight sidecars only; never inflate replay/checkpoint payloads.
+                if target.exists() and target.stat().st_size < 20_000_000:
+                    hashes_ok &= hashlib.sha256(target.read_bytes()).hexdigest() == expected
+                else:
+                    hashes_ok = False
+            good = rid == current_identity and valid and hashes_ok
+            row = {
+                "id": key,
+                "strategy": key,
+                "family": identity["schema"],
+                "initial": identity.get("total_initial_equity", "105"),
+                "group": "principal" if good else "historico",
+                "status": "CONCLUÍDO_SUPERADO" if good else "HISTÓRICO_NÃO_ELEGÍVEL",
+                "source": path.relative_to(root).as_posix(),
+                "metrics": summary,
+                "note": invalid_identities.get(
+                    rid,
+                    "Hipótese superada pelo OWNER; não é M011. Auditoria armazenada "
+                    "+ hashes de sidecars, sem novo replay da contabilidade.",
+                ),
+                "cycles": summary.get("completed_cycles"),
+                "zero": summary.get("zero_cycle_days"),
+                "active": summary.get("active_days"),
+                "releases": summary.get("release_count"),
+                "operating": summary.get("final_operating_equity"),
+                "reserve": summary.get("reserve_final"),
+                "equity": summary.get("total_final_equity", summary.get("final_total_equity")),
+                "hold": summary.get("max_hold_hours"),
+                "lock": summary.get("lock_hours"),
+                "drawdown": summary.get("maximum_drawdown"),
+                "uptime": summary.get("operating_uptime"),
+                "loss": summary.get("total_release_loss"),
+                "integrity": valid,
+                "sidecar_hashes": hashes_ok,
+                "monthly": {
+                    k: v["completed_cycles"] for k, v in summary.get("monthly", {}).items()
+                },
+            }
+            rows.append(row)
+        for partial in sorted(directory.glob("*/checkpoint.json")):
+            if partial.with_name("completed.json").exists():
+                continue
+            partial_key = f"{partial.parent.name} · {rid[:8]}"
+            configs = [
+                c
+                for c in identity.get("grid", [])
+                if partial.parent.name
+                == (
+                    f"RRV2_H{c.get('lock_hours')}_B{c.get('max_loss_bps')}_F{c.get('reserve_floor')}"
+                )
+            ]
+            strategies.append(
+                {
+                    "id": partial_key,
+                    "hash": rid,
+                    "status": "PARCIAL",
+                    "config": configs[0]
+                    if len(configs) == 1
+                    else {"scenario": partial.parent.name},
+                    "hypothesis": {
+                        "description": "Recovery Reserve histórica; checkpoint parcial. "
+                        "Sem resultado econômico final ou autorização de retomada."
+                    },
+                    "lineage": {"parent_model_id": "M007", "schema": identity["schema"]},
+                }
+            )
+            rows.append(
+                {
+                    "id": partial_key,
+                    "strategy": partial_key,
+                    "family": identity["schema"],
+                    "group": "historico",
+                    "status": "PARCIAL",
+                    "source": partial.relative_to(root).as_posix(),
+                    "note": "Checkpoint preservado, sem conclusão. Não é resultado final; "
+                    "não foi carregado para evitar reprocessamento pesado.",
+                    "metrics": {"checkpoint_bytes": partial.stat().st_size},
+                }
+            )
+
+    base = transition["baseline"]
+    rows.append(
+        {
+            "id": "M007 + 5 parados",
+            "strategy": "M007",
+            "family": "Controle histórico",
+            "initial": "105",
+            "group": "principal",
+            "status": "BASELINE_HISTÓRICO",
+            "source": base["path"],
+            "note": "Reserva sem funding: não é o futuro controle pareado de M011.",
+            "cycles": base["cycles"],
+            "zero": base["zero_cycle_days"],
+            "active": base["active_days"],
+            "releases": 0,
+            "operating": base["operating_equity"],
+            "reserve": base["reserve"],
+            "equity": base["total_equity"],
+            "hold": base["max_hold_hours"],
+            "lock": base["lock_hours"],
+            "uptime": base["operating_uptime"],
+            "drawdown": base["maximum_drawdown"],
+            "metrics": base,
+        }
+    )
+    for row in rows:
+        if row.get("cycles") is not None:
+            row["multiplier"] = str(Decimal(row["cycles"]) / 344704)
+    return {
+        "generated": datetime.now(UTC).isoformat(),
+        "rows": rows,
+        "strategies": strategies,
+        "failures": failures,
+        "sources": sources,
+        "protocol": (root / "docs/microstructure/RECOVERY_DYNAMIC_PREREGISTRATION.md").read_text(
+            encoding="utf-8"
+        ),
+        "scope": "USDCUSDT · DEVELOPMENT · 01/01/2026 a 05/09/2026",
+    }
+
+
+def render_comparison(root: Path, output: Path) -> dict:
+    data = collect_comparison(root)
+    template = Path(__file__).with_name("recovery_comparison.html").read_text(encoding="utf-8")
+    payload = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(template.replace("__PAYLOAD__", payload), encoding="utf-8")
+    return data
 
 
 def render(report_path: Path, scenario_id: str, output: Path) -> None:
@@ -166,7 +448,8 @@ r.new_low+' → '+r.new_high]));
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--scenario", required=True)
+    parser.add_argument("--scenario")
+    parser.add_argument("--all-results", action="store_true")
     parser.add_argument(
         "--report", type=Path, default=Path("reports/usdcusdt/M011-recovery-reserve-scenarios.json")
     )
@@ -174,4 +457,13 @@ if __name__ == "__main__":
         "--output", type=Path, default=Path("reports/usdcusdt/M011-recovery-reserve-dashboard.html")
     )
     args = parser.parse_args()
-    render(args.report, args.scenario, args.output)
+    if args.all_results:
+        result = render_comparison(Path.cwd(), args.output)
+        print(
+            f"HTML={args.output}; RESULTS={len(result['rows'])}; "
+            f"STRATEGIES={len(result['strategies'])}"
+        )
+    elif args.scenario:
+        render(args.report, args.scenario, args.output)
+    else:
+        parser.error("use --scenario or --all-results")
