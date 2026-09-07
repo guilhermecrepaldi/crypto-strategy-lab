@@ -1,0 +1,21 @@
+{
+  "model_id": "M010",
+  "parent_model_id": "M007",
+  "status": "INCONCLUSIVE",
+  "HYPOTHESIS_RESULT": "INCONCLUSIVE",
+  "FROZEN_RULE_DID_NOT_TRIGGER": true,
+  "M010_BEHAVIORALLY_EQUIVALENT_TO_M007": true,
+  "scientific_reviewer": "gpt-6-astra",
+  "authorization_class": "OWNER_EXPLORATORY_OVERRIDE",
+  "SCIENTIFIC_GATE_PASS": false,
+  "full_replay_completed": true,
+  "early_stop": false,
+  "promotion": false,
+  "current_champion": "M007",
+  "M011_EXECUTION_AUTHORIZED": false,
+  "execution_evidence": "INCONCLUSIVE_PRICE_PATH_ONLY",
+  "reason": "Zero releases across 1439 causal checkpoints; destination first-cycle q90 was never identified. Exact M007 equivalence passed. The economic effect of realized capital release was not observed.",
+  "autopsy": "docs/microstructure/M010_AUTOPSY.md",
+  "causal_audit": "reports/usdcusdt/M010-causal-audit.json",
+  "run_hash": "5a53ab7dcebbdaf0f4697148c54d3e71b098575b6abc1a3b299c45312a5f4f0c"
+}

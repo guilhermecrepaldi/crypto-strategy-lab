@@ -908,3 +908,48 @@ The raw-result checksum and all 1439 causal snapshot checks passed independently
 destination first-cycle q90 was identifiable; no release occurred. The economic hypothesis
 remains inconclusive. Full exact reconstructed-parent comparison is still pending.
 See `reports/usdcusdt/M010-causal-audit.json` and the technical correction document.
+
+## M010 CLOSED — frozen rule inactive, 2026-09-07
+
+Full physical computation and recovered postprocessing completed successfully. GPT-6 Astra
+reviewed the causal audit and final comparison: `HYPOTHESIS_RESULT=INCONCLUSIVE`,
+`FROZEN_RULE_DID_NOT_TRIGGER=YES`, `M010_BEHAVIORALLY_EQUIVALENT_TO_M007=YES`.
+No promotion; `CURRENT_CHAMPION=M007`; no M011 registration or execution.
+
+Both independent 100-USDT compounded price-path replays end at
+`900637402983.4181046 USDT` (zero-fee theoretical mark, not demonstrated executable capital).
+Both have 344704 cycles, 193 zero-cycle days, 111.279479-day maximum completed hold and
+89.561188% inventory-open time. Zero releases and zero release losses; recovery statistics
+are unobserved, not successful. Independent fixed-notional-100 accounting ends at
+`2392.2243667 USDT` reference equity, separately from the compounded bank.
+
+All 1439 causal checkpoints passed hash/prefix/conjunction checks; none identified destination
+q90. Exact comparison with reconstructed M007 passed. The separate historical audit accounts
+for 859 lossy legacy event-ID fields and no other difference; original artifacts are immutable.
+
+Simulation SHA `1e4b85da2dcaf3e6a1ee4ff043c6870d207da0a5`; analysis SHA
+`f0c7e3029eeadf321591772603646a7aea06f123`; run
+`5a53ab7dcebbdaf0f4697148c54d3e71b098575b6abc1a3b299c45312a5f4f0c`;
+final scientific evaluation
+`cd2fd9a834f7c848ce15be8427a527249ef0f66be3caca5a8f1c6b01f8126403`.
+The scientific evaluation preserves every underlying replay/CSV/window/regime file byte-for-byte
+from the completed evaluation and appends the decision instead of rewriting its predecessor.
+
+See [M010_AUTOPSY.md](M010_AUTOPSY.md), [M010_DECISION.json](M010_DECISION.json),
+`reports/usdcusdt/M010-capital-release.json` and the updated offline temporal dashboard.
+VALIDATION, LOCKED_TEST, Binance live and Testnet remained unaccessed; no deploy.
+
+Reproducible commands from the repository root:
+
+```powershell
+uv run crypto-lab microstructure-full-replay --manifest data/manifests/usdcusdt-trades-2025-2026.json --models M010
+uv run pytest -q
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy --strict src
+```
+
+The canonical command now skips an already completed inconclusive run; it does not silently
+restart M010. With the documented failed-analysis state, it validates and recovers the saved
+computation without another M010 simulation. Rebuilding raw market data follows the existing
+official-download manifest, not invented candles. No large tape/replay is stored in Git.

@@ -1391,7 +1391,7 @@ M009,REJECTED,100,USDT,COMPOUNDING,HISTORICAL_LINKED_EVIDENCE,1bc2e893ff54a05d79
   ""scenario_hash"": ""db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"",
   ""status"": ""PENDING_SCIENTIFIC_REVIEW""
 }",Isolate the already preregistered M008 score-advantage component after rejecting the combined M008 package.,45310,110297,127607,2026-07,HOT,2026-04,15,7,55
-M010,INVALIDATED_TECHNICAL,100,USDT,COMPOUNDING,RUN_MANIFEST,13e379401566126ad08cd9f0573e3bc310dbf61008a2c022408c6e29fb96286b,M007,2026-09-07T03:13:06.288401Z,Small controlled realized losses may improve final capital by releasing capital into causally productive opportunities with sufficiently supported recovery economics.,LONG_HOLD_CAPITAL_LOCK in immutable M007; diagnostic inconclusive with zero eligible releases.,M007 plus CAPITAL_RELEASE_DECISION under the unchanged frozen diagnostic rule.,"Measure actual behavior, including valid zero releases; do not assume improvement.","{
+M010,INCONCLUSIVE,100,USDT,COMPOUNDING,RUN_MANIFEST,13e379401566126ad08cd9f0573e3bc310dbf61008a2c022408c6e29fb96286b,M007,2026-09-07T03:13:06.288401Z,Small controlled realized losses may improve final capital by releasing capital into causally productive opportunities with sufficiently supported recovery economics.,LONG_HOLD_CAPITAL_LOCK in immutable M007; diagnostic inconclusive with zero eligible releases.,M007 plus CAPITAL_RELEASE_DECISION under the unchanged frozen diagnostic rule.,"Measure actual behavior, including valid zero releases; do not assume improvement.","{
   ""capital_release_protocol"": ""OWNER_EXPLORATORY_OVERRIDE_FROZEN_V1"",
   ""confirmation_checks"": null,
   ""cooldown_minutes"": null,
@@ -1409,4 +1409,746 @@ M010,INVALIDATED_TECHNICAL,100,USDT,COMPOUNDING,RUN_MANIFEST,13e379401566126ad08
   ""symbol"": ""USDCUSDT"",
   ""tick_evidence_class"": ""OBSERVED_ACCEPTED_GRID"",
   ""tick_source"": ""BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX""
-}",,,"OWNER_EXPLORATORY_OVERRIDE authorizes execution, not SCIENTIFIC_GATE_PASS. No retrospective tuning.",,,,,,,,,
+}","{
+  ""capital_mode"": ""COMPOUNDING"",
+  ""capital_release"": {
+    ""BINANCE_LIVE_ACCESSED"": ""NO"",
+    ""HYPOTHESIS_RESULT"": ""INCONCLUSIVE"",
+    ""LOCKED_TEST_ACCESSED"": ""NO"",
+    ""M007"": {
+      ""AVG_CYCLES_DAY"": ""1389.935483870967741935483871"",
+      ""AVG_RELEASE_LOSS"": null,
+      ""CAPITAL_RELEASE_COUNT"": 0,
+      ""COMPLETED_CYCLES"": 344704,
+      ""DAYS_GE_2000"": 30,
+      ""END_EXCLUSIVE"": ""2026-09-05T23:59:59.783644+00:00"",
+      ""EXECUTABLE_RELEASE_LOSS"": ""UNKNOWN"",
+      ""FINAL_CAPITAL"": ""900637402983.4181046"",
+      ""FIXED_NOTIONAL_100"": {
+        ""additive_pnl"": ""2292.2243667"",
+        ""capital_mode"": ""FIXED_NOTIONAL_100"",
+        ""final_reference_equity"": ""2392.2243667"",
+        ""initial_reference_capital"": ""100"",
+        ""terminal_mark_included"": true,
+        ""total_release_loss"": ""0""
+      },
+      ""FROZEN_RULE_DID_NOT_TRIGGER"": true,
+      ""HOLD_UNIT"": ""SECONDS_INCLUDING_TERMINAL_CENSORING"",
+      ""HOURS_POSITION_OLDER_THAN_24H"": ""4571.297364125277777777777778"",
+      ""IDLE_HOURS"": ""621.31808962"",
+      ""INITIAL_CAPITAL"": ""100"",
+      ""MAX_DRAWDOWN"": ""0.002685166699940010796006383253"",
+      ""MAX_HOLD"": ""9614546.962713"",
+      ""MAX_RELEASE_LOSS"": null,
+      ""MEDIAN_CYCLES_DAY"": ""0.0"",
+      ""NET_CHANGE"": ""900637402883.4181046"",
+      ""P95_HOLD"": ""2.35068680"",
+      ""RECOVERY_CYCLES_P50"": null,
+      ""RECOVERY_CYCLES_P50_B"": null,
+      ""RECOVERY_CYCLES_P50_K"": null,
+      ""RECOVERY_CYCLES_P90"": null,
+      ""RECOVERY_CYCLES_P90_B"": null,
+      ""RECOVERY_CYCLES_P90_K"": null,
+      ""RECOVERY_TIME_P50"": null,
+      ""RECOVERY_TIME_P50_B"": null,
+      ""RECOVERY_TIME_P50_K"": null,
+      ""RECOVERY_TIME_P90"": null,
+      ""RECOVERY_TIME_P90_B"": null,
+      ""RECOVERY_TIME_P90_K"": null,
+      ""RELEASES_NOT_RECOVERED"": 0,
+      ""RELEASES_NOT_RECOVERED_B"": 0,
+      ""RELEASES_NOT_RECOVERED_K"": 0,
+      ""RELEASES_RECOVERED"": 0,
+      ""RELEASES_RECOVERED_B"": 0,
+      ""RELEASES_RECOVERED_K"": 0,
+      ""RELEASE_LOSS_CURRENCY"": ""USDT"",
+      ""RETURN"": ""9006374028.834181046"",
+      ""RETURN_PERCENT"": ""900637402883.418104600"",
+      ""START"": ""2026-01-01T00:00:00+00:00"",
+      ""TEMPORAL_STABILITY"": {
+        ""aggregate"": ""19.72212165320988089198087268"",
+        ""horizons"": {
+          ""12h"": {
+            ""failure_fraction"": ""0.3232323232323232323232323232"",
+            ""mad"": ""0E+6"",
+            ""median_absolute_productivity"": ""0"",
+            ""profitable_fraction"": ""0.1939393939393939393939393939"",
+            ""relative_variability"": ""0E+18"",
+            ""score"": ""13.12519130700948882767064585""
+          },
+          ""168h"": {
+            ""failure_fraction"": ""0.2285714285714285714285714286"",
+            ""mad"": ""0E+5"",
+            ""median_absolute_productivity"": ""0"",
+            ""profitable_fraction"": ""0.4571428571428571428571428571"",
+            ""relative_variability"": ""0E+17"",
+            ""score"": ""35.26530612244897959183673469""
+          },
+          ""1h"": {
+            ""failure_fraction"": ""0.3155772139136279616871114098"",
+            ""mad"": ""0E+6"",
+            ""median_absolute_productivity"": ""0"",
+            ""profitable_fraction"": ""0.07326499747941522433204503445"",
+            ""relative_variability"": ""0E+18"",
+            ""score"": ""5.014423369747239265743898930""
+          },
+          ""24h"": {
+            ""failure_fraction"": ""0.3562753036437246963562753036"",
+            ""mad"": ""0E+6"",
+            ""median_absolute_productivity"": ""0"",
+            ""profitable_fraction"": ""0.2226720647773279352226720648"",
+            ""relative_variability"": ""0E+18"",
+            ""score"": ""14.33395072858102902850399122""
+          },
+          ""336h"": {
+            ""failure_fraction"": ""0.1764705882352941176470588235"",
+            ""mad"": ""0.0001406825184680728723346695448"",
+            ""median_absolute_productivity"": ""0.0001406825184680728723346695448"",
+            ""profitable_fraction"": ""0.5882352941176470588235294118"",
+            ""relative_variability"": ""0.4999999982229490782949647664"",
+            ""score"": ""24.22145337328274361200862724""
+          },
+          ""4h"": {
+            ""failure_fraction"": ""0.3201075991930060524546065905"",
+            ""mad"": ""0E+6"",
+            ""median_absolute_productivity"": ""0"",
+            ""profitable_fraction"": ""0.1311365164761264290517821116"",
+            ""relative_variability"": ""0E+18"",
+            ""score"": ""8.915872102041951564986665422""
+          },
+          ""720h"": {
+            ""failure_fraction"": ""0.125"",
+            ""mad"": ""0.000541287028069252456622853458"",
+            ""median_absolute_productivity"": ""0.000554546268227954602911014495"",
+            ""profitable_fraction"": ""0.75"",
+            ""relative_variability"": ""0.4939501559263598313746844227"",
+            ""score"": ""33.20952101733263606603633476""
+          },
+          ""72h"": {
+            ""failure_fraction"": ""0.2804878048780487804878048780"",
+            ""mad"": ""0E+6"",
+            ""median_absolute_productivity"": ""0"",
+            ""profitable_fraction"": ""0.3292682926829268292682926829"",
+            ""relative_variability"": ""0E+18"",
+            ""score"": ""23.69125520523497917906008328""
+          }
+        },
+        ""reason"": ""DESCRIPTIVE_ONLY""
+      },
+      ""TIME_INVENTORY_OPEN"": ""19190454.661012"",
+      ""TOTAL_RELEASE_LOSS"": ""0"",
+      ""ZERO_CYCLE_DAYS"": 193,
+      ""classification"": ""RETROSPECTIVE_DIAGNOSTIC_ONLY"",
+      ""recovery_primary_target"": ""K"",
+      ""release_recoveries"": []
+    },
+    ""M010"": {
+      ""AVG_CYCLES_DAY"": ""1389.935483870967741935483871"",
+      ""AVG_RELEASE_LOSS"": null,
+      ""CAPITAL_RELEASE_COUNT"": 0,
+      ""COMPLETED_CYCLES"": 344704,
+      ""DAYS_GE_2000"": 30,
+      ""END_EXCLUSIVE"": ""2026-09-05T23:59:59.783644+00:00"",
+      ""EXECUTABLE_RELEASE_LOSS"": ""UNKNOWN"",
+      ""FINAL_CAPITAL"": ""900637402983.4181046"",
+      ""FIXED_NOTIONAL_100"": {
+        ""additive_pnl"": ""2292.2243667"",
+        ""capital_mode"": ""FIXED_NOTIONAL_100"",
+        ""final_reference_equity"": ""2392.2243667"",
+        ""initial_reference_capital"": ""100"",
+        ""terminal_mark_included"": true,
+        ""total_release_loss"": ""0""
+      },
+      ""FROZEN_RULE_DID_NOT_TRIGGER"": true,
+      ""HOLD_UNIT"": ""SECONDS_INCLUDING_TERMINAL_CENSORING"",
+      ""HOURS_POSITION_OLDER_THAN_24H"": ""4571.297364125277777777777778"",
+      ""IDLE_HOURS"": ""621.31808962"",
+      ""INITIAL_CAPITAL"": ""100"",
+      ""MAX_DRAWDOWN"": ""0.002685166699940010796006383253"",
+      ""MAX_HOLD"": ""9614546.962713"",
+      ""MAX_RELEASE_LOSS"": null,
+      ""MEDIAN_CYCLES_DAY"": ""0.0"",
+      ""NET_CHANGE"": ""900637402883.4181046"",
+      ""P95_HOLD"": ""2.35068680"",
+      ""RECOVERY_CYCLES_P50"": null,
+      ""RECOVERY_CYCLES_P50_B"": null,
+      ""RECOVERY_CYCLES_P50_K"": null,
+      ""RECOVERY_CYCLES_P90"": null,
+      ""RECOVERY_CYCLES_P90_B"": null,
+      ""RECOVERY_CYCLES_P90_K"": null,
+      ""RECOVERY_TIME_P50"": null,
+      ""RECOVERY_TIME_P50_B"": null,
+      ""RECOVERY_TIME_P50_K"": null,
+      ""RECOVERY_TIME_P90"": null,
+      ""RECOVERY_TIME_P90_B"": null,
+      ""RECOVERY_TIME_P90_K"": null,
+      ""RELEASES_NOT_RECOVERED"": 0,
+      ""RELEASES_NOT_RECOVERED_B"": 0,
+      ""RELEASES_NOT_RECOVERED_K"": 0,
+      ""RELEASES_RECOVERED"": 0,
+      ""RELEASES_RECOVERED_B"": 0,
+      ""RELEASES_RECOVERED_K"": 0,
+      ""RELEASE_LOSS_CURRENCY"": ""USDT"",
+      ""RETURN"": ""9006374028.834181046"",
+      ""RETURN_PERCENT"": ""900637402883.418104600"",
+      ""START"": ""2026-01-01T00:00:00+00:00"",
+      ""TEMPORAL_STABILITY"": {
+        ""aggregate"": ""19.72212165320988089198087268"",
+        ""horizons"": {
+          ""12h"": {
+            ""failure_fraction"": ""0.3232323232323232323232323232"",
+            ""mad"": ""0E+6"",
+            ""median_absolute_productivity"": ""0"",
+            ""profitable_fraction"": ""0.1939393939393939393939393939"",
+            ""relative_variability"": ""0E+18"",
+            ""score"": ""13.12519130700948882767064585""
+          },
+          ""168h"": {
+            ""failure_fraction"": ""0.2285714285714285714285714286"",
+            ""mad"": ""0E+5"",
+            ""median_absolute_productivity"": ""0"",
+            ""profitable_fraction"": ""0.4571428571428571428571428571"",
+            ""relative_variability"": ""0E+17"",
+            ""score"": ""35.26530612244897959183673469""
+          },
+          ""1h"": {
+            ""failure_fraction"": ""0.3155772139136279616871114098"",
+            ""mad"": ""0E+6"",
+            ""median_absolute_productivity"": ""0"",
+            ""profitable_fraction"": ""0.07326499747941522433204503445"",
+            ""relative_variability"": ""0E+18"",
+            ""score"": ""5.014423369747239265743898930""
+          },
+          ""24h"": {
+            ""failure_fraction"": ""0.3562753036437246963562753036"",
+            ""mad"": ""0E+6"",
+            ""median_absolute_productivity"": ""0"",
+            ""profitable_fraction"": ""0.2226720647773279352226720648"",
+            ""relative_variability"": ""0E+18"",
+            ""score"": ""14.33395072858102902850399122""
+          },
+          ""336h"": {
+            ""failure_fraction"": ""0.1764705882352941176470588235"",
+            ""mad"": ""0.0001406825184680728723346695448"",
+            ""median_absolute_productivity"": ""0.0001406825184680728723346695448"",
+            ""profitable_fraction"": ""0.5882352941176470588235294118"",
+            ""relative_variability"": ""0.4999999982229490782949647664"",
+            ""score"": ""24.22145337328274361200862724""
+          },
+          ""4h"": {
+            ""failure_fraction"": ""0.3201075991930060524546065905"",
+            ""mad"": ""0E+6"",
+            ""median_absolute_productivity"": ""0"",
+            ""profitable_fraction"": ""0.1311365164761264290517821116"",
+            ""relative_variability"": ""0E+18"",
+            ""score"": ""8.915872102041951564986665422""
+          },
+          ""720h"": {
+            ""failure_fraction"": ""0.125"",
+            ""mad"": ""0.000541287028069252456622853458"",
+            ""median_absolute_productivity"": ""0.000554546268227954602911014495"",
+            ""profitable_fraction"": ""0.75"",
+            ""relative_variability"": ""0.4939501559263598313746844227"",
+            ""score"": ""33.20952101733263606603633476""
+          },
+          ""72h"": {
+            ""failure_fraction"": ""0.2804878048780487804878048780"",
+            ""mad"": ""0E+6"",
+            ""median_absolute_productivity"": ""0"",
+            ""profitable_fraction"": ""0.3292682926829268292682926829"",
+            ""relative_variability"": ""0E+18"",
+            ""score"": ""23.69125520523497917906008328""
+          }
+        },
+        ""reason"": ""DESCRIPTIVE_ONLY""
+      },
+      ""TIME_INVENTORY_OPEN"": ""19190454.661012"",
+      ""TOTAL_RELEASE_LOSS"": ""0"",
+      ""ZERO_CYCLE_DAYS"": 193,
+      ""classification"": ""RETROSPECTIVE_DIAGNOSTIC_ONLY"",
+      ""recovery_primary_target"": ""K"",
+      ""release_recoveries"": []
+    },
+    ""M010_AUTHORIZATION_CLASS"": ""OWNER_EXPLORATORY_OVERRIDE"",
+    ""MODEL"": ""M010"",
+    ""PARENT"": ""M007"",
+    ""SCIENTIFIC_GATE_PASS"": false,
+    ""TESTNET_ACCESSED"": ""NO"",
+    ""VALIDATION_ACCESSED"": ""NO"",
+    ""analysis_code_commit"": ""f0c7e3029eeadf321591772603646a7aea06f123"",
+    ""code_commit"": ""1e4b85da2dcaf3e6a1ee4ff043c6870d207da0a5"",
+    ""completed_replay_sha256"": ""4b781fe79f8c61bd8991c32a6b45e4070d0f3dd159ebd8d059160935f08ef7e9"",
+    ""computation_reused_without_replay"": true,
+    ""end_exclusive"": ""2026-09-05T23:59:59.783644+00:00"",
+    ""equivalence"": {
+      ""FROZEN_RULE_DID_NOT_TRIGGER"": true,
+      ""M010_BEHAVIORALLY_EQUIVALENT_TO_M007"": ""YES"",
+      ""behavior_hash"": ""81757fd64c5dcddbaf6d0b07a9aef4d5152c2456c56dc9698abb5aa8288d261a"",
+      ""compared_fields"": [
+        ""active_high"",
+        ""active_low"",
+        ""blocked_reselection_checks"",
+        ""capacity_capped_final_capital"",
+        ""completed_cycles"",
+        ""cooldown_violations"",
+        ""cycles"",
+        ""daily_cycles"",
+        ""end_exclusive"",
+        ""execution_class"",
+        ""final_cash"",
+        ""final_inventory"",
+        ""final_marked_equity"",
+        ""initial_quote"",
+        ""last_price"",
+        ""open_buy_fee_quote"",
+        ""open_cycle_censored"",
+        ""open_entry_event"",
+        ""open_entry_price"",
+        ""open_entry_timestamp"",
+        ""open_holding_seconds"",
+        ""realized_profit"",
+        ""reselection_count"",
+        ""return_fraction"",
+        ""reversal_24h_count"",
+        ""scenario_hash"",
+        ""scenario_id"",
+        ""selection_changes"",
+        ""start"",
+        ""total_fees"",
+        ""unrealized_profit"",
+        ""zero_cycle_days""
+      ],
+      ""legacy_m007_event_id_audit"": {
+        ""all_other_fields_exactly_equal"": true,
+        ""changed_event_id_counts"": {
+          ""cycle_entry_event"": 505,
+          ""cycle_exit_event"": 334,
+          ""selection_event"": 20
+        },
+        ""classification"": ""TECHNICAL_EVENT_ID_SERIALIZATION_CORRECTION"",
+        ""examples"": [
+          {
+            ""exact_event"": 7242546821066678273,
+            ""field"": ""cycle_exit_event"",
+            ""index"": 19164,
+            ""legacy_event"": 7242546821066678272
+          },
+          {
+            ""exact_event"": 7246572454601904132,
+            ""field"": ""cycle_exit_event"",
+            ""index"": 22095,
+            ""legacy_event"": 7246572454601904128
+          },
+          {
+            ""exact_event"": 7246572454603984899,
+            ""field"": ""cycle_exit_event"",
+            ""index"": 22096,
+            ""legacy_event"": 7246572454603984896
+          },
+          {
+            ""exact_event"": 7246572454606880769,
+            ""field"": ""cycle_exit_event"",
+            ""index"": 22097,
+            ""legacy_event"": 7246572454606880768
+          },
+          {
+            ""exact_event"": 7246572454618812422,
+            ""field"": ""cycle_exit_event"",
+            ""index"": 22098,
+            ""legacy_event"": 7246572454618812416
+          },
+          {
+            ""exact_event"": 7247089486811598849,
+            ""field"": ""cycle_entry_event"",
+            ""index"": 43114,
+            ""legacy_event"": 7247089486811598848
+          },
+          {
+            ""exact_event"": 7247089492917018625,
+            ""field"": ""cycle_entry_event"",
+            ""index"": 43115,
+            ""legacy_event"": 7247089492917018624
+          },
+          {
+            ""exact_event"": 7248519285910962183,
+            ""field"": ""cycle_entry_event"",
+            ""index"": 91478,
+            ""legacy_event"": 7248519285910962176
+          },
+          {
+            ""exact_event"": 7248522692168945669,
+            ""field"": ""cycle_entry_event"",
+            ""index"": 91479,
+            ""legacy_event"": 7248522692168945664
+          },
+          {
+            ""exact_event"": 7248929508566753549,
+            ""field"": ""cycle_exit_event"",
+            ""index"": 116433,
+            ""legacy_event"": 7248929508566753280
+          },
+          {
+            ""exact_event"": 7249124682070032389,
+            ""field"": ""cycle_entry_event"",
+            ""index"": 131714,
+            ""legacy_event"": 7249124682070032384
+          },
+          {
+            ""exact_event"": 7249214022549798914,
+            ""field"": ""cycle_exit_event"",
+            ""index"": 137954,
+            ""legacy_event"": 7249214022549798912
+          },
+          {
+            ""exact_event"": 7249257673688428548,
+            ""field"": ""cycle_entry_event"",
+            ""index"": 139834,
+            ""legacy_event"": 7249257673688428544
+          },
+          {
+            ""exact_event"": 7249262050103410690,
+            ""field"": ""cycle_entry_event"",
+            ""index"": 139852,
+            ""legacy_event"": 7249262050103410688
+          },
+          {
+            ""exact_event"": 7249354657591230466,
+            ""field"": ""cycle_exit_event"",
+            ""index"": 148276,
+            ""legacy_event"": 7249354657591230464
+          },
+          {
+            ""exact_event"": 7249354657592918017,
+            ""field"": ""cycle_exit_event"",
+            ""index"": 148277,
+            ""legacy_event"": 7249354657592918016
+          },
+          {
+            ""exact_event"": 7249354657596575745,
+            ""field"": ""cycle_exit_event"",
+            ""index"": 148278,
+            ""legacy_event"": 7249354657596575744
+          },
+          {
+            ""exact_event"": 7249354657597644801,
+            ""field"": ""cycle_exit_event"",
+            ""index"": 148279,
+            ""legacy_event"": 7249354657597644800
+          },
+          {
+            ""exact_event"": 7249354657621270531,
+            ""field"": ""cycle_exit_event"",
+            ""index"": 148280,
+            ""legacy_event"": 7249354657621270528
+          },
+          {
+            ""exact_event"": 7249354657629298689,
+            ""field"": ""cycle_exit_event"",
+            ""index"": 148281,
+            ""legacy_event"": 7249354657629298688
+          }
+        ],
+        ""immutable_legacy_artifact_modified"": false,
+        ""legacy_behavior_hash"": ""396f1a5d8f1091dd4797e3832d492c2c76aebb0bf9f58f22e949833f824baeb2"",
+        ""legacy_projection_hash"": ""396f1a5d8f1091dd4797e3832d492c2c76aebb0bf9f58f22e949833f824baeb2"",
+        ""projection"": ""INT_FLOAT_INT_ONLY_CYCLE_AND_SELECTION_EVENT_IDS"",
+        ""reconstructed_behavior_hash"": ""30d04f3e940f9b108c6079df18cca9e809b62bce0c597781c85454376527b8dc""
+      }
+    },
+    ""execution_tape_hash"": ""505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c"",
+    ""run_hash"": ""5a53ab7dcebbdaf0f4697148c54d3e71b098575b6abc1a3b299c45312a5f4f0c"",
+    ""scientific_decision"": {
+      ""FROZEN_RULE_DID_NOT_TRIGGER"": true,
+      ""HYPOTHESIS_RESULT"": ""INCONCLUSIVE"",
+      ""M010_BEHAVIORALLY_EQUIVALENT_TO_M007"": true,
+      ""M011_EXECUTION_AUTHORIZED"": false,
+      ""SCIENTIFIC_GATE_PASS"": false,
+      ""authorization_class"": ""OWNER_EXPLORATORY_OVERRIDE"",
+      ""autopsy"": ""docs/microstructure/M010_AUTOPSY.md"",
+      ""causal_audit"": ""reports/usdcusdt/M010-causal-audit.json"",
+      ""current_champion"": ""M007"",
+      ""early_stop"": false,
+      ""execution_evidence"": ""INCONCLUSIVE_PRICE_PATH_ONLY"",
+      ""full_replay_completed"": true,
+      ""model_id"": ""M010"",
+      ""parent_model_id"": ""M007"",
+      ""promotion"": false,
+      ""reason"": ""Zero releases across 1439 causal checkpoints; destination first-cycle q90 was never identified. Exact M007 equivalence passed. The economic effect of realized capital release was not observed."",
+      ""run_hash"": ""5a53ab7dcebbdaf0f4697148c54d3e71b098575b6abc1a3b299c45312a5f4f0c"",
+      ""scientific_reviewer"": ""gpt-6-astra"",
+      ""status"": ""INCONCLUSIVE""
+    },
+    ""start"": ""2026-01-01T00:00:00+00:00""
+  },
+  ""completed_cycles"": 344704,
+  ""concentration"": {
+    ""PROFIT_CONCENTRATION_WARNING"": ""YES"",
+    ""daily"": {
+      ""all_periods"": {
+        ""best_share"": ""0.2368677269266678580682666132"",
+        ""gross_losses"": ""4827075291.1651033"",
+        ""gross_positive"": ""905464478174.5832079"",
+        ""net"": ""900637402883.4181046"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.6456768350712989621736805471"",
+        ""top5_share"": ""0.4729276401434859510625367750""
+      },
+      ""complete_period_count"": 247,
+      ""complete_periods"": {
+        ""best_share"": ""0.2369101506294933462226961470"",
+        ""gross_losses"": ""4827075291.1651033"",
+        ""gross_positive"": ""905302335877.8557493"",
+        ""net"": ""900475260586.6906460"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.6457924776813234457334723211"",
+        ""top5_share"": ""0.4730123428673383148007060129""
+      },
+      ""granularity"": ""day"",
+      ""period_count"": 248
+    },
+    ""monthly"": {
+      ""all_periods"": {
+        ""best_share"": ""0.3193617364250123268428532404"",
+        ""gross_losses"": ""487080201.8828291"",
+        ""gross_positive"": ""901124483085.3009337"",
+        ""net"": ""900637402883.4181046"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""1"",
+        ""top5_share"": ""0.9940835885355208645707980999""
+      },
+      ""complete_period_count"": 8,
+      ""complete_periods"": {
+        ""best_share"": ""0.3193617364250123268428532404"",
+        ""gross_losses"": ""117756081.5591734"",
+        ""gross_positive"": ""901124483085.3009337"",
+        ""net"": ""901006727003.7417603"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""1"",
+        ""top5_share"": ""0.9940835885355208645707980999""
+      },
+      ""granularity"": ""month"",
+      ""period_count"": 9
+    },
+    ""weekly"": {
+      ""all_periods"": {
+        ""best_share"": ""0.2689737189375078632164816251"",
+        ""gross_losses"": ""738043143.2534070"",
+        ""gross_positive"": ""901375446026.6715116"",
+        ""net"": ""900637402883.4181046"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.9743778786267072979569762811"",
+        ""top5_share"": ""0.8231785411701990575304710023""
+      },
+      ""complete_period_count"": 34,
+      ""complete_periods"": {
+        ""best_share"": ""0.2689737189617167953395934943"",
+        ""gross_losses"": ""557885035.7784530"",
+        ""gross_positive"": ""901375445945.5433736"",
+        ""net"": ""900817560909.7649206"",
+        ""net_profit_status"": ""POSITIVE"",
+        ""top10_share"": ""0.9743778787144060070320297145"",
+        ""top5_share"": ""0.8231785412442890969109416394""
+      },
+      ""granularity"": ""week"",
+      ""period_count"": 36
+    }
+  },
+  ""currency"": ""USDT"",
+  ""data_support"": {
+    ""book_depth"": ""UNKNOWN"",
+    ""executable_capacity"": ""UNKNOWN"",
+    ""fills_partial_fills"": ""UNKNOWN_PRICE_PATH_ONLY"",
+    ""gross_trade_volume"": ""OBSERVED_TRADES"",
+    ""latency"": ""COUNTERFACTUAL_ZERO"",
+    ""mid"": ""UNKNOWN"",
+    ""price"": ""OBSERVED_TRADES"",
+    ""queue_ahead"": ""UNKNOWN"",
+    ""spread_bid_ask"": ""UNKNOWN"",
+    ""trade_intensity"": ""OBSERVED_TRADES""
+  },
+  ""fees_quote"": ""0E-7"",
+  ""final_marked_equity"": ""900637402983.4181046"",
+  ""fixed_notional_auxiliary"": {
+    ""currency"": ""USDT"",
+    ""notional"": ""100"",
+    ""status"": ""AUXILIARY_ONLY""
+  },
+  ""initial_capital"": ""100"",
+  ""initial_quote"": ""100"",
+  ""open_cycle_censored"": true,
+  ""productivity_distribution"": {
+    ""daily"": {
+      ""best"": ""2026-01-31 00:00:00+00:00"",
+      ""capital_hour_return"": {
+        ""max"": ""0.1532118490526954640775849338"",
+        ""min"": ""-0.00004162949462942762075430008102"",
+        ""p10"": ""-0.000007499222717866368244052898646"",
+        ""p50"": ""0.000001667246040758539761060188976"",
+        ""p90"": ""0.001101891380298341276302658688""
+      },
+      ""complete_periods"": 247,
+      ""cycles"": {
+        ""max"": 44788,
+        ""min"": 0,
+        ""p10"": 0,
+        ""p50"": 0,
+        ""p90"": 2648
+      },
+      ""worst"": ""2026-01-02 00:00:00+00:00""
+    },
+    ""monthly"": {
+      ""best"": ""2026-01-01 00:00:00+00:00"",
+      ""capital_hour_return"": {
+        ""max"": ""0.1525560900633386536753404621"",
+        ""min"": ""-6.529288675117060214723624872E-7"",
+        ""p10"": ""8.063892891009137647225958538E-7"",
+        ""p50"": ""0.0007578695760389061901912619886"",
+        ""p90"": ""0.001716067424377516172813045070""
+      },
+      ""complete_periods"": 8,
+      ""cycles"": {
+        ""max"": 182453,
+        ""min"": 0,
+        ""p10"": 0,
+        ""p50"": 34262,
+        ""p90"": 53855
+      },
+      ""worst"": ""2026-03-01 00:00:00+00:00""
+    },
+    ""weekly"": {
+      ""best"": ""2026-01-26 00:00:00+00:00"",
+      ""capital_hour_return"": {
+        ""max"": ""0.05942864584847660390615274234"",
+        ""min"": ""-0.000002976764840246478904039042493"",
+        ""p10"": ""-0.000001546700775181714196689144244"",
+        ""p50"": ""0.000003509454959581112531527662521"",
+        ""p90"": ""0.004730622092144647184259901306""
+      },
+      ""complete_periods"": 34,
+      ""cycles"": {
+        ""max"": 115130,
+        ""min"": 0,
+        ""p10"": 0,
+        ""p50"": 0,
+        ""p90"": 33511
+      },
+      ""worst"": ""2026-02-09 00:00:00+00:00""
+    }
+  },
+  ""productivity_fingerprint"": {
+    ""BEST_1D_CYCLES"": 44788,
+    ""BEST_30D_CYCLES"": 137665,
+    ""BEST_7D_CYCLES"": 115521,
+    ""BEST_MONTH"": ""2026-07"",
+    ""BEST_REGIME"": ""HOT"",
+    ""HOT_PERIOD_COUNT"": 55,
+    ""LONGEST_COLD_STREAK"": 7,
+    ""LONGEST_HOT_STREAK"": 15,
+    ""WORST_MONTH"": ""2026-04""
+  },
+  ""realized_profit"": ""901637280379.9040993"",
+  ""return_fraction"": ""9006374028.834181046"",
+  ""temporal_stability"": {
+    ""aggregate"": ""19.72212165320988089198087268"",
+    ""horizons"": {
+      ""12h"": {
+        ""failure_fraction"": ""0.3232323232323232323232323232"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.1939393939393939393939393939"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""13.12519130700948882767064585""
+      },
+      ""168h"": {
+        ""failure_fraction"": ""0.2285714285714285714285714286"",
+        ""mad"": ""0E+5"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.4571428571428571428571428571"",
+        ""relative_variability"": ""0E+17"",
+        ""score"": ""35.26530612244897959183673469""
+      },
+      ""1h"": {
+        ""failure_fraction"": ""0.3155772139136279616871114098"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.07326499747941522433204503445"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""5.014423369747239265743898930""
+      },
+      ""24h"": {
+        ""failure_fraction"": ""0.3562753036437246963562753036"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.2226720647773279352226720648"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""14.33395072858102902850399122""
+      },
+      ""336h"": {
+        ""failure_fraction"": ""0.1764705882352941176470588235"",
+        ""mad"": ""0.0001406825184680728723346695448"",
+        ""median_absolute_productivity"": ""0.0001406825184680728723346695448"",
+        ""profitable_fraction"": ""0.5882352941176470588235294118"",
+        ""relative_variability"": ""0.4999999982229490782949647664"",
+        ""score"": ""24.22145337328274361200862724""
+      },
+      ""4h"": {
+        ""failure_fraction"": ""0.3201075991930060524546065905"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.1311365164761264290517821116"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""8.915872102041951564986665422""
+      },
+      ""720h"": {
+        ""failure_fraction"": ""0.125"",
+        ""mad"": ""0.000541287028069252456622853458"",
+        ""median_absolute_productivity"": ""0.000554546268227954602911014495"",
+        ""profitable_fraction"": ""0.75"",
+        ""relative_variability"": ""0.4939501559263598313746844227"",
+        ""score"": ""33.20952101733263606603633476""
+      },
+      ""72h"": {
+        ""failure_fraction"": ""0.2804878048780487804878048780"",
+        ""mad"": ""0E+6"",
+        ""median_absolute_productivity"": ""0"",
+        ""profitable_fraction"": ""0.3292682926829268292682926829"",
+        ""relative_variability"": ""0E+18"",
+        ""score"": ""23.69125520523497917906008328""
+      }
+    },
+    ""reason"": ""DESCRIPTIVE_ONLY""
+  },
+  ""unrealized_profit"": ""-999877496.4859947""
+}","{
+  ""FROZEN_RULE_DID_NOT_TRIGGER"": true,
+  ""HYPOTHESIS_RESULT"": ""INCONCLUSIVE"",
+  ""M010_BEHAVIORALLY_EQUIVALENT_TO_M007"": true,
+  ""M011_EXECUTION_AUTHORIZED"": false,
+  ""SCIENTIFIC_GATE_PASS"": false,
+  ""authorization_class"": ""OWNER_EXPLORATORY_OVERRIDE"",
+  ""autopsy"": ""docs/microstructure/M010_AUTOPSY.md"",
+  ""campaign_snapshot_id"": ""b64dbdcde7e459510c4d4995514ffa429bb7de304ca514e1049e917a26f3a6a9"",
+  ""causal_audit"": ""reports/usdcusdt/M010-causal-audit.json"",
+  ""comparison"": {
+    ""model_ladder"": ""M005_TO_M008"",
+    ""same_dataset_scenario_cutoff_required"": true
+  },
+  ""criteria"": {
+    ""early_stop_economic"": false,
+    ""promotion_guardrail"": ""docs/microstructure/USDCUSDT_EXPERIMENT_JOURNAL.md"",
+    ""temporal_metrics_are_diagnostic_only"": true
+  },
+  ""current_champion"": ""M007"",
+  ""early_stop"": false,
+  ""execution_evidence"": ""INCONCLUSIVE_PRICE_PATH_ONLY"",
+  ""full_replay_completed"": true,
+  ""model_id"": ""M010"",
+  ""parent_model_id"": ""M007"",
+  ""prior_evaluation_hash"": ""e95c15c381bef4bf364e48ef6c2ab92d76b2abf039cf48f68169a468815e3c50"",
+  ""promotion"": false,
+  ""reason"": ""Zero releases across 1439 causal checkpoints; destination first-cycle q90 was never identified. Exact M007 equivalence passed. The economic effect of realized capital release was not observed."",
+  ""run_hash"": ""5a53ab7dcebbdaf0f4697148c54d3e71b098575b6abc1a3b299c45312a5f4f0c"",
+  ""scenario_hash"": ""db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"",
+  ""scientific_reviewer"": ""gpt-6-astra"",
+  ""status"": ""INCONCLUSIVE""
+}","OWNER_EXPLORATORY_OVERRIDE authorizes execution, not SCIENTIFIC_GATE_PASS. No retrospective tuning.",44788,115521,137665,2026-07,HOT,2026-04,15,7,55
