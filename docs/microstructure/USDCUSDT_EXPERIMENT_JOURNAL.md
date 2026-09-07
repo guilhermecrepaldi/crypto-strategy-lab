@@ -846,3 +846,32 @@ New run manifests and registry projections record `initial_capital=100`, `curren
 `capital_mode=COMPOUNDING`. Any different primary starting bank fails closed with
 `INITIAL_CAPITAL_INVARIANT_VIOLATION`. The optional fixed-notional-100 calculation remains an
 auxiliary, non-compounding diagnostic and cannot replace or be combined with primary results.
+
+## CAPITAL_RELEASE first causal diagnostic result
+
+Published SHA `b310ddd93a2610bb0a8e0ca9e8e196a6fffcaaf4` produced immutable diagnostic
+`bcfac813c673c86c9c0baeaa44add3dd3abcf88309f36a62f6492668f126dad4`. Its 1,439 sealed
+snapshots cover 461 M007 positions: 1,015 have identified remaining-hold support, 1,127 retain
+the incumbent causal destination and 312 select a different destination. The first-cycle q90
+support gate is unidentified in every snapshot, yielding zero report-only release decisions.
+
+All artifact, file and snapshot hashes, strict `last_trade < T`, absence of outcome fields and
+access protections were reconciled. An independent read-only mmap recomputation agreed with
+all q90 results: 24-hour completion probability ranged from 5.01% to 77.05%, with median 42.70%,
+and never met the frozen 90% gate. The 39 snapshots from 25 positions passing the other relevant
+gates also peaked at 77.05%, without censoring before 24 hours. This is not a technical
+invalidation.
+
+The broad economic hypothesis remains inconclusive, the current frozen rule is ineligible for
+execution, and M010 is not authorized. Quantile, horizon, window, minimums and margin may not be
+weakened after this observation.
+
+```text
+CAPITAL_RELEASE_DIAGNOSTIC=READY
+CAPITAL_RELEASE_HYPOTHESIS=INCONCLUSIVE
+M010_REGISTERED=NO
+M010_AUTHORIZED=NO
+THRESHOLD_CHANGE_AUTHORIZED=NO
+CURRENT_CHAMPION=M007
+EXECUTABLE_EDGE=NOT_DEMONSTRATED
+```

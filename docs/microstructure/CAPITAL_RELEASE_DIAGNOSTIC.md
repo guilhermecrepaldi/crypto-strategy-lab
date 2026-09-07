@@ -1,6 +1,6 @@
 # Capital release diagnostic
 
-Status: `PREREGISTERED_NOT_RUN`
+Status: `READY_INCONCLUSIVE_NO_M010`
 
 This document freezes the diagnostic that precedes any `CAPITAL_RELEASE` model. It supersedes
 the prior M010 pause only for this explicit hypothesis. It does not register M010, authorize a
@@ -165,3 +165,39 @@ days and idle each no worse by more than five percentage points; drawdown no wor
 one percentage point; non-negative delta in at least half of complete months; and at least 10%
 fewer hours in positions older than 24 hours, including terminal censored exposure. Accounting
 and causal audits are hard gates. L2/fill evidence remains a later execution-aware gate.
+
+## Sealed result and decision
+
+The canonical run at published code SHA
+`b310ddd93a2610bb0a8e0ca9e8e196a6fffcaaf4` produced artifact
+`bcfac813c673c86c9c0baeaa44add3dd3abcf88309f36a62f6492668f126dad4` from 344,704
+completed M007 positions plus one terminal-censored position. Its 1,439 causal snapshots, drawn
+from 461 positions, contain no post-checkpoint outcomes. File SHA-256 values and every snapshot
+hash were independently reconciled.
+
+Remaining-hold RMST support was identified for 1,015 snapshots. The causal destination equalled
+the incumbent in 1,127 snapshots and differed in 312. No snapshot identified the preregistered
+90th-percentile first-cycle wait inside 24 hours, so the candidate rule produced zero releases:
+1,127 `KEEP_NO_PRODUCTIVE_ALTERNATIVE` and 312 `KEEP_INSUFFICIENT_CAUSAL_HISTORY`.
+
+An independent read-only recomputation against the immutable occurrence mmap agreed with all
+1,439 q90 results. Estimated 24-hour completion probability ranged from 5.01% to 77.05%, with a
+42.70% median, never reaching the frozen 90% requirement. Even the 39 snapshots from 25
+positions that passed the other relevant gates peaked at 77.05%, with no censoring before the
+24-hour boundary. This is not a technical failure, and the gate may not be relaxed after seeing
+the result.
+
+Scientific decision:
+
+```text
+CAPITAL_RELEASE_DIAGNOSTIC=READY
+CAPITAL_RELEASE_HYPOTHESIS=INCONCLUSIVE
+M010_AUTHORIZED=NO
+THRESHOLD_CHANGE_AUTHORIZED=NO
+CURRENT_CHAMPION=M007
+EXECUTABLE_EDGE=NOT_DEMONSTRATED
+```
+
+This does not prove that every capital-release mechanism is uneconomic. It shows that this one
+predeclared, interpretable rule lacks causal destination-recovery support on the frozen
+DEVELOPMENT tape and therefore cannot advance to a full M010 replay.
