@@ -66,8 +66,14 @@ Register the JSON with the existing ModelRegistry; run relevant tests, commit an
 Then execute one canonical process:
 
 ```powershell
-uv run crypto-lab microstructure-full-replay --manifest data/manifests/usdcusdt-trades-development-2026.json --models M010
+uv run crypto-lab microstructure-full-replay --manifest data/manifests/usdcusdt-trades-2025-2026.json --models M010
 ```
 
 The manifest/run must bind the published code SHA, identical scenario, dataset and cutoff.
 Subsequent report/decision is a separate milestone. No threshold change in M010.
+
+Preflight correction: the first command named the reduced development manifest, whose dataset
+hash differs from M007 and whose first trade misses the warm-up boundary. It was rejected
+before RUN registration or simulated execution. The corrected command above uses the frozen
+M007 dataset hash `8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91`.
+No strategy parameter or campaign cutoff changed.

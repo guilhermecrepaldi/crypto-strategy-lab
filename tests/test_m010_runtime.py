@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from decimal import Decimal
 from typing import Any
 
@@ -214,3 +215,8 @@ def test_noncanonical_initial_or_missing_support_fails_closed() -> None:
     assert cr.next_checkpoint(event(0) + 7, event(172800)) == event(259200)
     with pytest.raises(ValueError, match="M010_FROZEN_PARENT_PROTOCOL_VIOLATION"):
         SerialModelConfig.model_validate({**config().model_dump(), "lookback_minutes": 60})
+
+
+def test_m010_spec_binds_correct_manifest_command() -> None:
+    spec = Path("docs/microstructure/M010_MODEL_SPEC.md").read_text(encoding="utf-8")
+    assert "--manifest data/manifests/usdcusdt-trades-2025-2026.json --models M010" in spec

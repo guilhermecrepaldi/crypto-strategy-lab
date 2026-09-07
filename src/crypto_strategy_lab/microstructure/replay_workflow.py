@@ -90,6 +90,10 @@ def run_full_replay_campaign(
     )
     release_support_tape = None
     if any(model.capital_release_protocol is not None for model in models):
+        if manifest.dataset_hash != (
+            "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91"
+        ):
+            raise ValueError("M010_FROZEN_DATASET_MISMATCH")
         parent = registrations["M007"]
         for model in models:
             expected = {
