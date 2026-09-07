@@ -124,6 +124,9 @@ class _LedgerEvent:
     event: int
     cash_delta: Decimal
     inventory_delta: Decimal
+    # At one causal timestamp, liquidation must precede a re-entry.  This is
+    # especially important when a release checkpoint and LOW share ordinal 0.
+    priority: int = 0
 
 
 class _PriceIntegral:
@@ -203,6 +206,7 @@ class _Ledger:
                     cycle.entry_event,
                     -(buy_notional + cycle.buy_fee_quote),
                     cycle.quantity,
+                    1,
                 )
             )
             events.append(
@@ -210,6 +214,29 @@ class _Ledger:
                     cycle.exit_event,
                     cycle.quantity * cycle.high - cycle.sell_fee_quote,
                     -cycle.quantity,
+                    0,
+                )
+            )
+        # A release closure is a real sell transaction for accounting purposes,
+        # but is intentionally not a completed ``SerialReplayResult.cycles``
+        # entry.  Reconstruct its entry and release exactly like a normal cycle
+        # so cash, inventory, holding time, and capital-hours remain causal.
+        for cycle in result.release_closures:
+            buy_notional = cycle.quantity * cycle.low
+            events.append(
+                _LedgerEvent(
+                    cycle.entry_event,
+                    -(buy_notional + cycle.buy_fee_quote),
+                    cycle.quantity,
+                    1,
+                )
+            )
+            events.append(
+                _LedgerEvent(
+                    cycle.exit_event,
+                    cycle.quantity * cycle.high - cycle.sell_fee_quote,
+                    -cycle.quantity,
+                    0,
                 )
             )
         if result.open_cycle_censored:
@@ -224,9 +251,10 @@ class _Ledger:
                     result.open_entry_event,
                     -(result.final_inventory * result.open_entry_price) - result.open_buy_fee_quote,
                     result.final_inventory,
+                    1,
                 )
             )
-        self.events = sorted(events, key=lambda item: item.event)
+        self.events = sorted(events, key=lambda item: (item.event, item.priority))
         self.event_ids = [item.event for item in self.events]
         self.cash_after: list[Decimal] = []
         self.inventory_after: list[Decimal] = []
@@ -314,6 +342,17 @@ def analyze_replay_temporally(
     for cycle in cycles:
         gross_prefix.append(gross_prefix[-1] + cycle.quantity * (cycle.high - cycle.low))
         fee_prefix.append(fee_prefix[-1] + cycle.buy_fee_quote + cycle.sell_fee_quote)
+    release_closures = result.release_closures
+    release_exit_events = sorted(item.exit_event for item in release_closures)
+    release_gross_prefix = [Decimal("0")]
+    release_fee_prefix = [Decimal("0")]
+    for cycle in sorted(release_closures, key=lambda item: item.exit_event):
+        release_gross_prefix.append(
+            release_gross_prefix[-1] + cycle.quantity * (cycle.high - cycle.low)
+        )
+        release_fee_prefix.append(
+            release_fee_prefix[-1] + cycle.buy_fee_quote + cycle.sell_fee_quote
+        )
     reselections = [item.event for item in result.selection_changes]
 
     def bucket(start: datetime, end: datetime, *, complete: bool) -> WindowMetrics:
@@ -323,6 +362,9 @@ def analyze_replay_temporally(
             exit_events,
             gross_prefix,
             fee_prefix,
+            release_exit_events,
+            release_gross_prefix,
+            release_fee_prefix,
             reselections,
             start,
             end,
@@ -488,6 +530,9 @@ def _window(
     exit_events: Sequence[int],
     gross_prefix: Sequence[Decimal],
     fee_prefix: Sequence[Decimal],
+    release_exit_events: Sequence[int],
+    release_gross_prefix: Sequence[Decimal],
+    release_fee_prefix: Sequence[Decimal],
     reselections: Sequence[int],
     start: datetime,
     end: datetime,
@@ -500,6 +545,10 @@ def _window(
     right = bisect_left(exit_events, end_event)
     gross = gross_prefix[right] - gross_prefix[left]
     fees = fee_prefix[right] - fee_prefix[left]
+    release_left = bisect_left(release_exit_events, start_event)
+    release_right = bisect_left(release_exit_events, end_event)
+    gross += release_gross_prefix[release_right] - release_gross_prefix[release_left]
+    fees += release_fee_prefix[release_right] - release_fee_prefix[release_left]
     realized = gross - fees
     duration = _hours(start_event, end_event)
     holding = ledger.holding(end_event) - ledger.holding(start_event)
@@ -520,6 +569,8 @@ def _window(
         realized_net_profit=realized,
         gross_edge_quote=gross,
         fees_quote=fees,
+        # Release closures affect realized economics, but are not normal
+        # completed cycles and must never inflate cycle-count diagnostics.
         completed_cycles=right - left,
         idle_hours=duration - holding,
         holding_hours=holding,

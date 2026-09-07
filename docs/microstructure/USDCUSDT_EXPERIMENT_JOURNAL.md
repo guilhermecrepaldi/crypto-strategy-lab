@@ -875,3 +875,14 @@ THRESHOLD_CHANGE_AUTHORIZED=NO
 CURRENT_CHAMPION=M007
 EXECUTABLE_EDGE=NOT_DEMONSTRATED
 ```
+
+## M010 OWNER exploratory override — preregistered 2026-09-07
+
+The OWNER explicitly authorizes physical execution of the unchanged frozen capital-release
+rule despite the earlier inconclusive diagnostic. Authorization is
+`OWNER_EXPLORATORY_OVERRIDE`, not `SCIENTIFIC_GATE_PASS`. Parent M007, fresh 100-USDT bank,
+same full DEVELOPMENT cutoff/tape/scenario; no changes to support, q90, 5bps loss cap,
+25% margin, lookback or checkpoints. Zero releases is a valid result, with exact behavioral
+equivalence against the immutable parent required. No automatic promotion or tuning.
+See [M010_MODEL_SPEC.md](M010_MODEL_SPEC.md). This addition supersedes only the execution
+pause; historical diagnostic decisions remain immutable evidence.

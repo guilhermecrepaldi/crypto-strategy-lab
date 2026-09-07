@@ -233,6 +233,8 @@ def _model_payload(configuration: SerialModelConfig) -> dict[str, object]:
     payload: dict[str, object] = configuration.model_dump(
         mode="json", exclude={"model_id", "parent_model_id"}
     )
+    if configuration.capital_release_protocol is None:
+        payload.pop("capital_release_protocol")
     if payload.get("distance_semantics") is None:
         for field_name in (
             "distance_semantics",

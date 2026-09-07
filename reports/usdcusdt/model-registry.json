@@ -2660,6 +2660,82 @@
         "reason": "Joint hypothesis failed: retained 94.9974% of cycles but only 23.2056% of M007 equity and made 119 reselections versus frozen maximum 117; M007 remains champion pending causal hold/composition diagnostics",
         "to": "REJECTED"
       }
+    },
+    {
+      "event_type": "MODEL_CREATED",
+      "occurred_at": "2026-09-07T03:13:06.288401+00:00",
+      "payload": {
+        "MODEL_HASH": "13e379401566126ad08cd9f0573e3bc310dbf61008a2c022408c6e29fb96286b",
+        "artifacts": {
+          "config": "artifacts\\usdcusdt\\models\\M010\\config.json",
+          "daily": null,
+          "decision": null,
+          "directory": "artifacts\\usdcusdt\\models\\M010",
+          "hypothesis": "artifacts\\usdcusdt\\models\\M010\\hypothesis.json",
+          "lineage": "artifacts\\usdcusdt\\models\\M010\\lineage.json",
+          "metrics": null,
+          "model_spec": "artifacts\\usdcusdt\\models\\M010\\MODEL_SPEC.md",
+          "monthly": null,
+          "run_manifest": null
+        },
+        "created_at": "2026-09-07T03:13:06.288401Z",
+        "hypothesis": {
+          "change": "M007 plus CAPITAL_RELEASE_DECISION under the unchanged frozen diagnostic rule.",
+          "expected_effect": "Measure actual behavior, including valid zero releases; do not assume improvement.",
+          "hypothesis": "Small controlled realized losses may improve final capital by releasing capital into causally productive opportunities with sufficiently supported recovery economics.",
+          "observation": "LONG_HOLD_CAPITAL_LOCK in immutable M007; diagnostic inconclusive with zero eligible releases.",
+          "reason_for_new_model": "OWNER_EXPLORATORY_OVERRIDE authorizes execution, not SCIENTIFIC_GATE_PASS. No retrospective tuning."
+        },
+        "lineage": {
+          "ancestor_chain": [
+            "M005",
+            "M006",
+            "M007"
+          ],
+          "authorization_class": "OWNER_EXPLORATORY_OVERRIDE",
+          "change_category": "CAPITAL_RELEASE_DECISION",
+          "change_summary": "Apply exactly the preregistered 5bps / 25% safety-margin causal rule at frozen BUY-relative landmarks.",
+          "parent_model_id": "M007",
+          "parent_run_hash": "f622acb767d0dbaa39edfb7c90e6ef349dfaf6d694ee17dcde29f22a3d740d21",
+          "references": {
+            "capital_mode": "COMPOUNDING",
+            "currency": "USDT",
+            "end_exclusive": "2026-09-05T23:59:59.783644+00:00",
+            "execution_tape_hash": "505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c",
+            "initial_capital": "100",
+            "max_release_loss_fraction": "0.0005",
+            "protocol": "docs/microstructure/CAPITAL_RELEASE_DIAGNOSTIC.md",
+            "safety_factor": "1.25",
+            "spec": "docs/microstructure/M010_MODEL_SPEC.md",
+            "start": "2026-01-01T00:00:00Z",
+            "support_tape_hash": "4a5af5dfaf18a4249f9b98c0a4c15d6b2185df68b5148325f23e09878c3ef24f"
+          }
+        },
+        "model": {
+          "capital_release_protocol": "OWNER_EXPLORATORY_OVERRIDE_FROZEN_V1",
+          "confirmation_checks": null,
+          "cooldown_minutes": null,
+          "decision_interval_minutes": 1,
+          "distance_semantics": "ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION",
+          "distances": [
+            1
+          ],
+          "idle_threshold_minutes": null,
+          "lookback_minutes": 1440,
+          "selected_levels_remain_absolute": true,
+          "selection_moment": "AT_LEVEL_SELECTION",
+          "strategy": "ALWAYS_BEST",
+          "switch_advantage": null,
+          "symbol": "USDCUSDT",
+          "tick_evidence_class": "OBSERVED_ACCEPTED_GRID",
+          "tick_source": "BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX"
+        },
+        "model_hash": "13e379401566126ad08cd9f0573e3bc310dbf61008a2c022408c6e29fb96286b",
+        "model_id": "M010",
+        "pair": "USDCUSDT",
+        "schema_version": "usdcusdt-model-registry-v2",
+        "status": "CREATED"
+      }
     }
   ],
   "models": [
@@ -3296,6 +3372,90 @@
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
       "status": "REJECTED"
+    },
+    {
+      "BEST_1D_CYCLES": null,
+      "BEST_30D_CYCLES": null,
+      "BEST_7D_CYCLES": null,
+      "BEST_MONTH": null,
+      "BEST_REGIME": null,
+      "HOT_PERIOD_COUNT": null,
+      "LONGEST_COLD_STREAK": null,
+      "LONGEST_HOT_STREAK": null,
+      "WORST_MONTH": null,
+      "artifacts": {
+        "config": "artifacts\\usdcusdt\\models\\M010\\config.json",
+        "daily": null,
+        "decision": null,
+        "directory": "artifacts\\usdcusdt\\models\\M010",
+        "hypothesis": "artifacts\\usdcusdt\\models\\M010\\hypothesis.json",
+        "lineage": "artifacts\\usdcusdt\\models\\M010\\lineage.json",
+        "metrics": null,
+        "model_spec": "artifacts\\usdcusdt\\models\\M010\\MODEL_SPEC.md",
+        "monthly": null,
+        "run_manifest": null
+      },
+      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
+      "capital_mode": "COMPOUNDING",
+      "created_at": "2026-09-07T03:13:06.288401Z",
+      "currency": "USDT",
+      "hypothesis": {
+        "change": "M007 plus CAPITAL_RELEASE_DECISION under the unchanged frozen diagnostic rule.",
+        "expected_effect": "Measure actual behavior, including valid zero releases; do not assume improvement.",
+        "hypothesis": "Small controlled realized losses may improve final capital by releasing capital into causally productive opportunities with sufficiently supported recovery economics.",
+        "observation": "LONG_HOLD_CAPITAL_LOCK in immutable M007; diagnostic inconclusive with zero eligible releases.",
+        "reason_for_new_model": "OWNER_EXPLORATORY_OVERRIDE authorizes execution, not SCIENTIFIC_GATE_PASS. No retrospective tuning."
+      },
+      "initial_capital": "100",
+      "lineage": {
+        "ancestor_chain": [
+          "M005",
+          "M006",
+          "M007"
+        ],
+        "authorization_class": "OWNER_EXPLORATORY_OVERRIDE",
+        "change_category": "CAPITAL_RELEASE_DECISION",
+        "change_summary": "Apply exactly the preregistered 5bps / 25% safety-margin causal rule at frozen BUY-relative landmarks.",
+        "parent_model_id": "M007",
+        "parent_run_hash": "f622acb767d0dbaa39edfb7c90e6ef349dfaf6d694ee17dcde29f22a3d740d21",
+        "references": {
+          "capital_mode": "COMPOUNDING",
+          "currency": "USDT",
+          "end_exclusive": "2026-09-05T23:59:59.783644+00:00",
+          "execution_tape_hash": "505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c",
+          "initial_capital": "100",
+          "max_release_loss_fraction": "0.0005",
+          "protocol": "docs/microstructure/CAPITAL_RELEASE_DIAGNOSTIC.md",
+          "safety_factor": "1.25",
+          "spec": "docs/microstructure/M010_MODEL_SPEC.md",
+          "start": "2026-01-01T00:00:00Z",
+          "support_tape_hash": "4a5af5dfaf18a4249f9b98c0a4c15d6b2185df68b5148325f23e09878c3ef24f"
+        }
+      },
+      "model": {
+        "capital_release_protocol": "OWNER_EXPLORATORY_OVERRIDE_FROZEN_V1",
+        "confirmation_checks": null,
+        "cooldown_minutes": null,
+        "decision_interval_minutes": 1,
+        "distance_semantics": "ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION",
+        "distances": [
+          1
+        ],
+        "idle_threshold_minutes": null,
+        "lookback_minutes": 1440,
+        "selected_levels_remain_absolute": true,
+        "selection_moment": "AT_LEVEL_SELECTION",
+        "strategy": "ALWAYS_BEST",
+        "switch_advantage": null,
+        "symbol": "USDCUSDT",
+        "tick_evidence_class": "OBSERVED_ACCEPTED_GRID",
+        "tick_source": "BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX"
+      },
+      "model_hash": "13e379401566126ad08cd9f0573e3bc310dbf61008a2c022408c6e29fb96286b",
+      "model_id": "M010",
+      "pair": "USDCUSDT",
+      "schema_version": "usdcusdt-model-registry-v2",
+      "status": "CREATED"
     }
   ],
   "pair": "USDCUSDT",

@@ -1391,3 +1391,22 @@ M009,REJECTED,100,USDT,COMPOUNDING,HISTORICAL_LINKED_EVIDENCE,1bc2e893ff54a05d79
   ""scenario_hash"": ""db714e7a45aa53ed4e8d961cfcbd2dc3b99392153723967f468b93d952f37ae8"",
   ""status"": ""PENDING_SCIENTIFIC_REVIEW""
 }",Isolate the already preregistered M008 score-advantage component after rejecting the combined M008 package.,45310,110297,127607,2026-07,HOT,2026-04,15,7,55
+M010,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,13e379401566126ad08cd9f0573e3bc310dbf61008a2c022408c6e29fb96286b,M007,2026-09-07T03:13:06.288401Z,Small controlled realized losses may improve final capital by releasing capital into causally productive opportunities with sufficiently supported recovery economics.,LONG_HOLD_CAPITAL_LOCK in immutable M007; diagnostic inconclusive with zero eligible releases.,M007 plus CAPITAL_RELEASE_DECISION under the unchanged frozen diagnostic rule.,"Measure actual behavior, including valid zero releases; do not assume improvement.","{
+  ""capital_release_protocol"": ""OWNER_EXPLORATORY_OVERRIDE_FROZEN_V1"",
+  ""confirmation_checks"": null,
+  ""cooldown_minutes"": null,
+  ""decision_interval_minutes"": 1,
+  ""distance_semantics"": ""ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION"",
+  ""distances"": [
+    1
+  ],
+  ""idle_threshold_minutes"": null,
+  ""lookback_minutes"": 1440,
+  ""selected_levels_remain_absolute"": true,
+  ""selection_moment"": ""AT_LEVEL_SELECTION"",
+  ""strategy"": ""ALWAYS_BEST"",
+  ""switch_advantage"": null,
+  ""symbol"": ""USDCUSDT"",
+  ""tick_evidence_class"": ""OBSERVED_ACCEPTED_GRID"",
+  ""tick_source"": ""BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX""
+}",,,"OWNER_EXPLORATORY_OVERRIDE authorizes execution, not SCIENTIFIC_GATE_PASS. No retrospective tuning.",,,,,,,,,

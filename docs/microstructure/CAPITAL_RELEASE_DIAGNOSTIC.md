@@ -201,3 +201,12 @@ EXECUTABLE_EDGE=NOT_DEMONSTRATED
 This does not prove that every capital-release mechanism is uneconomic. It shows that this one
 predeclared, interpretable rule lacks causal destination-recovery support on the frozen
 DEVELOPMENT tape and therefore cannot advance to a full M010 replay.
+
+## Subsequent OWNER authorization — 2026-09-07
+
+The OWNER explicitly overrides the execution pause for M010 under
+`M010_AUTHORIZATION_CLASS=OWNER_EXPLORATORY_OVERRIDE`. This does not change the sealed
+INCONCLUSIVE diagnostic above, its hashes, or any threshold; it is not SCIENTIFIC_GATE_PASS.
+The unchanged rule may now be physically replayed as a direct child of M007. Zero releases
+are a valid outcome, with full behavioral equivalence checked against M007. See
+[M010_MODEL_SPEC.md](M010_MODEL_SPEC.md) for the execution and post-mortem contract.

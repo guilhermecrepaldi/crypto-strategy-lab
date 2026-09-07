@@ -33,12 +33,17 @@ from crypto_strategy_lab.microstructure.serial_replay import (
     EVENT_ORDER_SCALE,
     USDCUSDT_TICK_CATALOG,
     CandidateTimeline,
+    SerialCycle,
+    SerialModelConfig,
+    SerialScenarioConfig,
     SerialTape,
     _datetime_to_micros,
     _event_to_datetime,
     _score,
     _select,
     _selection_grid,
+    _State,
+    _switch,
     symmetric_break_even_fee,
 )
 from crypto_strategy_lab.microstructure.tape_cache import TapeCacheManifest, load_or_build_tape
@@ -391,7 +396,7 @@ def build_capital_release_snapshots(
             ):
                 break
             snapshot = _snapshot(
-                evidence,
+                evidence.model,
                 position,
                 checkpoint,
                 age,
@@ -407,7 +412,7 @@ def build_capital_release_snapshots(
 
 
 def _snapshot(
-    evidence: _RunEvidence,
+    model: SerialModelConfig,
     position: _Position,
     checkpoint: datetime,
     age: int,
@@ -448,16 +453,16 @@ def _snapshot(
     loss_fraction = Decimal("1") - release_cash / position.cash_before_buy
     loss_usdt = position.cash_before_buy - release_cash
     _, eligible_distances, grid_multiple = _selection_grid(
-        evidence.model,
+        model,
         USDCUSDT_TICK_CATALOG,
         checkpoint_event,
         tape.tick_size,
         tape.observed_tick_evidence_event,
     )
-    lookback = evidence.model.lookback_minutes * 60 * 1_000_000 * EVENT_ORDER_SCALE
+    lookback = model.lookback_minutes * 60 * 1_000_000 * EVENT_ORDER_SCALE
     alternative = _select(
         timelines,
-        evidence.model,
+        model,
         checkpoint_event - lookback,
         checkpoint_event,
         eligible_distances=eligible_distances,
@@ -478,9 +483,7 @@ def _snapshot(
     rate_proxy = min(Decimal(c1h), cycles_per_hour)
     alt_low = _price_tick(alternative[0], tape.tick_size) if alternative else None
     alt_high = _price_tick(alternative[0] + alternative[1], tape.tick_size) if alternative else None
-    alt_score = _score(
-        alternative, timelines, evidence.model, checkpoint_event - lookback, checkpoint_event
-    )
+    alt_score = _score(alternative, timelines, model, checkpoint_event - lookback, checkpoint_event)
     net_edge = (
         alt_high * (Decimal("1") - fee_sell) / (alt_low * (Decimal("1") + fee_buy)) - Decimal("1")
         if alt_low is not None and alt_high is not None
@@ -1035,6 +1038,130 @@ def _break_even_24h(edge: Decimal, rate: Decimal) -> Decimal | None:
 def _checkpoint_ages() -> tuple[int, ...]:
     # The caller stops at each position's normal exit or physical cutoff.
     return INITIAL_AGES + tuple(range(259200, 366 * 86400, 86400))
+
+
+def next_checkpoint(entry_event: int, previous: int) -> int:
+    """Advance frozen BUY-relative wall-clock landmarks, without event ordinal drift."""
+    entry = entry_event // EVENT_ORDER_SCALE
+    age = (previous // EVENT_ORDER_SCALE - entry) // 1_000_000
+    next_age = next((item for item in INITIAL_AGES if item > age), age + 86400)
+    return (entry + next_age * 1_000_000) * EVENT_ORDER_SCALE
+
+
+class CapitalReleaseRuntime:
+    """Apply the unchanged diagnostic rule to live *simulated* state, never outcome tables."""
+
+    def __init__(
+        self, model: SerialModelConfig, scenario: SerialScenarioConfig, support_tape: SerialTape
+    ) -> None:
+        if scenario.quantity_step != QUANTITY_STEP or scenario.maker_fee_per_leg != 0:
+            raise ValueError("M010_FROZEN_ACCOUNTING_SCENARIO_VIOLATION")
+        self.model = model
+        self.scenario = scenario
+        self.tape = support_tape
+        self.timelines = support_tape.timelines(
+            USDCUSDT_TICK_CATALOG.absolute_distances(model.distances)
+        )
+        self.indexes: dict[tuple[int, int], _EpisodeIndex] = {}
+        self.price_ticks = tuple(sorted(support_tape.occurrences))
+
+    def __call__(self, state: _State, checkpoint: int) -> bool:
+        assert state.entry_event is not None and state.candidate is not None
+        candidate = state.candidate
+        if candidate not in self.indexes:
+            self.indexes[candidate] = _EpisodeIndex.from_timeline(self.timelines[candidate])
+        low = Decimal(candidate[0]) * self.tape.tick_size
+        high = Decimal(sum(candidate)) * self.tape.tick_size
+        position = _Position(
+            index=len(state.cycles) + len(state.release_closures),
+            entry_event=state.entry_event,
+            entry_timestamp=_event_to_datetime(state.entry_event),
+            exit_event=None,
+            low=low,
+            high=high,
+            quantity=state.inventory,
+            buy_fee=state.inventory_cost - state.inventory * low,
+            sell_fee=state.inventory * high * self.scenario.maker_fee_per_leg,
+            cash_before_buy=state.cash + state.inventory_cost,
+            residual_cash=state.cash,
+        )
+        age = (
+            checkpoint // EVENT_ORDER_SCALE - state.entry_event // EVENT_ORDER_SCALE
+        ) // 1_000_000
+        snapshot = _snapshot(
+            self.model,
+            position,
+            _event_to_datetime(checkpoint),
+            age,
+            self.timelines,
+            self.indexes,
+            self.tape,
+            self.price_ticks,
+        )
+        snapshot["model_id"] = self.model.model_id
+        snapshot["candidate_rule"]["status"] = "APPLIED_FROZEN_OWNER_OVERRIDE"
+        snapshot["snapshot_hash"] = canonical_hash(snapshot)
+        state.release_evaluations.append(snapshot)
+        if len(state.release_evaluations) % 100 == 0:
+            print(
+                f"CAPITAL_RELEASE_CHECKPOINTS={len(state.release_evaluations)} "
+                f"SIMULATED_TIME={snapshot['checkpoint_timestamp']} "
+                f"RELEASES={len(state.release_closures)}",
+                flush=True,
+            )
+        if not snapshot["candidate_rule"]["would_release"]:
+            return False
+        apply_release(state, snapshot, self.scenario, self.model, self.tape)
+        return True
+
+
+def apply_release(
+    state: _State,
+    snapshot: Mapping[str, Any],
+    scenario: SerialScenarioConfig,
+    model: SerialModelConfig,
+    tape: SerialTape,
+) -> None:
+    """One exact loss-bearing closure; the replacement BUY uses only resulting cash."""
+    if not snapshot["candidate_rule"]["would_release"]:
+        raise ValueError("RELEASE_REQUIRES_FROZEN_RULE_PASS")
+    assert state.entry_event is not None and state.candidate is not None
+    price = Decimal(str(snapshot["current_price"]))
+    event = int(snapshot["checkpoint_event"])
+    low = Decimal(state.candidate[0]) * tape.tick_size
+    proceeds = state.inventory * price
+    fee = proceeds * scenario.maker_fee_per_leg
+    cash_after = state.cash + proceeds - fee
+    if cash_after != Decimal(str(snapshot["release_cash_R_T"])):
+        raise ValueError("RELEASE_CASH_RECONCILIATION_FAILED")
+    state.release_closures.append(
+        SerialCycle(
+            entry_event=state.entry_event,
+            exit_event=event,
+            entry_timestamp=_event_to_datetime(state.entry_event),
+            exit_timestamp=_event_to_datetime(event),
+            low=low,
+            high=price,
+            tick_at_selection=state.candidate_tick_size,
+            quantity=state.inventory,
+            buy_fee_quote=state.inventory_cost - state.inventory * low,
+            sell_fee_quote=fee,
+        )
+    )
+    state.cash = cash_after
+    state.fees += fee
+    state.realized_profit += proceeds - fee - state.inventory_cost
+    state.inventory = Decimal("0")
+    state.inventory_cost = Decimal("0")
+    state.entry_event = None
+    state.next_release_event = None
+    state.flat_since = event
+    alternative_low = int(snapshot["alternative_low_tick"])
+    alternative = (alternative_low, int(snapshot["alternative_high_tick"]) - alternative_low)
+    tick_size, _, _ = _selection_grid(
+        model, USDCUSDT_TICK_CATALOG, event, tape.tick_size, tape.observed_tick_evidence_event
+    )
+    _switch(state, alternative, tick_size, event)
 
 
 def _summary(

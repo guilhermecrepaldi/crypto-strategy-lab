@@ -1,0 +1,50 @@
+{
+  "model_id": "M010",
+  "pair": "USDCUSDT",
+  "status": "CREATED",
+  "model": {
+    "confirmation_checks": null,
+    "cooldown_minutes": null,
+    "decision_interval_minutes": 1,
+    "distance_semantics": "ONE_EXCHANGE_TICK_AT_LEVEL_SELECTION",
+    "distances": [1],
+    "idle_threshold_minutes": null,
+    "lookback_minutes": 1440,
+    "selected_levels_remain_absolute": true,
+    "selection_moment": "AT_LEVEL_SELECTION",
+    "strategy": "ALWAYS_BEST",
+    "switch_advantage": null,
+    "symbol": "USDCUSDT",
+    "tick_evidence_class": "OBSERVED_ACCEPTED_GRID",
+    "tick_source": "BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX",
+    "capital_release_protocol": "OWNER_EXPLORATORY_OVERRIDE_FROZEN_V1"
+  },
+  "hypothesis": {
+    "observation": "LONG_HOLD_CAPITAL_LOCK in immutable M007; diagnostic inconclusive with zero eligible releases.",
+    "hypothesis": "Small controlled realized losses may improve final capital by releasing capital into causally productive opportunities with sufficiently supported recovery economics.",
+    "change": "M007 plus CAPITAL_RELEASE_DECISION under the unchanged frozen diagnostic rule.",
+    "expected_effect": "Measure actual behavior, including valid zero releases; do not assume improvement.",
+    "reason_for_new_model": "OWNER_EXPLORATORY_OVERRIDE authorizes execution, not SCIENTIFIC_GATE_PASS. No retrospective tuning."
+  },
+  "lineage": {
+    "parent_model_id": "M007",
+    "ancestor_chain": ["M005", "M006", "M007"],
+    "change_category": "CAPITAL_RELEASE_DECISION",
+    "change_summary": "Apply exactly the preregistered 5bps / 25% safety-margin causal rule at frozen BUY-relative landmarks.",
+    "parent_run_hash": "f622acb767d0dbaa39edfb7c90e6ef349dfaf6d694ee17dcde29f22a3d740d21",
+    "authorization_class": "OWNER_EXPLORATORY_OVERRIDE",
+    "references": {
+      "protocol": "docs/microstructure/CAPITAL_RELEASE_DIAGNOSTIC.md",
+      "spec": "docs/microstructure/M010_MODEL_SPEC.md",
+      "initial_capital": "100",
+      "currency": "USDT",
+      "capital_mode": "COMPOUNDING",
+      "start": "2026-01-01T00:00:00Z",
+      "end_exclusive": "2026-09-05T23:59:59.783644+00:00",
+      "max_release_loss_fraction": "0.0005",
+      "safety_factor": "1.25",
+      "support_tape_hash": "4a5af5dfaf18a4249f9b98c0a4c15d6b2185df68b5148325f23e09878c3ef24f",
+      "execution_tape_hash": "505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c"
+    }
+  }
+}

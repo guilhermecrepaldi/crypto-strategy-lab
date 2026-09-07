@@ -32,7 +32,12 @@ from crypto_strategy_lab.microstructure.serial_replay import (
     load_serial_tape,
     replay_serial_model,
 )
-from crypto_strategy_lab.microstructure.tape_cache import CACHE_SCHEMA, load_or_build_tape
+from crypto_strategy_lab.microstructure.tape_cache import (
+    CACHE_SCHEMA,
+    load_or_build_tape,
+    load_tape_cache,
+    tape_cache_dir,
+)
 from crypto_strategy_lab.microstructure.temporal_analysis import (
     MarketProductivityRegime,
     TemporalAnalysisContext,
@@ -83,6 +88,27 @@ def run_full_replay_campaign(
         )
         for model_id in model_ids
     )
+    release_support_tape = None
+    if any(model.capital_release_protocol is not None for model in models):
+        parent = registrations["M007"]
+        for model in models:
+            expected = {
+                **parent.model,
+                "capital_release_protocol": "OWNER_EXPLORATORY_OVERRIDE_FROZEN_V1",
+            }
+            if registrations[model.model_id].model != expected:
+                raise ValueError("M010_MUST_EQUAL_M007_PLUS_FROZEN_RELEASE")
+        release_support_tape = load_tape_cache(
+            tape_cache_dir(
+                "c5c9ccb6910052cdfce5ad696500b2fb50b0a579a097c81d450de21a3e2b0327", artifact_root
+            ),
+            tick_catalog=USDCUSDT_TICK_CATALOG,
+        )
+        if (
+            release_support_tape.tape_hash
+            != "4a5af5dfaf18a4249f9b98c0a4c15d6b2185df68b5148325f23e09878c3ef24f"
+        ):
+            raise ValueError("M010_FROZEN_SUPPORT_TAPE_MISMATCH")
     warmup_minutes = max(item.lookback_minutes for item in models)
     tape_start = REPLAY_START - timedelta(minutes=warmup_minutes)
     end_exclusive = manifest.last_timestamp + timedelta(microseconds=1)
@@ -131,6 +157,10 @@ def run_full_replay_campaign(
             progress=progress_callback,
         )
         tape = tape_result.tape
+        if release_support_tape is not None and tape.tape_hash != (
+            "505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c"
+        ):
+            raise ValueError("M010_FROZEN_EXECUTION_TAPE_MISMATCH")
         analysis_context = TemporalAnalysisContext(tape)
         records: list[dict[str, Any]] = [
             {
@@ -163,6 +193,7 @@ def run_full_replay_campaign(
                 market_profile,
                 analysis_context,
                 USDCUSDT_TICK_CATALOG,
+                release_support_tape,
             )
             records.append(record)
             if analysis is not None:
@@ -302,6 +333,7 @@ def _run_one(
     market_profile: MarketHourlyProfile,
     analysis_context: TemporalAnalysisContext,
     tick_catalog: TickCatalog,
+    release_support_tape: SerialTape | None = None,
 ) -> tuple[dict[str, Any], TemporalReplayAnalysis | None]:
     status = registry.current_status(model.model_id)
     if status in {
@@ -317,6 +349,18 @@ def _run_one(
             "status": status.value,
             "action": "SKIPPED_TERMINAL_INVALIDATION",
         }, None
+    code_commit = _git_head()
+    if model.capital_release_protocol is not None:
+        remote = subprocess.check_output(
+            ["git", "ls-remote", "origin", "refs/heads/main"], text=True
+        ).split()[0]
+        if (
+            remote != code_commit
+            or subprocess.check_output(
+                ["git", "status", "--porcelain", "--untracked-files=no"], text=True
+            ).strip()
+        ):
+            raise ValueError("M010_REQUIRES_CLEAN_PUBLISHED_CODE_SHA")
     scenario_event = registry.append_scenario(
         model.model_id,
         ScenarioSpec(
@@ -325,7 +369,6 @@ def _run_one(
             label=scenario.scenario_id,
         ),
     )
-    code_commit = _git_head()
     run_event = registry.append_run(
         model.model_id,
         RunSpec(
@@ -355,6 +398,12 @@ def _run_one(
                     "notional": "100",
                     "currency": "USDT",
                 },
+                "capital_release_authorization": (
+                    "OWNER_EXPLORATORY_OVERRIDE" if model.capital_release_protocol else None
+                ),
+                "capital_release_support_tape_hash": (
+                    release_support_tape.tape_hash if release_support_tape else None
+                ),
                 "validation_accessed": False,
                 "locked_test_accessed": False,
                 "live_accessed": False,
@@ -379,6 +428,7 @@ def _run_one(
             ),
         )
     try:
+        print(f"REPLAY_START model={model.model_id} sha={code_commit}", flush=True)
         result = replay_serial_model(
             tape,
             model,
@@ -386,6 +436,10 @@ def _run_one(
             start=REPLAY_START,
             end_exclusive=end_exclusive,
             tick_catalog=tick_catalog,
+            release_support_tape=release_support_tape,
+        )
+        print(
+            f"REPLAY_COMPLETE model={model.model_id} cycles={result.completed_cycles}", flush=True
         )
         analysis = analyze_replay_temporally(
             result,
@@ -393,6 +447,13 @@ def _run_one(
             market_profile,
             analysis_context,
         )
+        release_report = None
+        if model.capital_release_protocol is not None:
+            release_report = _capital_release_report(
+                result, tape, analysis, market_profile, analysis_context, registry.artifact_root
+            )
+            release_report["code_commit"] = code_commit
+            release_report["run_hash"] = run_hash
         _record_evaluation(
             registry,
             model,
@@ -401,7 +462,14 @@ def _run_one(
             analysis,
             snapshot_id=snapshot_id,
             run_hash=run_hash,
+            release_report=release_report,
         )
+        if release_report is not None:
+            destination = registry.report_root / "usdcusdt" / "M010-capital-release.json"
+            destination.write_text(
+                json.dumps(release_report, indent=2, sort_keys=True, default=str) + "\n",
+                encoding="utf-8",
+            )
         registry.transition(
             model.model_id,
             ModelStatus.EVALUATED,
@@ -451,6 +519,7 @@ def _record_evaluation(
     *,
     snapshot_id: str,
     run_hash: str,
+    release_report: dict[str, Any] | None = None,
 ) -> None:
     horizons = [item.model_dump(mode="json") for item in analysis.horizons]
     registry.append_evaluation(
@@ -490,6 +559,7 @@ def _record_evaluation(
                 "productivity_distribution": analysis.productivity_distribution,
                 "productivity_fingerprint": analysis.productivity_fingerprint,
                 "data_support": analysis.data_support,
+                **({"capital_release": release_report} if release_report is not None else {}),
             },
             daily=analysis.daily,
             weekly=analysis.weekly,
@@ -507,6 +577,58 @@ def _record_evaluation(
             },
         ),
     )
+
+
+def _capital_release_report(
+    result: SerialReplayResult,
+    tape: SerialTape,
+    analysis: TemporalReplayAnalysis,
+    market_profile: MarketHourlyProfile,
+    context: TemporalAnalysisContext,
+    artifact_root: Path,
+) -> dict[str, Any]:
+    from crypto_strategy_lab.microstructure.capital_release import EVALUATION_HASH, REPLAY_HASH
+    from crypto_strategy_lab.microstructure.capital_release_analysis import (
+        analyze_capital_release,
+        compare_zero_release,
+    )
+
+    parent_path = (
+        run_artifact_dir("M007", REPLAY_HASH, artifact_root)
+        / "evaluations"
+        / EVALUATION_HASH
+        / "replay.json"
+    )
+    parent = SerialReplayResult.model_validate_json(parent_path.read_text(encoding="utf-8"))
+    if (parent.start, parent.end_exclusive, parent.scenario_hash) != (
+        result.start,
+        result.end_exclusive,
+        result.scenario_hash,
+    ):
+        raise ValueError("M010_PARENT_COMPARISON_IDENTITY_MISMATCH")
+    equivalence = compare_zero_release(parent, result)
+    print("M010_EQUIVALENCE_CHECK_COMPLETE", flush=True)
+    parent_analysis = analyze_replay_temporally(parent, tape, market_profile, context)
+    parent_metrics = analyze_capital_release(parent, tape, temporal_analysis=parent_analysis)
+    metrics = analyze_capital_release(result, tape, temporal_analysis=analysis)
+    print("M010_POST_MORTEM_COMPLETE", flush=True)
+    return {
+        "MODEL": "M010",
+        "PARENT": "M007",
+        "M010_AUTHORIZATION_CLASS": "OWNER_EXPLORATORY_OVERRIDE",
+        "SCIENTIFIC_GATE_PASS": False,
+        "HYPOTHESIS_RESULT": "PENDING_AUTOPSY",
+        "start": result.start.isoformat(),
+        "end_exclusive": result.end_exclusive.isoformat(),
+        "execution_tape_hash": tape.tape_hash,
+        "M007": parent_metrics,
+        "M010": metrics,
+        "equivalence": equivalence,
+        "VALIDATION_ACCESSED": "NO",
+        "LOCKED_TEST_ACCESSED": "NO",
+        "BINANCE_LIVE_ACCESSED": "NO",
+        "TESTNET_ACCESSED": "NO",
+    }
 
 
 def _write_cohort_if_eligible(

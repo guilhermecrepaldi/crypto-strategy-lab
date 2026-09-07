@@ -3,7 +3,7 @@ from __future__ import annotations
 from array import array
 from bisect import bisect_left, bisect_right
 from collections import Counter
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
 from decimal import ROUND_DOWN, Decimal
@@ -258,9 +258,20 @@ class SerialModelConfig(BaseModel):
     tick_source: Literal["BINANCE_ANNOUNCEMENT_PLUS_CAUSAL_TRADE_PREFIX"] | None = None
     tick_evidence_class: Literal["OBSERVED_ACCEPTED_GRID"] | None = None
     selected_levels_remain_absolute: bool | None = None
+    capital_release_protocol: Literal["OWNER_EXPLORATORY_OVERRIDE_FROZEN_V1"] | None = None
 
     @model_validator(mode="after")
     def validate_strategy_fields(self) -> SerialModelConfig:
+        if self.capital_release_protocol is not None and (
+            self.model_id != "M010"
+            or self.parent_model_id != "M007"
+            or self.strategy != SerialStrategy.ALWAYS_BEST
+            or self.lookback_minutes != 1440
+            or self.decision_interval_minutes != 1
+            or self.distances != (1,)
+            or self.selected_levels_remain_absolute is not True
+        ):
+            raise ValueError("M010_FROZEN_PARENT_PROTOCOL_VIOLATION")
         if not self.distances or any(item <= 0 for item in self.distances):
             raise ValueError("distances must contain positive tick counts")
         adaptive = self.strategy != SerialStrategy.STATIC
@@ -301,6 +312,8 @@ class SerialModelConfig(BaseModel):
     @property
     def model_hash(self) -> str:
         payload = self.model_dump(mode="json", exclude={"model_id", "parent_model_id"})
+        if self.capital_release_protocol is None:
+            payload.pop("capital_release_protocol")
         if self.distance_semantics is None:
             for field_name in (
                 "distance_semantics",
@@ -486,6 +499,8 @@ class SerialReplayResult(BaseModel):
     capacity_capped_final_capital: None = None
     selection_changes: tuple[SelectionChange, ...]
     cycles: tuple[SerialCycle, ...]
+    release_closures: tuple[SerialCycle, ...] = ()
+    release_evaluations: tuple[dict[str, Any], ...] = ()
 
 
 class OracleCandidateResult(BaseModel):
@@ -718,6 +733,9 @@ class _State:
     idle_confirmations: int = 0
     last_change: int | None = None
     blocked_checks: int = 0
+    next_release_event: int | None = None
+    release_closures: list[SerialCycle] = field(default_factory=list)
+    release_evaluations: list[dict[str, Any]] = field(default_factory=list)
 
 
 def replay_serial_model(
@@ -728,6 +746,7 @@ def replay_serial_model(
     start: datetime,
     end_exclusive: datetime,
     tick_catalog: TickCatalog | None = None,
+    release_support_tape: SerialTape | None = None,
 ) -> SerialReplayResult:
     start = require_utc(start)
     end_exclusive = require_utc(end_exclusive)
@@ -757,6 +776,13 @@ def replay_serial_model(
         else config.distances
     )
     timelines = tape.timelines(absolute_distances)
+    release_decision: Callable[[_State, int], bool] | None = None
+    if config.capital_release_protocol is not None:
+        from crypto_strategy_lab.microstructure.capital_release import CapitalReleaseRuntime
+
+        if release_support_tape is None:
+            raise ValueError("M010_REQUIRES_FROZEN_CAUSAL_SUPPORT_TAPE")
+        release_decision = CapitalReleaseRuntime(config, scenario, release_support_tape)
     lookback = _minutes_to_events(config.lookback_minutes)
     state = _State(cash=scenario.initial_quote, flat_since=start_event)
     selection_tick_size, eligible_distances, grid_multiple = _selection_grid(
@@ -805,6 +831,7 @@ def replay_serial_model(
                 tick_catalog=tick_catalog,
                 tape_quantum=tape.tick_size,
                 observed_tick_evidence_event=tape.observed_tick_evidence_event,
+                release_decision=release_decision,
             )
             if boundary < end_event:
                 _decision(
@@ -993,6 +1020,7 @@ def _advance(
     tick_catalog: TickCatalog | None,
     tape_quantum: Decimal,
     observed_tick_evidence_event: int | None,
+    release_decision: Callable[[_State, int], bool] | None = None,
 ) -> None:
     cursor = start
     lookback = _minutes_to_events(config.lookback_minutes)
@@ -1018,8 +1046,26 @@ def _advance(
             state.inventory = quantity
             state.inventory_cost = notional + buy_fee
             state.entry_event = entry
+            if release_decision is not None:
+                state.next_release_event = (
+                    entry // EVENT_ORDER_SCALE + 60 * MICROS_PER_SECOND
+                ) * EVENT_ORDER_SCALE
             cursor = entry + 1
         high_index = bisect_left(timeline.high_events, cursor)
+        if release_decision is not None and state.next_release_event is not None:
+            checkpoint = state.next_release_event
+            next_high = (
+                timeline.high_events[high_index] if high_index < len(timeline.high_events) else end
+            )
+            if checkpoint < end and checkpoint <= next_high:
+                released = release_decision(state, checkpoint)
+                cursor = checkpoint
+                if not released:
+                    from crypto_strategy_lab.microstructure.capital_release import next_checkpoint
+
+                    assert state.entry_event is not None
+                    state.next_release_event = next_checkpoint(state.entry_event, checkpoint)
+                continue
         if high_index >= len(timeline.high_events) or timeline.high_events[high_index] >= end:
             return
         exit_event = timeline.high_events[high_index]
@@ -1046,6 +1092,7 @@ def _advance(
             )
         )
         state.entry_event = None
+        state.next_release_event = None
         state.inventory = Decimal("0")
         state.inventory_cost = Decimal("0")
         state.flat_since = exit_event
@@ -1236,6 +1283,8 @@ def _result(
         execution_class=scenario.execution_class,
         selection_changes=changes,
         cycles=tuple(state.cycles),
+        release_closures=tuple(state.release_closures),
+        release_evaluations=tuple(state.release_evaluations),
     )
 
 
