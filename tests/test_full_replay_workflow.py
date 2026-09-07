@@ -155,3 +155,13 @@ def test_full_replay_writes_complete_evidence_and_never_economic_stops(
         and item["payload"].get("to") == ModelStatus.RUNNING.value
         for item in registry.journal()
     )
+    registry.transition("M005", ModelStatus.INCONCLUSIVE, reason="completed scientific autopsy")
+    run_count = len([item for item in registry.journal() if item["event_type"] == "RUN_REGISTERED"])
+    again = run_full_replay_campaign(
+        manifest_path, artifact_root=artifacts, report_root=reports, model_ids=("M005",)
+    )
+    assert any(item.get("action") == "SKIPPED_COMPLETED_INCONCLUSIVE" for item in again)
+    assert (
+        len([item for item in registry.journal() if item["event_type"] == "RUN_REGISTERED"])
+        == run_count
+    )

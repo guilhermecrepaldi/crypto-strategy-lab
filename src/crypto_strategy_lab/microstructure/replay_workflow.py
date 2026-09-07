@@ -340,6 +340,31 @@ def _run_one(
     release_support_tape: SerialTape | None = None,
 ) -> tuple[dict[str, Any], TemporalReplayAnalysis | None]:
     status = registry.current_status(model.model_id)
+    if status == ModelStatus.INCONCLUSIVE:
+        events = registry.journal()
+        runs = [
+            item["payload"]
+            for item in events
+            if item["event_type"] == "RUN_REGISTERED"
+            and item["payload"]["model_id"] == model.model_id
+        ]
+        evaluations = [
+            item["payload"]
+            for item in events
+            if item["event_type"] == "EVALUATION_RECORDED"
+            and item["payload"]["model_id"] == model.model_id
+        ]
+        if (
+            runs
+            and evaluations
+            and evaluations[-1]["run_hash"] == runs[-1]["RUN_HASH"]
+            and evaluations[-1]["decision"].get("full_replay_completed") is True
+        ):
+            return {
+                "model_id": model.model_id,
+                "status": status.value,
+                "action": "SKIPPED_COMPLETED_INCONCLUSIVE",
+            }, None
     if model.model_id == "M010" and status == ModelStatus.INVALIDATED_TECHNICAL:
         prior_runs = [
             event["payload"]
