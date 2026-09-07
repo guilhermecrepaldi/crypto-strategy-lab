@@ -50,6 +50,7 @@ from crypto_strategy_lab.microstructure.adaptive import (
     write_adaptive_reports,
 )
 from crypto_strategy_lab.microstructure.campaign import register_active_block
+from crypto_strategy_lab.microstructure.capital_release import diagnose_capital_release
 from crypto_strategy_lab.microstructure.data import (
     HistoryManifest,
     download_archive,
@@ -647,6 +648,39 @@ def microstructure_evolution_diagnostic(
     result = diagnose_evolution(
         parent_model_id=parent_model.strip().upper(),
         challenger_model_id=challenger_model.strip().upper(),
+        artifact_root=artifact_root,
+        report_root=report_root,
+    )
+    typer.echo(
+        json.dumps(
+            {
+                "status": result.summary.get("status"),
+                "artifact_id": result.artifact_id,
+                "artifact_dir": str(result.artifact_dir),
+                "report": str(result.report_path),
+            },
+            sort_keys=True,
+        )
+    )
+
+
+@app.command("microstructure-capital-release-diagnostic")
+def microstructure_capital_release_diagnostic(
+    support_manifest: Annotated[
+        Path,
+        typer.Option(
+            "--support-manifest",
+            exists=True,
+            readable=True,
+            help="Official validated USDCUSDT trades manifest covering 2025-01-01 through cutoff",
+        ),
+    ],
+    artifact_root: Annotated[Path, typer.Option()] = Path("artifacts"),
+    report_root: Annotated[Path, typer.Option()] = Path("reports"),
+) -> None:
+    """Seal the read-only causal CAPITAL_RELEASE diagnostic for physical M007."""
+    result = diagnose_capital_release(
+        support_manifest=support_manifest,
         artifact_root=artifact_root,
         report_root=report_root,
     )

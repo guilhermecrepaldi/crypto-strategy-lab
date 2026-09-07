@@ -808,3 +808,29 @@ The detailed inventory is recorded in
 `docs/microstructure/USDCUSDT_EXECUTION_EVIDENCE_INVENTORY.md` and
 `reports/usdcusdt/execution-evidence-inventory.json`. No data acquisition or shadow capture is
 authorized by this inventory.
+
+## CAPITAL_RELEASE owner authorization and diagnostic preregistration
+
+The OWNER reopened price-path evolution only for a direct child of M007 that studies whether a
+small, economically justified realized loss can release capital from `LONG_HOLD`, re-enter the
+causally best band and recover faster than waiting for the original HIGH. This scoped decision
+supersedes `M010_AUTHORIZED=NO` and the execution-evidence pause for this hypothesis only. M008
+and M009 remain rejected; no idle, confirmation, score-hysteresis or cooldown control carries
+forward.
+
+The diagnostic protocol is frozen in
+`docs/microstructure/CAPITAL_RELEASE_DIAGNOSTIC.md`. It evaluates every M007 position surviving
+the OWNER-specified age landmarks, not only cycles later known to be long. Candidate selection,
+cycle rates, release loss, recovery counts, break-even and remaining-hold support use only the
+prefix strictly before each checkpoint. Future outcomes are written separately and may not
+change the causal snapshot.
+
+```text
+CAPITAL_RELEASE_HYPOTHESIS=AUTHORIZED
+PARENT_MODEL=M007
+NEXT_FREE_MODEL_ID=M010
+M010_REGISTERED=NO
+DIAGNOSTIC_STATUS=PREREGISTERED_NOT_RUN
+SWEEP_AUTHORIZED=NO
+EXECUTABLE_EDGE=NOT_DEMONSTRATED
+```

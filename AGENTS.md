@@ -115,6 +115,25 @@ Informe quais modelos foram realmente usados; não alegue troca de modelo que n�
 - A estratégia ativa preserva uma banca, um lote, um LOW, um HIGH e um único ciclo serial. Não
   introduza grid, múltiplos lotes, alavancagem, martingale, DCA, RL ou LLM por evento.
 
+## Linha autorizada de capital release
+
+- O OWNER reabriu a evolução price-path exclusivamente para investigar `CAPITAL_RELEASE`, com
+  parent científico `M007` e problema `LONG_HOLD_CAPITAL_LOCK`. M008 e M009 permanecem
+  rejeitados; seus controles não podem entrar silenciosamente no sucessor.
+- Capital release não é stop-loss fixo nem timeout. Uma posição só pode ser liberada por uma
+  desigualdade econômica causal pré-registrada entre esperar e realizar uma perda controlada,
+  reentrar em uma faixa selecionada pelo prefixo e recuperar capital.
+- Nenhuma decisão em `T` pode usar HIGH, ciclos, volume, faixa, Oracle, duração restante ou
+  resultado posteriores a `T`. Desfechos futuros pertencem somente à autópsia, identificados
+  como `RETROSPECTIVE_DIAGNOSTIC_ONLY`.
+- Separe sempre `THEORETICAL_RELEASE_LOSS` price-path de `EXECUTABLE_RELEASE_LOSS`. A segunda
+  permanece `UNKNOWN` sem evidência histórica de fila, book, spread, slippage e latency.
+- Antes de registrar o sucessor, publique o diagnóstico causal do M007 e uma única regra
+  interpretável, com fórmulas, suporte mínimo, margem e gates congelados. Não faça sweep de
+  loss, hold, horizonte ou janelas.
+- O replay autorizado do sucessor começa com 100 USDT, cobre todo o DEVELOPMENT congelado sem
+  early stop e reporta, além da composição, uma régua de notional fixo de 100 USDT.
+
 ## Aceleração GPU opcional
 
 - CPU é o backend canônico. GPU é somente acelerador opcional para scanners e cálculos em lote;

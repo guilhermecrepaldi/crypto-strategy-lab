@@ -284,6 +284,21 @@ def _load_run_evidence(registry: ModelRegistry, model_id: str, artifact_root: Pa
     )
 
 
+def load_evaluated_run_evidence(
+    model_id: str,
+    *,
+    artifact_root: str | Path = Path("artifacts"),
+    report_root: str | Path = Path("reports"),
+) -> _RunEvidence:
+    """Load one immutable evaluated run through the canonical diagnostic loader.
+
+    Consumers that need read-only evidence must use this entry point instead of
+    reconstructing registry, run, evaluation, and tape validation independently.
+    """
+    registry = ModelRegistry(artifact_root=artifact_root, report_root=report_root)
+    return _load_run_evidence(registry, model_id, Path(artifact_root))
+
+
 def _validate_pair(parent: _RunEvidence, challenger: _RunEvidence) -> None:
     fields = ("dataset_hash", "SCENARIO_HASH", "campaign_snapshot_id")
     for field in fields:
@@ -1166,5 +1181,6 @@ __all__ = [
     "EvolutionDiagnosticError",
     "EvolutionDiagnosticResult",
     "diagnose_evolution",
+    "load_evaluated_run_evidence",
     "run_evolution_diagnostic",
 ]
