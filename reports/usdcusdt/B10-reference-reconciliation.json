@@ -1,0 +1,99 @@
+{
+  "report_schema": "b10-reference-reconciliation-v1",
+  "generated_at": "2026-09-07",
+  "scope": {
+    "artifact_directory": "artifacts/usdcusdt/recovery-reserve/097abdab8225038b091cb721bdd36bedb8a636c94bed1c87120adc0c9e10953a/RRV2_H1_B10_F0",
+    "artifact_identity": "097abdab8225038b091cb721bdd36bedb8a636c94bed1c87120adc0c9e10953a",
+    "scenario_id": "RRV2_H1_B10_F0",
+    "mode": "READ_ONLY_RECONCILIATION",
+    "raw_and_replay_file_hashes_recomputed": true,
+    "reality_replay_started_at_reference_audit": false
+  },
+  "files": {
+    "audit.json": {"present": true, "bytes": 933767, "sha256_observed": "e8d47fe9c10136c906d066a463525d2b3955764aa24ce8ad43457968d77aa359", "completed_declared_sha256": "e8d47fe9c10136c906d066a463525d2b3955764aa24ce8ad43457968d77aa359", "small_file_hash_match": true},
+    "runtime.json": {"present": true, "bytes": 498846, "sha256_observed": "c2577e1f3efc1700324a04b9afd133307e23011ab8d67329800c4e1f50937ba1", "completed_declared_sha256": "c2577e1f3efc1700324a04b9afd133307e23011ab8d67329800c4e1f50937ba1", "small_file_hash_match": true},
+    "completed.json": {"present": true, "bytes": 21139, "payload_sha256": "7426023f35d82d018a0d521e58021efd06768bad05d6d0c3eb11db0dd87c272c", "replay_declared_sha256": "2b08d28152b27000120f6c503838ff1c8ed7da12c33d34892826c41c3da98e51"},
+    "replay.json.gz": {"present": true, "bytes": 257555051, "sha256_recomputed": true, "sha256_observed": "2b08d28152b27000120f6c503838ff1c8ed7da12c33d34892826c41c3da98e51", "completed_declared_sha256": "2b08d28152b27000120f6c503838ff1c8ed7da12c33d34892826c41c3da98e51", "status": "HASH_MATCH"},
+    "checkpoint.json": {"present": true, "bytes": 1381688834, "sha256_recomputed": false, "status": "DECLARED_HASH_ONLY; MULTI_GB_BOUNDARY"}
+  },
+  "completed_reference": {
+    "cycles": 3580880,
+    "zero_cycle_days": 3,
+    "active_days": "245/248",
+    "releases": 156,
+    "max_hold_hours": 26,
+    "lock_hours_gt24": 4,
+    "maximum_drawdown_fraction": "0.001663626042652977434255430341978824531913999447579599308944",
+    "initial_operating": "100",
+    "initial_reserve": "5",
+    "reserve_floor": "0",
+    "skim_rate": "0.02",
+    "runtime_integrity_pass": true,
+    "audit_integrity_pass": true,
+    "marker_counts": {"RECOVERY_RELEASE": 156, "RESERVE_TRANSFER": 156, "RESERVE_REPLENISHED": 156, "NEW_RANGE": 156, "ZERO_CYCLE_DAY": 3, "CAPITAL_LOCK_START": 2}
+  },
+  "identity": {
+    "model_id": "NOT_REGISTERED_PHASE_A",
+    "parent_model": "M007",
+    "git_commit_sha": "c83d768d5b336f1052d34f5a064a7e6ebbb5cda3",
+    "dataset_hash_in_identity": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+    "tape_hash_in_identity": "505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c",
+    "trading_enabled": false
+  },
+  "market_data_authority": {
+    "tape_manifest": "artifacts/usdcusdt/market-tape/22307d010fe179b2b834931f839376014423bde9a7751b4f453463de16bdcf18/manifest.json",
+    "tape_manifest_dataset_hash": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+    "tape_manifest_tape_hash": "505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c",
+    "tape_cache_key": "22307d010fe179b2b834931f839376014423bde9a7751b4f453463de16bdcf18",
+    "tape_records": 109445442,
+    "tape_total_size_bytes": 2188919196,
+    "tape_range": "2025-12-31T00:00:00Z/2026-09-05T23:59:59.783644Z",
+    "raw_manifest": "data/manifests/usdcusdt-trades-2025-2026.json",
+    "raw_dataset_hash": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+    "raw_records": 275345480,
+    "raw_size_bytes": 3555555183,
+    "raw_archive_count": 613,
+    "raw_archive_sha256_count": 613,
+    "raw_archive_valid_count": 613,
+    "raw_archive_size_sum_bytes": 3555555183,
+    "raw_reconciled_manifest_status": "VALID",
+    "raw_reconciled_records": 481942569,
+    "raw_reconciled_size_bytes": 5923788248,
+    "identity_vs_tape": "MATCHES exact cache referenced by frozen M010 run manifest (22307...; tape_hash 505fd6...)",
+    "identity_vs_raw_manifest": "MATCHES data/manifests/usdcusdt-trades-2025-2026.json; development-only manifest and later 5.5GB cache are alternate scopes"
+  },
+  "raw_archive_audit": {
+    "script": "scripts/audit_b10_raw_data.py",
+    "report": "reports/usdcusdt/B10-data-manifest-audit.json",
+    "fresh_sha256_scope": "all 613 exact raw USDCUSDT daily ZIPs, 2025-01-01 through 2026-09-05",
+    "archive_count": 613,
+    "coverage_exact": true,
+    "missing_dates_fresh": [],
+    "manifest_hash_matches": "613/613",
+    "manifest_size_matches": "613/613",
+    "official_sidecars_present": "613/613",
+    "official_sidecar_hash_matches": "613/613",
+    "zip_integrity_tests_passed": "613/613",
+    "actual_total_size_bytes": 3555555183,
+    "record_rows_reparsed": false,
+    "record_count_source": "manifest-declared 275345480; row parsing intentionally skipped"
+  },
+  "retained_trade_fields": {
+    "source": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2026-01-01.zip",
+    "row_shape_observed": "trade_id, price, quantity, quote_quantity, timestamp_microseconds, isBuyerMaker, isBestMatch",
+    "aggressor_side": "isBuyerMaker retained (official Binance trade-file field; side semantics require execution authority)",
+    "quantity": "base quantity retained",
+    "quote_quantity": "retained",
+    "limitations": ["no historical L2/order-book queue ahead", "no order acknowledgement/activation latency", "no historical fill ownership or our-order identity"]
+  },
+  "efficient_read_interface": {
+    "canonical_tape": "NumPy .npy arrays via mmap_mode=\"r\" (events, price_ticks, occurrence_*); bounded slices by event index",
+    "raw_trades": "stream CSV member from daily ZIP; bounded date/day reads",
+    "not_done": ["full checkpoint SHA-256", "full tape-array rehash in this report (runner validates it)", "replay or reality execution"]
+  },
+  "open_reconciliation_items": [
+    "The 5.5GB c5c9... tape is a later/all-history alternate cache; do not use it for B10. Frozen M010 run-manifest points to exact 22307... cache, whose tape_hash matches identity.",
+    "Checkpoint SHA-256 remains uncomputed because the file is 1.38GB; replay SHA-256 was recomputed and matches completed.json.",
+    "Historical aggressor and quantity columns exist, but queue, L2, latency and executable-fill evidence are absent from retained B10 artifacts."
+  ]
+}

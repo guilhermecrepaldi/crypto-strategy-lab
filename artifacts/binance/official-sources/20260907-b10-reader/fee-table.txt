@@ -1,0 +1,504 @@
+Title: Spot Trading Fee Rate | Binance
+
+URL Source: https://www.binance.com/en/fee/trading
+
+Markdown Content:
+[![Image 1: Binance](blob:http://localhost/84b12d13814b731cb4fde89b9004be5f)](https://www.binance.com/en)
+
+[Markets](https://www.binance.com/en/markets/overview)
+
+Trade
+
+[Square](https://www.binance.com/en/square)
+
+# Fees & Transactions Overview
+
+[](https://www.binance.com/en/fee/trading)[](https://www.binance.com/en/fee/trading)
+
+Fee Rate
+
+Invite Friends Unlock VIP Benefits
+
+Trading
+
+Spot Promotions
+
+Liquidity Program
+
+Interest Rate
+
+Deposit/Withdrawal
+
+Buy/Sell
+
+Spot & Margin
+
+USDⓈ-M Futures
+
+COIN-M Futures
+
+TradFi Futures
+
+Options
+
+NFT
+
+P2P
+
+Fiat
+
+| Level | 30D Trade Volume (USD) * OTC trades will apply a multiplier of 4, [subject to exclusions](https://www.binance.com/support/announcement/detail/7eb7da9adde645df9bcd50a9b33c80f8). | and/or | BNB Balance | Maker / Taker Makers add liquidity by placing orders on the book; takers remove liquidity by matching existing orders immediately.[Learn More.](https://www.binance.com/support/faq/360007720071) | Maker / Taker [BNB 25% off](https://www.binance.com/support/announcement/844f0bae047d4be4903303cb743734e1) | USDC Maker / Taker | USDC Maker / Taker [BNB 25% off](https://www.binance.com/support/announcement/844f0bae047d4be4903303cb743734e1) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |  |  |
+| Regular User | < 1,000,000 USD | or | ≥ 0 BNB | 0.100% / 0.100% | 0.07500% / 0.07500% | Standard / 0.095% | Standard / 0.07125% |
+| VIP 1 | ≥ 1,000,000 USD | and | ≥ 5 BNB | 0.090% / 0.100% | 0.06750% / 0.07500% | Standard / 0.095% | Standard / 0.07125% |
+| VIP 2 | ≥ 5,000,000 USD | and | ≥ 25 BNB | 0.080% / 0.100% | 0.06000% / 0.07500% | Standard / 0.095% | Standard / 0.07125% |
+| VIP 3 | ≥ 20,000,000 USD | and | ≥ 100 BNB | 0.040% / 0.060% | 0.03000% / 0.04500% | Standard / 0.055% | Standard / 0.04125% |
+| VIP 4 | ≥ 75,000,000 USD | and | ≥ 500 BNB | 0.040% / 0.052% | 0.03000% / 0.03900% | Standard / 0.047% | Standard / 0.03525% |
+| VIP 5 | ≥ 150,000,000 USD | and | ≥ 1,000 BNB | 0.025% / 0.031% | 0.01875% / 0.02325% | Standard / 0.026% | Standard / 0.01950% |
+| VIP 6 | ≥ 400,000,000 USD | and | ≥ 1,750 BNB | 0.020% / 0.029% | 0.01500% / 0.02175% | Standard / 0.024% | Standard / 0.01800% |
+| VIP 7 | ≥ 800,000,000 USD | and | ≥ 3,000 BNB | 0.019% / 0.028% | 0.01425% / 0.02100% | Standard / 0.023% | Standard / 0.01725% |
+| VIP 8 | ≥ 2,000,000,000 USD | and | ≥ 4,500 BNB | 0.016% / 0.025% | 0.01200% / 0.01875% | Standard / 0.020% | Standard / 0.01500% |
+| VIP 9 | ≥ 4,000,000,000 USD | and | ≥ 5,500 BNB | 0.011% / 0.023% | 0.00825% / 0.01725% | Standard / 0.018% | Standard / 0.01350% |
+
+VIP fees and benefits gained from any VIP program will apply universally to all Binance products.
+
+Trade volume includes all Spot volumes from Spot, Margin, Convert, Copy Trading and Trading Bots. Values are in a USD equivalent amount based on the exchange rate under Multi-Asset mode.
+
+[Margin Data](https://www.binance.com/margin-fee?utm_source=fee_page)
+
+Explore the VIP Program
+
+[Trader Become a VIP by trading on Spot and Futures](https://www.binance.com/vip-institutional-services#trade-hold)[Holder Become a VIP by simply holding crypto assets](https://www.binance.com/vip-institutional-services#trade-hold)[Borrower Become a VIP by borrowing through loans and margin](https://www.binance.com/vip-institutional-services#trade-hold)[Invitation Expedite your VIP journey through invitations](https://www.binance.com/vip-institutional-services?tab=invitation#program)
+
+Log in and see a full overview of your fee and transaction history
+
+Log In
+
+### Community
+
+[](https://discord.gg/jE4wt8g2H2)[](https://www.binance.com/en/community)[](https://www.tiktok.com/@binance?lang=en)[](https://www.facebook.com/binance)[](https://twitter.com/binance)[](https://www.reddit.com/r/binance)[](https://www.instagram.com/Binance/)[](https://coinmarketcap.com/exchanges/binance/)[](https://www.youtube.com/binanceyoutube)[](https://www.whatsapp.com/channel/0029VarQ6LL6rsQq7nwhmn1y)[](https://www.binance.com/en/community)
+
+English
+
+English
+
+English
+
+العربية
+
+Arabic
+
+العربية (البحرين)
+
+Arabic (Bahrain)
+
+Azərbaycan
+
+Azerbaijani
+
+Deutsch
+
+German
+
+English (UAE)
+
+English (UAE)
+
+English (Australia)
+
+English (Australia)
+
+English (Bahrain)
+
+English (Bahrain)
+
+English (India)
+
+English (India)
+
+English (Japan)
+
+English (Japan)
+
+English (Kazakhstan)
+
+English (Kazakhstan)
+
+English (Nigeria)
+
+English (Nigeria)
+
+English (New Zealand)
+
+English (New Zealand)
+
+English (Philippines)
+
+English (Philippines)
+
+English (Türkiye)
+
+English (Turkey)
+
+English (South Africa)
+
+English (South Africa)
+
+Español
+
+Spanish
+
+Español (Argentina)
+
+Spanish (Argentina)
+
+Español (Latinoamérica)
+
+Spanish (Latin America)
+
+Español (México)
+
+Spanish (Mexico)
+
+Français
+
+French
+
+Français (Afrique)
+
+French (Africa)
+
+Bahasa Indonesia
+
+Indonesian
+
+日本語
+
+Japanese
+
+Қазақша
+
+Kazakh
+
+ລາວ
+
+Lao
+
+မြန်မာစာ
+
+Burmese
+
+Português
+
+Portuguese
+
+Português (Angola)
+
+Portuguese (Angola)
+
+Português (Brasil)
+
+Portuguese (Brazil)
+
+Русский
+
+Russian
+
+Русский (Казахстан)
+
+Russian (Kazakhstan)
+
+Русский (Украина)
+
+Russian (Ukraine)
+
+සිංහල
+
+Sinhala
+
+Українська
+
+Ukrainian
+
+Oʻzbekcha
+
+Uzbek
+
+Tiếng Việt
+
+Vietnamese
+
+简体中文
+
+Simplified Chinese
+
+繁體中文
+
+Traditional Chinese
+
+USD-$
+
+USD-$
+
+AED-د.إ
+
+ARS-ARS$
+
+AUD-A$
+
+AZN-₼
+
+BDT-৳
+
+BGN-лв
+
+BHD-.د.ب
+
+BOB-$b
+
+BRL-R$
+
+CAD-C$
+
+CHF-CHF
+
+CLP-CLP$
+
+CNY-¥
+
+COP-COL$
+
+CZK-Kč
+
+DKK-KR
+
+EGP-E£
+
+EUR-€
+
+GBP-£
+
+HKD-HKD
+
+HRK-kn
+
+HUF-Ft
+
+IDR-Rp
+
+INR-₹
+
+JPY-¥
+
+KES-KSh
+
+KWD-ك.د
+
+KZT-₸
+
+MAD-م.د.
+
+MNT-₮
+
+MXN-Mex$
+
+NZD-NZ$
+
+OMR-ر.ع.
+
+PEN-S/.
+
+PHP-₱
+
+PKR-₨
+
+PLN-zł
+
+QAR-ر.ق
+
+RON-lei
+
+RUB-₽
+
+SAR-ر.س
+
+SEK-kr
+
+THB-฿
+
+TRY-₺
+
+TWD-NT$
+
+UAH-₴
+
+UGX-USh
+
+UZS-UZS
+
+VES-Bs
+
+VND-₫
+
+ZAR-R
+
+Theme
+
+English
+
+USD
+
+Theme
+
+### About Us
+
+*   [About](https://www.binance.com/en/about)
+*   [Careers](https://www.binance.com/en/careers)
+*   [Announcements](https://www.binance.com/en/support/announcement)
+*   [News](https://www.binance.com/en/square/news/all)
+*   [Press](https://www.binance.com/en/press)
+*   [Legal](https://www.binance.com/en/legal/home)
+*   [Terms](https://www.binance.com/en/terms)
+*   [Privacy](https://www.binance.com/en/about-legal/privacy-portal)
+*   [Building Trust](https://www.binance.com/en/land/building_trust)
+*   [Blog](https://www.binance.com/en/blog)
+*   [Community](https://www.binance.com/en/community)
+*   [Risk Warning](https://www.binance.com/en/risk-warning)
+*   [Notices](https://www.binance.com/en/support/list/notices)
+*   [Downloads](https://www.binance.com/en/download)
+*   [Desktop Application](https://www.binance.com/en/desktop-download)
+*   [Secure Internal Communication Channel](https://www.binance.com/en/whistleblowing/welcome)
+
+### Products
+
+*   [Exchange](https://www.binance.com/en/trade)
+*   [Buy Crypto](https://www.binance.com/en/crypto/buy)
+*   [Pay](https://www.binance.com/en/my/wallet/account/payment)
+*   [Crypto Payments](https://pay.binance.com/en)
+*   [Binance Junior](https://www.binance.com/en/binance-junior)
+*   [Card](https://www.binance.com/en/cards/dashboard)
+*   [Academy](https://www.binance.com/en/academy)
+*   [Gift Card](https://www.binance.com/en/gift-card)
+*   [Launchpool](https://www.binance.com/en/launchpool)
+*   [Auto-Invest](https://www.binance.com/en/auto-invest)
+*   [ETH Staking](https://www.binance.com/en/eth2)
+*   [BABT](https://www.binance.com/en/BABT?source=footer)
+*   [Research](https://www.binance.com/en/research)
+*   [Charity](https://www.binance.charity/)
+
+### Business
+
+*   [P2P Merchant Application](https://c2c.binance.com/en/merchantApplication)
+*   [Listing Application](https://www.binance.com/en/my/coin-apply)
+*   [Institutional & VIP Services](https://www.binance.com/en/vip-institutional-services)
+*   [Labs](https://labs.binance.com/)
+*   [Onchain Pay](https://www.binance.com/en/binance-connect)
+
+### Learn
+
+*   [Learn & Earn](https://www.binance.com/en/academy/learn-and-earn)
+*   [Browse Crypto Prices](https://www.binance.com/en/price)
+*   [Bitcoin Price](https://www.binance.com/en/price/bitcoin)
+*   [Ethereum Price](https://www.binance.com/en/price/ethereum)
+*   [Browse Crypto Price Predictions](https://www.binance.com/en/price-prediction)
+*   [Bitcoin Price Prediction](https://www.binance.com/en/price-prediction/bitcoin)
+*   [Ethereum Price Prediction](https://www.binance.com/en/price-prediction/ethereum)
+*   [Ethereum Upgrade (Pectra)](https://www.binance.com/en/ethereum-upgrade)
+*   [Buy Bitcoin](https://www.binance.com/en/how-to-buy/bitcoin)
+*   [Buy BNB](https://www.binance.com/en/how-to-buy/bnb)
+*   [Buy XRP](https://www.binance.com/en/how-to-buy/xrp)
+*   [Buy Dogecoin](https://www.binance.com/en/how-to-buy/dogecoin)
+*   [Buy Ethereum](https://www.binance.com/en/how-to-buy/ethereum)
+*   [Buy Tradable Altcoins](https://www.binance.com/en/altcoins/tradable)
+
+### Service
+
+*   [Affiliate](https://www.binance.com/en/activity/referral?stopRedirectToActivity=true)
+*   [Referral](https://www.binance.com/en/activity/referral)
+*   [BNB](https://www.binance.com/en/bnb)
+*   [OTC & Execution Services](https://www.binance.com/en/otc)
+*   [Historical Market Data](https://data.binance.vision/)
+*   [Trading Insight](https://www.binance.com/en/trading_insight/glass?id=22&token=BTC)
+*   [Proof of Reserves](https://www.binance.com/en/proof-of-reserves)
+
+### Support
+
+*   [24/7 Chat Support](https://www.binance.com/en/chat?sourceEntry=4)
+*   [Support Center](https://www.binance.com/en/support)
+*   [Product Feedback & Suggestions](https://www.binance.com/en/my/user-support/feedback/entry)
+*   [Fees](https://www.binance.com/en/fee)
+*   [APIs](https://www.binance.com/en/binance-api)
+*   [Binance Verify](https://www.binance.com/en/official-verification)
+*   [Trading Parameters](https://www.binance.com/en/trade-parameters)
+*   [Binance Airdrop Portal](https://www.binance.com/en/airdrop)
+*   [Law Enforcement Requests](https://www.binance.com/en/support/law-enforcement)
+*   [How to Raise a Complaint](https://www.binance.com/en/support/faq/detail/fcda7991306f4d5f91bb2a1709d26b4c)
+
+Binance ADGM entities are regulated by the Financial Services Regulatory Authority (FSRA) of the Abu Dhabi Global Markets (ADGM) as follows: (1) Nest Exchange Limited is recognised as a Recognised Investment Exchange (Derivatives), with a stipulation to Operate a Multilateral Trading Facility; (2) Nest Clearing and Custody Limited is recognised as a Recognised Clearing House, with a stipulation to Provide Custody and operating a Central Securities Depository; (3) Nest Trading Limited is authorised to carry out the following Regulated Activities: (i) Dealing in Investments as Principal; (ii) Dealing in Investments as Agent; (iii) Arranging Deals in Investments; (iv) Managing Assets; (v) Providing Money Services; and (vi) Arranging Custody. 
+
+ Risk Warning: virtual asset prices can be volatile. The value of your investment may go down or up and you may not get back the amount invested. You are solely responsible for your investment decisions and Binance is not liable for any trading losses you may incur.
+
+Binance© 2026 Cookie Preferences
+
+![Image 2: Company Logo](https://cdn.cookielaw.org/logos/99f99939-5a0d-4feb-aef3-ba45f16b6907/5bfb9945-c83c-46f9-8bd7-55e8fd1975b5/02e50907-93f6-477d-a8a2-d581dace49c2/binance-h.png)
+
+## Privacy Preference Center
+
+When you visit any website, it may store or retrieve information on your browser, mostly in the form of cookies. This information might be about you, your preferences, or your device, and is mostly used to make the site work as you expect. The information does not usually identify you directly, but it can give you a more personalized web experience. Because we respect your right to privacy, you can choose not to allow some types of cookies. Click on the different category headings to learn more and change our default settings. Blocking some types of cookies may impact your experience of the site and the services we are able to offer. 
+
+[Cookie Policy](https://www.binance.com/en/cookie-privacy)
+
+Allow All
+### Manage Consent Preferences
+
+#### Strictly Necessary Cookies
+
+Always Active
+
+These cookies are necessary for the website to function and cannot be switched off in our systems. They are usually only set in response to actions made by you which amount to a request for services, such as setting your privacy preferences, logging in or filling in forms. You can set your browser to block or alert you about these cookies, but some parts of the site will not then work. These cookies do not store any personally identifiable information.
+
+Cookies Details
+
+#### Functional Cookies
+
+- [x] Functional Cookies 
+
+These cookies enable the website to provide enhanced functionality and personalisation. They may be set by us or by third party providers whose services we have added to our pages. If you do not allow these cookies then some or all of these services may not function properly.
+
+Cookies Details
+
+#### Targeting Cookies
+
+- [x] Targeting Cookies 
+
+Targeting cookies may be set through our site by ourselves and our advertising partners. First parties and third parties will use them to build a profile of your interests based on the browsing information they collect from you, which includes uniquely identifying your browser and terminal equipment. If you do not allow these cookies you will still see basic advertising on your browser that is generic and not based on your interests
+
+Cookies Details
+
+#### Performance Cookies
+
+- [x] Performance Cookies 
+
+These cookies allow us to count visits and traffic sources so we can measure and improve the performance of our site. They help us to know which pages are the most and least popular and see how visitors move around the site. All information these cookies collect is aggregated and therefore anonymous. If you do not allow these cookies we will not know when you have visited our site, and will not be able to monitor its performance.
+
+Cookies Details
+
+### Cookie List
+
+Clear
+*   - [x] checkbox label label 
+
+Apply Cancel
+
+Consent Leg.Interest
+
+- [x] checkbox label label
+
+- [x] checkbox label label
+
+- [x] checkbox label label
+
+Reject All Confirm My Choices
+
+[![Image 3: Powered by Onetrust](https://cdn.cookielaw.org/logos/static/powered_by_logo.svg)](https://www.onetrust.com/solutions/consent-and-preferences/?utm_source=cmp&utm_medium=cmpbanner)

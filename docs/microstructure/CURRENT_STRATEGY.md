@@ -1,4 +1,20 @@
-# Current strategy — OWNER authority, 2026-09-07
+# Current research — B10 Binance Reality Gauntlet, 2026-09-07
+
+Autoridade vigente: [diretiva OWNER B10](B10_REALITY_GAUNTLET_OWNER_DIRECTIVE.md).
+Único objeto: `B10_FROZEN`, cenário histórico `RRV2_H1_B10_F0`, ambiente
+`BINANCE_REALITY_V1`. M011 permanece CREATED, preservado e sem execução; sua direção
+abaixo é histórico superado neste gate. Não há novo Mn nem alteração do operador SHADOW.
+
+O trabalho autorizado é falsificar B10 com execução Spot, notional fixo100, operating100
+e reserva5, usando custos/fills/latência/fila explícitos. Protocolo e estado real:
+[B10_REALITY_GAUNTLET_PROTOCOL.md](B10_REALITY_GAUNTLET_PROTOCOL.md).
+Referência reconciliada:3580880 ciclos teóricos; isso não representa fills executáveis.
+Pesquisa e coleta concluídas; simulador validado em fixtures e quatro perfis condicionais
+pré-registrados (A/B/C e sensibilidade B sem promoção). D sem calibração de peg-stress.
+Nenhum resultado econômico realista aceito; replay integral e auditoria ainda pendentes.
+Não retomar campanhas anteriores. Nenhuma conta, ordem, Testnet ou live autorizado.
+
+## Handoff anterior — HISTORICAL_SUPERSEDED, preservado integralmente
 
 Authority: [OWNER_STRATEGY_OVERRIDE.md](OWNER_STRATEGY_OVERRIDE.md). This handoff supersedes
 conflicting historical campaign continuation instructions. The canonical registry remains

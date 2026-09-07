@@ -1,0 +1,169 @@
+{
+  "schema": "binance-historical-rule-timeline-v1",
+  "strategy": "B10_FROZEN",
+  "execution_profile": "BINANCE_REALITY_V1",
+  "symbol": "USDCUSDT",
+  "research_date": "2026-09-07",
+  "retrieved_at": null,
+  "retrieval_provenance": "Exact response receipt timestamps and hashes belong to the source capture manifest; research date is not a fabricated HTTP receipt timestamp.",
+  "period": {
+    "start": "2026-01-01T00:00:00Z",
+    "end": null,
+    "end_resolution": "Use exact physical cutoff on 2026-09-05 from canonical tape manifest; do not substitute midnight or end of day."
+  },
+  "status": "PARTIAL_OFFICIAL_EVIDENCE_WITH_EXPLICIT_UNKNOWN_INTERVALS",
+  "rules": [
+    {
+      "id": "usdcusdt-tick-transition-20260414",
+      "rule": "PRICE_FILTER.tickSize",
+      "start": null,
+      "end": null,
+      "value": {"previous": "0.0001", "updated": "0.00001"},
+      "announcement_date": "2026-04-07",
+      "announced_completion_deadline": "2026-04-14T05:00:00Z",
+      "effective_instant": "UNKNOWN",
+      "temporal_semantics": "Announcement says completed BY deadline, not exact switch time. No continuous Jan1-to-cutoff interval established.",
+      "existing_orders": "Pre-update orders continue matching with original tick size.",
+      "source": "https://www.binance.com/en/square/post/309819853676338",
+      "source_author": "Binance Announcement",
+      "evidence_class": "OFFICIAL_RULE",
+      "historical_continuity": "UNKNOWN"
+    },
+    {
+      "id": "iceberg-parts-20260211",
+      "rule": "ICEBERG_PARTS.limit",
+      "start": "2026-02-11T07:00:00Z",
+      "end": null,
+      "value": 50,
+      "scope": "All symbols; irrelevant to a non-iceberg execution profile but retained as authority.",
+      "temporal_semantics": "Official announced effective time; actual deployment observation not captured; prior value unknown here.",
+      "source": "https://raw.githubusercontent.com/binance/binance-spot-api-docs/master/CHANGELOG.md#2026-01-27",
+      "evidence_class": "OFFICIAL_RULE"
+    },
+    {
+      "id": "execution-price-range-rollout-20260309",
+      "rule": "PRICE_RANGE_EXECUTION_RULE",
+      "start": null,
+      "end": null,
+      "value": "New execution-time price-range rule and public executionRules/referencePrice endpoints",
+      "rollout_notice_date": "2026-03-09",
+      "announced_rollout_duration": "approximately three weeks",
+      "symbol_effective_instant": "UNKNOWN",
+      "symbol_parameters_history": "UNKNOWN",
+      "source": "https://raw.githubusercontent.com/binance/binance-spot-api-docs/master/CHANGELOG.md#2026-03-09",
+      "semantics_source": "https://developers.binance.com/docs/binance-spot-api-docs/faqs/price_range_execution_rules",
+      "evidence_class": "OFFICIAL_RULE"
+    },
+    {
+      "id": "raw-requests-20260402",
+      "rule": "RAW_REQUESTS",
+      "start": null,
+      "end": null,
+      "value": {"limit": 300000, "interval": "MINUTE", "intervalNum": 5},
+      "announced_approximate_time": "2026-04-02T07:00:00Z",
+      "temporal_semantics": "Approximate announced change, not exact historical switch; previous value unestablished here.",
+      "source": "https://raw.githubusercontent.com/binance/binance-spot-api-docs/master/CHANGELOG.md#2026-03-27",
+      "evidence_class": "OFFICIAL_RULE"
+    },
+    {
+      "id": "successful-order-weight-20260402",
+      "rule": "REQUEST_WEIGHT_SUCCESSFUL_ORDER_CALLS",
+      "start": null,
+      "end": null,
+      "value": {"successful_listed_calls_weight": 0, "failed_calls": "retain documented weight"},
+      "selected_relevant_calls": ["POST /api/v3/order", "DELETE /api/v3/order", "POST /api/v3/order/cancelReplace"],
+      "announced_approximate_time": "2026-04-02T07:00:00Z",
+      "exception": "keepPriority amend is zero weight only if amendment causes expiry; successful non-expiring amend retains documented weight.",
+      "source": "https://raw.githubusercontent.com/binance/binance-spot-api-docs/master/CHANGELOG.md#2026-03-27",
+      "clarification_source": "https://raw.githubusercontent.com/binance/binance-spot-api-docs/master/CHANGELOG.md#2026-04-02",
+      "evidence_class": "OFFICIAL_RULE"
+    },
+    {
+      "id": "reference-price-filter-rollout-20260508",
+      "rule": "DYNAMIC_FILTER_REFERENCE_PRICE",
+      "start": null,
+      "end": null,
+      "value": "PERCENT_PRICE, PERCENT_PRICE_BY_SIDE, MIN_NOTIONAL and NOTIONAL use non-null reference price; otherwise prior behavior",
+      "rollout_starts": "2026-05-08T06:00:00Z",
+      "announced_rollout_duration": "may take several hours",
+      "symbol_effective_instant": "UNKNOWN",
+      "reference_price_history": "UNKNOWN",
+      "source": "https://raw.githubusercontent.com/binance/binance-spot-api-docs/master/CHANGELOG.md#2026-05-06",
+      "evidence_class": "OFFICIAL_RULE"
+    },
+    {
+      "id": "cancel-only-rollout-20260707",
+      "rule": "SYMBOL_STATUS_ENUM",
+      "start": null,
+      "end": null,
+      "value": "CANCEL_ONLY may appear in exchangeInfo",
+      "rollout_starts_date": "2026-07-07",
+      "announced_rollout_duration": "a few days",
+      "usdcusdt_was_cancel_only": "UNKNOWN",
+      "source": "https://raw.githubusercontent.com/binance/binance-spot-api-docs/master/CHANGELOG.md#2026-07-01",
+      "evidence_class": "OFFICIAL_RULE"
+    },
+    {
+      "id": "ws-maintenance-20260709",
+      "rule": "WEBSOCKET_INFRASTRUCTURE_MAINTENANCE",
+      "start": null,
+      "end": null,
+      "value": "Connections may disconnect; reconnect required",
+      "announced_start": "2026-07-09T07:00:00Z",
+      "announced_duration": "approximately up to one hour",
+      "actual_usdcusdt_outage": "UNKNOWN",
+      "temporal_semantics": "Do not create a full-hour trading halt from a possible transport interruption notice.",
+      "source": "https://raw.githubusercontent.com/binance/binance-spot-api-docs/master/CHANGELOG.md#2026-06-24",
+      "evidence_class": "OFFICIAL_RULE"
+    },
+    {
+      "id": "zero-fee-2026-official-notices",
+      "rule": "USDCUSDT_ZERO_FEE_CLASSIFICATION",
+      "start": null,
+      "end": null,
+      "value": {"maker_bps_hypothesis": "0", "taker_bps_hypothesis": "0"},
+      "temporal_semantics": "Dated promotional notices name USDC/USDT among zero-fee pairs. They do not prove continuous entire-period eligibility or each account commission component.",
+      "sources": [
+        "https://www.binance.com/lo-LA/support/announcement/detail/4c2852795e0a49a0bf72cd83714f743b",
+        "https://www.binance.com/en/support/announcement/detail/a6f02526afd1466ab72fe29af4c84c67",
+        "https://www.binance.com/en/support/announcement/detail/a3e1e3965b904bee87072a903c35fc82"
+      ],
+      "evidence_class": "OFFICIAL_RULE",
+      "full_span_exact_fee": "UNKNOWN_HISTORICAL_EXACT",
+      "account_commission": "UNKNOWN_NOT_AUTHORIZED"
+    },
+    {
+      "id": "regular-fee-sensitivity-current",
+      "rule": "FEE_SENSITIVITY_ONLY",
+      "start": null,
+      "end": null,
+      "value": {"regular_no_promotion_maker_bps": "10", "regular_no_promotion_taker_bps": "10", "conditional_bnb_discount_bps": "7.5"},
+      "temporal_semantics": "Current official standard tier anchor, not historical USDCUSDT actual fee. BNB eligibility/balance and cost cannot be assumed.",
+      "source": "https://www.binance.com/en/fee/trading",
+      "evidence_class": "PARAMETERIZED",
+      "numeric_anchor_class": "OFFICIAL_RULE"
+    }
+  ],
+  "unknown_scopes": [
+    {"rule": "symbolStatus/baseAsset/quoteAsset and permissions full historical continuity", "value": "UNKNOWN", "source_to_capture_current": "https://data-api.binance.vision/api/v3/exchangeInfo?symbol=USDCUSDT"},
+    {"rule": "PRICE_FILTER.minPrice/maxPrice and tick continuity outside announced transition", "value": "UNKNOWN"},
+    {"rule": "LOT_SIZE.minQty/maxQty/stepSize transitions", "value": "UNKNOWN"},
+    {"rule": "MARKET_LOT_SIZE history", "value": "UNKNOWN"},
+    {"rule": "MIN_NOTIONAL/NOTIONAL amounts and applicability history", "value": "UNKNOWN"},
+    {"rule": "PERCENT_PRICE/PERCENT_PRICE_BY_SIDE multipliers and reference series", "value": "UNKNOWN"},
+    {"rule": "MAX_NUM_ORDERS/MAX_NUM_ALGO_ORDERS and other symbol filter histories", "value": "UNKNOWN"},
+    {"rule": "orderTypes/timeInForce/STP per-symbol configuration continuity", "value": "UNKNOWN"},
+    {"rule": "REQUEST_WEIGHT/ORDERS exact historical values outside dated evidence", "value": "UNKNOWN"},
+    {"rule": "account standard/buyer/seller/tax/special commissions, VIP, discounts", "value": "UNKNOWN_NOT_AUTHORIZED"},
+    {"rule": "exact private activation/ACK/cancel latency", "value": "UNKNOWN_NOT_AUTHORIZED"},
+    {"rule": "historical full-depth book, queue identities and hidden liquidity", "value": "NOT_LOCATED_PUBLIC_OFFICIAL", "source": "https://github.com/binance/binance-public-data"},
+    {"rule": "actual symbol trading interruptions beyond observed tape diagnostics", "value": "UNKNOWN"}
+  ],
+  "policy": {
+    "null_start_end": "Unknown interval endpoint, never automatic whole-period validity",
+    "current_snapshot": "OBSERVED_CURRENT_ONLY unless historical authority is separately established",
+    "exact_rule_simulation": "Use established facts; label any proxy interval INFERRED or PARAMETERIZED and preserve unknowns",
+    "historical_l2_absence": "Continue explicitly calibrated trade-flow envelopes; never synthesize an exact historical book",
+    "no_accounts": true
+  }
+}

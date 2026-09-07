@@ -1,0 +1,14 @@
+{
+  "status": "BENCHMARK_NOT_ECONOMIC",
+  "measured_at_date": "2026-09-07",
+  "source": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2026-01-01.zip",
+  "real_raw_rows": 120000,
+  "elapsed_seconds": 2.696891699975822,
+  "rows_per_second": 44495.668847612906,
+  "profile": "SYNTHETIC_THROUGHPUT_ONLY",
+  "selector": "SYNTHETIC_FIXTURE_TIMELINES",
+  "includes": ["canonical archive parser", "B10RealityReplay.step", "parameterized book generation", "Decimal ledger and equity path"],
+  "does_not_prove": ["economic result", "calibrated profile result", "production throughput", "real selector cost", "full replay completion"],
+  "scope_note": "Canonical B10 tape has approximately 109 million records including warmup; 273M/765M all-history estimates are not this replay scope.",
+  "estimated_109445442_rows_seconds_excluding_real_selector_overhead": 2459.69
+}

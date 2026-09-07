@@ -19,6 +19,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+public-market = [
+  "websockets>=15,<16",
+]
 gpu = [
   "cupy-cuda13x[ctk]>=14.2,<15",
 ]

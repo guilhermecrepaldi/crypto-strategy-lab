@@ -1,0 +1,22 @@
+{
+  "schema": "official-web-extraction-verification-v1",
+  "retrieved_at_utc": "2026-09-07 21:57:49 UTC",
+  "classification": "OFFICIAL_SOURCE_VIA_WEB_EXTRACTION_NOT_ORIGINAL_HTTP_BYTES",
+  "direct_capture_limit": "Binance announcement HTML returned HTTP202 empty body; Jina copies returned human verification. Those captures are not semantic evidence.",
+  "sources": [
+    {
+      "url": "https://www.binance.com/en/support/announcement/detail/a6f02526afd1466ab72fe29af4c84c67",
+      "title": "Binance Football Challenge 2026",
+      "published": "2026-06-10 13:30",
+      "updated": "2026-07-20 07:39",
+      "locator": "Terms & Conditions / excluded Spot zero-fee trading pairs",
+      "verified_fact": "USDC/USDT is explicitly listed as a Spot zero-fee pair. This is supporting evidence for a zero-fee hypothesis, not proof of continuous full-period account eligibility."
+    },
+    {
+      "url": "https://www.binance.com/en/square/post/309819853676338",
+      "title": "Updates on Tick Size for Spot Trading Pairs (2026-04-14)",
+      "publisher": "Binance Announcement",
+      "verified_fact": "Official announcement located; exact tick details are documented in the Binance execution authority and historical timeline."
+    }
+  ]
+}

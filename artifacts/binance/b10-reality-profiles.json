@@ -1,0 +1,241 @@
+{
+  "schema": "b10-binance-reality-profile-freeze-v1",
+  "frozen_at": "2026-09-07T21:52:23.643389+00:00",
+  "strategy": "B10_FROZEN",
+  "execution_profile": "BINANCE_REALITY_V1",
+  "execution_authorized": true,
+  "gate": "PASS_CONDITIONAL_PRE_RUN_REVIEW; runner still requires published source/config SHA",
+  "pre_run_review": "reports/usdcusdt/B10-preflight-independent-review.md",
+  "pre_run_validation": "88 focused tests passed; Ruff passed; no economics observed",
+  "b10_artifact_identity": "097abdab8225038b091cb721bdd36bedb8a636c94bed1c87120adc0c9e10953a",
+  "start": "2026-01-01T00:00:00+00:00",
+  "end_exclusive": "2026-09-05T23:59:59.783644+00:00",
+  "history_manifest": "data\\manifests\\usdcusdt-trades-2025-2026.json",
+  "history_manifest_sha256": "553550be53b657c9523bda59d905b1b987f7f86310db838ca0e47dd625a4359d",
+  "physical_archive_audit": "reports\\usdcusdt\\B10-data-manifest-audit.json",
+  "physical_archive_audit_sha256": "8eefb7d66c2bf7a8cfe4676c65302df28396800a58970a5404e9c266033b27c7",
+  "calibration_manifest": "artifacts\\binance\\calibration\\20260907-b10-joint\\manifest.json",
+  "calibration_manifest_sha256": "04fd09fc048602273276ecdebe583438e3dea3d28f9be6a0e7d997313d9019d6",
+  "official_rule_manifest": "artifacts\\binance\\usdcusdt-execution-rules.json",
+  "official_rule_manifest_sha256": "c4f2f9fdb1a8876c8cc869cd12963a1433d66eaf90df9fc11a7c3e299c74ffee",
+  "profiles": [
+    {
+      "profile": {
+        "name": "A_OBSERVED_BEST_SUPPORTED",
+        "evidence_sha256": "04fd09fc048602273276ecdebe583438e3dea3d28f9be6a0e7d997313d9019d6",
+        "latency_us": 1174720,
+        "cancel_latency_us": 1174720,
+        "queue_ahead": "2109490.00000000",
+        "maker_fee": "0",
+        "taker_fee": "0"
+      },
+      "envelope": {
+        "evidence_sha256": "04fd09fc048602273276ecdebe583438e3dea3d28f9be6a0e7d997313d9019d6",
+        "half_spread": "0.00000500",
+        "release_slippage": "0",
+        "release_depth": "2109490.00000000",
+        "release_limit_distance": "0.00001000",
+        "depth_refresh_us": 299570
+      },
+      "evidence_class": "CONDITIONAL_PILOT_PARAMETERIZED_EXECUTION_ENVELOPE",
+      "joint_sample": {
+        "spread": "0.00001000",
+        "bid_best_qty": "2109490.00000000",
+        "ask_best_qty": "218790.00000000",
+        "bid_one_tick_qty": "2641892.00000000",
+        "ask_one_tick_qty": "6604328.00000000",
+        "bid_two_level_qty": "4751382.00000000",
+        "ask_two_level_qty": "6823118.00000000",
+        "bid": "1.00011000",
+        "ask": "1.00012000",
+        "update_id": 2537240689,
+        "received_us": 1788817323801470,
+        "ws_delay_offset_adjusted_us": "585773.5",
+        "start_monotonic_ns": 359950645486900,
+        "duration_ns": 99718900
+      },
+      "difficulty_percentile": 10,
+      "latency_sample_quantile": "p10",
+      "latency_tail_evidence": "DESCRIPTIVE_SAMPLE_ONLY; p99 of12 is sample maximum"
+    },
+    {
+      "profile": {
+        "name": "B_REALISTIC_CONSERVATIVE",
+        "evidence_sha256": "04fd09fc048602273276ecdebe583438e3dea3d28f9be6a0e7d997313d9019d6",
+        "latency_us": 1179525,
+        "cancel_latency_us": 1179525,
+        "queue_ahead": "2330544.00000000",
+        "maker_fee": "0",
+        "taker_fee": "0"
+      },
+      "envelope": {
+        "evidence_sha256": "04fd09fc048602273276ecdebe583438e3dea3d28f9be6a0e7d997313d9019d6",
+        "half_spread": "0.00000500",
+        "release_slippage": "0",
+        "release_depth": "1144901.00000000",
+        "release_limit_distance": "0.00001000",
+        "depth_refresh_us": 299570
+      },
+      "evidence_class": "CONDITIONAL_PILOT_PARAMETERIZED_EXECUTION_ENVELOPE",
+      "joint_sample": {
+        "spread": "0.00001000",
+        "bid_best_qty": "1144901.00000000",
+        "ask_best_qty": "2330544.00000000",
+        "bid_one_tick_qty": "1386903.00000000",
+        "ask_one_tick_qty": "197019.00000000",
+        "bid_two_level_qty": "2531804.00000000",
+        "ask_two_level_qty": "2527563.00000000",
+        "bid": "1.00010000",
+        "ask": "1.00011000",
+        "update_id": 2537239207,
+        "received_us": 1788817110702832,
+        "ws_delay_offset_adjusted_us": "587657.5",
+        "start_monotonic_ns": 359737546914200,
+        "duration_ns": 301729100
+      },
+      "difficulty_percentile": 50,
+      "latency_sample_quantile": "p50",
+      "latency_tail_evidence": "DESCRIPTIVE_SAMPLE_ONLY; p99 of12 is sample maximum"
+    },
+    {
+      "profile": {
+        "name": "C_ADVERSARIAL_PLAUSIBLE",
+        "evidence_sha256": "04fd09fc048602273276ecdebe583438e3dea3d28f9be6a0e7d997313d9019d6",
+        "latency_us": 1194469,
+        "cancel_latency_us": 1194469,
+        "queue_ahead": "5509195.00000000",
+        "maker_fee": "0",
+        "taker_fee": "0"
+      },
+      "envelope": {
+        "evidence_sha256": "04fd09fc048602273276ecdebe583438e3dea3d28f9be6a0e7d997313d9019d6",
+        "half_spread": "0.00000500",
+        "release_slippage": "0",
+        "release_depth": "561862.00000000",
+        "release_limit_distance": "0.00001000",
+        "depth_refresh_us": 299570
+      },
+      "evidence_class": "CONDITIONAL_PILOT_PARAMETERIZED_EXECUTION_ENVELOPE",
+      "joint_sample": {
+        "spread": "0.00001000",
+        "bid_best_qty": "561862.00000000",
+        "ask_best_qty": "5509195.00000000",
+        "bid_one_tick_qty": "5263507.00000000",
+        "ask_one_tick_qty": "1782220.00000000",
+        "bid_two_level_qty": "5825369.00000000",
+        "ask_two_level_qty": "7291415.00000000",
+        "bid": "1.00012000",
+        "ask": "1.00013000",
+        "update_id": 2537238163,
+        "received_us": 1788817048105089,
+        "ws_delay_offset_adjusted_us": "587854.5",
+        "start_monotonic_ns": 359674949637100,
+        "duration_ns": 498089600
+      },
+      "difficulty_percentile": 90,
+      "latency_sample_quantile": "p99",
+      "latency_tail_evidence": "DESCRIPTIVE_SAMPLE_ONLY; p99 of12 is sample maximum"
+    },
+    {
+      "profile": {
+        "name": "B_FEE10_PROMOTION_ABSENT",
+        "evidence_sha256": "04fd09fc048602273276ecdebe583438e3dea3d28f9be6a0e7d997313d9019d6",
+        "latency_us": 1179525,
+        "cancel_latency_us": 1179525,
+        "queue_ahead": "2330544.00000000",
+        "maker_fee": "0.001",
+        "taker_fee": "0.001"
+      },
+      "envelope": {
+        "evidence_sha256": "04fd09fc048602273276ecdebe583438e3dea3d28f9be6a0e7d997313d9019d6",
+        "half_spread": "0.00000500",
+        "release_slippage": "0",
+        "release_depth": "1144901.00000000",
+        "release_limit_distance": "0.00001000",
+        "depth_refresh_us": 299570
+      },
+      "evidence_class": "CONDITIONAL_PILOT_PARAMETERIZED_EXECUTION_ENVELOPE",
+      "joint_sample": {
+        "spread": "0.00001000",
+        "bid_best_qty": "1144901.00000000",
+        "ask_best_qty": "2330544.00000000",
+        "bid_one_tick_qty": "1386903.00000000",
+        "ask_one_tick_qty": "197019.00000000",
+        "bid_two_level_qty": "2531804.00000000",
+        "ask_two_level_qty": "2527563.00000000",
+        "bid": "1.00010000",
+        "ask": "1.00011000",
+        "update_id": 2537239207,
+        "received_us": 1788817110702832,
+        "ws_delay_offset_adjusted_us": "587657.5",
+        "start_monotonic_ns": 359737546914200,
+        "duration_ns": 301729100
+      },
+      "difficulty_percentile": 50,
+      "latency_sample_quantile": "p50",
+      "latency_tail_evidence": "DESCRIPTIVE_SAMPLE_ONLY; p99 of12 is sample maximum",
+      "fee_evidence": "Official regular10bps perleg counterfactual; NOT proven historical pair fee"
+    }
+  ],
+  "rules": [
+    {
+      "start_us": 1767225600000000,
+      "end_us": 1776142797245631,
+      "rule": {
+        "tick_size": "0.0001",
+        "step_size": "1.00000000",
+        "min_quantity": "1.00000000",
+        "max_quantity": "10000000.00000000",
+        "min_notional": "5.00000000",
+        "max_notional": "9000000.00000000",
+        "min_price": "0.80000000",
+        "max_price": "1.20000000",
+        "evidence_sha256": "c4f2f9fdb1a8876c8cc869cd12963a1433d66eaf90df9fc11a7c3e299c74ffee",
+        "orders_per_window": 100,
+        "window_us": 10000000
+      }
+    },
+    {
+      "start_us": 1776142797245631,
+      "end_us": 1788652799783644,
+      "rule": {
+        "tick_size": "0.00001000",
+        "step_size": "1.00000000",
+        "min_quantity": "1.00000000",
+        "max_quantity": "10000000.00000000",
+        "min_notional": "5.00000000",
+        "max_notional": "9000000.00000000",
+        "min_price": "0.80000000",
+        "max_price": "1.20000000",
+        "evidence_sha256": "c4f2f9fdb1a8876c8cc869cd12963a1433d66eaf90df9fc11a7c3e299c74ffee",
+        "orders_per_window": 100,
+        "window_us": 10000000
+      }
+    }
+  ],
+  "profile_D": {
+    "name": "D_PEG_STRESS",
+    "status": "NOT_CALIBRATED",
+    "verdict": "INCONCLUSIVE_EXECUTION_DATA",
+    "reason": "No observed peg-stress joint regime; cannot invent calibration."
+  },
+  "fee_sensitivities": [
+    {
+      "maker_fee": "0.001",
+      "taker_fee": "0.001",
+      "status": "PRE_REGISTERED_B_FEE10_PROMOTION_ABSENT_NOT_EXECUTED"
+    }
+  ],
+  "assumptions": {
+    "queue": "Max of bid/ask displayed best depth of same observed joint state; not known queue rank.",
+    "latency": "Total signal-to-activation proxy=max(RTT p10/p50/p99 for A/B/C, joint clock-adjusted WS delay). Private components/ACK unknown; p99 of12 requests is descriptive samplemax, not calibrated stress tail.",
+    "depth_refresh": "Time-weighted median state residence as parameterized replenishment cadence; not observed historical refill.",
+    "book": "INFERRED_TRADE_SIDE_BBO: seller-aggressor print proxies bid; buyer-aggressor print proxies ask. Spread rounded to historical tick. Not exact historical BBO.",
+    "fees": "Pair zero-fee eligibility hypothesis; full-span exact rate and account special/tax commissions UNKNOWN.",
+    "filters": "Current quantity/notional/bounds and order throttle PARAMETERIZED over history, not OFFICIAL_HISTORICAL_FACT.",
+    "tick": "Historical canonical observed transition boundary proxy; exact order-filter rollout UNKNOWN; resting orders grandfathered.",
+    "dynamic_filters": "Historical referencePrice unavailable; dynamic filter and execution range unknown, not silently represented as modeled.",
+    "release": "IOC one observed spread below proxy bid; available best-depth budget; adverse market move may exceed theoretical10bps.",
+    "interpretation": "Conditional pilot envelope only, not empirical historical profitability or certification of Binance execution."
+  }
+}

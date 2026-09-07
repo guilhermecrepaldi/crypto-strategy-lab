@@ -1,6 +1,23 @@
 # Crypto Strategy Lab — instruções do repositório
 
-## Autoridade OWNER vigente — 2026-09-07
+## Autoridade OWNER vigente — B10 Binance Reality Gauntlet, 2026-09-07
+
+`docs/microstructure/B10_REALITY_GAUNTLET_OWNER_DIRECTIVE.md` supera as autoridades
+conflitantes abaixo. Único objeto: `B10_FROZEN` / `RRV2_H1_B10_F0`, identity
+`097abdab8225038b091cb721bdd36bedb8a636c94bed1c87120adc0c9e10953a`.
+Protocolo: `docs/microstructure/B10_REALITY_GAUNTLET_PROTOCOL.md`.
+
+- Não executar M011, comparar/otimizar estratégias ou modificar B10 para salvá-lo.
+- Só muda o ambiente de execução, `BINANCE_REALITY_V1`; isso não cria novo Mn.
+- Régua principal deste estudo de execução: FIXED_NOTIONAL_100, operating100 + reserve5,
+  skim2% de lucro realizado líquido positivo; um lote serial e somente USDCUSDT.
+- Pesquisa oficial, coleta pública L2, testes, replays completos condicionados a evidência,
+  autópsia de releases e revisão independente estão autorizados. Preservar B10 original.
+- Queue, latency e regras históricas desconhecidas devem ser explícitas; touch não é fill.
+- Zero acesso a conta, chave privada, Testnet, ordens live ou deploy.
+- Atualizações materiais seguem todos os campos da seção53 da diretiva.
+
+## Autoridade OWNER anterior — preservada como histórico
 
 `docs/microstructure/OWNER_STRATEGY_OVERRIDE.md` supera todas as regras conflitantes abaixo.
 O handoff atual é `docs/microstructure/CURRENT_STRATEGY.md`. Regras históricas deste arquivo

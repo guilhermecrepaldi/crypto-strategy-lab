@@ -998,3 +998,34 @@ New runtime NOT_IMPLEMENTED, no new campaign authorized or started. First future
 the separately registered matched passive control, then M011 center, after explicit execution
 authority and validated/published implementation. No account, Testnet, live, deployment,
 second lot, additional pair or SHADOW migration.
+
+## 2026-09-07 — OWNER B10 Binance Reality Gauntlet pre-execution milestone
+
+The latest OWNER directive supersedes M011 execution. The only object is frozen
+RRV2_H1_B10_F0, identity097abdab8225038b091cb721bdd36bedb8a636c94bed1c87120adc0c9e10953a;
+no new Mn or strategy changes. Official rules, public calibration and execution envelopes
+are documented in B10_REALITY_GAUNTLET_PROTOCOL.md and the Binance execution authority.
+
+Physical reference reconciles3580880 theoretical cycles,3 zero days,156 releases,26h maxhold,
+4h lock>24. Replay/audit/runtime hashes match.613 raw ZIP hashes, checksums and ZIP integrity
+pass; full row parsing is delegated to the replay's raw/cache per-event reconciliation.
+Original B10 sources, runs, checkpoints and M011 preregistration remain preserved.
+
+Public-only pilots collected300s and600s. The second records2951 trades and2841 synchronized
+book samples,97.0% valid-time coverage. No historical L2/accountcommission/privateACK claimed.
+Observed queue-depth proxies and transport samples freeze conditional A/B/C; a fourth run
+uses B with official10bps/leg promotion-absent counterfactual. D is NOT_CALIBRATED, not a
+fabricated adverse book. Draft latency mapping was reviewed and corrected before any replay;
+the unexecuted prior draft is retained in artifacts/binance/profile-drafts.
+
+Implementation reuses frozen selector/release predicates with actual serial inventory and
+fixed100 notional, delayed maker activation, aggressor/volume/queue fills, cancel races,
+partial IOC releases and exact net-profit reserve accounting. Independent review corrected
+partial cost basis, unsold dust settlement, event ordinal, post-exit selection and timers.
+88 focused tests and Ruff passed before publication. JSONL audit is streamed; checkpoint
+prefix hash is preserved on restart. Full economics and independent result audit are pending.
+
+Models actually used: Astra for scientific research, execution review/design and independent
+audit; Luna for bounded physical inventory/audit and mechanical collector work. Main-agent
+review caught and corrected collector raw-trade/time-weighting integration errors before the
+second capture. No LLM per trade, no account, key, Testnet, live order or deployment.
