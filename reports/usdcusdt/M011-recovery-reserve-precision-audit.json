@@ -1,0 +1,30 @@
+{
+  "classification": "TECHNICAL_FIXED_EVENT_PRECISION_AUDIT_NOT_STRATEGY_REPLAY",
+  "status": "V1_FINANCIAL_EXACTNESS_AFFECTED_V2_CORRECTED_BEFORE_EXECUTION",
+  "source_identity_prefix": "8437a909e56a54ea311196227a411abdd",
+  "source_scenario": "RR_S1.00_H1_B2",
+  "source_checkpoint_sha256": "ceabc376d68b2a47e783aad65fea2e477651bee0711e826899926ce98da99152",
+  "events_audited": 622782,
+  "contexts_compared": [28, 128],
+  "counts": {
+    "inexact_settlement_28": 47382,
+    "inexact_settlement_128": 0,
+    "different_cash": 52624,
+    "different_skim": 0,
+    "different_reserve": 0,
+    "affordable_quantity_rounding_difference_same_cash": 0
+  },
+  "first_inexact_timestamp": "2026-07-29T09:21:37.933858Z",
+  "cash_difference_28_minus_128_at_checkpoint": "7.37E-7",
+  "v2_correction": {
+    "financial_decimal_precision": 128,
+    "selector_decimal_semantics": "UNCHANGED_M007_DEFAULT_CONTEXT",
+    "independent_audit_decimal_precision": 128
+  },
+  "limitations": [
+    "The audit holds recorded events, quantities and decision path fixed.",
+    "It does not establish whether Decimal128 would change the old policy path.",
+    "It does not blanket-invalidate M007 or completed skim-zero artifacts.",
+    "The superseding OWNER request independently makes the v1 0/1/5 percent grid inapplicable to v2."
+  ]
+}

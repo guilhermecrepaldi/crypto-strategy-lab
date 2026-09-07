@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from bisect import bisect_left
 from copy import deepcopy
-from decimal import Decimal
+from datetime import UTC, datetime, time
+from decimal import Decimal, localcontext
 from typing import Any
 
 import numpy as np
@@ -21,7 +22,7 @@ D = Decimal
 HOUR = 3600 * 1_000_000 * EVENT_ORDER_SCALE
 
 
-def audit_ledger(
+def _audit_ledger(
     result: SerialReplayResult,
     tape: SerialTape,
     skim_rate: Decimal,
@@ -41,9 +42,14 @@ def audit_ledger(
     series: list[dict[str, Any]] = []
     markers: list[dict[str, Any]] = []
     last_day: str | None = None
+    completed = 0
     by_event = {int(item["event"]): item for item in releases}
     if set(by_event) != {item.exit_event for item in result.release_closures}:
         raise ValueError("RESERVE_RELEASE_LEDGER_MISMATCH")
+    for day, cycles in result.daily_cycles.items():
+        if cycles == 0:
+            event = _datetime_to_micros(datetime.combine(day, time.min, tzinfo=UTC))
+            markers.append({"event": event * EVENT_ORDER_SCALE, "type": "ZERO_CYCLE_DAY"})
 
     def mark(operating: Decimal) -> None:
         nonlocal peak, drawdown, operating_peak, operating_drawdown
@@ -68,6 +74,7 @@ def audit_ledger(
                     "operating_bank": str(residual + quantity * price),
                     "reserve": str(reserve),
                     "total_equity": str(residual + quantity * price + reserve),
+                    "cumulative_cycles": completed,
                 }
             )
             last_day = day
@@ -90,7 +97,6 @@ def audit_ledger(
             markers.append({"event": entry + 24 * HOUR, "type": "CAPITAL_LOCK_START"})
 
     point(start, cash, D(0), D(0), force=True)
-    completed = 0
     pending: list[dict[str, Any]] = []
     for cycle in sorted(
         (*result.cycles, *result.release_closures), key=lambda item: item.exit_event
@@ -196,6 +202,9 @@ def audit_ledger(
         "maximum_drawdown": str(drawdown),
         "operating_maximum_drawdown": str(operating_drawdown),
         "min_reserve_balance": str(reserve_min),
+        "max_reserve_balance": str(
+            max((D(point["reserve"]) for point in series), default=D(5))
+        ),
         "reserve_depletion_events": depletion_count,
         "total_skim": str(total_skim),
         "total_release_loss": str(total_loss),
@@ -209,3 +218,16 @@ def audit_ledger(
             "UTC_DAY_BOUNDARIES_AND_SETTLEMENT_EVENTS; drawdown uses all tape extrema"
         ),
     }
+
+
+def audit_ledger(
+    result: SerialReplayResult,
+    tape: SerialTape,
+    skim_rate: Decimal,
+    expected_reserve: Decimal,
+    releases: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Audit with an independent high-precision money context."""
+    with localcontext() as context:
+        context.prec = 128
+        return _audit_ledger(result, tape, skim_rate, expected_reserve, releases)

@@ -1,0 +1,2263 @@
+{
+  "calendar_day_count": 248,
+  "canonical_calendar_day_count": 248,
+  "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+  "end_exclusive": "2026-09-05T23:59:59.783644+00:00",
+  "hold_count": 344705,
+  "invariants": {
+    "episodes_non_overlapping": true,
+    "episodes_within_cutoff": true,
+    "final_open_episode_censored_at_cutoff": true,
+    "release_decisions_made": false,
+    "thresholds_applied": false
+  },
+  "model_id": "M007",
+  "start": "2026-01-01T00:00:00+00:00",
+  "top_holds": [
+    {
+      "censored": false,
+      "duration_hours": "2670.7074896425091552734375",
+      "entry_event": 7251270483479519232,
+      "entry_timestamp": "2026-02-05T22:15:07.880742+00:00",
+      "episode_id": "cycle_216716",
+      "exit_event": 7290651667838791815,
+      "exit_timestamp": "2026-05-28T04:57:34.843455+00:00",
+      "lock_hours": "2646.7074896425091552734375"
+    },
+    {
+      "censored": true,
+      "duration_hours": "464.9720924669444444444444444",
+      "entry_event": 7319465575427125248,
+      "entry_timestamp": "2026-08-17T15:01:40.250763+00:00",
+      "episode_id": "open_censored",
+      "exit_event": 7326321867913805824,
+      "exit_timestamp": "2026-09-05T23:59:59.783644+00:00",
+      "lock_hours": "440.9720924669444444444444444"
+    },
+    {
+      "censored": false,
+      "duration_hours": "263.2337814572222222222222222",
+      "entry_event": 7242561270068609024,
+      "entry_timestamp": "2026-01-12T07:37:15.075344+00:00",
+      "episode_id": "cycle_021040",
+      "exit_event": 7246442810116464640,
+      "exit_timestamp": "2026-01-23T06:51:16.688590+00:00",
+      "lock_hours": "239.2337814572222222222222222"
+    },
+    {
+      "censored": false,
+      "duration_hours": "259.6959685292013888888888889",
+      "entry_event": 7314503477038067712,
+      "entry_timestamp": "2026-08-03T14:30:50.448747+00:00",
+      "episode_id": "cycle_331849",
+      "exit_event": 7318332849911611904,
+      "exit_timestamp": "2026-08-14T10:12:35.935452+00:00",
+      "lock_hours": "235.6959685292013888888888889"
+    },
+    {
+      "censored": false,
+      "duration_hours": "248.7527567988895670572916667",
+      "entry_event": 7303525250205716480,
+      "entry_timestamp": "2026-07-03T14:00:19.288505+00:00",
+      "episode_id": "cycle_277297",
+      "exit_event": 7307193258856370186,
+      "exit_timestamp": "2026-07-13T22:45:29.212981+00:00",
+      "lock_hours": "224.7527567988895670572916667"
+    },
+    {
+      "censored": false,
+      "duration_hours": "242.4407995694444444444444444",
+      "entry_event": 7238752504624803840,
+      "entry_timestamp": "2026-01-01T13:19:20.699415+00:00",
+      "episode_id": "cycle_005958",
+      "exit_event": 7242327439678935040,
+      "exit_timestamp": "2026-01-11T15:45:47.577865+00:00",
+      "lock_hours": "218.4407995694444444444444444"
+    },
+    {
+      "censored": false,
+      "duration_hours": "161.6652448080711534288194444",
+      "entry_event": 7293186569321996288,
+      "entry_timestamp": "2026-06-04T08:52:07.275878+00:00",
+      "episode_id": "cycle_222539",
+      "exit_event": 7295570420355838182,
+      "exit_timestamp": "2026-06-11T02:32:02.157187+00:00",
+      "lock_hours": "137.6652448080711534288194444"
+    },
+    {
+      "censored": false,
+      "duration_hours": "145.9155418830571153428819444",
+      "entry_event": 7307391831414587392,
+      "entry_timestamp": "2026-07-14T12:13:28.841452+00:00",
+      "episode_id": "cycle_278821",
+      "exit_event": 7309543443628978199,
+      "exit_timestamp": "2026-07-20T14:08:24.792231+00:00",
+      "lock_hours": "121.9155418830571153428819444"
+    },
+    {
+      "censored": false,
+      "duration_hours": "143.2942676627777777777777778",
+      "entry_event": 7296095048587853824,
+      "entry_timestamp": "2026-06-12T14:06:45.221644+00:00",
+      "episode_id": "cycle_224156",
+      "exit_event": 7298208008541102080,
+      "exit_timestamp": "2026-06-18T13:24:24.585230+00:00",
+      "lock_hours": "119.2942676627777777777777778"
+    },
+    {
+      "censored": false,
+      "duration_hours": "92.90271894444444444444444444",
+      "entry_event": 7290832297978765312,
+      "entry_timestamp": "2026-05-28T17:12:33.998722+00:00",
+      "episode_id": "cycle_218601",
+      "exit_event": 7292202204311232512,
+      "exit_timestamp": "2026-06-01T14:06:43.786922+00:00",
+      "lock_hours": "68.90271894444444444444444444"
+    },
+    {
+      "censored": false,
+      "duration_hours": "77.2051965725",
+      "entry_event": 7249449173110554624,
+      "entry_timestamp": "2026-01-31T18:44:12.028944+00:00",
+      "episode_id": "cycle_182454",
+      "exit_event": 7250587610057134080,
+      "exit_timestamp": "2026-02-03T23:56:30.736605+00:00",
+      "lock_hours": "53.2051965725"
+    },
+    {
+      "censored": false,
+      "duration_hours": "66.58291367472222222222222222",
+      "entry_event": 7247232899827552256,
+      "entry_timestamp": "2026-01-25T12:26:09.684461+00:00",
+      "episode_id": "cycle_067324",
+      "exit_event": 7248214704839434240,
+      "exit_timestamp": "2026-01-28T07:01:08.173690+00:00",
+      "lock_hours": "42.58291367472222222222222222"
+    },
+    {
+      "censored": false,
+      "duration_hours": "43.92257409139817979600694444",
+      "entry_event": 7298319301688860672,
+      "entry_timestamp": "2026-06-18T20:57:15.763882+00:00",
+      "episode_id": "cycle_226457",
+      "exit_event": 7298966966397382793,
+      "exit_timestamp": "2026-06-20T16:52:37.030611+00:00",
+      "lock_hours": "19.92257409139817979600694444"
+    },
+    {
+      "censored": false,
+      "duration_hours": "26.0060180241668701171875",
+      "entry_event": 7313054651571531776,
+      "entry_timestamp": "2026-07-30T12:15:33.293831+00:00",
+      "episode_id": "cycle_322574",
+      "exit_event": 7313438125910908931,
+      "exit_timestamp": "2026-07-31T14:15:54.958718+00:00",
+      "lock_hours": "2.0060180241668701171875"
+    },
+    {
+      "censored": false,
+      "duration_hours": "22.27252284475674099392361111",
+      "entry_event": 7302672189799460864,
+      "entry_timestamp": "2026-07-01T04:09:12.587759+00:00",
+      "episode_id": "cycle_274051",
+      "exit_event": 7303000611512320509,
+      "exit_timestamp": "2026-07-02T02:25:33.670000+00:00",
+      "lock_hours": "0"
+    },
+    {
+      "censored": false,
+      "duration_hours": "19.92438984972208658854166667",
+      "entry_event": 7299536919002296322,
+      "entry_timestamp": "2026-06-22T07:31:45.615795+00:00",
+      "episode_id": "cycle_237108",
+      "exit_event": 7299830716085264384,
+      "exit_timestamp": "2026-06-23T03:27:13.419254+00:00",
+      "lock_hours": "0"
+    },
+    {
+      "censored": false,
+      "duration_hours": "16.78739672388888888888888889",
+      "entry_event": 7313712080910696448,
+      "entry_timestamp": "2026-08-01T08:50:38.503588+00:00",
+      "episode_id": "cycle_326673",
+      "exit_event": 7313959621147828224,
+      "exit_timestamp": "2026-08-02T01:37:53.131794+00:00",
+      "lock_hours": "0"
+    },
+    {
+      "censored": false,
+      "duration_hours": "13.48228005388888888888888889",
+      "entry_event": 7310259319424479232,
+      "entry_timestamp": "2026-07-22T14:41:19.156367+00:00",
+      "episode_id": "cycle_288058",
+      "exit_event": 7310458123733241856,
+      "exit_timestamp": "2026-07-23T04:10:15.364561+00:00",
+      "lock_hours": "0"
+    },
+    {
+      "censored": false,
+      "duration_hours": "12.23600740333333333333333333",
+      "entry_event": 7292659009973116928,
+      "entry_timestamp": "2026-06-02T21:05:28.606718+00:00",
+      "episode_id": "cycle_221200",
+      "exit_event": 7292839437243883520,
+      "exit_timestamp": "2026-06-03T09:19:38.233370+00:00",
+      "lock_hours": "0"
+    },
+    {
+      "censored": false,
+      "duration_hours": "11.30020538333333333333333333",
+      "entry_event": 7318489699988111360,
+      "entry_timestamp": "2026-08-14T20:50:49.411160+00:00",
+      "episode_id": "cycle_333668",
+      "exit_event": 7318656328296611840,
+      "exit_timestamp": "2026-08-15T08:08:50.150540+00:00",
+      "lock_hours": "0"
+    }
+  ],
+  "top_zero_day_union": {
+    "top1": {
+      "covered_calendar_day_percent": "44.75806451612903225806451613",
+      "covered_zero_day_percent": "57.51295336787564766839378238",
+      "covered_zero_days": 111,
+      "limit": 1,
+      "lock_hours_explained": "2646.7074896425091552734375",
+      "lock_hours_explained_percent": "57.89838811216600857246494267",
+      "lock_hours_sum": "2646.7074896425091552734375",
+      "lock_percent_of_all_holds": "57.89838811216600857246494267",
+      "selected_positions": [
+        "cycle_216716"
+      ],
+      "zero_days_explained": 111,
+      "zero_days_explained_percent": "57.51295336787564766839378238"
+    },
+    "top10": {
+      "covered_calendar_day_percent": "75.40322580645161290322580645",
+      "covered_zero_day_percent": "96.89119170984455958549222798",
+      "covered_zero_days": 187,
+      "limit": 10,
+      "lock_hours_explained": "4453.580661762561713324652778",
+      "lock_hours_explained_percent": "97.42487322556163124177481182",
+      "lock_hours_sum": "4453.580661762561713324652778",
+      "lock_percent_of_all_holds": "97.42487322556163124177481182",
+      "selected_positions": [
+        "cycle_216716",
+        "open_censored",
+        "cycle_021040",
+        "cycle_331849",
+        "cycle_277297",
+        "cycle_005958",
+        "cycle_222539",
+        "cycle_278821",
+        "cycle_224156",
+        "cycle_218601"
+      ],
+      "zero_days_explained": 187,
+      "zero_days_explained_percent": "96.89119170984455958549222798"
+    },
+    "top20": {
+      "covered_calendar_day_percent": "77.41935483870967741935483871",
+      "covered_zero_day_percent": "99.48186528497409326424870466",
+      "covered_zero_days": 192,
+      "limit": 20,
+      "lock_hours_explained": "4571.297364125348985460069444",
+      "lock_hours_explained_percent": "100",
+      "lock_hours_sum": "4571.297364125348985460069444",
+      "lock_percent_of_all_holds": "100",
+      "selected_positions": [
+        "cycle_216716",
+        "open_censored",
+        "cycle_021040",
+        "cycle_331849",
+        "cycle_277297",
+        "cycle_005958",
+        "cycle_222539",
+        "cycle_278821",
+        "cycle_224156",
+        "cycle_218601",
+        "cycle_182454",
+        "cycle_067324",
+        "cycle_226457",
+        "cycle_322574",
+        "cycle_274051",
+        "cycle_237108",
+        "cycle_326673",
+        "cycle_288058",
+        "cycle_221200",
+        "cycle_333668"
+      ],
+      "zero_days_explained": 192,
+      "zero_days_explained_percent": "99.48186528497409326424870466"
+    },
+    "top3": {
+      "covered_calendar_day_percent": "56.45161290322580645161290323",
+      "covered_zero_day_percent": "72.53886010362694300518134715",
+      "covered_zero_days": 140,
+      "limit": 3,
+      "lock_hours_explained": "3326.913363566675821940104167",
+      "lock_hours_explained_percent": "72.77831868203638781782990066",
+      "lock_hours_sum": "3326.913363566675821940104167",
+      "lock_percent_of_all_holds": "72.77831868203638781782990066",
+      "selected_positions": [
+        "cycle_216716",
+        "open_censored",
+        "cycle_021040"
+      ],
+      "zero_days_explained": 140,
+      "zero_days_explained_percent": "72.53886010362694300518134715"
+    },
+    "top5": {
+      "covered_calendar_day_percent": "64.11290322580645161290322581",
+      "covered_zero_day_percent": "82.38341968911917098445595855",
+      "covered_zero_days": 159,
+      "limit": 5,
+      "lock_hours_explained": "3787.362088894766777886284722",
+      "lock_hours_explained_percent": "82.85092364844270467040798354",
+      "lock_hours_sum": "3787.362088894766777886284722",
+      "lock_percent_of_all_holds": "82.85092364844270467040798354",
+      "selected_positions": [
+        "cycle_216716",
+        "open_censored",
+        "cycle_021040",
+        "cycle_331849",
+        "cycle_277297"
+      ],
+      "zero_days_explained": 159,
+      "zero_days_explained_percent": "82.38341968911917098445595855"
+    }
+  },
+  "zero_cycle_day_percent": "77.82258064516129032258064516",
+  "zero_cycle_day_rows": [
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "242.4407995694444444444444444",
+      "causing_episode_id": "cycle_005958",
+      "causing_lock_hours": "218.4407995694444444444444444",
+      "causing_position": "cycle_005958",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-02"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "242.4407995694444444444444444",
+      "causing_episode_id": "cycle_005958",
+      "causing_lock_hours": "218.4407995694444444444444444",
+      "causing_position": "cycle_005958",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-03"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "242.4407995694444444444444444",
+      "causing_episode_id": "cycle_005958",
+      "causing_lock_hours": "218.4407995694444444444444444",
+      "causing_position": "cycle_005958",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-04"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "242.4407995694444444444444444",
+      "causing_episode_id": "cycle_005958",
+      "causing_lock_hours": "218.4407995694444444444444444",
+      "causing_position": "cycle_005958",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-05"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "242.4407995694444444444444444",
+      "causing_episode_id": "cycle_005958",
+      "causing_lock_hours": "218.4407995694444444444444444",
+      "causing_position": "cycle_005958",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-06"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "242.4407995694444444444444444",
+      "causing_episode_id": "cycle_005958",
+      "causing_lock_hours": "218.4407995694444444444444444",
+      "causing_position": "cycle_005958",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-07"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "242.4407995694444444444444444",
+      "causing_episode_id": "cycle_005958",
+      "causing_lock_hours": "218.4407995694444444444444444",
+      "causing_position": "cycle_005958",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-08"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "242.4407995694444444444444444",
+      "causing_episode_id": "cycle_005958",
+      "causing_lock_hours": "218.4407995694444444444444444",
+      "causing_position": "cycle_005958",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-09"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "242.4407995694444444444444444",
+      "causing_episode_id": "cycle_005958",
+      "causing_lock_hours": "218.4407995694444444444444444",
+      "causing_position": "cycle_005958",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-10"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "263.2337814572222222222222222",
+      "causing_episode_id": "cycle_021040",
+      "causing_lock_hours": "239.2337814572222222222222222",
+      "causing_position": "cycle_021040",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-13"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "263.2337814572222222222222222",
+      "causing_episode_id": "cycle_021040",
+      "causing_lock_hours": "239.2337814572222222222222222",
+      "causing_position": "cycle_021040",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-14"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "263.2337814572222222222222222",
+      "causing_episode_id": "cycle_021040",
+      "causing_lock_hours": "239.2337814572222222222222222",
+      "causing_position": "cycle_021040",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-15"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "263.2337814572222222222222222",
+      "causing_episode_id": "cycle_021040",
+      "causing_lock_hours": "239.2337814572222222222222222",
+      "causing_position": "cycle_021040",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-16"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "263.2337814572222222222222222",
+      "causing_episode_id": "cycle_021040",
+      "causing_lock_hours": "239.2337814572222222222222222",
+      "causing_position": "cycle_021040",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-17"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "263.2337814572222222222222222",
+      "causing_episode_id": "cycle_021040",
+      "causing_lock_hours": "239.2337814572222222222222222",
+      "causing_position": "cycle_021040",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-18"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "263.2337814572222222222222222",
+      "causing_episode_id": "cycle_021040",
+      "causing_lock_hours": "239.2337814572222222222222222",
+      "causing_position": "cycle_021040",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-19"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "263.2337814572222222222222222",
+      "causing_episode_id": "cycle_021040",
+      "causing_lock_hours": "239.2337814572222222222222222",
+      "causing_position": "cycle_021040",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-20"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "263.2337814572222222222222222",
+      "causing_episode_id": "cycle_021040",
+      "causing_lock_hours": "239.2337814572222222222222222",
+      "causing_position": "cycle_021040",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-21"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "263.2337814572222222222222222",
+      "causing_episode_id": "cycle_021040",
+      "causing_lock_hours": "239.2337814572222222222222222",
+      "causing_position": "cycle_021040",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-22"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "66.58291367472222222222222222",
+      "causing_episode_id": "cycle_067324",
+      "causing_lock_hours": "42.58291367472222222222222222",
+      "causing_position": "cycle_067324",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-26"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "66.58291367472222222222222222",
+      "causing_episode_id": "cycle_067324",
+      "causing_lock_hours": "42.58291367472222222222222222",
+      "causing_position": "cycle_067324",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-01-27"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "77.2051965725",
+      "causing_episode_id": "cycle_182454",
+      "causing_lock_hours": "53.2051965725",
+      "causing_position": "cycle_182454",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-01"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "77.2051965725",
+      "causing_episode_id": "cycle_182454",
+      "causing_lock_hours": "53.2051965725",
+      "causing_position": "cycle_182454",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-02"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-06"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-07"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-08"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-09"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-10"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-11"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-12"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-13"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-14"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-15"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-16"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-17"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-18"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-19"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-20"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-21"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-22"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-23"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-24"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-25"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-26"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-27"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-02-28"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-01"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-02"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-03"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-04"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-05"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-06"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-07"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-08"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-09"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-10"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-11"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-12"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-13"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-14"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-15"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-16"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-17"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-18"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-19"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-20"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-21"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-22"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-23"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-24"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-25"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-26"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-27"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-28"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-29"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-30"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-03-31"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-01"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-02"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-03"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-04"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-05"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-06"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-07"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-08"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-09"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-10"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-11"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-12"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-13"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-14"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-15"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-16"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-17"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-18"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-19"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-20"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-21"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-22"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-23"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-24"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-25"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-26"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-27"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-28"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-29"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-04-30"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-01"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-02"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-03"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-04"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-05"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-06"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-07"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-08"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-09"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-10"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-11"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-12"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-13"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-14"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-15"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-16"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-17"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-18"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-19"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-20"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-21"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-22"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-23"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-24"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-25"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-26"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "2670.7074896425091552734375",
+      "causing_episode_id": "cycle_216716",
+      "causing_lock_hours": "2646.7074896425091552734375",
+      "causing_position": "cycle_216716",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-27"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "92.90271894444444444444444444",
+      "causing_episode_id": "cycle_218601",
+      "causing_lock_hours": "68.90271894444444444444444444",
+      "causing_position": "cycle_218601",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-29"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "92.90271894444444444444444444",
+      "causing_episode_id": "cycle_218601",
+      "causing_lock_hours": "68.90271894444444444444444444",
+      "causing_position": "cycle_218601",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-30"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "92.90271894444444444444444444",
+      "causing_episode_id": "cycle_218601",
+      "causing_lock_hours": "68.90271894444444444444444444",
+      "causing_position": "cycle_218601",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-05-31"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "161.6652448080711534288194444",
+      "causing_episode_id": "cycle_222539",
+      "causing_lock_hours": "137.6652448080711534288194444",
+      "causing_position": "cycle_222539",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-06-05"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "161.6652448080711534288194444",
+      "causing_episode_id": "cycle_222539",
+      "causing_lock_hours": "137.6652448080711534288194444",
+      "causing_position": "cycle_222539",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-06-06"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "161.6652448080711534288194444",
+      "causing_episode_id": "cycle_222539",
+      "causing_lock_hours": "137.6652448080711534288194444",
+      "causing_position": "cycle_222539",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-06-07"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "161.6652448080711534288194444",
+      "causing_episode_id": "cycle_222539",
+      "causing_lock_hours": "137.6652448080711534288194444",
+      "causing_position": "cycle_222539",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-06-08"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "161.6652448080711534288194444",
+      "causing_episode_id": "cycle_222539",
+      "causing_lock_hours": "137.6652448080711534288194444",
+      "causing_position": "cycle_222539",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-06-09"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "161.6652448080711534288194444",
+      "causing_episode_id": "cycle_222539",
+      "causing_lock_hours": "137.6652448080711534288194444",
+      "causing_position": "cycle_222539",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-06-10"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "143.2942676627777777777777778",
+      "causing_episode_id": "cycle_224156",
+      "causing_lock_hours": "119.2942676627777777777777778",
+      "causing_position": "cycle_224156",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-06-13"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "143.2942676627777777777777778",
+      "causing_episode_id": "cycle_224156",
+      "causing_lock_hours": "119.2942676627777777777777778",
+      "causing_position": "cycle_224156",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-06-14"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "143.2942676627777777777777778",
+      "causing_episode_id": "cycle_224156",
+      "causing_lock_hours": "119.2942676627777777777777778",
+      "causing_position": "cycle_224156",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-06-15"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "143.2942676627777777777777778",
+      "causing_episode_id": "cycle_224156",
+      "causing_lock_hours": "119.2942676627777777777777778",
+      "causing_position": "cycle_224156",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-06-16"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "143.2942676627777777777777778",
+      "causing_episode_id": "cycle_224156",
+      "causing_lock_hours": "119.2942676627777777777777778",
+      "causing_position": "cycle_224156",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-06-17"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "43.92257409139817979600694444",
+      "causing_episode_id": "cycle_226457",
+      "causing_lock_hours": "19.92257409139817979600694444",
+      "causing_position": "cycle_226457",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-06-19"
+    },
+    {
+      "causing_censored": null,
+      "causing_duration_hours": null,
+      "causing_episode_id": null,
+      "causing_lock_hours": null,
+      "causing_position": "FLAT_NO_COMPLETED_CYCLE",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-06-24"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "248.7527567988895670572916667",
+      "causing_episode_id": "cycle_277297",
+      "causing_lock_hours": "224.7527567988895670572916667",
+      "causing_position": "cycle_277297",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-07-04"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "248.7527567988895670572916667",
+      "causing_episode_id": "cycle_277297",
+      "causing_lock_hours": "224.7527567988895670572916667",
+      "causing_position": "cycle_277297",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-07-05"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "248.7527567988895670572916667",
+      "causing_episode_id": "cycle_277297",
+      "causing_lock_hours": "224.7527567988895670572916667",
+      "causing_position": "cycle_277297",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-07-06"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "248.7527567988895670572916667",
+      "causing_episode_id": "cycle_277297",
+      "causing_lock_hours": "224.7527567988895670572916667",
+      "causing_position": "cycle_277297",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-07-07"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "248.7527567988895670572916667",
+      "causing_episode_id": "cycle_277297",
+      "causing_lock_hours": "224.7527567988895670572916667",
+      "causing_position": "cycle_277297",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-07-08"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "248.7527567988895670572916667",
+      "causing_episode_id": "cycle_277297",
+      "causing_lock_hours": "224.7527567988895670572916667",
+      "causing_position": "cycle_277297",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-07-09"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "248.7527567988895670572916667",
+      "causing_episode_id": "cycle_277297",
+      "causing_lock_hours": "224.7527567988895670572916667",
+      "causing_position": "cycle_277297",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-07-10"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "248.7527567988895670572916667",
+      "causing_episode_id": "cycle_277297",
+      "causing_lock_hours": "224.7527567988895670572916667",
+      "causing_position": "cycle_277297",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-07-11"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "248.7527567988895670572916667",
+      "causing_episode_id": "cycle_277297",
+      "causing_lock_hours": "224.7527567988895670572916667",
+      "causing_position": "cycle_277297",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-07-12"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "145.9155418830571153428819444",
+      "causing_episode_id": "cycle_278821",
+      "causing_lock_hours": "121.9155418830571153428819444",
+      "causing_position": "cycle_278821",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-07-15"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "145.9155418830571153428819444",
+      "causing_episode_id": "cycle_278821",
+      "causing_lock_hours": "121.9155418830571153428819444",
+      "causing_position": "cycle_278821",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-07-16"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "145.9155418830571153428819444",
+      "causing_episode_id": "cycle_278821",
+      "causing_lock_hours": "121.9155418830571153428819444",
+      "causing_position": "cycle_278821",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-07-17"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "145.9155418830571153428819444",
+      "causing_episode_id": "cycle_278821",
+      "causing_lock_hours": "121.9155418830571153428819444",
+      "causing_position": "cycle_278821",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-07-18"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "145.9155418830571153428819444",
+      "causing_episode_id": "cycle_278821",
+      "causing_lock_hours": "121.9155418830571153428819444",
+      "causing_position": "cycle_278821",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-07-19"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "259.6959685292013888888888889",
+      "causing_episode_id": "cycle_331849",
+      "causing_lock_hours": "235.6959685292013888888888889",
+      "causing_position": "cycle_331849",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-04"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "259.6959685292013888888888889",
+      "causing_episode_id": "cycle_331849",
+      "causing_lock_hours": "235.6959685292013888888888889",
+      "causing_position": "cycle_331849",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-05"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "259.6959685292013888888888889",
+      "causing_episode_id": "cycle_331849",
+      "causing_lock_hours": "235.6959685292013888888888889",
+      "causing_position": "cycle_331849",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-06"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "259.6959685292013888888888889",
+      "causing_episode_id": "cycle_331849",
+      "causing_lock_hours": "235.6959685292013888888888889",
+      "causing_position": "cycle_331849",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-07"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "259.6959685292013888888888889",
+      "causing_episode_id": "cycle_331849",
+      "causing_lock_hours": "235.6959685292013888888888889",
+      "causing_position": "cycle_331849",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-08"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "259.6959685292013888888888889",
+      "causing_episode_id": "cycle_331849",
+      "causing_lock_hours": "235.6959685292013888888888889",
+      "causing_position": "cycle_331849",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-09"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "259.6959685292013888888888889",
+      "causing_episode_id": "cycle_331849",
+      "causing_lock_hours": "235.6959685292013888888888889",
+      "causing_position": "cycle_331849",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-10"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "259.6959685292013888888888889",
+      "causing_episode_id": "cycle_331849",
+      "causing_lock_hours": "235.6959685292013888888888889",
+      "causing_position": "cycle_331849",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-11"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "259.6959685292013888888888889",
+      "causing_episode_id": "cycle_331849",
+      "causing_lock_hours": "235.6959685292013888888888889",
+      "causing_position": "cycle_331849",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-12"
+    },
+    {
+      "causing_censored": false,
+      "causing_duration_hours": "259.6959685292013888888888889",
+      "causing_episode_id": "cycle_331849",
+      "causing_lock_hours": "235.6959685292013888888888889",
+      "causing_position": "cycle_331849",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-13"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-18"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-19"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-20"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-21"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-22"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-23"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-24"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-25"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-26"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-27"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-28"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-29"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-30"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-08-31"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-09-01"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-09-02"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-09-03"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-09-04"
+    },
+    {
+      "causing_censored": true,
+      "causing_duration_hours": "464.9720924669444444444444444",
+      "causing_episode_id": "open_censored",
+      "causing_lock_hours": "440.9720924669444444444444444",
+      "causing_position": "open_censored",
+      "classification": "RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "cycles": 0,
+      "date": "2026-09-05"
+    }
+  ],
+  "zero_cycle_days": 193
+}

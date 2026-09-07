@@ -4,9 +4,10 @@ from array import array
 from bisect import bisect_left, bisect_right
 from collections import Counter
 from collections.abc import Callable, Iterable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
-from decimal import ROUND_DOWN, Decimal
+from decimal import ROUND_DOWN, Decimal, localcontext
 from enum import StrEnum
 from typing import Any, Final, Literal
 
@@ -21,6 +22,19 @@ from crypto_strategy_lab.microstructure.data import (
 EVENT_ORDER_SCALE = 4096
 MICROS_PER_SECOND = 1_000_000
 SERIAL_TAPE_QUANTUM = Decimal("0.00001")
+
+
+@contextmanager
+def _ledger_context(precision: int | None) -> Iterator[None]:
+    """Raise precision only for money arithmetic; selector Decimal semantics stay frozen."""
+    if precision is None:
+        yield
+        return
+    if precision < 28:
+        raise ValueError("LEDGER_PRECISION_TOO_LOW")
+    with localcontext() as context:
+        context.prec = precision
+        yield
 USDCUSDT_TICK_CATALOG_SOURCE: Final[Literal["BINANCE_OFFICIAL"]] = "BINANCE_OFFICIAL"
 USDCUSDT_TICK_CHANGE = datetime(2026, 4, 14, 5, tzinfo=UTC)
 USDCUSDT_TICK_SOURCE_URL = (
@@ -1023,6 +1037,7 @@ def _advance(
     release_decision: Callable[[_State, int], bool] | None = None,
     release_schedule: Callable[[int, int | None], int] | None = None,
     cycle_settled: Callable[[_State, SerialCycle], None] | None = None,
+    ledger_precision: int | None = None,
 ) -> None:
     cursor = start
     lookback = _minutes_to_events(config.lookback_minutes)
@@ -1035,18 +1050,21 @@ def _advance(
             entry = int(timeline.low_events[low_index])
             low = _price(state.candidate[0], tape_quantum)
             fee_rate = scenario.maker_fee_per_leg
-            affordable = state.cash / (low * (Decimal("1") + fee_rate))
-            quantity = (affordable / scenario.quantity_step).to_integral_value(
-                rounding=ROUND_DOWN
-            ) * scenario.quantity_step
-            notional = quantity * low
+            with _ledger_context(ledger_precision):
+                affordable = state.cash / (low * (Decimal("1") + fee_rate))
+                quantity = (affordable / scenario.quantity_step).to_integral_value(
+                    rounding=ROUND_DOWN
+                ) * scenario.quantity_step
+                notional = quantity * low
+                buy_fee = notional * fee_rate
+                inventory_cost = notional + buy_fee
             if quantity <= 0 or notional < scenario.minimum_notional:
                 return
-            buy_fee = notional * fee_rate
-            state.cash -= notional + buy_fee
-            state.fees += buy_fee
+            with _ledger_context(ledger_precision):
+                state.cash -= notional + buy_fee
+                state.fees += buy_fee
             state.inventory = quantity
-            state.inventory_cost = notional + buy_fee
+            state.inventory_cost = inventory_cost
             state.entry_event = entry
             if release_decision is not None:
                 state.next_release_event = (
@@ -1083,32 +1101,33 @@ def _advance(
         low_tick, distance = state.candidate
         low = _price(low_tick, tape_quantum)
         high = _price(low_tick + distance, tape_quantum)
-        proceeds = state.inventory * high
-        sell_fee = proceeds * scenario.maker_fee_per_leg
-        state.cash += proceeds - sell_fee
-        state.fees += sell_fee
-        state.realized_profit += proceeds - sell_fee - state.inventory_cost
-        state.cycles.append(
-            SerialCycle(
-                entry_event=state.entry_event,
-                exit_event=exit_event,
-                entry_timestamp=_event_to_datetime(state.entry_event),
-                exit_timestamp=_event_to_datetime(exit_event),
-                low=low,
-                high=high,
-                tick_at_selection=state.candidate_tick_size,
-                quantity=state.inventory,
-                buy_fee_quote=state.inventory_cost - state.inventory * low,
-                sell_fee_quote=sell_fee,
+        with _ledger_context(ledger_precision):
+            proceeds = state.inventory * high
+            sell_fee = proceeds * scenario.maker_fee_per_leg
+            state.cash += proceeds - sell_fee
+            state.fees += sell_fee
+            state.realized_profit += proceeds - sell_fee - state.inventory_cost
+            state.cycles.append(
+                SerialCycle(
+                    entry_event=state.entry_event,
+                    exit_event=exit_event,
+                    entry_timestamp=_event_to_datetime(state.entry_event),
+                    exit_timestamp=_event_to_datetime(exit_event),
+                    low=low,
+                    high=high,
+                    tick_at_selection=state.candidate_tick_size,
+                    quantity=state.inventory,
+                    buy_fee_quote=state.inventory_cost - state.inventory * low,
+                    sell_fee_quote=sell_fee,
+                )
             )
-        )
+            if cycle_settled is not None:
+                cycle_settled(state, state.cycles[-1])
         state.entry_event = None
         state.next_release_event = None
         state.inventory = Decimal("0")
         state.inventory_cost = Decimal("0")
         state.flat_since = exit_event
-        if cycle_settled is not None:
-            cycle_settled(state, state.cycles[-1])
         cursor = exit_event + 1
         if recalculate_after_exit:
             tick_size, eligible_distances, grid_multiple = _selection_grid(
@@ -1208,14 +1227,17 @@ def _result(
     start: datetime,
     end: datetime,
     end_event: int,
+    ledger_precision: int | None = None,
 ) -> SerialReplayResult:
     last_price = _price(tape.last_price_before(end_event), tape.tick_size)
-    marked = state.cash + state.inventory * last_price
-    unrealized = (
-        state.inventory * last_price - state.inventory_cost
-        if state.entry_event is not None
-        else Decimal("0")
-    )
+    with _ledger_context(ledger_precision):
+        marked = state.cash + state.inventory * last_price
+        unrealized = (
+            state.inventory * last_price - state.inventory_cost
+            if state.entry_event is not None
+            else Decimal("0")
+        )
+        return_fraction = marked / scenario.initial_quote - Decimal("1")
     counts = Counter(item.exit_timestamp.date() for item in state.cycles)
     calendar = _interval_dates(start, end)
     daily = {day: counts[day] for day in calendar}
@@ -1272,7 +1294,7 @@ def _result(
         final_inventory=state.inventory,
         last_price=last_price,
         final_marked_equity=marked,
-        return_fraction=marked / scenario.initial_quote - Decimal("1"),
+        return_fraction=return_fraction,
         realized_profit=state.realized_profit,
         unrealized_profit=unrealized,
         total_fees=state.fees,

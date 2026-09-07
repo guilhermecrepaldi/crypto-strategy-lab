@@ -14,6 +14,7 @@ from typing import Any
 
 from crypto_strategy_lab.domain import canonical_hash
 from crypto_strategy_lab.microstructure.recovery_reserve import (
+    LEDGER_PRECISION,
     RecoveryReserveRuntime,
     ReserveConfig,
 )
@@ -149,6 +150,7 @@ def run_scenario(
             release_decision=runtime,
             release_schedule=runtime.schedule,
             cycle_settled=runtime.cycle_settled,
+            ledger_precision=LEDGER_PRECISION,
         )
         if boundary < end_event:
             _decision(
@@ -191,7 +193,16 @@ def run_scenario(
             )
             write_json(checkpoint, {"payload": payload, "sha256": canonical_hash(payload)})
             checkpoint_at = now
-    return _result(state, tape, parent, scenario, start, end, end_event), runtime
+    return _result(
+        state,
+        tape,
+        parent,
+        scenario,
+        start,
+        end,
+        end_event,
+        ledger_precision=LEDGER_PRECISION,
+    ), runtime
 
 
 def write_replay(path: Path, result: SerialReplayResult) -> str:
@@ -215,6 +226,19 @@ def published_sha() -> str:
         raise ValueError("PRE_RUN_CODE_NOT_PUBLISHED")
     if subprocess.check_output(["git", "diff", "--name-only", "HEAD"], text=True).strip():
         raise ValueError("PRE_RUN_TRACKED_CODE_DIRTY")
+    status = subprocess.check_output(
+        ["git", "status", "--porcelain", "--untracked-files=all"], text=True
+    )
+    protected = (
+        "docs/microstructure/M011_RECOVERY_RESERVE_",
+        "docs/microstructure/RECOVERY_RESERVE_PROTOCOL.md",
+        "scripts/study_recovery_reserve.py",
+        "src/crypto_strategy_lab/microstructure/recovery_reserve",
+        "src/crypto_strategy_lab/microstructure/serial_replay.py",
+    )
+    dirty_paths = [line[3:].replace("\\", "/") for line in status.splitlines()]
+    if any(path.startswith(protected) for path in dirty_paths):
+        raise ValueError("PRE_RUN_RECOVERY_SOURCE_NOT_PUBLISHED")
     return head
 
 
@@ -229,6 +253,7 @@ def run_study() -> dict[str, Any]:
     from crypto_strategy_lab.microstructure.recovery_reserve import grid_configs
     from crypto_strategy_lab.microstructure.recovery_reserve_audit import audit_ledger
     from crypto_strategy_lab.microstructure.recovery_reserve_metrics import (
+        monthly_metrics,
         robust_regions,
         summarize_replay,
     )
@@ -258,7 +283,7 @@ def run_study() -> dict[str, Any]:
     ):
         raise ValueError("PARENT_OR_ECONOMIC_SCENARIO_CHANGED")
     identity = {
-        "schema": "recovery-reserve-study-1",
+        "schema": "recovery-reserve-study-2",
         "git_commit_sha": sha,
         "protocol_sha256": file_sha(Path("docs/microstructure/RECOVERY_RESERVE_PROTOCOL.md")),
         "parent_model": "M007",
@@ -272,12 +297,26 @@ def run_study() -> dict[str, Any]:
         "initial_capital": "100",
         "initial_recovery_reserve": "5",
         "total_initial_equity": "105",
+        "reserve_skim_rate": "0.02",
+        "ledger_decimal_precision": LEDGER_PRECISION,
+        "selector_decimal_semantics": "UNCHANGED_M007_DEFAULT_CONTEXT",
         "currency": "USDT",
         "capital_mode": "COMPOUNDING",
         "phase": "DEVELOPMENT",
         "grid": [config.payload() for config in grid_configs()],
         "model_id": "NOT_REGISTERED_PHASE_A",
         "trading_enabled": False,
+        "source_sha256": {
+            path: file_sha(Path(path))
+            for path in (
+                "src/crypto_strategy_lab/microstructure/recovery_reserve.py",
+                "src/crypto_strategy_lab/microstructure/recovery_reserve_audit.py",
+                "src/crypto_strategy_lab/microstructure/recovery_reserve_metrics.py",
+                "src/crypto_strategy_lab/microstructure/recovery_reserve_study.py",
+                "src/crypto_strategy_lab/microstructure/serial_replay.py",
+                "scripts/study_recovery_reserve.py",
+            )
+        },
     }
     root = Path("artifacts/usdcusdt/recovery-reserve") / canonical_hash(identity)
     root.mkdir(parents=True, exist_ok=True)
@@ -289,6 +328,7 @@ def run_study() -> dict[str, Any]:
         baseline_result, D(5), D(5), D(0), [], D(baseline_audit["maximum_drawdown"])
     )
     baseline["integrity_pass"] = True
+    baseline["monthly"] = monthly_metrics(baseline_result, baseline_audit, [], D(0))
     write_json(root / "baseline.json", baseline)
     write_json(root / "baseline-ledger.json", baseline_audit)
     print("RECOVERY_RESERVE_BUILD_SHARED_CANONICAL_TIMELINES", flush=True)
@@ -360,6 +400,15 @@ def run_study() -> dict[str, Any]:
             D(audit["maximum_drawdown"]),
         )
         consumed = D(audit["total_release_loss"])
+        interval_days = D(
+            _datetime_to_micros(result.end_exclusive) - _datetime_to_micros(result.start)
+        ) / D(86_400_000_000)
+        reserve_max = max((D(point["reserve"]) for point in audit["series"]), default=D(5))
+        replenishment_seconds = [
+            D(item["time_to_replenish_seconds"])
+            for item in runtime.replenishments
+            if item["time_to_replenish_seconds"] is not None
+        ]
         holds = [
             D(_datetime_to_micros(c.exit_timestamp) - _datetime_to_micros(c.entry_timestamp))
             / 3_600_000_000
@@ -384,10 +433,30 @@ def run_study() -> dict[str, Any]:
                 "skim_rate": str(config.skim_rate),
                 "lock_hours_threshold": config.lock_hours,
                 "max_loss_bps": str(config.max_loss_bps),
+                "reserve_floor": str(config.reserve_floor),
                 "integrity_pass": True,
                 "elapsed_seconds": time.monotonic() - began,
                 "lock_hours_avoided": baseline["lock_hours"] - row["lock_hours"],
                 "total_release_loss": consumed,
+                "cycles_gained_vs_m007": result.completed_cycles
+                - baseline_result.completed_cycles,
+                "cycle_multiplier": D(result.completed_cycles)
+                / D(baseline_result.completed_cycles),
+                "zero_days_avoided": baseline_result.zero_cycle_days - result.zero_cycle_days,
+                "zero_cycle_day_reduction_percent": D(
+                    baseline_result.zero_cycle_days - result.zero_cycle_days
+                )
+                / D(baseline_result.zero_cycle_days)
+                * D(100),
+                "target_95_classification": (
+                    "TARGET_95_PASS"
+                    if result.zero_cycle_days <= 9
+                    else "TARGET_95_NEAR"
+                    if D(baseline_result.zero_cycle_days - result.zero_cycle_days)
+                    / D(baseline_result.zero_cycle_days)
+                    >= D("0.80")
+                    else "TARGET_95_FAIL"
+                ),
                 "threshold_specific_lock_hours": threshold_lock,
                 "threshold_specific_operating_uptime": 1 - threshold_lock / interval_hours,
                 "additional_profit_attributable_to_released_capital": (
@@ -397,7 +466,70 @@ def run_study() -> dict[str, Any]:
                 "reserve_depletion_events": audit["reserve_depletion_events"],
                 "reserve_empty_fraction": audit["reserve_empty_fraction"],
                 "longest_reserve_empty_hours": audit["longest_reserve_empty_hours"],
+                "reserve_max": reserve_max,
+                "reserve_interventions_per_30_days": D(len(runtime.releases))
+                / interval_days
+                * D(30),
+                "mean_replenishment_time_seconds": (
+                    sum(replenishment_seconds, D(0)) / D(len(replenishment_seconds))
+                    if replenishment_seconds
+                    else None
+                ),
+                "replenishment_right_censored_count": sum(
+                    item["time_to_replenish_seconds"] is None
+                    for item in runtime.replenishments
+                ),
+                "reserve_burn_rate_per_day": consumed / interval_days,
+                "reserve_burn_rate_per_30_days": consumed / interval_days * D(30),
+                "reserve_burn_rate_per_100k_cycles": (
+                    consumed / D(result.completed_cycles) * D(100_000)
+                    if result.completed_cycles
+                    else None
+                ),
+                "reserve_contribution_rate_per_day": runtime.total_skim / interval_days,
+                "reserve_contribution_rate_per_30_days": runtime.total_skim
+                / interval_days
+                * D(30),
+                "reserve_contribution_rate_per_100k_cycles": (
+                    runtime.total_skim / D(result.completed_cycles) * D(100_000)
+                    if result.completed_cycles
+                    else None
+                ),
+                "reserve_funding_minus_consumption": runtime.total_skim - consumed,
+                "reserve_to_operating_ratio": runtime.reserve
+                / row["final_operating_equity"],
+                "zero_days_avoided_per_intervention": (
+                    D(baseline_result.zero_cycle_days - result.zero_cycle_days)
+                    / D(len(runtime.releases))
+                    if runtime.releases
+                    else None
+                ),
+                "lock_hours_avoided_per_intervention": (
+                    (baseline["lock_hours"] - row["lock_hours"])
+                    / D(len(runtime.releases))
+                    if runtime.releases
+                    else None
+                ),
+                "cycles_gained_per_intervention": (
+                    D(result.completed_cycles - baseline_result.completed_cycles)
+                    / D(len(runtime.releases))
+                    if runtime.releases
+                    else None
+                ),
+                "zero_days_avoided_per_reserve_usdt": (
+                    D(baseline_result.zero_cycle_days - result.zero_cycle_days) / consumed
+                    if consumed
+                    else None
+                ),
+                "lock_hours_avoided_per_reserve_usdt": (
+                    (baseline["lock_hours"] - row["lock_hours"]) / consumed
+                    if consumed
+                    else None
+                ),
                 "decision_counts": dict(runtime.evaluations),
+                "monthly": monthly_metrics(
+                    result, audit, runtime.releases, config.skim_rate
+                ),
                 "efficiency_classification": (
                     "RETROSPECTIVE_POLICY_COMPARISON_PROXY_NOT_IDENTIFIED_CAUSAL_EFFECT"
                 ),
@@ -413,7 +545,19 @@ def run_study() -> dict[str, Any]:
                 / consumed
                 if consumed
                 else None,
+                "cycles_gained_per_reserve_usdt": D(
+                    result.completed_cycles - baseline_result.completed_cycles
+                )
+                / consumed
+                if consumed
+                else None,
                 "net_equity_gain_per_reserve_dollar": (
+                    row["total_final_equity"] - baseline["total_final_equity"]
+                )
+                / consumed
+                if consumed
+                else None,
+                "additional_total_equity_per_reserve_usdt_consumed": (
                     row["total_final_equity"] - baseline["total_final_equity"]
                 )
                 / consumed
@@ -444,7 +588,11 @@ def run_study() -> dict[str, Any]:
         rows.append(row)
         write_json(
             root / "progress.json",
-            {"completed": len(rows), "total": 27, "last_scenario": config.scenario_id},
+            {
+                "completed": len(rows),
+                "total": len(grid_configs()),
+                "last_scenario": config.scenario_id,
+            },
         )
         print(
             json.dumps(
@@ -465,17 +613,17 @@ def run_study() -> dict[str, Any]:
         "robustness": robust_regions(rows, baseline),
         "scientific_review": "PENDING_ASTRA",
         "current_champion": "M007",
-        "executable_edge": "UNKNOWN",
+        "executable_edge": "NOT_DEMONSTRATED",
         "VALIDATION_ACCESSED": "NO",
         "LOCKED_TEST_ACCESSED": "NO",
         "TESTNET_ACCESSED": "NO",
         "LIVE_ACCESSED": "NO",
         "ORDERS_SENT": 0,
     }
-    write_json(Path("reports/usdcusdt/recovery-reserve-scenarios.json"), report)
+    write_json(Path("reports/usdcusdt/M011-recovery-reserve-scenarios.json"), report)
     import csv
 
-    csv_path = Path("reports/usdcusdt/recovery-reserve-scenarios.csv")
+    csv_path = Path("reports/usdcusdt/M011-recovery-reserve-scenarios.csv")
     with csv_path.open("w", encoding="utf-8", newline="") as stream:
         columns = [key for key, value in rows[0].items() if not isinstance(value, dict)]
         writer = csv.DictWriter(stream, fieldnames=columns, extrasaction="ignore")

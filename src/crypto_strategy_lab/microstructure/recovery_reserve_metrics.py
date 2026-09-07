@@ -7,13 +7,15 @@ drawdown measurement.
 
 from __future__ import annotations
 
-from decimal import Decimal
+from decimal import ROUND_CEILING, Decimal, localcontext
+from itertools import pairwise
 from typing import Any
 
 from .serial_replay import SerialReplayResult
 
 D = Decimal
 _DAY = D(24)
+_LEDGER_PRECISION = 128
 
 
 def _dec(value: Any) -> Decimal | None:
@@ -66,6 +68,8 @@ def summarize_replay(
             holds.append(max(D(0), open_hours))
     interval = _duration_hours(result.start, result.end_exclusive)
     lock_hours = sum((max(D(0), h - _DAY) for h in holds), D(0))
+    hours_gt1 = sum((max(D(0), h - D(1)) for h in holds), D(0))
+    hours_gt6 = sum((max(D(0), h - D(6)) for h in holds), D(0))
     inventory_hours = sum(holds, D(0))
     uptime = None if interval is None or interval <= 0 else D(1) - lock_hours / interval
     inventory_fraction = None if interval is None or interval <= 0 else inventory_hours / interval
@@ -77,8 +81,26 @@ def summarize_replay(
         after = _dec(row.get("reserve_after"))
         if before is not None and after is not None and before != 0 and after == 0:
             depletion += 1
-    final_operating = result.final_cash + result.final_inventory * result.last_price
-    total_equity = final_operating + reserve_final
+    ordered_holds = sorted(holds)
+
+    def percentile(fraction: Decimal) -> Decimal:
+        if not ordered_holds:
+            return D(0)
+        index = int(
+            (D(len(ordered_holds)) * fraction).to_integral_value(rounding=ROUND_CEILING)
+        )
+        return ordered_holds[max(0, index - 1)]
+
+    release_events = sorted(int(row["event"]) for row in releases if row.get("event") is not None)
+    intervals = [
+        D(right - left) / D(4096 * 1_000_000 * 3600)
+        for left, right in pairwise(release_events)
+    ]
+    with localcontext() as context:
+        context.prec = _LEDGER_PRECISION
+        final_operating = result.final_cash + result.final_inventory * result.last_price
+        total_equity = final_operating + reserve_final
+        total_return = total_equity / D(105) - D(1)
     return {
         "initial_capital": D(100),
         "currency": "USDT",
@@ -90,28 +112,115 @@ def summarize_replay(
         "final_operating_equity": final_operating,
         "final_total_equity": total_equity,
         "total_final_equity": total_equity,
-        "total_return": total_equity / D(105) - D(1),
+        "total_return": total_return,
         "completed_cycles": result.completed_cycles,
         "normal_completed_cycles": result.completed_cycles,
         "release_count": len(releases),
         "zero_cycle_days": result.zero_cycle_days,
+        "active_days": len(result.daily_cycles) - result.zero_cycle_days,
         "lock_hours": lock_hours,
         "hours_gt24h": lock_hours,
+        "hours_position_gt1h": hours_gt1,
+        "hours_position_gt6h": hours_gt6,
+        "hours_position_gt24h": lock_hours,
         "operating_uptime": uptime,
         "inventory_open_fraction": inventory_fraction,
         "max_hold_hours": max(holds, default=D(0)),
+        "max_hold_days": max(holds, default=D(0)) / D(24),
+        "hold_p95_hours": percentile(D("0.95")),
+        "hold_p99_hours": percentile(D("0.99")),
         "reserve_final": reserve_final,
         "minimum_reserve_balance": reserve_min,
         "min_reserve_balance": reserve_min,
         "total_skim": total_skim,
         "reserve_depletion_events": depletion,
         "reserve_dollars_consumed": sum(release_losses, D(0)),
+        "mean_time_between_interventions_hours": (
+            sum(intervals, D(0)) / D(len(intervals)) if intervals else None
+        ),
+        "median_time_between_interventions_hours": (
+            sorted(intervals)[len(intervals) // 2]
+            if len(intervals) % 2 == 1
+            else (
+                sum(sorted(intervals)[len(intervals) // 2 - 1 : len(intervals) // 2 + 1], D(0))
+                / D(2)
+                if intervals
+                else None
+            )
+        ),
         "maximum_drawdown": maximum_drawdown,
         "integrity_pass": None,
     }
 
 
-_AXES = ("skim_rate", "lock_hours_threshold", "max_loss_bps")
+def monthly_metrics(
+    result: SerialReplayResult,
+    audit: dict[str, Any],
+    releases: list[dict[str, Any]],
+    skim_rate: Decimal,
+) -> dict[str, dict[str, Any]]:
+    """Calendar-month diagnostics; never feeds the causal runtime."""
+    months: dict[str, dict[str, Any]] = {}
+    for day, cycles in sorted(result.daily_cycles.items()):
+        key = day.strftime("%Y-%m")
+        row = months.setdefault(
+            key,
+            {
+                "calendar_days": 0,
+                "completed_cycles": 0,
+                "active_days": 0,
+                "zero_cycle_days": 0,
+                "release_count": 0,
+                "release_loss_usdt": D(0),
+                "reserve_contributions": D(0),
+                "first_total_equity": None,
+                "last_total_equity": None,
+            },
+        )
+        row["calendar_days"] += 1
+        row["completed_cycles"] += cycles
+        row["active_days"] += int(cycles > 0)
+        row["zero_cycle_days"] += int(cycles == 0)
+    for cycle in result.cycles:
+        key = cycle.exit_timestamp.strftime("%Y-%m")
+        with localcontext() as context:
+            context.prec = _LEDGER_PRECISION
+            profit = (
+                cycle.quantity * cycle.high
+                - cycle.sell_fee_quote
+                - cycle.quantity * cycle.low
+                - cycle.buy_fee_quote
+            )
+            if key in months and profit > 0:
+                months[key]["reserve_contributions"] += profit * skim_rate
+    for release in releases:
+        key = str(release["timestamp"])[:7]
+        if key in months:
+            months[key]["release_count"] += 1
+            with localcontext() as context:
+                context.prec = _LEDGER_PRECISION
+                months[key]["release_loss_usdt"] += D(str(release["loss_usdt"]))
+    for point in audit.get("series", []):
+        key = str(point["timestamp"])[:7]
+        if key in months:
+            equity = D(str(point["total_equity"]))
+            if months[key]["first_total_equity"] is None:
+                months[key]["first_total_equity"] = equity
+            months[key]["last_total_equity"] = equity
+    for row in months.values():
+        first, last = row["first_total_equity"], row["last_total_equity"]
+        with localcontext() as context:
+            context.prec = _LEDGER_PRECISION
+            row["total_equity_change"] = (
+                last - first if first is not None and last is not None else None
+            )
+            row["reserve_funding_minus_consumption"] = (
+                row["reserve_contributions"] - row["release_loss_usdt"]
+            )
+    return months
+
+
+_AXES = ("lock_hours_threshold", "max_loss_bps", "reserve_floor")
 
 
 def _config(row: dict[str, Any]) -> dict[str, Any]:
@@ -130,13 +239,19 @@ def _gate(row: dict[str, Any], baseline: dict[str, Any]) -> tuple[bool, dict[str
     nl, bl = n("lock_hours"), b("lock_hours")
     nc, bc = n("completed_cycles"), b("completed_cycles")
     nd, bd = n("maximum_drawdown"), b("maximum_drawdown")
-    nr, nde = n("min_reserve_balance"), n("reserve_depletion_events")
+    nr, nde = n("reserve_final"), n("reserve_depletion_events")
+    nz, bz = n("zero_cycle_days"), b("zero_cycle_days")
+    funding, consumed = n("total_skim"), n("reserve_dollars_consumed")
     checks = {
         "total_final_equity": ne is not None and be is not None and ne >= be + D("0.01"),
+        "zero_cycle_days": nz is not None and bz is not None and nz < bz,
         "operating_uptime": nu is not None and bu is not None and nu > bu,
         "lock_hours": nl is not None and bl is not None and nl < bl,
-        "completed_cycles": nc is not None and bc is not None and nc >= bc * D("0.95"),
-        "min_reserve_balance": nr is not None and nr >= D(1),
+        "completed_cycles": nc is not None and bc is not None and nc > bc,
+        "reserve_final": nr is not None and nr >= D(5),
+        "funding_covers_consumption": (
+            funding is not None and consumed is not None and funding >= consumed
+        ),
         "reserve_depletion_events": nde is not None and nde == 0,
         "maximum_drawdown": nd is not None and bd is not None and nd <= bd + D("0.01"),
         "integrity_pass": row.get("integrity_pass") is True,
@@ -148,9 +263,9 @@ def robust_regions(rows: list[dict[str, Any]], baseline: dict[str, Any]) -> dict
     """Apply preregistered gates and immediate-neighbor robustness checks."""
     evaluated: dict[str, tuple[bool, dict[str, bool]]] = {}
     prereg = {
-        "skim_rate": {D("0"), D("0.01"), D("0.05")},
-        "lock_hours_threshold": {D("1"), D("6"), D("24")},
+        "lock_hours_threshold": {D("1"), D("4"), D("12")},
         "max_loss_bps": {D("2"), D("5"), D("10")},
+        "reserve_floor": {D("0"), D("2.5")},
     }
     for row in rows:
         sid = row.get("scenario_id")
@@ -158,14 +273,14 @@ def robust_regions(rows: list[dict[str, Any]], baseline: dict[str, Any]) -> dict
             evaluated[str(sid)] = _gate(row, baseline)
     observed_configs = {tuple(_dec(row.get(axis)) for axis in _AXES) for row in rows}
     expected_configs = {
-        (skim, lock, loss)
-        for skim in prereg["skim_rate"]
+        (lock, loss, floor)
         for lock in prereg["lock_hours_threshold"]
         for loss in prereg["max_loss_bps"]
+        for floor in prereg["reserve_floor"]
     }
     valid_grid = (
-        len(rows) == 27
-        and len({str(r.get("scenario_id")) for r in rows}) == 27
+        len(rows) == 18
+        and len({str(r.get("scenario_id")) for r in rows}) == 18
         and observed_configs == expected_configs
     )
 
@@ -247,26 +362,51 @@ def robust_regions(rows: list[dict[str, Any]], baseline: dict[str, Any]) -> dict
     regions.sort(key=lambda region: region["scenario_ids"])
     baseline_equity = _dec(baseline.get("total_final_equity"))
     baseline_uptime = _dec(baseline.get("operating_uptime"))
+    baseline_zero = _dec(baseline.get("zero_cycle_days"))
+    baseline_cycles = _dec(baseline.get("completed_cycles"))
+    baseline_hold_p99 = _dec(baseline.get("hold_p99_hours"))
 
-    def ranking(center: dict[str, Any]) -> tuple[Decimal, Decimal, Decimal, Decimal, Decimal]:
+    def ranking(center: dict[str, Any]) -> tuple[Decimal, ...]:
         peers = [center["config"], *center["neighbors"]]
         peer_rows = [
             next(r for r in rows if r.get("scenario_id") == p.get("scenario_id")) for p in peers
         ]
-        equity = [_dec(r.get("total_final_equity")) for r in peer_rows]
-        uptime = [_dec(r.get("operating_uptime")) for r in peer_rows]
-        me = min(
-            (x - baseline_equity for x in equity if x is not None and baseline_equity is not None),
-            default=D("-Infinity"),
-        )
-        mu = min(
-            (x - baseline_uptime for x in uptime if x is not None and baseline_uptime is not None),
+        def worst_improvement(key: str, base: Decimal | None, *, inverse: bool = False) -> Decimal:
+            values = [_dec(row.get(key)) for row in peer_rows]
+            if base is None or any(value is None for value in values):
+                return D("-Infinity")
+            parsed = [value for value in values if value is not None]
+            return min(base - value if inverse else value - base for value in parsed)
+
+        zero = worst_improvement("zero_cycle_days", baseline_zero, inverse=True)
+        cycles = worst_improvement("completed_cycles", baseline_cycles)
+        uptime = worst_improvement("operating_uptime", baseline_uptime)
+        equity = worst_improvement("total_final_equity", baseline_equity)
+        hold_tail = worst_improvement("hold_p99_hours", baseline_hold_p99, inverse=True)
+        releases = max((_dec(row.get("release_count")) or D(0) for row in peer_rows), default=D(0))
+        sustainability = min(
+            (
+                (_dec(row.get("total_skim")) or D(0))
+                - (_dec(row.get("reserve_dollars_consumed")) or D(0))
+                for row in peer_rows
+            ),
             default=D("-Infinity"),
         )
         loss = _dec(center["config"].get("max_loss_bps")) or D(0)
         lock = _dec(center["config"].get("lock_hours_threshold")) or D(0)
-        skim = _dec(center["config"].get("skim_rate")) or D(0)
-        return (me, mu, -loss, lock, -skim)
+        floor = _dec(center["config"].get("reserve_floor")) or D(0)
+        return (
+            zero,
+            cycles,
+            uptime,
+            equity,
+            hold_tail,
+            -releases,
+            sustainability,
+            -loss,
+            lock,
+            floor,
+        )
 
     selected = max(qualifying, key=ranking)["config"] if qualifying else None
     return {
@@ -288,4 +428,4 @@ def robust_regions(rows: list[dict[str, Any]], baseline: dict[str, Any]) -> dict
     }
 
 
-__all__ = ["robust_regions", "summarize_replay"]
+__all__ = ["monthly_metrics", "robust_regions", "summarize_replay"]

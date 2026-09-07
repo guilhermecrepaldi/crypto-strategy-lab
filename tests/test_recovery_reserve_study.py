@@ -1,5 +1,6 @@
 import json
 from datetime import UTC, datetime, timedelta
+from decimal import ROUND_DOWN, getcontext, localcontext
 from decimal import Decimal as D
 
 import pytest
@@ -12,6 +13,8 @@ from crypto_strategy_lab.microstructure.serial_replay import (
     SerialScenarioConfig,
     SerialStrategy,
     SerialTape,
+    _advance,
+    _State,
     replay_serial_model,
 )
 
@@ -45,7 +48,7 @@ def fixture():
     return tape, parent, scenario
 
 
-def test_shared_engine_no_release_no_skim_exactly_equals_canonical():
+def test_shared_engine_preserves_cycle_path_and_total_equity_when_no_release():
     tape, parent, scenario = fixture()
     end = START + timedelta(seconds=120)
     reference = replay_serial_model(tape, parent, scenario, start=START, end_exclusive=end)
@@ -54,22 +57,25 @@ def test_shared_engine_no_release_no_skim_exactly_equals_canonical():
         tape.timelines((1,)),
         parent,
         scenario,
-        ReserveConfig(D(0), 24, D(2)),
+        ReserveConfig(D("0.02"), 24, D(2)),
         start=START,
         end=end,
         catalog=None,
     )
-    assert result == reference
-    assert runtime.reserve == 5 and not runtime.releases
-    audit = audit_ledger(result, tape, D(0), runtime.reserve, runtime.releases)
+    assert [(c.entry_event, c.exit_event) for c in result.cycles] == [
+        (c.entry_event, c.exit_event) for c in reference.cycles
+    ]
+    assert result.selection_changes == reference.selection_changes
+    assert runtime.reserve > 5 and not runtime.releases
+    audit = audit_ledger(result, tape, D("0.02"), runtime.reserve, runtime.releases)
     assert audit["integrity_pass"] is True
-    assert D(audit["series"][-1]["total_equity"]) == reference.final_marked_equity + 5
+    assert D(audit["series"][-1]["total_equity"]) == result.final_marked_equity + runtime.reserve
 
 
 def test_restart_same_config_and_segregated_profit(tmp_path):
     tape, parent, scenario = fixture()
     timelines = tape.timelines((1,))
-    config = ReserveConfig(D("0.01"), 1, D(2))
+    config = ReserveConfig(D("0.02"), 1, D(2))
     identity = {"config": config.payload()}
     end = START + timedelta(seconds=120)
     result, runtime = run_scenario(
@@ -117,3 +123,42 @@ def test_restart_same_config_and_segregated_profit(tmp_path):
             checkpoint=tmp_path / "checkpoint.json",
             identity=identity,
         )
+
+
+def test_decimal128_money_path_does_not_leak_into_frozen_selector_context():
+    tape = SerialTape.from_events(
+        [(START, D("1.00001")), (START + timedelta(seconds=1), D("1.00002"))],
+        tick_size=D("0.00001"),
+    )
+    parent = SerialModelConfig(
+        model_id="M007",
+        parent_model_id=None,
+        strategy=SerialStrategy.STATIC,
+        lookback_minutes=1440,
+    )
+    scenario = SerialScenarioConfig(tick_size=tape.tick_size)
+    timelines = tape.timelines((1,))
+    cash = D("10000080666772100723.218139101")
+    state = _State(cash=cash, candidate=(100001, 1), flat_since=int(tape.events[0]))
+    with localcontext() as context:
+        context.prec = 128
+        quantity = (cash / D("1.00001") / scenario.quantity_step).to_integral_value(
+            rounding=ROUND_DOWN
+        ) * scenario.quantity_step
+        expected = cash - quantity * D("1.00001") + quantity * D("1.00002")
+    original_precision = getcontext().prec
+    _advance(
+        state,
+        timelines,
+        parent,
+        scenario,
+        int(tape.events[0]),
+        int(tape.events[1]) + 1,
+        recalculate_after_exit=False,
+        tick_catalog=None,
+        tape_quantum=tape.tick_size,
+        observed_tick_evidence_event=None,
+        ledger_precision=128,
+    )
+    assert state.cash == expected
+    assert getcontext().prec == original_precision

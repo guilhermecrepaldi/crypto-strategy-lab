@@ -1,4 +1,4 @@
-"""Run the frozen 27-scenario historical study, never register/promote a model."""
+"""Run the frozen 18-scenario v2 historical study, never register/promote a model."""
 
 import json
 import os

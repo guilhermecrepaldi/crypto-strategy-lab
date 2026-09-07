@@ -17,7 +17,7 @@ pendente da escolha temporal reportada; seu arquivo de transporte em elaboraçã
 Comandos históricos abaixo não autorizam novas campanhas.
 
 Pesquisa histórica prioritária: **RECOVERY_RESERVE**, 100 USDT operacionais + 5 segregados.
-[Pré-registro](docs/microstructure/RECOVERY_RESERVE_PROTOCOL.md): 27 cenários, comparação com
+[Pré-registro](docs/microstructure/RECOVERY_RESERVE_PROTOCOL.md): 18 cenários v2, skim fixo 2%, comparação com
 M007 + 5 parados e seleção somente mediante região robusta e revisão Astra. Implementação
 em andamento; nenhum resultado ou promoção implícitos. O operador M007 permanece congelado.
 HOLD_RISK_SELECTOR está pausado por mudança de prioridade do OWNER, com protocolo e artifacts

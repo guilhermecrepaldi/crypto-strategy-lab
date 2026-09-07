@@ -41,7 +41,7 @@ def setup():
 def test_real_selector_release_and_midrun_restart(monkeypatch, tmp_path, crash_second):
     tape, parent, scenario, start = setup()
     timelines = tape.timelines((1,))
-    config = ReserveConfig(D("0.01"), 1, D(2))
+    config = ReserveConfig(D("0.02"), 1, D(2))
     kwargs = {"start": start, "end": start + timedelta(seconds=7200), "catalog": None}
     reference, runtime = study.run_scenario(tape, timelines, parent, scenario, config, **kwargs)
     assert len(runtime.releases) == 1

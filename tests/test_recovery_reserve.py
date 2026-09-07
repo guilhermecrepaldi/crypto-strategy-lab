@@ -17,7 +17,7 @@ from crypto_strategy_lab.microstructure.serial_replay import (
 START = datetime(2026, 1, 1, tzinfo=UTC)
 
 
-def runtime(monkeypatch, *, price="0.9999", skim="0.01", loss="10"):
+def runtime(monkeypatch, *, price="0.9999", skim="0.02", loss="10", floor="0"):
     tape = SerialTape.from_events(
         [
             (START, D("1")),
@@ -32,7 +32,18 @@ def runtime(monkeypatch, *, price="0.9999", skim="0.01", loss="10"):
     )
     scenario = SerialScenarioConfig(tick_size=D("0.0001"), quantity_step=D("0.01"))
     instance = rr.RecoveryReserveRuntime(
-        rr.ReserveConfig(D(skim), 1, D(loss)), parent, scenario, tape, {}, None
+        rr.ReserveConfig(D(skim), 1, D(loss), D(floor)), parent, scenario, tape, {}, None
+    )
+    original_timeline, destination_timeline = "original", "destination"
+    instance.timelines = {(10000, 1): original_timeline, (9998, 1): destination_timeline}
+    monkeypatch.setattr(
+        rr,
+        "_activity",
+        lambda timeline, boundary: {
+            "cycles_1h": 0 if timeline == original_timeline else 3,
+            "cycles_4h": 0 if timeline == original_timeline else 3,
+            "cycles_24h": 0 if timeline == original_timeline else 3,
+        },
     )
     monkeypatch.setattr(rr, "_select", lambda *args, **kwargs: (9998, 1))
     monkeypatch.setattr(rr, "_score", lambda *args, **kwargs: D("1"))
@@ -49,12 +60,15 @@ def runtime(monkeypatch, *, price="0.9999", skim="0.01", loss="10"):
 
 def test_grid_and_initial_invariants():
     configs = rr.grid_configs()
-    assert len(configs) == len({c.scenario_id for c in configs}) == 27
-    assert D("0.01") in {c.skim_rate for c in configs}
+    assert len(configs) == len({c.scenario_id for c in configs}) == 18
+    assert {c.skim_rate for c in configs} == {D("0.02")}
+    assert {c.reserve_floor for c in configs} == {D(0), D("2.5")}
     with pytest.raises(ValueError, match="INITIAL_CAPITAL"):
-        rr.ReserveConfig(D(0), 1, D(1), initial_operating=D(105))
+        rr.ReserveConfig(D("0.02"), 1, D(1), initial_operating=D(105))
     with pytest.raises(ValueError, match="INITIAL_RESERVE"):
-        rr.ReserveConfig(D(0), 1, D(1), initial_reserve=D(6))
+        rr.ReserveConfig(D("0.02"), 1, D(1), initial_reserve=D(6))
+    with pytest.raises(ValueError, match="INVALID_RESERVE_CONFIG"):
+        rr.ReserveConfig(D("0.01"), 1, D(1))
 
 
 def test_exact_deficit_restores_bank_and_reconciles_total(monkeypatch):
@@ -93,6 +107,13 @@ def test_insufficient_full_coverage_keeps_and_never_adds_inventory(monkeypatch):
     assert state.inventory == 100 and state.inventory_cost == 100 and state.cash == 0
     assert instance.reserve == D("0.005")
     assert instance.evaluations["INSUFFICIENT_RESERVE"] == 1
+
+
+def test_reserve_floor_keeps_full_coverage_available_but_preserves_ammunition(monkeypatch):
+    instance, state, event = runtime(monkeypatch, floor="5")
+    assert not instance(state, event)
+    assert instance.evaluations["RESERVE_FLOOR"] == 1
+    assert instance.reserve == 5 and state.inventory == 100
 
 
 @pytest.mark.parametrize(
@@ -144,7 +165,7 @@ def cycle(profit):
     )
 
 
-@pytest.mark.parametrize("profit,expected", [("2", "0.02"), ("0", "0"), ("-2", "0")])
+@pytest.mark.parametrize("profit,expected", [("2", "0.04"), ("0", "0"), ("-2", "0")])
 def test_only_positive_realized_profit_skimmed(monkeypatch, profit, expected):
     instance, state, _event = runtime(monkeypatch)
     state.cash = D(100) + D(profit)
@@ -178,16 +199,26 @@ def test_real_selector_ignores_future_cycles_and_same_timestamp_price():
     past = [
         (START, D("0.9998")),
         (START + timedelta(seconds=1), D("0.9999")),
-        (START + timedelta(seconds=2), D("1")),
+        (START + timedelta(seconds=2), D("0.9998")),
+        (START + timedelta(seconds=3), D("0.9999")),
+        (START + timedelta(seconds=4), D("0.9998")),
+        (START + timedelta(seconds=5), D("0.9999")),
+        (START + timedelta(seconds=6), D("1")),
+        (START + timedelta(seconds=7), D("0.9998")),
+        (START + timedelta(seconds=8), D("0.9999")),
+        (START + timedelta(seconds=9), D("0.9998")),
+        (START + timedelta(seconds=10), D("0.9999")),
+        (START + timedelta(seconds=11), D("0.9998")),
+        (START + timedelta(seconds=12), D("0.9999")),
         (START + timedelta(minutes=59), D("0.9999")),
     ]
-    decision = START + timedelta(hours=1, seconds=2)
-    future = [(decision, D("1.0001"))]
-    future += [
+    decision = START + timedelta(hours=1, seconds=6)
+    same_timestamp = [(decision, D("1.0001"))]
+    future = [
         (decision + timedelta(seconds=i + 1), D("1") if i % 2 else D("1.0001")) for i in range(30)
     ]
     snapshots = []
-    for events in (past, past + future):
+    for events in (past + same_timestamp, past + same_timestamp + future):
         tape = SerialTape.from_events(events, tick_size=D("0.0001"))
         parent = SerialModelConfig(
             model_id="M007",
@@ -197,7 +228,7 @@ def test_real_selector_ignores_future_cycles_and_same_timestamp_price():
         )
         scenario = SerialScenarioConfig(tick_size=D("0.0001"), quantity_step=D("0.01"))
         instance = rr.RecoveryReserveRuntime(
-            rr.ReserveConfig(D("0.01"), 1, D(10)),
+            rr.ReserveConfig(D("0.02"), 1, D(10)),
             parent,
             scenario,
             tape,
@@ -207,7 +238,7 @@ def test_real_selector_ignores_future_cycles_and_same_timestamp_price():
         state = _State(
             cash=D(0),
             candidate=(10000, 1),
-            entry_event=int(tape.events[2]),
+            entry_event=int(tape.events[6]),
             inventory=D(100),
             inventory_cost=D(100),
         )

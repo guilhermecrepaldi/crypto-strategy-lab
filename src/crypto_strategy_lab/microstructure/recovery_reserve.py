@@ -3,7 +3,7 @@
 from bisect import bisect_left
 from collections import Counter
 from dataclasses import asdict, dataclass
-from decimal import Decimal
+from decimal import ROUND_DOWN, Decimal, localcontext
 from itertools import product
 from typing import Any
 
@@ -31,6 +31,12 @@ D = Decimal
 HOUR = 3600 * MICROS_PER_SECOND * EVENT_ORDER_SCALE
 INITIAL_OPERATING = D("100")
 INITIAL_RESERVE = D("5")
+ZERO = D("0")
+RESERVE_SKIM_RATE = D("0.02")
+LEDGER_PRECISION = 128
+DESTINATION_MIN_CYCLES_1H = 1
+DESTINATION_MIN_CYCLES_4H = 3
+ORIGINAL_MAX_CYCLES_1H = 0
 
 
 @dataclass(frozen=True)
@@ -38,6 +44,7 @@ class ReserveConfig:
     skim_rate: Decimal
     lock_hours: int
     max_loss_bps: Decimal
+    reserve_floor: Decimal = ZERO
     initial_operating: Decimal = INITIAL_OPERATING
     initial_reserve: Decimal = INITIAL_RESERVE
 
@@ -46,14 +53,19 @@ class ReserveConfig:
             raise ValueError("INITIAL_CAPITAL_INVARIANT_VIOLATION")
         if self.initial_reserve != D("5"):
             raise ValueError("INITIAL_RESERVE_INVARIANT_VIOLATION")
-        if not D(0) <= self.skim_rate <= D(1) or self.lock_hours <= 0:
+        if self.skim_rate != RESERVE_SKIM_RATE or self.lock_hours <= 0:
             raise ValueError("INVALID_RESERVE_CONFIG")
         if not self.max_loss_bps.is_finite() or self.max_loss_bps <= 0:
             raise ValueError("INVALID_RELEASE_LOSS_CAP")
+        if not self.reserve_floor.is_finite() or not D(0) <= self.reserve_floor <= D("5"):
+            raise ValueError("INVALID_RESERVE_FLOOR")
 
     @property
     def scenario_id(self) -> str:
-        return f"RR_S{self.skim_rate * 100:g}_H{self.lock_hours}_B{self.max_loss_bps:g}"
+        return (
+            f"RRV2_H{self.lock_hours}_B{self.max_loss_bps:g}_"
+            f"F{self.reserve_floor:g}"
+        )
 
     def payload(self) -> dict[str, Any]:
         return {
@@ -64,9 +76,33 @@ class ReserveConfig:
 
 def grid_configs() -> tuple[ReserveConfig, ...]:
     return tuple(
-        ReserveConfig(D(skim), hours, D(loss))
-        for skim, hours, loss in product(("0", "0.01", "0.05"), (1, 6, 24), ("2", "5", "10"))
+        ReserveConfig(RESERVE_SKIM_RATE, hours, D(loss), D(floor))
+        for hours, loss, floor in product((1, 4, 12), ("2", "5", "10"), ("0", "2.5"))
     )
+
+
+def _event_count(events: Any, start: int, end: int) -> int:
+    return bisect_left(events, end) - bisect_left(events, start)
+
+
+def _activity(timeline: CandidateTimeline, boundary: int) -> dict[str, Any]:
+    exit_index = bisect_left(timeline.cycle_exits, boundary) - 1
+    last_exit = int(timeline.cycle_exits[exit_index]) if exit_index >= 0 else None
+    return {
+        "cycles_1h": timeline.contained_cycles(boundary - HOUR, boundary),
+        "cycles_4h": timeline.contained_cycles(boundary - 4 * HOUR, boundary),
+        "cycles_24h": timeline.contained_cycles(boundary - 24 * HOUR, boundary),
+        "low_visits_1h": _event_count(timeline.low_events, boundary - HOUR, boundary),
+        "low_visits_4h": _event_count(timeline.low_events, boundary - 4 * HOUR, boundary),
+        "low_visits_24h": _event_count(timeline.low_events, boundary - 24 * HOUR, boundary),
+        "high_visits_1h": _event_count(timeline.high_events, boundary - HOUR, boundary),
+        "high_visits_4h": _event_count(timeline.high_events, boundary - 4 * HOUR, boundary),
+        "high_visits_24h": _event_count(timeline.high_events, boundary - 24 * HOUR, boundary),
+        "last_complete_cycle_event": last_exit,
+        "seconds_since_last_complete_cycle": (
+            str(D(boundary - last_exit) / D(HOUR) * 3600) if last_exit is not None else None
+        ),
+    }
 
 
 class RecoveryReserveRuntime:
@@ -94,24 +130,28 @@ class RecoveryReserveRuntime:
         return entry // EVENT_ORDER_SCALE * EVENT_ORDER_SCALE + self.config.lock_hours * HOUR
 
     def cycle_settled(self, state: _State, cycle: SerialCycle) -> None:
-        profit = (
-            cycle.quantity * cycle.high
-            - cycle.sell_fee_quote
-            - (cycle.quantity * cycle.low + cycle.buy_fee_quote)
-        )
-        skim = max(D(0), profit) * self.config.skim_rate
-        if skim > state.cash:
-            raise ValueError("RESERVE_SKIM_CASH_RECONCILIATION_FAILED")
-        state.cash -= skim
-        self.reserve += skim
-        self.total_skim += skim
+        with localcontext() as context:
+            context.prec = LEDGER_PRECISION
+            profit = (
+                cycle.quantity * cycle.high
+                - cycle.sell_fee_quote
+                - (cycle.quantity * cycle.low + cycle.buy_fee_quote)
+            )
+            skim = max(D(0), profit) * self.config.skim_rate
+            if skim > state.cash:
+                raise ValueError("RESERVE_SKIM_CASH_RECONCILIATION_FAILED")
+            state.cash -= skim
+            self.reserve += skim
+            self.total_skim += skim
         self.cycles_settled += 1
         for target in self.replenishments:
             if target["replenished_event"] is None and self.reserve >= D(target["target_balance"]):
                 target["replenished_event"] = int(cycle.exit_event)
-                target["time_to_replenish_seconds"] = str(
-                    D(cycle.exit_event - target["release_event"]) / D(HOUR) * 3600
-                )
+                with localcontext() as context:
+                    context.prec = LEDGER_PRECISION
+                    target["time_to_replenish_seconds"] = str(
+                        D(cycle.exit_event - target["release_event"]) / D(HOUR) * 3600
+                    )
                 target["cycles_to_replenish"] = self.cycles_settled - target["cycles_at_release"]
 
     def _keep(self, reason: str) -> bool:
@@ -130,18 +170,24 @@ class RecoveryReserveRuntime:
         if index < 0:
             return self._keep("NO_CAUSAL_PRICE")
         price = D(int(self.tape.price_ticks[index])) * self.tape.tick_size
-        proceeds = state.inventory * price
-        fee = proceeds * self.scenario.maker_fee_per_leg
-        net = proceeds - fee
-        target = state.cash + state.inventory_cost
-        deficit = state.inventory_cost - net
+        with localcontext() as context:
+            context.prec = LEDGER_PRECISION
+            proceeds = state.inventory * price
+            fee = proceeds * self.scenario.maker_fee_per_leg
+            net = proceeds - fee
+            target = state.cash + state.inventory_cost
+            deficit = state.inventory_cost - net
         if deficit <= 0:
             return self._keep("NONPOSITIVE_DEFICIT")
-        loss_bps = deficit / target * 10000
+        with localcontext() as context:
+            context.prec = LEDGER_PRECISION
+            loss_bps = deficit / target * 10000
         if loss_bps > self.config.max_loss_bps:
             return self._keep("LOSS_CAP")
         if deficit > self.reserve:
             return self._keep("INSUFFICIENT_RESERVE")
+        if self.reserve - deficit < self.config.reserve_floor:
+            return self._keep("RESERVE_FLOOR")
         tick, distances, multiple = _selection_grid(
             self.parent,
             self.tick_catalog,
@@ -165,6 +211,16 @@ class RecoveryReserveRuntime:
         score = _score(candidate, self.timelines, self.parent, start, boundary)
         if score <= 0:
             return self._keep("NONPOSITIVE_SCORE")
+        destination = self.timelines[candidate]
+        original_timeline = self.timelines[state.candidate]
+        destination_activity = _activity(destination, boundary)
+        original_activity = _activity(original_timeline, boundary)
+        if original_activity["cycles_1h"] > ORIGINAL_MAX_CYCLES_1H:
+            return self._keep("ORIGINAL_RANGE_ACTIVE")
+        if destination_activity["cycles_1h"] < DESTINATION_MIN_CYCLES_1H:
+            return self._keep("DESTINATION_INACTIVE_1H")
+        if destination_activity["cycles_4h"] < DESTINATION_MIN_CYCLES_4H:
+            return self._keep("DESTINATION_INACTIVE_4H")
         # Repeat the causal selection after eligibility; never substitute a future winner.
         selected = _select(
             self.timelines,
@@ -190,7 +246,26 @@ class RecoveryReserveRuntime:
             buy_fee_quote=state.inventory_cost - state.inventory * low,
             sell_fee_quote=fee,
         )
-        cash_after_sale = state.cash + net
+        new_low = D(candidate[0]) * self.tape.tick_size
+        new_high = D(sum(candidate)) * self.tape.tick_size
+        with localcontext() as context:
+            context.prec = LEDGER_PRECISION
+            cash_after_sale = state.cash + net
+            affordable = target / (
+                new_low * (D("1") + self.scenario.maker_fee_per_leg)
+            )
+            recovery_quantity = (
+                affordable / self.scenario.quantity_step
+            ).to_integral_value(rounding=ROUND_DOWN) * self.scenario.quantity_step
+            recovery_cycle_profit = (
+                recovery_quantity * new_high
+                - recovery_quantity * new_high * self.scenario.maker_fee_per_leg
+                - recovery_quantity * new_low
+                - recovery_quantity * new_low * self.scenario.maker_fee_per_leg
+            )
+            recovery_cost_in_cycles = (
+                deficit / recovery_cycle_profit if recovery_cycle_profit > 0 else None
+            )
         record = {
             "event": event,
             "entry_event": int(state.entry_event),
@@ -214,22 +289,31 @@ class RecoveryReserveRuntime:
             "reserve_before": str(self.reserve),
             "reserve_transfer": str(deficit),
             "reserve_after": str(self.reserve - deficit),
+            "reserve_floor": str(self.config.reserve_floor),
             "operating_bank_restored": str(target),
-            "new_low": str(D(candidate[0]) * self.tape.tick_size),
-            "new_high": str(D(sum(candidate)) * self.tape.tick_size),
+            "new_low": str(new_low),
+            "new_high": str(new_high),
             "new_candidate_score": str(score),
+            "original_activity": original_activity,
+            "destination_activity": destination_activity,
+            "recovery_cycle_profit": str(recovery_cycle_profit),
+            "recovery_cost_in_cycles": (
+                str(recovery_cost_in_cycles) if recovery_cost_in_cycles is not None else None
+            ),
             "cycles_at_release": self.cycles_settled,
             "price_class": "THEORETICAL_RELEASE_PRICE_PATH",
             "executable_release_loss": "UNKNOWN",
             "peg_risk_warning": abs(price - D(1)) * 10000 >= 50 or loss_bps >= 50,
         }
-        equity_before_transfer = cash_after_sale + self.reserve
-        self.reserve -= deficit
-        state.cash = cash_after_sale + deficit
-        if state.cash != target or state.cash + self.reserve != equity_before_transfer:
-            raise ValueError("RESERVE_ACCOUNTING_RECONCILIATION_FAILED")
-        state.fees += fee
-        state.realized_profit -= deficit
+        with localcontext() as context:
+            context.prec = LEDGER_PRECISION
+            equity_before_transfer = cash_after_sale + self.reserve
+            self.reserve -= deficit
+            state.cash = cash_after_sale + deficit
+            if state.cash != target or state.cash + self.reserve != equity_before_transfer:
+                raise ValueError("RESERVE_ACCOUNTING_RECONCILIATION_FAILED")
+            state.fees += fee
+            state.realized_profit -= deficit
         state.release_closures.append(closure)
         state.inventory = D(0)
         state.inventory_cost = D(0)
