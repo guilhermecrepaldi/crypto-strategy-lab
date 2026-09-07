@@ -168,6 +168,20 @@ def test_duplicate_rules_and_divergent_hash_are_rejected(tmp_path: Path) -> None
         registry.register(spec(12).model_copy(update={"model_hash": "wrong"}))
 
 
+def test_fixed_notional_forbidden_as_primary_capital_policy():
+    with pytest.raises(ValueError):
+        RunSpec(
+            scenario_hash="scenario",
+            dataset_hash="data",
+            campaign_snapshot_id="snapshot",
+            interval="frozen",
+            code_commit="source",
+            technical_revision="r1",
+            backend=BackendSpec(backend="CPU"),
+            capital_mode="FIXED_NOTIONAL_100",
+        )
+
+
 def test_multiple_scenarios_and_runs_stay_under_one_model(tmp_path: Path) -> None:
     registry = ModelRegistry(tmp_path / "artifacts", tmp_path / "reports")
     registry.register(spec())

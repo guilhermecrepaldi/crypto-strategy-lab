@@ -52,3 +52,19 @@ MAX_LOCK=24h
 RUN_STATUS=NOT_STARTED
 DECISION=Register final compound policy and conservative max-filter capacity rejection before outcome observation. Execution waits for code/tests/independent audit and published source.
 COMMIT=Containing preregistration commit.
+
+## Implementation and preflight — before first economic replay
+
+TYPE=IMPLEMENTATION_VALIDATION
+MODEL_ID=M012
+CAPITAL_MODE=COMPOUNDING
+IMPLEMENTATION=HighUptimeRecoveryReplay over unchanged frozen B10 execution kernel
+TESTS_PASSED=144
+TESTS_FAILED=0
+RUFF=PASS
+INDEPENDENT_PREFLIGHT=PASS_CONDITIONAL_PRE_RUN
+AUDIT_SCOPE=55 independently reviewed focused fixtures; full144 regression set passed separately. No M012 economic run yet. Final raw/ledger audit remains required.
+TEST_SUITE_PASS_IS_STRATEGY_PASS=NO
+DECISION=Publish validated implementation and reviewed source hashes, then start the first OWNER-authorized compound replay without further permission.
+EVIDENCE=reports/usdcusdt/M012-preflight-independent-review.md
+COMMIT=Containing implementation commit.
