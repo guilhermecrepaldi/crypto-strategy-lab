@@ -1,52 +1,38 @@
 # B10 REALITY — CURRENT SCOREBOARD
 
-| Metric | Value |
-| --- | ---: |
-| Profile | A_OBSERVED_BEST_SUPPORTED |
-| Progress | 86.5445% |
-| Simulation date | 2026-08-03T15:07:39.740126+00:00 |
-| Price-path opportunities | 3470174 |
-| Full fill cycles | 2458 |
-| Reality retention | 0.070832% |
-| Net positive cycles | 2458 |
-| Net PnL US$100 | 22.412000 |
-| Reserve final | 4.581038 |
-| Releases | 41 |
-| Zero days | 101 |
-| Max hold | 2411.42 h |
-| Lock hours | 2429.94 h |
-| Drawdown | 1.696157% |
-| Verdict | PENDING |
+STATUS=SUPERSEDED_BY_OWNER_STRATEGY_UPDATE
 
-Percentuais apresentados na tabela; JSON mantém frações exatas. Dias zerados/ativos incluem apenas dias UTC completos; ciclos do dia parcial: 0.
+FIXED_100_RESULT_NOT_OWNER_STRATEGY_RETURN=YES. Valores abaixo são diagnósticos auxiliares; não retorno da estratégia composta.
+
+| Métrica | A concluído antes da ordem | B último checkpoint parcial |
+|---|---|---|
+| simulation_timestamp | 2026-09-05T23:59:59.783643+00:00 | 2026-03-11T10:34:41.185539+00:00 |
+| progress_percent | 100 | 28.000304501378335979512547564936937208757839882859692619473923628794253128332653348712829857102795351858030500793199626158037369 |
+| full_fill_cycles | 2458 | 1320 |
+| net_positive_cycles | 2458 | 1320 |
+| net_pnl_fixed_100 | 22.4120000000000000 | 12.4305000000000 |
+| reserve_final | 4.5810380000000000 | 4.578584000000000 |
+| release_filled | 41 | 30 |
+| zero_cycle_days_so_far | 135 | 2 |
+| max_hold | 3212.2891977941666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666667 | 26.001018515 |
+| lock_hours | 3230.8139710583333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333 | 2.001018515 |
 
 ## What changed since previous checkpoint
 
-Horário simulado anterior: 2026-08-03T15:07:39.740126+00:00.
-full_fill_cycles: 2458 → 2458.
-net_positive_cycles: 2458 → 2458.
-net_pnl_fixed_100: 22.412000 → 22.412000.
-reserve_final: 4.581038 → 4.581038.
-release_filled: 41 → 41.
+A concluiu antes da ordem; B foi interrompido via Ctrl-C no processo específico. C/B_FEE10/D não iniciados. Automação antiga pausada. Checkpoints copiados byte a byte, payloads e prefixos duráveis verificados; nenhum journal truncado. O sufixo bruto do B após o checkpoint continua preservado, não reconciliado.
 
 ## Current interpretation
 
-Sob pressão (under pressure): retenção da posição excede 24h; a produtividade é comparada à referência no mesmo prefixo. Veredito: PENDING; nenhuma promoção. A retenção mede produtividade, não um subconjunto identificado dos ciclos originais.
-PnL líquido realizado 22.412000 exclui marcação do inventário não vendido e transferências internas da reserva.
+B10 é histórico: o OWNER rejeitou os locks prolongados e autorizou M012, com compounding obrigatório,5% funding/target e limite24h. Interrupção não é FAIL. O diagnóstico fixed100 não estima crescimento geométrico.
 
 ## Technical validation
 
-Testes: 98 passaram, 0 falharam. Resultado estratégico: PENDING. TEST_SUITE_PASS != STRATEGY_PASS.
-Auditoria do perfil A_OBSERVED_BEST_SUPPORTED: PASS_PRELIMINARY_DURABLE_PREFIX_ONLY; cobre este checkpoint: False. Amostra: 100 ciclos ordinários e 13 releases do prefixo anterior de A; não aceita o replay completo nem audita outros perfis.
-Checkpoint SHA: `4b1e67daffb05fc721cd159946440e09381cbca49dc7051a5d544b4f6140b0c7`. Código executado: `a91811a853bfc5225ce5a2d13750905b6af74991`.
+Preservação SHA/payload/prefixo e lock exclusivo disponíveis: PASS. Testes B10 anteriores:98 pass,0 fail, sem mudança no kernel. Auditoria independente anterior cobre100 ciclos e13 releases de um prefixo antigo de A, não A completo/B. TEST_SUITE_PASS != STRATEGY_PASS.
 
 ## Known unknowns
 
-Slippage isolado: UNKNOWN; o modelo condicional incorpora custos nos preços. L2/fila/latência históricos e fees da conta não estão certificados. D_PEG_STRESS permanece NOT_CALIBRATED. Dia parcial censurado; checkpoint não comprova saúde atual do processo.
+Sufixo do B posterior ao checkpoint não reconciliado. L2/fees históricos e slippage isolado permanecem não certificados. A completo não recebeu auditoria final.
 
 ## Next action
 
-Continuar replay congelado; publicar checkpoints materiais; auditar perfis concluídos.
-
-Estado na geração: LOCAL_ONLY_UNPUBLISHED. O commit que contém o relatório estabelece sua publicação; HEAD abaixo foi observado antes dela, sem autorreferência.
-HEAD observado: `a91811a853bfc5225ce5a2d13750905b6af74991`.
+Não retomar B10. Registrar, implementar e auditar M012 COMPOUNDING antes da primeira execução autorizada.

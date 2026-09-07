@@ -1,5 +1,24 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER vigente — supersessão B10 / M012, 2026-09-07
+
+`docs/microstructure/HIGH_UPTIME_RECOVERY_OWNER_DIRECTIVE.md` supera as ordens anteriores
+de continuar o gauntlet B10. B10 permanece histórico e reproduzível; a campanha recebe
+SUPERSEDED_BY_OWNER_STRATEGY_UPDATE, não FAIL. A já concluído permanece imutável;
+B parcial preservado; não iniciar/retomar B, C, B_FEE10 ou D. Automação B10 pausada.
+Registry canônico confirmou M001–M011 ocupados; M012 é o sucessor a registrar.
+HIGH_UPTIME_DYNAMIC_RECOVERY: operating100 + reserve5, funding5% de lucro líquido
+positivo, target5% da banca operacional, piso não-zero pré-registrado, limite24h.
+Correção OWNER `docs/microstructure/OWNER_COMPOUNDING_CORRECTION.md`: COMPOUNDING
+obrigatório, sizing CURRENT_AVAILABLE_OPERATING_BANK;100 é somente inicialização.
+95% do lucro líquido positivo reinvestido,5% reserva; sem saques. FIXED100 somente
+AUXILIARY_DIAGNOSTIC_RULER e nunca retorno/projeção da estratégia OWNER.
+Primeiro replay COMPOUNDING reality-style explicitamente autorizado somente
+após pré-registro, revisão Astra, implementação, testes e auditoria. Nenhuma liquidez ou fill
+pode ser inventado para cumprir24h; descumprimento físico é HARD_LOCK_VIOLATION.
+Consultar CURRENT_STATE, journal M012 e pré-registro M012; journal B10 append-only.
+As seções conflitantes abaixo são evidência histórica, não autoridade para reabrir B10.
+
 ## Handoff e placar OWNER — GitHub canônico, 2026-09-07
 
 Ler primeiro `docs/research/CURRENT_STATE.md`, `docs/research/B10_JOURNAL.md`,

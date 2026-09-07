@@ -125,3 +125,33 @@ DECISION=Preserve this past observation separately; never substitute full-histor
 EVIDENCE_PATHS=reports/usdcusdt/B10-A-1128-reconciliation.json; artifacts/binance/b10-reference-prefix/exit-events.json
 COMMIT=Containing publication commit, resolvable from git log
 WHY_UNKNOWN=Exact old ordinal unavailable, but original count before/through timestamp equal1474430, so denominator exact
+
+## 2026-09-07T23:43:54.240050+00:00
+
+TYPE=ERROR
+EVENT=Unpublished archival draft mislabeled full journal hash as durable prefix, omitted derivable metrics and inserted new entry within history. No original runtime artifact changed.
+DECISION=Correct reporting before publication; verify bounded prefix, derive checkpoint economics and preserve original journal as byte prefix.
+
+TYPE=RECOVERY
+EVENT=Durable prefix hash recomputed and matches checkpoint for A and B; metrics derived by canonical checkpoint helper; original history preserved.
+
+TYPE=OWNER_STRATEGY_SUPERSESSION
+LAST_B10_RUN_ID=a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d
+LAST_PROFILE=B_REALISTIC_CONSERVATIVE
+LAST_SIMULATION_TIMESTAMP=2026-03-11T10:34:41.185539+00:00
+LAST_PROGRESS=28.000304501378335979512547564936937208757839882859692619473923628794253128332653348712829857102795351858030500793199626158037369
+LAST_FULL_FILL_CYCLES=1320
+LAST_NET_POSITIVE_CYCLES=1320
+LAST_NET_PNL_FIXED_100=12.4305000000000
+LAST_RESERVE=4.578584000000000
+LAST_RELEASES=30
+LAST_ZERO_DAYS=2
+LAST_MAX_HOLD=26.001018515
+LAST_LOCK_HOURS=2.001018515
+STATUS=SUPERSEDED_BY_OWNER_STRATEGY_UPDATE
+DECISION=B10 Reality stopped because the OWNER requires substantially higher motor uptime and <=24h capital lock.
+AUDIT_STATUS=HASH_BOUND_PRESERVATION_PASS; final economic/raw audit not completed
+FIXED_100_RESULT_NOT_OWNER_STRATEGY_RETURN=YES
+A_STATUS=COMPLETE_BEFORE_OWNER_OVERRIDE; unchanged artifact, not final audit acceptance
+B_SUFFIX=Preserved but uncheckpointed and not reconciled
+COMMIT=Containing publication commit
