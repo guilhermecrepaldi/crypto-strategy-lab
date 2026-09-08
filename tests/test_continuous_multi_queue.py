@@ -52,6 +52,65 @@ def buy(value, q, quantity="1000"):
     value._match_passive(Trade(11, 11, D(1), D(quantity), True), D(quantity))
 
 
+def test_obsolete_buy_stays_flat_after_cancel_ack_across_decisions(monkeypatch):
+    value, _ = replay()
+    q = fund(value, 1, "100")
+    q.submit("BUY", D(1), 0)
+    monkeypatch.setattr(value, "ranked", lambda _: [])
+    start = value.start_us
+    q.book(start - 1, 100, [(D("0.9999"), D(1000))], D("1.0001"))
+    assert q.order.status == "ACTIVE" and q.book_valid
+    value._clock(start)
+    assert q.order is not None and q.order.cancel_us is not None
+    ack = q.order.cancel_us
+    value._clock(ack)
+    assert q.order is not None
+    value._clock(ack + 1)
+    assert q.order is None
+    assert not q.range_eligible
+    assert q.cash == 100 and value.pool == 0
+    value._clock(q.last_cancel_ack_us)
+    assert q.order is None
+    value._clock(q.last_cancel_ack_us + 1)
+    assert q.order is None
+    value._clock(start + 60_000_000)
+    value._clock(start + 120_000_000)
+    assert q.order is None and q.candidate is None
+    assert value.pool == 100
+    assert value.order_sequence == 1
+
+
+def test_cancelled_obsolete_buy_reselects_fresh_range_after_checkpoint(monkeypatch):
+    value, _ = replay()
+    q = fund(value, 1, "100")
+    q.range_eligible = False
+    q.last_cancel_ack_us = value.start_us
+    value.next_decision = value.start_us + 60_000_000
+    restored, _ = replay()
+    restored.restore(json.loads(json.dumps(value.checkpoint())))
+    rows = [{"candidate": (9998, 1), "score": D(1), "c1": 1, "tick": D("0.0001")}]
+    monkeypatch.setattr(ContinuousMultiQueueReplay, "ranked", lambda self, _: rows)
+    for run in (value, restored):
+        run._submit_next(run.start_us)
+        assert run.queues[0].order is None
+        run._submit_next(run.start_us + 1)
+        assert run.queues[0].order is None
+        run._clock(run.next_decision)
+        assert run.queues[0].candidate == (9998, 1)
+        assert run.queues[0].order.price == D("0.9998")
+    assert value.checkpoint() == restored.checkpoint()
+
+
+def test_ineligible_range_does_not_block_existing_inventory_exit():
+    value, _ = replay()
+    q = fund(value, 1, "100")
+    buy(value, q)
+    assert q.buy_complete and q.order is None
+    q.range_eligible = False
+    value._submit_next(12)
+    assert q.order is not None and q.order.side == "SELL"
+
+
 def test_initial_100_operating_10_reserve_no_forced_fourth_queue():
     value, trades = replay()
     value.step(trades[0])

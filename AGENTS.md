@@ -1,5 +1,22 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER vigente — SEMANA A SEMANA, 2026-09-07
+
+O OWNER substituiu janeiro inteiro e TWO_STAGE por uma primeira semana somente:
+2026-01-01T00:00:00Z inclusive até 2026-01-08T00:00:00Z exclusive.
+Consultar `docs/microstructure/WEEKLY_REPLAY_OWNER_DIRECTIVE.md`.
+Meta a testar: 1.000 ciclos operacionais completos e líquidos positivos por dia.
+Cada extensão de sete dias exige aprovação explícita e específica do OWNER,
+mesmo com métricas positivas e auditoria aprovada. Nenhuma extensão automática.
+Preservar banca composta, reserva, posições, ordens, filas e timers entre semanas;
+não resetar capital, forçar fills/releases nem otimizar parâmetros após resultados.
+M013 está parado por bug técnico confirmado de reenvio de BUY obsoleta; seus
+artifacts são evidência preservada, não resultado válido da estratégia corrigida.
+Não retomar M013 nem usar o antigo runner de cinco meses para a nova semana.
+A correção e o protocolo semanal exigem identidade, fonte publicada e revisão
+vinculadas antes do novo replay. Preparação não significa semana executada.
+Esta seção supera todas as autorizações temporais/automáticas conflitantes abaixo.
+
 ## Autoridade OWNER vigente — TWO_STAGE, 2026-09-07
 
 `docs/microstructure/TWO_STAGE_REPLAY_OWNER_DIRECTIVE.md` limita o primeiro replay

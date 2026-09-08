@@ -773,6 +773,10 @@ class ContinuousMultiQueueReplay:
                     continue
                 low, dist = q.candidate
                 if q.entry_us is None:
+                    # A canceled obsolete zero-fill entry must remain flat until
+                    # the next causal allocation. Existing inventory still exits.
+                    if not q.range_eligible:
+                        continue
                     q.submit("BUY", D(low) * self.runtime.tape.tick_size, timestamp)
                 elif q.buy_complete:
                     q.submit("SELL", D(low + dist) * self.runtime.tape.tick_size, timestamp)

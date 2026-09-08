@@ -16,6 +16,17 @@ def design():
     return json.loads(runner.SPEC.read_text(encoding="utf-8"))
 
 
+@pytest.mark.parametrize("mode", ["prepare", "run", "extend"])
+def test_retired_m013_cannot_prepare_run_or_extend_before_touching_data(tmp_path, mode):
+    target = tmp_path / "untouched"
+    with pytest.raises(ValueError, match="M013_RETIRED_TECHNICAL"):
+        if mode == "prepare":
+            runner.prepare_only(target)
+        else:
+            runner.run(target, extend=mode == "extend")
+    assert not target.exists()
+
+
 def score(**updates):
     result = {
         "RUN_STATUS": "COMPLETE",

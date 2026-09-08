@@ -5758,6 +5758,16 @@
         "reason": "OWNER authorized frozen five-month Stage 1 after independent preflight review",
         "to": "RUNNING"
       }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-08T01:25:48.490129+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M013",
+        "reason": "Confirmed obsolete zero-fill BUY resubmission before reselection; execution source e6ef491c1c84cbaf534ea37e83c9150583bc13a3. Last durable January checkpoint f775772f15e9cd8fa9f2de37479025f911e43f542f38be2957da42fa5dc9feb9 preserved. Economic verdict INCONCLUSIVE_TECHNICAL. OWNER superseded horizon with separately approved weekly blocks; no M013 resume.",
+        "to": "INVALIDATED_TECHNICAL"
+      }
     }
   ],
   "models": [
@@ -6972,7 +6982,7 @@
       "model_id": "M013",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "RUNNING"
+      "status": "INVALIDATED_TECHNICAL"
     }
   ],
   "pair": "USDCUSDT",

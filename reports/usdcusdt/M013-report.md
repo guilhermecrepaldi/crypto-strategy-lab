@@ -1,3 +1,26 @@
+## Correção técnica e autoridade semanal — 2026-09-07
+
+M013: **INVALIDATED_TECHNICAL / STOPPED**. O status RUNNING nos registros anteriores
+é histórico. Após cancelar BUY zero-fill inelegível, o motor podia reenviar a mesma
+faixa antes da reseleção. Isso compromete a interpretação econômica do replay.
+Nenhuma perda/fill foi reescrita. Originais e prefixos permanecem preservados;
+ver [manifest de preservação](../../reports/usdcusdt/M013-technical-stop.json).
+
+Último fechamento físico preservado (janeiro, afetado): **63 ciclos ordinários
+positivos + 1 release**, 24 dias sem ciclo, banca100.357840 USDT,
+reserva10.012160 USDT, patrimônio110.370000 USDT. Contador bruto64 inclui o release.
+Estes valores não são resultado de uma primeira semana corrigida.
+
+OWNER: primeiro bloco somente1–7janeiro UTC; qualquer semana seguinte depende
+de aprovação humana específica, mesmo se positiva. Sem reset de banca/reserva/estado.
+Correção mínima na canônica revisada por GPT-6 Astra:81 testes independentes
+passaram; TEST_SUITE_PASS != STRATEGY_PASS. O novo replay semanal não foi executado.
+Fonte original M013 e revisão prévia preservadas no Git; nenhuma promoção de modelo.
+
+---
+
+## Relatório anterior preservado (não é o estado atual)
+
 # M013 CONTINUOUS MULTI-QUEUE — STAGE_1
 
 ## Quantidade de ciclos

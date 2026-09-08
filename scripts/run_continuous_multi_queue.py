@@ -309,6 +309,8 @@ def runtime_for(tape):
 
 def prepare_only(output: Path):
     """Data preparation is not an economic run and cannot open the Stage 2 gate."""
+    if MODEL_ID == "M013":
+        raise ValueError("M013_RETIRED_TECHNICAL; WEEKLY_OWNER_GATED_REPLAY_REQUIRED")
     from crypto_strategy_lab.microstructure.data import HistoryManifest
     from crypto_strategy_lab.ml.model_registry import ModelRegistry
 
@@ -344,6 +346,8 @@ def prepare_only(output: Path):
 
 
 def run(output: Path, *, extend=False):
+    if MODEL_ID == "M013":
+        raise ValueError("M013_RETIRED_TECHNICAL; WEEKLY_OWNER_GATED_REPLAY_REQUIRED")
     from crypto_strategy_lab.microstructure.b10_reality import (
         BookEnvelope,
         ExecutionProfile,
