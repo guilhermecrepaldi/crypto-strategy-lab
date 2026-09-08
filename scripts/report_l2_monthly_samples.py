@@ -1,4 +1,4 @@
-"""Report independent monthly L2 experiments without inventing missing outcomes."""
+"""Owner scoreboard for the single, explicit consecutive synthetic L2 experiment."""
 
 from __future__ import annotations
 
@@ -6,276 +6,278 @@ import argparse
 import hashlib
 import json
 from collections import Counter
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 from statistics import median
 
 ENVELOPES = ("CONSERVATIVE_QUEUE", "PRICE_PRIORITY")
+SYNTHETIC_SOURCE_DATES = (
+    "2025-01-01",
+    "2025-02-01",
+    "2025-03-01",
+    "2025-04-01",
+    "2025-06-01",
+    "2025-08-01",
+    "2026-01-01",
+    "2026-02-01",
+    "2026-03-01",
+    "2026-04-01",
+    "2026-05-01",
+    "2026-07-01",
+)
+SYNTHETIC_STATE = "SYNTHETIC_CONSECUTIVE_12D"
 MODEL_HASH = "4231670b19b1ca5c2b5032b1476b83b3182d1463750ea944da5efb867d81a8fa"
-METRICS = [
+DAILY_METRICS = (
+    "OPERATING_START",
+    "RESERVE_START",
     "OPERATING_FINAL",
     "RESERVE_FINAL",
     "TOTAL_EQUITY_FINAL",
-    "NET_PNL",
-    "ORDINARY_CYCLES",
-    "NET_POSITIVE_CYCLES",
-    "CYCLES_PER_HOUR",
-    "FULL_STOP_HOURS",
+    "DAILY_NET_PNL",
+    "CUMULATIVE_NET_PNL",
+    "DAILY_NET_POSITIVE_CYCLES",
+    "CUMULATIVE_NET_POSITIVE_CYCLES",
+    "MAX_HOLD_HOURS",
     "MOTOR_UPTIME",
-    "CAPITAL_WEIGHTED_UPTIME",
-    "ZERO_CYCLE_DAY",
-    "BUY_ORDERS",
-    "BUY_FULL",
-    "BUY_PARTIAL",
-    "BUY_ZERO_FILL",
-    "SELL_FULL",
-    "SELL_PARTIAL",
-    "SELL_ZERO_FILL",
-    "RELEASES",
-    "RELEASE_LOSS",
-    "MAX_HOLD",
-    "HARD_LOCK_VIOLATIONS",
-    "DISPLAYED_QUEUE_P50",
-    "DISPLAYED_QUEUE_P90",
-    "DISPLAYED_QUEUE_P99",
-    "DEPTH_BEST_P50",
-    "DEPTH_BEST_P90",
-    "SPREAD_P50",
-    "SPREAD_P90",
-    "CAPACITY_PRESSURE",
-    "OLD_PROXY_TO_OBSERVED_MEDIAN",
-    "OLD_PROXY_ASSESSMENT",
-]
+    "OPEN_POSITION",
+)
 
 
 def candidates():
     return [
-        date(year, month, 1).isoformat()
+        f"{year}-{month:02d}-01"
         for year in (2025, 2026)
         for month in range(1, 13 if year == 2025 else 10)
     ]
 
 
 def file_hash(path):
-    with path.open("rb") as source:
-        return hashlib.file_digest(source, "sha256").hexdigest()
+    with path.open("rb") as stream:
+        return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
-def quantile(values, numerator):
-    if not values:
-        return None
+def quantile(values, percent):
     ordered = sorted(values)
-    return ordered[max(0, (len(ordered) * numerator + 99) // 100 - 1)]
+    return ordered[max(0, (len(ordered) * percent + 99) // 100 - 1)] if ordered else None
 
 
-def aggregate(rows):
-    completed = [
-        row
-        for row in rows
-        if row["RUN_STATUS"] == "COMPLETE" and row.get("AUDIT_STATUS") == "PASS_CONDITIONAL"
-    ]
-    cycles = [int(row["NET_POSITIVE_CYCLES"]) for row in completed]
-
-    def middle(key):
-        values = [Decimal(str(row[key])) for row in completed if row.get(key) is not None]
-        return str(median(values)) if values else None
-
-    best = (
-        min(completed, key=lambda row: (-int(row["NET_POSITIVE_CYCLES"]), row["DATE"]))
-        if completed
-        else None
-    )
-    worst = (
-        min(completed, key=lambda row: (int(row["NET_POSITIVE_CYCLES"]), row["DATE"]))
-        if completed
-        else None
-    )
+def aggregate(rows, terminal):
+    if not terminal or terminal.get("AUDIT_STATUS") != "PASS_CONDITIONAL":
+        return {"AUDIT_STATUS": "AUDIT_PENDING", "AUDITED_DAYS": 0}
+    if len(rows) != 12 or any(row["DAILY_NET_POSITIVE_CYCLES"] is None for row in rows):
+        raise ValueError("INCOMPLETE_TERMINAL_DAILY_REPORT")
+    final = Decimal(rows[-1]["TOTAL_EQUITY_FINAL"])
+    if final != Decimal(terminal["TOTAL_EQUITY_FINAL"]):
+        raise ValueError("TERMINAL_DAILY_EQUITY_MISMATCH")
+    cycles = [int(row["DAILY_NET_POSITIVE_CYCLES"]) for row in rows]
+    best = min(rows, key=lambda row: (-row["DAILY_NET_POSITIVE_CYCLES"], row["LOGICAL_DAY"]))
+    worst = min(rows, key=lambda row: (row["DAILY_NET_POSITIVE_CYCLES"], row["LOGICAL_DAY"]))
     return {
-        "STATISTIC_CLASS": "CROSS_SECTIONAL_INDEPENDENT_DAY_STATISTIC",
-        "TOTAL_INDEPENDENT_DAYS": len(rows),
-        "VALID_L2_DAYS": sum(row["L2_VALID"] is True for row in rows),
-        "AUDITED_COMPLETED_DAYS": len(completed),
-        "MEDIAN_CYCLES_PER_DAY": median(cycles) if cycles else None,
-        "P10_CYCLES_PER_DAY": quantile(cycles, 10),
-        "P90_CYCLES_PER_DAY": quantile(cycles, 90),
-        "MIN_CYCLES_DAY": min(cycles) if cycles else None,
-        "MAX_CYCLES_DAY": max(cycles) if cycles else None,
+        "STATISTIC_CLASS": "DEPENDENT_DAYS_OF_SYNTHETIC_STRESS_PATH",
+        "AUDIT_STATUS": "PASS_CONDITIONAL",
+        "AUDITED_DAYS": 12,
+        "TOTAL_CYCLES": sum(cycles),
+        "MEDIAN_CYCLES": median(cycles),
+        "P10_CYCLES": quantile(cycles, 10),
+        "P90_CYCLES": quantile(cycles, 90),
+        "MIN_CYCLES": min(cycles),
+        "MAX_CYCLES": max(cycles),
         "DAYS_GE500": sum(value >= 500 for value in cycles),
         "DAYS_GE2000": sum(value >= 2000 for value in cycles),
-        "DAYS_WITH_ZERO_CYCLES": cycles.count(0),
-        "MEDIAN_MOTOR_UPTIME": middle("MOTOR_UPTIME"),
-        "MEDIAN_CAPITAL_WEIGHTED_UPTIME": middle("CAPITAL_WEIGHTED_UPTIME"),
-        "MEDIAN_NET_RETURN": middle("DAILY_RETURN"),
-        "MEDIAN_MAX_HOLD": middle("MAX_HOLD"),
-        "MEDIAN_QUEUE": middle("DISPLAYED_QUEUE_P50"),
-        "HARD_LOCK_VIOLATION_DAYS": sum(
-            int(row.get("HARD_LOCK_VIOLATIONS") or 0) > 0 for row in completed
-        ),
-        "BEST_DAY": best["DATE"] if best else None,
-        "WORST_DAY": worst["DATE"] if worst else None,
+        "ZERO_CYCLE_DAYS": cycles.count(0),
+        "BEST_DAY": best["LOGICAL_DAY"],
+        "WORST_DAY": worst["LOGICAL_DAY"],
+        "FINAL_EQUITY": str(final),
+        "SYNTHETIC_STRESS_RETURN": str(final / Decimal(110) - 1),
     }
+
+
+def read_envelope(results_root, envelope):
+    root = results_root / SYNTHETIC_STATE / envelope
+    terminal_path = root / "summary.json"
+    terminal = json.loads(terminal_path.read_bytes()) if terminal_path.exists() else None
+    if terminal:
+        if (
+            terminal.get("MODEL_HASH") != MODEL_HASH
+            or terminal.get("ENVELOPE") != envelope
+            or terminal.get("RUN_STATUS") != "COMPLETE"
+            or [item["source_date"] for item in terminal.get("source_day_mapping", [])]
+            != list(SYNTHETIC_SOURCE_DATES)
+        ):
+            raise ValueError("TERMINAL_IDENTITY_MISMATCH")
+        if file_hash(root / "all-fill-audit.json") != terminal.get("AUDIT_SHA256"):
+            raise ValueError("TERMINAL_AUDIT_BINDING_MISMATCH")
+    rows = []
+    for number, day in enumerate(SYNTHETIC_SOURCE_DATES, 1):
+        row = dict.fromkeys(DAILY_METRICS)
+        row.update(
+            LOGICAL_DAY=number,
+            SOURCE_DATE=day,
+            ENVELOPE=envelope,
+            RUN_STATUS="NOT_STARTED",
+            VERDICT="PENDING",
+            AUDIT_STATUS="AUDIT_PENDING",
+        )
+        if number == 1:
+            row.update(OPERATING_START="100", RESERVE_START="10")
+        path = root / "daily" / f"{number:02d}.json"
+        if path.exists():
+            observed = json.loads(path.read_bytes())
+            if any(
+                observed.get(key) != row[key] for key in ("LOGICAL_DAY", "SOURCE_DATE", "ENVELOPE")
+            ):
+                raise ValueError("SYNTHETIC_IDENTITY_MISMATCH")
+            if number > 1 and rows[-1]["OPERATING_FINAL"] is None:
+                raise ValueError("DAILY_SEQUENCE_HAS_HOLE")
+            if number > 1 and (
+                Decimal(observed["OPERATING_START"]) != Decimal(rows[-1]["OPERATING_FINAL"])
+                or Decimal(observed["RESERVE_START"]) != Decimal(rows[-1]["RESERVE_FINAL"])
+            ):
+                raise ValueError("DAILY_CAPITAL_CARRY_MISMATCH")
+            row.update(observed)
+            row["FILE_SHA256"] = file_hash(path)
+            row["AUDIT_STATUS"] = "AUDIT_PENDING"
+            if terminal and terminal.get("AUDIT_STATUS") == "PASS_CONDITIONAL":
+                row.update(
+                    AUDIT_STATUS="PASS_CONDITIONAL",
+                    RUN_STATUS="COMPLETE",
+                    VERDICT=terminal.get("VERDICT", "COMPLETE_CONDITIONAL_SYNTHETIC_STRESS"),
+                )
+        rows.append(row)
+    progress_path, failure_path = root / "progress.json", root / "failure.json"
+    progress = json.loads(progress_path.read_bytes()) if progress_path.exists() else None
+    failure = json.loads(failure_path.read_bytes()) if failure_path.exists() else None
+    return rows, aggregate(rows, terminal), terminal, progress, failure
 
 
 def build(manifest, validation=None, *, results_root):
     expected = candidates()
-    entries = {item["date"]: item for item in manifest["dates"]}
+    entries = {row["date"]: row for row in manifest["dates"]}
     if len(manifest["dates"]) != 21 or set(entries) != set(expected):
         raise ValueError("EXACT_21_CANDIDATES_REQUIRED")
-    checks = {item["date"]: item for item in (validation or {}).get("days", [])}
-    rows = []
+    checks = {row["date"]: row for row in (validation or {}).get("days", [])}
+    inventory = []
     for day in expected:
         source, check = entries[day], checks.get(day, {})
-        for envelope in ENVELOPES:
-            row = {key: None for key in METRICS}
-            row.update(
-                {
-                    "DATE": day,
-                    "ENVELOPE": envelope,
-                    "YEAR_ROLE": "CALIBRATION" if day.startswith("2025") else "EVALUATION",
-                    "STRATEGY_MODEL_USED": "M015",
-                    "MODEL_HASH": MODEL_HASH,
-                    "L2_VALID": check.get("L2_DAY_VALID"),
-                    "L2_ROWS": source.get("rows"),
-                    "TRADES": check.get("TRADES"),
-                    "OPERATING_START": "100",
-                    "RESERVE_START": "10",
-                    "REPLAY_MODE": "INDEPENDENT_24H",
-                    "CAPITAL_MODE": "COMPOUNDING_WITHIN_DAY",
-                    "RUN_STATUS": "NOT_STARTED",
-                    "AUDIT_STATUS": "NOT_RUN",
-                    "VERDICT": "PENDING_DATA_VALIDATION",
-                    "UNAVAILABLE_UNTIL": "VALIDATED_NATIVE_DATA_AND_REPLAY",
-                }
-            )
-            if source["status"] != "AVAILABLE" or row["L2_VALID"] is False:
-                row.update(RUN_STATUS="DATA_BLOCKED", VERDICT="INCONCLUSIVE_DATA")
-            result_file = results_root / day / envelope / "summary.json"
-            if result_file.exists():
-                result = json.loads(result_file.read_bytes())
-                for key in ("DATE", "ENVELOPE", "STRATEGY_MODEL_USED", "MODEL_HASH"):
-                    if result.get(key) != row[key]:
-                        raise ValueError(f"RESULT_IDENTITY_MISMATCH:{day}:{key}")
-                if (
-                    row["L2_VALID"] is not True
-                    or not check.get("input_sha256")
-                    or result.get("VALIDATION_INPUT_SHA256") != check["input_sha256"]
-                ):
-                    raise ValueError(f"RESULT_VALIDATION_BINDING_MISMATCH:{day}")
-                row.update(result)
-                row["RESULT_FILE_SHA256"] = file_hash(result_file)
-                if result.get("NET_PNL") is not None:
-                    row["DAILY_RETURN"] = str(Decimal(result["NET_PNL"]) / Decimal(110))
-            rows.append(row)
-    raw_slices = [part for item in entries.values() for part in item.get("raw_slices", [])]
+        inventory.append(
+            {
+                "SOURCE_DATE": day,
+                "SOURCE_STATUS": source["status"],
+                "L2_VALID": check.get("L2_DAY_VALID"),
+                "L2_ROWS": source.get("rows"),
+                "TRADES": check.get("TRADES"),
+                "SELECTED": day in SYNTHETIC_SOURCE_DATES,
+                "VALIDATION_STATUS": check.get("status", "PENDING"),
+                "DATA_GATE_DETAILS": {
+                    "errors": check.get("errors", []),
+                    "native_counts": check.get("raw", {}).get("counts", {}),
+                    "binding_errors": check.get("binding", {}).get("errors", []),
+                    "trade_counts": check.get("trades", {}).get("counts", {}),
+                },
+            }
+        )
+    rows, groups, terminals, progress, failures = [], {}, {}, {}, {}
+    for envelope in ENVELOPES:
+        daily, stats, terminal, current, failure = read_envelope(results_root, envelope)
+        rows.extend(daily)
+        groups[envelope], terminals[envelope] = stats, terminal
+        progress[envelope], failures[envelope] = current, failure
+    raw = [part for item in entries.values() for part in item.get("raw_slices", [])]
     return {
         "schema": "usdcusdt-l2-monthly-scoreboard-v1",
         "GENERATED_AT": datetime.now(UTC).isoformat(),
-        "L2_CANDIDATE_DATES": len(expected),
-        "L2_AVAILABLE_FREE": sum(item["status"] == "AVAILABLE" for item in entries.values()),
-        "L2_UNAVAILABLE": sum(item["status"] == "UNAVAILABLE" for item in entries.values()),
-        "CSV_TOTAL_BYTES": sum(item.get("bytes", 0) for item in entries.values()),
-        "TOTAL_BYTES": sum(item.get("bytes", 0) for item in entries.values())
-        + sum(item.get("bytes", 0) for item in raw_slices),
-        "TOTAL_ROWS": sum(item.get("rows", 0) for item in entries.values()),
-        "RAW_SLICES_COLLECTED": len(raw_slices),
+        "L2_CANDIDATE_DATES": 21,
+        "L2_AVAILABLE_FREE": sum(x["status"] == "AVAILABLE" for x in entries.values()),
+        "L2_UNAVAILABLE": sum(x["status"] == "UNAVAILABLE" for x in entries.values()),
+        "INTEGRITY_PASS": sum(x.get("L2_DAY_VALID") is True for x in checks.values()),
+        "SELECTED_SOURCE_DAYS": 12,
+        "TOTAL_ROWS": sum(x.get("rows", 0) for x in entries.values()),
+        "TOTAL_BYTES": sum(x.get("bytes", 0) for x in entries.values())
+        + sum(x.get("bytes", 0) for x in raw),
+        "RAW_SLICES_COLLECTED": len(raw),
         "RAW_SLICES_EXPECTED": 3024,
-        "RAW_STATUSES": dict(Counter(item["status"] for item in raw_slices)),
-        "INTEGRITY_PASS": sum(item.get("L2_DAY_VALID") is True for item in checks.values()),
+        "RAW_STATUSES": dict(Counter(x["status"] for x in raw)),
+        "REPLAY_MODE": SYNTHETIC_STATE,
         "STRATEGY_MODEL_USED": "M015",
-        "REPLAY_MODE": "INDEPENDENT_24H",
         "QUEUE_MODEL": "OBSERVED_L2",
         "WEEK_2_CONTINUOUS_EXECUTED": False,
+        "INITIALIZATION": "100_PLUS_10_ONCE_PER_ENVELOPE",
+        "inventory": inventory,
         "rows": rows,
-        "aggregates": {
-            envelope: {
-                role: aggregate(
-                    [
-                        row
-                        for row in rows
-                        if row["ENVELOPE"] == envelope
-                        and (role == "COMBINED" or row["YEAR_ROLE"] == role)
-                    ]
-                )
-                for role in ("CALIBRATION", "EVALUATION", "COMBINED")
-            }
-            for envelope in ENVELOPES
-        },
+        "aggregates": groups,
+        "terminal": terminals,
+        "progress": progress,
+        "failures": failures,
     }
 
 
 def render(score):
     lines = [
-        "# L2 mensal — ciclos por dia independente",
+        "# B10 melhorado — 12 dias consecutivos sintéticos",
         "",
-        f"CSV disponíveis: {score['L2_AVAILABLE_FREE']}/21. "
-        f"Dias com integridade completa aprovada: {score['INTEGRITY_PASS']}/21.",
+        f"Dados: {score['L2_AVAILABLE_FREE']}/21 disponíveis; {score['INTEGRITY_PASS']}/21 "
+        "aprovados no inventário; exatamente12 selecionados.",
         "",
-        "Cada dia/envelope começa com100 USDT +10 de reserva, FLAT. "
-        "Não existe composição entre meses. — significa indisponível, não zero.",
+        "Uma única banca inicial de100 USDT +10 de reserva por envelope. Capital, posições "
+        "e ordens seguem entre dias. A sequência é artificial: "
+        "não é retorno mensal histórico real.",
+        "— significa resultado ainda indisponível, nunca zero. "
+        "Banca e total são marcados a mercado.",
         "",
     ]
     for envelope in ENVELOPES:
-        lines += [f"## {envelope}", ""]
-        for role in ("CALIBRATION", "EVALUATION"):
-            lines += [
-                f"### {'2025 — calibração' if role == 'CALIBRATION' else '2026 — avaliação'}",
-                "",
-                "| Data | Ciclos positivos | PnL USDT | Reserva | Max hold | "
-                "Uptime | Fila P50 | Veredito |",
-                "|---|---:|---:|---:|---:|---:|---:|---|",
-            ]
-            for row in score["rows"]:
-                if row["ENVELOPE"] == envelope and row["YEAR_ROLE"] == role:
-                    keys = (
-                        "DATE",
-                        "NET_POSITIVE_CYCLES",
-                        "NET_PNL",
-                        "RESERVE_FINAL",
-                        "MAX_HOLD",
-                        "MOTOR_UPTIME",
-                        "DISPLAYED_QUEUE_P50",
-                        "VERDICT",
-                    )
-                    lines.append(
-                        "| "
-                        + " | ".join("—" if row.get(key) is None else str(row[key]) for key in keys)
-                        + " |"
-                    )
-            lines.append("")
         lines += [
-            "### Distribuição dos dias independentes",
+            f"## {envelope}",
             "",
-            "| Grupo | Auditados | Mediana ciclos | P10 / P90 | Mín / Máx | ≥500 | ≥2.000 | "
-            "Retorno diário mediano |",
-            "|---|---:|---:|---:|---:|---:|---:|---:|",
+            "| Dia | Origem | Ciclos positivos | Banca | Reserva | Total | "
+            "PnL dia | Max hold h | Uptime |",
+            "|---:|---|---:|---:|---:|---:|---:|---:|---:|",
         ]
-        for role in ("CALIBRATION", "EVALUATION", "COMBINED"):
-            group = score["aggregates"][envelope][role]
-
-            def show(key, group=group):
-                value = group[key]
-                return "—" if value is None else str(value)
-
-            lines.append(
-                f"| {role} | {show('AUDITED_COMPLETED_DAYS')} | "
-                f"{show('MEDIAN_CYCLES_PER_DAY')} | {show('P10_CYCLES_PER_DAY')} / "
-                f"{show('P90_CYCLES_PER_DAY')} | {show('MIN_CYCLES_DAY')} / "
-                f"{show('MAX_CYCLES_DAY')} | {show('DAYS_GE500')} | "
-                f"{show('DAYS_GE2000')} | {show('MEDIAN_NET_RETURN')} |"
+        for row in score["rows"]:
+            if row["ENVELOPE"] != envelope:
+                continue
+            keys = (
+                "LOGICAL_DAY",
+                "SOURCE_DATE",
+                "DAILY_NET_POSITIVE_CYCLES",
+                "OPERATING_FINAL",
+                "RESERVE_FINAL",
+                "TOTAL_EQUITY_FINAL",
+                "DAILY_NET_PNL",
+                "MAX_HOLD_HOURS",
+                "MOTOR_UPTIME",
             )
-        lines += [
-            "",
-            "COMBINED é distribuição transversal, não trajetória composta. "
-            "Retorno é fração de110 USDT iniciais; uptime é fração das24h.",
-            "",
-        ]
+            lines.append(
+                "| " + " | ".join("—" if row.get(k) is None else str(row[k]) for k in keys) + " |"
+            )
+        stats = score["aggregates"][envelope]
+        lines += ["", f"Auditoria: {stats['AUDIT_STATUS']}.", ""]
+        if stats["AUDIT_STATUS"] == "PASS_CONDITIONAL":
+            lines += [
+                f"Ciclos: {stats['TOTAL_CYCLES']}; mediana diária: {stats['MEDIAN_CYCLES']}. "
+                f"Dias≥500: {stats['DAYS_GE500']}; dias≥2.000: {stats['DAYS_GE2000']}. "
+                f"Equity final: {stats['FINAL_EQUITY']} USDT. Retorno sintético: "
+                f"{Decimal(stats['SYNTHETIC_STRESS_RETURN']) * 100}%.",
+                f"Melhor/pior dia por ciclos: {stats['BEST_DAY']} / {stats['WORST_DAY']}.",
+                "",
+            ]
     lines += [
-        "## Interpretação",
+        "## Inventário de origem (não amplia a sequência automaticamente)",
         "",
-        "Software aprovado não é estratégia aprovada. "
-        "L2 mostra quantidade exibida, não a posição exata da ordem na fila. "
-        "Resultados sem auditoria não entram nos agregados.",
+        "| Origem | Disponível | Integridade | Selecionado |",
+        "|---|---|---|---|",
+    ]
+    for row in score["inventory"]:
+        lines.append(
+            f"| {row['SOURCE_DATE']} | {row['SOURCE_STATUS']} | "
+            f"{row['VALIDATION_STATUS']} | {'Sim' if row['SELECTED'] else 'Não'} |"
+        )
+    lines += [
+        "",
+        "Testes de software não aprovam a estratégia. Uptime é fração das24h do dia; "
+        "hold é o máximo acumulado, incluindo posições abertas. Fills são simulações "
+        "condicionais; L2 não demonstra a posição FIFO real.",
         "",
     ]
     return "\n".join(lines)
@@ -310,7 +312,12 @@ def main():
     (root / "L2-monthly-sample-report.md").write_text(render(score), encoding="utf-8")
     print(
         json.dumps(
-            {key: value for key, value in score.items() if key not in {"rows", "aggregates"}}
+            {
+                key: value
+                for key, value in score.items()
+                if key
+                not in {"rows", "inventory", "aggregates", "terminal", "progress", "failures"}
+            }
         )
     )
 

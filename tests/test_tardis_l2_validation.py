@@ -218,3 +218,48 @@ def test_input_binding_ignores_download_retry_metadata(tmp_path, monkeypatch):
     entry.update(status="ORIGINAL_PRESENT", download_timestamp="new retry")
     second = validate_day(entry, {}, root=tmp_path, csv_only=True, use_cache=False)
     assert second["input_sha256"] == first["input_sha256"]
+
+
+def test_native_event_precision_metadata_and_snapshot_capture_bound():
+    lines = [
+        native(dict(lastUpdateId=10, bids=[["1", "2"]], asks=[["2", "2"]]), 1),
+        native(dict(e="depthUpdate", E=1735689602000, U=11, u=11, b=[], a=[]), 2),
+        native(dict(e="depthUpdate", E=1735689603000456, U=12, u=12, b=[], a=[]), 3),
+    ]
+    snapshot, millis, micros = list(iter_native_events(lines))
+    assert snapshot["exchange_precision"] == "CAPTURE_BOUND"
+    assert snapshot["exchange_upper_us"] == snapshot["exchange_us"] == snapshot["local_us"]
+    assert millis["exchange_precision"] == "MILLISECOND_INTERVAL"
+    assert millis["exchange_us"] == 1735689602000000
+    assert millis["exchange_upper_us"] == 1735689602000999
+    assert micros["exchange_precision"] == "MICROSECOND_EXACT"
+    assert micros["exchange_upper_us"] == micros["exchange_us"] == 1735689603000456
+
+
+def test_snapshot_tombstones_match_wire_without_creating_executable_levels():
+    lines = [
+        native(
+            dict(e="depthUpdate", E=1735689601000, U=11, u=11, b=[[".9", "0"]], a=[["3", "0"]]), 1
+        ),
+        native(
+            dict(lastUpdateId=10, bids=[["1", "2"], [".9", "99"]], asks=[["2", "2"], ["3", "25"]]),
+            2,
+        ),
+    ]
+    event = next(iter_native_events(lines))
+    assert len(event["changes"]) == 4
+    assert len(event["bids"]) == len(event["asks"]) == 1
+    rows = list(iter_reconstructed_native_rows(lines))
+    assert sum(row["amount"] == "0" for row in rows) == 2
+    assert bind_csv_reconstructed_native(rows, lines)["normalized_binding_gate"] == "PASS"
+
+
+def test_stale_delete_and_replaced_tombstone_not_emitted_in_snapshot():
+    lines = [
+        native(dict(e="depthUpdate", E=1735689601000, U=9, u=10, b=[[".8", "0"]], a=[]), 1),
+        native(dict(e="depthUpdate", E=1735689602000, U=11, u=11, b=[[".9", "0"]], a=[]), 2),
+        native(dict(e="depthUpdate", E=1735689603000, U=12, u=12, b=[[".9", "3"]], a=[]), 3),
+        native(dict(lastUpdateId=10, bids=[["1", "2"], [".9", "99"]], asks=[["2", "2"]]), 4),
+    ]
+    rows = list(iter_reconstructed_native_rows(lines))
+    assert len(rows) == 3 and all(row["amount"] != "0" for row in rows)

@@ -1,7 +1,9 @@
-# L2 monthly sample battery — preregistered execution protocol
+# L2 monthly samples — consecutive synthetic stress protocol
 
-STATUS=PREREGISTERED_BEFORE_ECONOMIC_REPLAY. This protocol implements the new
-OWNER monthly-sample directive; it does not authorize the continuous second week.
+STATUS=PREREGISTRATION_UPDATED_BEFORE_ANY_ECONOMIC_REPLAY.
+OWNER superseded independent resets with SYNTHETIC_CONSECUTIVE_12D. The preceding
+protocol remains immutable in Git history; no economic experiment ran under it.
+This protocol does not authorize reading the real continuous second week.
 Software/data PASS does not imply economic PASS. Historical days remain DEVELOPMENT.
 
 ## Frozen strategy and scope
@@ -13,30 +15,51 @@ Bind the original M015 spec, registry entry, economic source bytes, adapter sour
 this protocol and input manifests by SHA256 in each execution manifest. Preserve
 M015/M014 and previous results. This is a new execution-evidence campaign, not M016.
 
-Candidates are exactly the first UTC day of every month from January 2025 through
-September 2026: 21 independent dates inside the canonical trades universe. Run both
-envelopes below for every valid date, including days below 500 cycles. Each experiment
-covers [00:00 UTC, next 00:00 UTC); no economic early stop, month-to-month carry,
-concatenated return path, or January 8–14 replay. Missing/invalid days remain visible
-as rows with null economic results, never zero-cycle economic failures.
+Data inventory remains21 first-of-month samples. Execution is frozen to the12 days
+approved when OWNER authorized the sequence: Jan/Feb/Mar/Apr/Jun/Aug2025 and
+Jan/Feb/Mar/Apr/May/Jul2026, always day1. Use that source-chronological order without
+permutation or economic selection. Other dates remain outside this run even if later
+validated. Run both envelopes for all12 logical days, including days below500.
+No economic early stop, real January8–14 read, or assertion of real monthly return.
+Invalid/unselected sources remain visible, not zero-cycle strategy failures.
 
-Each date/envelope independently starts FLAT, operating=100 USDT, reserve=10 USDT,
-no inventory, orders, queue, escrow or inherited financial state. Compound within
-the day; 10% of positive realized ordinary profit funds reserve and 90% remains
+Each envelope starts ONCE, FLAT, operating=100 USDT, reserve=10 USDT. Then preserve
+capital, positions, dust, orders, queue, escrow, reserve and timers across all12 days.
+Compound continuously through this artificial sequence;10% of positive realized
+ordinary profit funds reserve and90% remains
 operating. Preserve M015 sizing, M007 selector/hysteresis/reselection, B10 H1/B10/F2.5
 release predicate, protected IOC/reserve accounting, maker/taker fees, filters,
 latency and cancellation semantics. M015 has one operating queue and no active
 reserve queue. Do not implement additional queues for this battery.
 
-Read-only selector warmup is the preceding 24h of canonical trades when available
-inside the authorized universe. It carries no financial state. On January 1, 2025,
-the prefix begins at the dataset boundary; December 2024 is forbidden. The frozen
-selector receives only available causal prefix and retains its existing eligibility
-and support rules. Record WARMUP_AVAILABLE_US, COLD_START and FIRST_ELIGIBLE_US.
-Do not shorten a selector window or synthesize historical support. This first-day
-boundary limitation is reported explicitly when comparing 2025 calibration days.
-Using a cold-start reset for all other dates would change the experimental initial
-information set and is not silently substituted for the available warmup.
+Cold start occurs only at logical day1. Selector history consists exclusively of
+the actually received prefix of the stitched12 days. Do not load December2024 or
+the real-calendar preceding day for warmup. Preserve M007 windows/support/hysteresis;
+no synthetic support, future event visibility or daily selector reset.
+
+## Logical clock and seams
+
+Logical origin is2025-01-01T00:00:00Z. Source day i maps both capture and exchange
+timestamps by the same fixed day offset to logical day i; keep original timestamps,
+trade IDs and source hashes alongside every mapping. Timers see12 consecutive24h
+days. This is an explicitly manufactured environmental sequence, not missing-history
+reconstruction. Map tick-rule periods to the same logical timeline, using each
+source day's original historical grid and frozen filter assumptions causally.
+
+At each seam, invalidate the available book before advancing timers. Preserve
+financial state and orders; permit no fill or new submission until the next valid
+bridged snapshot. Capture ordinals are globally unique; native sequence validity is
+verified separately within each source day, never claimed across the calendar jump.
+Never synthesize a trade or liquidation at a price jump. Mark equity changes at a
+new observed quote as environmental shocks, not realized trades.
+
+Ordinary remaining queue-ahead is carried without cancellation credit or an
+automatic re-seed. Cross-seam FIFO priority is UNKNOWN, not observed continuity.
+IOC budgets receive no inferred cross-gap replenishment: at the first new snapshot,
+previously seen prices retain at most min(old available,new displayed). A previously
+consumed/deleted price stays constrained; only within-day observed positive deltas
+replenish it. Genuinely unseen prices may contribute their observed displayed depth.
+No forced cancel, fill, release, close or treasury reset is introduced by the seam.
 
 ## Data and validity gates
 
@@ -74,11 +97,11 @@ initial unavailable duration and daily coverage explicitly. Silence alone is not
 sequence gap: a quiet market may have no update. Missing slices are not silence.
 Data validation can continue for all candidates even when one date fails.
 
-Startup clarification before any economic replay: a complete inventory of all144
-native ten-minute slices may have its first bridging snapshot after midnight.
-Because every experiment starts FLAT, forbid any order/activation until that
-snapshot, record INITIAL_UNAVAILABLE_US, and include this idle time in the24h
-denominator. This does not invalidate an otherwise fully sequenced day; it never
+Startup clarification: all144 native ten-minute slices can be present even when
+the first bridging snapshot arrives after source midnight. Only day1 starts FLAT;
+subsequent days preserve existing orders/positions but have no executable book
+until the new snapshot. Record INITIAL_UNAVAILABLE_US perday and include idle time
+in the24h denominator. This does not invalidate an otherwise fully sequenced day; it never
 repairs a missing mid-day interval or assumes an initial book that was not observed.
 
 ## Causal merge contract
@@ -100,8 +123,8 @@ Record the merge mapping and gate rejected/ambiguous events; do not silently reo
 late prints or drop them while claiming full coverage. An unresolved causal mapping
 blocks that day's economic replay pending a reviewed correction.
 
-Arrival-clock clarification, reviewed before economics: engine activation, cancel
-and holding timers use CAPTURE_ARRIVAL_CLOCK. Preserve each native exchange timestamp
+Arrival-clock clarification: activation, cancel and holding timers use the mapped
+LOGICAL_CAPTURE_ARRIVAL_CLOCK. Preserve each native exchange timestamp
 and precision separately. Depth/trade exchange timestamps can legitimately interleave;
 do not reorder capture or declare a gap solely for that interleaving. Every selector
 and recovery history query is capped by prefix-limited tape/timeline views at the
@@ -113,6 +136,10 @@ trade fill. Consume no trade quantity when these execution-availability gates fa
 but retain the event and its later prefix availability in the audit. Native historical
 millisecond timestamps match the canonical microsecond timestamp at native precision,
 not by inventing submillisecond equality; IDs/prices/quantities/sides must match exactly.
+For native book E in milliseconds the possible interval ends at1000*E+999us;
+microsecond E is exact. A fill cannot use a book whose upper bound exceeds the
+canonical trade time. Ambiguous prints remain recorded but cannot fill. Snapshot
+capture bounds are labeled CAPTURE_BOUND, never fabricated native microsecond E.
 
 ## Two execution envelopes
 
@@ -167,7 +194,7 @@ or historical filters. Do not mutate the frozen profile or infer guaranteed retu
 
 ## Metrics and interpretation
 
-Every daily row is keyed by DATE and ENVELOPE and includes OWNER-requested counts,
+Every daily row is keyed by LOGICAL_DAY, SOURCE_DATE and ENVELOPE and includes counts,
 capital, reserve, equity, PNL, cycles, orders/fills, releases, holding, queue, depth,
 spread, uptime, capacity and verdict fields. Decimal arithmetic remains authoritative.
 ORDINARY_CYCLES counts complete ordinary BUY+SELL settlements only; NET_POSITIVE_CYCLES
@@ -175,24 +202,28 @@ counts those with realized net profit >0. Releases/partial cycles are excluded. 
 main CYCLES column and >=500/>=2000 gates use NET_POSITIVE_CYCLES; also show ordinary
 total. CYCLES_PER_HOUR divides by 24, not active hours or available-data hours.
 
-Do not force closure at the day boundary. Record inventory, dust, open orders and
+Do not close or reset at daily boundaries or the final cutoff. Record inventory, dust, open orders and
 reserve escrow. OPERATING_FINAL is cash plus marked operational inventory/dust;
 also expose operating cash and cost-basis bank separately. Mark remaining inventory
 at the last valid bid, disclose mark age and unrealized PNL. TOTAL_EQUITY_FINAL is
-operating marked equity plus reserve; NET_PNL is its difference from 110; daily
-return is NET_PNL/110. Realized PNL and cash transfers remain separate. A missing
+operating marked equity plus reserve. CUMULATIVE_NET_PNL is its difference from110;
+daily PNL is the change from prior logical close (110 for day1), with daily opening
+operating/reserve carried explicitly. Sequence return is final equity/110-1, labeled
+SYNTHETIC_STRESS_RETURN, not real historical monthly performance. A missing
 valid terminal mark yields unknown marked equity, not a zero mark.
 
 MAX_HOLD includes completed holdings and elapsed open holding at cutoff, with an
 OPEN_HOLD_CENSORED flag. HARD_LOCK_VIOLATIONS counts holds observed at or beyond 24h, not
-future conjectures. Independent 24h flat starts cannot establish multi-day survival.
+future conjectures. Synthetic sequence survival cannot establish real historical survival.
 BUY/SELL full/partial/zero-fill counts are per submitted order as of cutoff; pending
 and canceled states are separately visible. RELEASE_LOSS is actual executed deficit.
 
-MOTOR_UPTIME is the time fraction with an accepted ordinary order working, excluding
+MOTOR_UPTIME is the time fraction with an accepted ordinary order working AND a
+valid available book, excluding
 pending activation, release and canceled/expired/rejected orders. FULL_STOP_HOURS
 is 24*(1-MOTOR_UPTIME). CAPITAL_WEIGHTED_UPTIME integrates ordinary committed operating
-capital divided by contemporaneous operating cost-basis bank, then divides by 24h;
+capital divided by contemporaneous operating cost-basis bank, then divides by24h
+for a daily row or288h for the complete sequence;
 cap the ratio at one and report reserve excluded. Preserve the older working-order
 metric separately if it includes pending/release states. CAPACITY_PRESSURE is the
 requested order quantity / observed displayed same-level quantity at activation;
@@ -209,12 +240,12 @@ old proxy > observed P90 => TOO_CONSERVATIVE; old proxy < observed P10 => TOO_OP
 otherwise REASONABLE. No activations => INCONCLUSIVE. This labels displayed-size
 comparison only, not true FIFO rank or execution certainty.
 
-Aggregate by envelope and separately for 2025 CALIBRATION and 2026 EVALUATION, plus
-clearly labeled combined independent-day distribution. Report valid/total candidate
-days, median/P10/P90/min/max positive cycles, days >=500 and >=2000, zero-cycle days,
-median uptime, weighted uptime, daily return, maximum holding and violation days.
-No sum-of-months compounding or geometric return path. Best/worst use positive cycle
-count, breaking ties by earlier date. Autopsy those two days per envelope using
+Report the two synthetic equity paths separately. Daily medians/P10/P90/min/max,
+days>=500/>=2000, zero-cycle days, uptime, holding and violations describe dependent
+days of the same path, not independent return draws. Source year remains provenance;
+do not label2026 an untouched prospective test after carrying2025 state. All is
+DEVELOPMENT. Best/worst use positive daily cycles, breaking ties by logical day.
+Autopsy those days per envelope using
 spread/depth, aggressor flow, price moves, range activity, queue and fill latency;
 autopsy is descriptive and cannot tune an already run envelope.
 
@@ -223,10 +254,10 @@ autopsy is descriptive and cannot tune an already run envelope.
 Before any economics: reconcile manifests, validate implementation with targeted
 fixtures, obtain independent review, publish the source/protocol and first data
 scoreboard, verify HEAD==origin/main, then emit the OWNER first-return fields.
-Automatically run all valid days after those gates. One canonical campaign writer;
+Automatically run exactly the authorized12-day sequence after those gates. One canonical campaign writer;
 preserve per-day/envelope manifests, full audit ledgers and failures. Audit all fills
 for quantity/source ownership and all releases for depth/fees/reserve accounting.
-Final verdict distinguishes COMPLETE_CONDITIONAL_EXECUTION, INCONCLUSIVE_DATA,
+Final verdict distinguishes COMPLETE_CONDITIONAL_SYNTHETIC_STRESS, INCONCLUSIVE_DATA,
 INCONCLUSIVE_TECHNICAL and target attained/not attained. Never certify live returns.
 
 Official sources checked before data acquisition:

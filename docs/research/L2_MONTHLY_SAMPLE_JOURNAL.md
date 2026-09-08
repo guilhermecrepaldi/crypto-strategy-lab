@@ -126,3 +126,48 @@ both observed negative and positive quantity deltas affect remaining availabilit
 No cancellation credit reaches the resting-order queue. Review also measured
 full-book repeated validation cost; an equivalent incremental execution path is
 being reviewed. Economic replays remain0, financial/cycle outcomes unavailable.
+
+## OWNER override — consecutive12-day compounding sequence
+
+Full21-day validation finished under e1525f4 validator sources:12 passed all gates,
+9 blocked (8 have disconnects; Nov2025 has a snapshot normalization mismatch).
+Report and originals preserved. No independent-day economics were started.
+
+OWNER explicitly superseded independent resets, first asking for consecutive days
+with maintained strategy/compounding, then authorizing exactly the12 already-valid
+days while the others remain in preparation. Selection is now frozen to
+Jan/Feb/Mar/Apr/Jun/Aug2025 and Jan/Feb/Mar/Apr/May/Jul2026, each source day1.
+
+STUDY=SYNTHETIC_CONSECUTIVE_12D
+STRATEGY_MODEL_USED=M015
+INITIAL_OPERATING=100_ONCE_PER_ENVELOPE
+INITIAL_RESERVE=10_ONCE_PER_ENVELOPE
+FINANCIAL_STATE_CARRIED=true
+ECONOMIC_REPLAYS_STARTED=0
+STATUS=CONSECUTIVE_PREFLIGHT_IMPLEMENTATION
+
+The compressed path is deliberately artificial stress, not continuous historical
+monthly returns. Preserve original clocks/IDs and explicit mappings, positions,
+orders, queues and timers. No invented seam fills or daily capital resets. Source
+year is provenance, not independent calibration/evaluation after state is carried.
+Other data preparations cannot silently add a13th day. OWNER directive and revised
+protocol are canonical; existing registry/model/profile stay frozen.
+
+Independent review identified Nov2025's two zero snapshot tombstones as a validator
+representation defect: raw REST+buffer deletes reconcile exactly; executable book
+levels were already correct. Fix pending publication/full Novvalidation, outside
+the frozen12-day run. Additional execution precision metadata suppresses ambiguous
+millisecond fills; first-slice old/new comparisons preserve every pre-existing field
+and CSV hash for Jan2025/Jan2026. Data validation under e152 retains its provenance;
+new execution sources remain separately bound, never relabeled as the old validator.
+
+## 2026-09-08 — Twelve-day preflight approved for publication and start
+
+Independent GPT-6 Astra review and root source-hash reconciliation completed.
+104 focused acquisition/data/report/execution tests and9 frozen B10 weekly tests
+passed; Ruff passed. TEST_SUITE_PASS != STRATEGY_PASS. Runtime all-fill audit and
+terminal financial reconciliation are still pending, with no economic replay yet.
+The published preflight binds the exact12 source days, M015, both independent
+execution envelopes, carried100+10 initial capital and all reviewed source hashes.
+Next action: publish this milestone, verify HEAD equals origin/main, then execute
+the canonical runner. No parameter changes or automatic thirteenth source day.

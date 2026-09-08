@@ -1,5 +1,18 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER vigente — 12 dias L2 consecutivos sintéticos
+
+OWNER substituiu os resets independentes por sequência artificial com estratégia
+e compounding preservados. Executar exatamente os12 dias já aprovados: Jan/Fev/Mar/
+Abr/Jun/Ago2025 e Jan/Fev/Mar/Abr/Mai/Jul2026, sempre dia1 UTC. Uma inicialização
+operacional100 + reserva10 por envelope; carregar banca, posições, ordens e timers.
+Seguir `docs/microstructure/L2_CONSECUTIVE_STRESS_OWNER_DIRECTIVE.md` e
+`docs/microstructure/L2_MONTHLY_SAMPLE_PROTOCOL.md`.
+Não apresentar a concatenação como histórico contínuo real, inventar fills nos
+saltos, incluir datas ainda em preparo ou ler Jan8–14 reais. Publicar source/review
+antes da execução. M015/estratégia e profiles continuam congelados. Esta seção
+supera INDEPENDENT_24H e resets diários da diretiva anterior, não seus gates de dados.
+
 ## Autoridade OWNER vigente — bateria mensal L2 histórico gratuito
 
 Seguir `docs/microstructure/L2_MONTHLY_SAMPLE_OWNER_DIRECTIVE.md`: pesquisar,

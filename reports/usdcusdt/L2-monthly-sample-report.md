@@ -1,95 +1,72 @@
-# L2 mensal — ciclos por dia independente
+# B10 melhorado — 12 dias consecutivos sintéticos
 
-CSV disponíveis: 21/21. Dias com integridade completa aprovada: 3/21.
+Dados: 21/21 disponíveis; 12/21 aprovados no inventário; exatamente12 selecionados.
 
-Cada dia/envelope começa com100 USDT +10 de reserva, FLAT. Não existe composição entre meses. — significa indisponível, não zero.
+Uma única banca inicial de100 USDT +10 de reserva por envelope. Capital, posições e ordens seguem entre dias. A sequência é artificial: não é retorno mensal histórico real.
+— significa resultado ainda indisponível, nunca zero. Banca e total são marcados a mercado.
 
 ## CONSERVATIVE_QUEUE
 
-### 2025 — calibração
+| Dia | Origem | Ciclos positivos | Banca | Reserva | Total | PnL dia | Max hold h | Uptime |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 2025-01-01 | — | — | — | — | — | — | — |
+| 2 | 2025-02-01 | — | — | — | — | — | — | — |
+| 3 | 2025-03-01 | — | — | — | — | — | — | — |
+| 4 | 2025-04-01 | — | — | — | — | — | — | — |
+| 5 | 2025-06-01 | — | — | — | — | — | — | — |
+| 6 | 2025-08-01 | — | — | — | — | — | — | — |
+| 7 | 2026-01-01 | — | — | — | — | — | — | — |
+| 8 | 2026-02-01 | — | — | — | — | — | — | — |
+| 9 | 2026-03-01 | — | — | — | — | — | — | — |
+| 10 | 2026-04-01 | — | — | — | — | — | — | — |
+| 11 | 2026-05-01 | — | — | — | — | — | — | — |
+| 12 | 2026-07-01 | — | — | — | — | — | — | — |
 
-| Data | Ciclos positivos | PnL USDT | Reserva | Max hold | Uptime | Fila P50 | Veredito |
-|---|---:|---:|---:|---:|---:|---:|---|
-| 2025-01-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-02-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-03-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-04-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-05-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-06-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-07-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-08-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-09-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-10-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-11-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-12-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-
-### 2026 — avaliação
-
-| Data | Ciclos positivos | PnL USDT | Reserva | Max hold | Uptime | Fila P50 | Veredito |
-|---|---:|---:|---:|---:|---:|---:|---|
-| 2026-01-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-02-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-03-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-04-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-05-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-06-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-07-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-08-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-09-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-
-### Distribuição dos dias independentes
-
-| Grupo | Auditados | Mediana ciclos | P10 / P90 | Mín / Máx | ≥500 | ≥2.000 | Retorno diário mediano |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| CALIBRATION | 0 | — | — / — | — / — | 0 | 0 | — |
-| EVALUATION | 0 | — | — / — | — / — | 0 | 0 | — |
-| COMBINED | 0 | — | — / — | — / — | 0 | 0 | — |
-
-COMBINED é distribuição transversal, não trajetória composta. Retorno é fração de110 USDT iniciais; uptime é fração das24h.
+Auditoria: AUDIT_PENDING.
 
 ## PRICE_PRIORITY
 
-### 2025 — calibração
+| Dia | Origem | Ciclos positivos | Banca | Reserva | Total | PnL dia | Max hold h | Uptime |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 2025-01-01 | — | — | — | — | — | — | — |
+| 2 | 2025-02-01 | — | — | — | — | — | — | — |
+| 3 | 2025-03-01 | — | — | — | — | — | — | — |
+| 4 | 2025-04-01 | — | — | — | — | — | — | — |
+| 5 | 2025-06-01 | — | — | — | — | — | — | — |
+| 6 | 2025-08-01 | — | — | — | — | — | — | — |
+| 7 | 2026-01-01 | — | — | — | — | — | — | — |
+| 8 | 2026-02-01 | — | — | — | — | — | — | — |
+| 9 | 2026-03-01 | — | — | — | — | — | — | — |
+| 10 | 2026-04-01 | — | — | — | — | — | — | — |
+| 11 | 2026-05-01 | — | — | — | — | — | — | — |
+| 12 | 2026-07-01 | — | — | — | — | — | — | — |
 
-| Data | Ciclos positivos | PnL USDT | Reserva | Max hold | Uptime | Fila P50 | Veredito |
-|---|---:|---:|---:|---:|---:|---:|---|
-| 2025-01-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-02-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-03-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-04-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-05-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-06-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-07-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-08-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-09-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-10-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-11-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2025-12-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
+Auditoria: AUDIT_PENDING.
 
-### 2026 — avaliação
+## Inventário de origem (não amplia a sequência automaticamente)
 
-| Data | Ciclos positivos | PnL USDT | Reserva | Max hold | Uptime | Fila P50 | Veredito |
-|---|---:|---:|---:|---:|---:|---:|---|
-| 2026-01-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-02-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-03-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-04-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-05-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-06-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-07-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-08-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
-| 2026-09-01 | — | — | — | — | — | — | PENDING_DATA_VALIDATION |
+| Origem | Disponível | Integridade | Selecionado |
+|---|---|---|---|
+| 2025-01-01 | AVAILABLE | VALIDATED | Sim |
+| 2025-02-01 | AVAILABLE | VALIDATED | Sim |
+| 2025-03-01 | AVAILABLE | VALIDATED | Sim |
+| 2025-04-01 | AVAILABLE | VALIDATED | Sim |
+| 2025-05-01 | AVAILABLE | BLOCKED_BY_DATA_GATES | Não |
+| 2025-06-01 | AVAILABLE | VALIDATED | Sim |
+| 2025-07-01 | AVAILABLE | BLOCKED_BY_DATA_GATES | Não |
+| 2025-08-01 | AVAILABLE | VALIDATED | Sim |
+| 2025-09-01 | AVAILABLE | BLOCKED_BY_DATA_GATES | Não |
+| 2025-10-01 | AVAILABLE | BLOCKED_BY_DATA_GATES | Não |
+| 2025-11-01 | AVAILABLE | BLOCKED_BY_DATA_GATES | Não |
+| 2025-12-01 | AVAILABLE | BLOCKED_BY_DATA_GATES | Não |
+| 2026-01-01 | AVAILABLE | VALIDATED | Sim |
+| 2026-02-01 | AVAILABLE | VALIDATED | Sim |
+| 2026-03-01 | AVAILABLE | VALIDATED | Sim |
+| 2026-04-01 | AVAILABLE | VALIDATED | Sim |
+| 2026-05-01 | AVAILABLE | VALIDATED | Sim |
+| 2026-06-01 | AVAILABLE | BLOCKED_BY_DATA_GATES | Não |
+| 2026-07-01 | AVAILABLE | VALIDATED | Sim |
+| 2026-08-01 | AVAILABLE | BLOCKED_BY_DATA_GATES | Não |
+| 2026-09-01 | AVAILABLE | BLOCKED_BY_DATA_GATES | Não |
 
-### Distribuição dos dias independentes
-
-| Grupo | Auditados | Mediana ciclos | P10 / P90 | Mín / Máx | ≥500 | ≥2.000 | Retorno diário mediano |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| CALIBRATION | 0 | — | — / — | — / — | 0 | 0 | — |
-| EVALUATION | 0 | — | — / — | — / — | 0 | 0 | — |
-| COMBINED | 0 | — | — / — | — / — | 0 | 0 | — |
-
-COMBINED é distribuição transversal, não trajetória composta. Retorno é fração de110 USDT iniciais; uptime é fração das24h.
-
-## Interpretação
-
-Software aprovado não é estratégia aprovada. L2 mostra quantidade exibida, não a posição exata da ordem na fila. Resultados sem auditoria não entram nos agregados.
+Testes de software não aprovam a estratégia. Uptime é fração das24h do dia; hold é o máximo acumulado, incluindo posições abertas. Fills são simulações condicionais; L2 não demonstra a posição FIFO real.

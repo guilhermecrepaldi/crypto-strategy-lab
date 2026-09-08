@@ -14,61 +14,102 @@ def manifest():
     }
 
 
-def test_no_replay_is_not_zero_cycles_and_years_are_separate(tmp_path):
+def test_missing_results_are_null_and_only_first_day_has_initial_capital(tmp_path):
     score = report.build(manifest(), results_root=tmp_path)
-    assert len(score["rows"]) == 42
-    assert all(row["NET_POSITIVE_CYCLES"] is None for row in score["rows"])
-    groups = score["aggregates"]["CONSERVATIVE_QUEUE"]
-    assert groups["CALIBRATION"]["TOTAL_INDEPENDENT_DAYS"] == 12
-    assert groups["EVALUATION"]["TOTAL_INDEPENDENT_DAYS"] == 9
-    assert groups["COMBINED"]["MEDIAN_CYCLES_PER_DAY"] is None
-    assert groups["COMBINED"]["DAYS_WITH_ZERO_CYCLES"] == 0
-    assert "PENDING_DATA_VALIDATION" in report.render(score)
+    assert len(score["inventory"]) == 21 and len(score["rows"]) == 24
+    assert all(row["DAILY_NET_POSITIVE_CYCLES"] is None for row in score["rows"])
+    assert all(
+        row["OPERATING_START"] == ("100" if row["LOGICAL_DAY"] == 1 else None)
+        for row in score["rows"]
+    )
+    assert score["REPLAY_MODE"] == report.SYNTHETIC_STATE
+    assert report.render(score).count("## CONSERVATIVE_QUEUE") == 1
+    assert report.render(score).count("## PRICE_PRIORITY") == 1
 
 
-def test_results_require_matching_day_validation_evidence(tmp_path):
-    day, envelope = "2026-01-01", "CONSERVATIVE_QUEUE"
-    output = tmp_path / day / envelope
-    output.mkdir(parents=True)
-    (output / "summary.json").write_text(
+def write_day(root, number, **kwargs):
+    path = root / "daily" / f"{number:02d}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
         json.dumps(
             {
-                "DATE": day,
-                "ENVELOPE": envelope,
-                "STRATEGY_MODEL_USED": "M015",
-                "MODEL_HASH": report.MODEL_HASH,
-                "VALIDATION_INPUT_SHA256": "wrong",
+                "LOGICAL_DAY": number,
+                "SOURCE_DATE": report.SYNTHETIC_SOURCE_DATES[number - 1],
+                "ENVELOPE": "CONSERVATIVE_QUEUE",
+                **kwargs,
             }
         )
     )
-    validation = {"days": [{"date": day, "L2_DAY_VALID": True, "input_sha256": "expected"}]}
-    with pytest.raises(ValueError, match="VALIDATION_BINDING_MISMATCH"):
-        report.build(manifest(), validation, results_root=tmp_path)
 
 
-def test_aggregate_counts_audited_days_only_and_never_compounds_returns():
-    def result(day, cycles, pnl, audit="PASS_CONDITIONAL"):
-        return dict(
-            DATE=day,
-            RUN_STATUS="COMPLETE",
-            AUDIT_STATUS=audit,
-            L2_VALID=True,
-            NET_POSITIVE_CYCLES=cycles,
-            DAILY_RETURN=str(pnl),
-            HARD_LOCK_VIOLATIONS=0,
-        )
+def test_carry_is_evidence_not_daily_reset_and_partial_is_not_pass(tmp_path):
+    root = tmp_path / report.SYNTHETIC_STATE / "CONSERVATIVE_QUEUE"
+    write_day(
+        root,
+        1,
+        OPERATING_START="100",
+        RESERVE_START="10",
+        OPERATING_FINAL="103",
+        RESERVE_FINAL="11",
+        DAILY_NET_POSITIVE_CYCLES=2,
+    )
+    write_day(
+        root,
+        2,
+        OPERATING_START="103",
+        RESERVE_START="11",
+        OPERATING_FINAL="104",
+        RESERVE_FINAL="11.2",
+        DAILY_NET_POSITIVE_CYCLES=1,
+        AUDIT_STATUS="PASS_CONDITIONAL",
+    )
+    score = report.build(manifest(), results_root=tmp_path)
+    assert score["rows"][1]["OPERATING_START"] == "103"
+    assert score["rows"][1]["AUDIT_STATUS"] == "AUDIT_PENDING"
+    assert score["rows"][2]["OPERATING_START"] is None
+    assert score["aggregates"]["CONSERVATIVE_QUEUE"]["AUDITED_DAYS"] == 0
+    write_day(root, 2, OPERATING_START="100", RESERVE_START="10")
+    with pytest.raises(ValueError, match="CAPITAL_CARRY_MISMATCH"):
+        report.build(manifest(), results_root=tmp_path)
 
+
+def test_wrong_day_identity_rejected(tmp_path):
+    root = tmp_path / report.SYNTHETIC_STATE / "CONSERVATIVE_QUEUE"
+    write_day(root, 1, SOURCE_DATE="2025-11-01")
+    with pytest.raises(ValueError, match="SYNTHETIC_IDENTITY"):
+        report.build(manifest(), results_root=tmp_path)
+
+
+def test_terminal_aggregate_uses_last_equity_not_peak_and_twelve_not_twentyfour():
     rows = [
-        result("2025-01-01", 0, "0.1"),
-        result("2025-02-01", 500, "0.2"),
-        result("2025-03-01", 2000, "0.3"),
-        result("2025-04-01", 9999, "9", "FAIL"),
+        {
+            "LOGICAL_DAY": day,
+            "DAILY_NET_POSITIVE_CYCLES": day * 100,
+            "TOTAL_EQUITY_FINAL": "200" if day == 1 else "121",
+        }
+        for day in range(1, 13)
     ]
-    stats = report.aggregate(rows)
-    assert stats["AUDITED_COMPLETED_DAYS"] == 3
-    assert stats["MEDIAN_CYCLES_PER_DAY"] == 500
-    assert stats["DAYS_GE500"] == 2 and stats["DAYS_GE2000"] == 1
-    assert stats["DAYS_WITH_ZERO_CYCLES"] == 1
-    assert stats["MEDIAN_NET_RETURN"] == "0.2"
-    assert stats["BEST_DAY"] == "2025-03-01"
-    assert stats["P10_CYCLES_PER_DAY"] == 0 and stats["P90_CYCLES_PER_DAY"] == 2000
+    terminal = {"AUDIT_STATUS": "PASS_CONDITIONAL", "TOTAL_EQUITY_FINAL": "121"}
+    result = report.aggregate(rows, terminal)
+    assert result["AUDITED_DAYS"] == 12
+    assert result["FINAL_EQUITY"] == "121" and result["SYNTHETIC_STRESS_RETURN"] == "0.1"
+    assert result["MEDIAN_CYCLES"] == 650 and result["DAYS_GE500"] == 8
+    assert result["BEST_DAY"] == 12 and result["WORST_DAY"] == 1
+    assert report.aggregate(rows, None)["AUDIT_STATUS"] == "AUDIT_PENDING"
+
+
+def test_terminal_mapping_and_audit_binding_gate(tmp_path):
+    root = tmp_path / report.SYNTHETIC_STATE / "CONSERVATIVE_QUEUE"
+    root.mkdir(parents=True)
+    (root / "summary.json").write_text(
+        json.dumps(
+            {
+                "MODEL_HASH": report.MODEL_HASH,
+                "ENVELOPE": "CONSERVATIVE_QUEUE",
+                "RUN_STATUS": "COMPLETE",
+                "source_day_mapping": [],
+            }
+        )
+    )
+    with pytest.raises(ValueError, match="TERMINAL_IDENTITY"):
+        report.build(manifest(), results_root=tmp_path)

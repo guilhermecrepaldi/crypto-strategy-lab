@@ -41,6 +41,14 @@ def native_exchange_microseconds(value: Any) -> int:
     return value if value >= 100_000_000_000_000 else value * 1000
 
 
+def native_exchange_interval(value: Any) -> tuple[int, int, str]:
+    """Return the reported timestamp's closed uncertainty interval in microseconds."""
+    lower = native_exchange_microseconds(value)
+    if value >= 100_000_000_000_000:
+        return lower, lower, "MICROSECOND_EXACT"
+    return lower, lower + 999, "MILLISECOND_INTERVAL"
+
+
 def _level(price: Any, amount: Any) -> tuple[Decimal, Decimal]:
     try:
         p, q = Decimal(str(price)), Decimal(str(amount))
@@ -391,6 +399,10 @@ def iter_native_events(
     TRADE events retain native payloads even before the first snapshot. A BOOK
     with sequence_validated=False must not enable order activation: wait until
     a bridging update arrives. Empty but sequenced deltas remain BOOK events.
+    exchange_upper_us preserves native millisecond uncertainty; snapshot metadata
+    is CAPTURE_BOUND, not a fabricated native exchange timestamp. Snapshot changes
+    retain final zero-quantity wire tombstones from REST+buffer normalization,
+    while executable bids/asks always contain only strictly positive quantities.
     """
     book = _Book()
     last_id: int | None = None
@@ -430,10 +442,13 @@ def iter_native_events(
         if data.get("e") == "trade":
             if payload["stream"].lower() != "usdcusdt@trade" or data.get("s") != "USDCUSDT":
                 raise ValueError("wrong native trade identity")
+            exchange, exchange_upper, precision = native_exchange_interval(data["T"])
             yield {
                 "kind": "TRADE",
                 "local_us": local,
-                "exchange_us": native_exchange_microseconds(data["T"]),
+                "exchange_us": exchange,
+                "exchange_upper_us": exchange_upper,
+                "exchange_precision": precision,
                 "capture_order": capture_order,
                 "data": data,
             }
@@ -446,19 +461,32 @@ def iter_native_events(
                 raise ValueError("invalid snapshot ID")
             book.clear()
             bridged = False
+            tombstones: dict[tuple[str, Decimal], Decimal] = {}
             for side, key in (("bid", "bids"), ("ask", "asks")):
                 for item in data[key]:
                     price, quantity = _level(*item)
                     book.apply(side, price, quantity)
+                    if quantity == 0:
+                        tombstones[side, price] = quantity
+                    else:
+                        tombstones.pop((side, price), None)
             if not book.bids or not book.asks:
                 raise ValueError("native snapshot lacks two-sided coverage")
             known_bid_floor, known_ask_ceiling = min(book.bids), max(book.asks)
             for update in pending:
-                apply(update)
+                for side, price, quantity in apply(update):
+                    if quantity == 0:
+                        tombstones[side, price] = quantity
+                    else:
+                        tombstones.pop((side, price), None)
             pending.clear()
             changes = [("bid", p, q) for p, q in book.bids.items()]
             changes.extend(("ask", p, q) for p, q in book.asks.items())
+            changes.extend(
+                (side, price, quantity) for (side, price), quantity in tombstones.items()
+            )
             exchange = local
+            exchange_upper, precision = local, "CAPTURE_BOUND"
         elif data.get("e") == "depthUpdate":
             if data.get("s", "USDCUSDT") != "USDCUSDT":
                 raise ValueError("wrong native symbol")
@@ -469,13 +497,15 @@ def iter_native_events(
             changes = apply(data)
             if old_id == last_id:
                 continue
-            exchange = native_exchange_microseconds(data["E"])
+            exchange, exchange_upper, precision = native_exchange_interval(data["E"])
         else:
             continue
         event: dict[str, Any] = {
             "kind": "BOOK",
             "local_us": local,
             "exchange_us": exchange,
+            "exchange_upper_us": exchange_upper,
+            "exchange_precision": precision,
             "capture_order": capture_order,
             "native_update_id": last_id,
             "is_snapshot": snapshot,
