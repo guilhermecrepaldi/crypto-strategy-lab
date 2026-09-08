@@ -1,6 +1,5 @@
 import hashlib
 import json
-import sys
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from types import SimpleNamespace
@@ -67,140 +66,43 @@ def test_runtime_class_cannot_silently_resolve_to_other_file(tmp_path):
         runtime_class_evidence(SimpleNamespace, tmp_path / "wrong.py")
 
 
-def test_actual_runner_snapshots_strict_day_prefix_and_binds_curves(tmp_path, monkeypatch):
+def test_weekly_scope_rejects_automatic_extension():
+    design = json.loads(runner.SPEC.read_text())
+    assert runner.validate_weekly_scope(design)[1] == datetime(2026, 1, 8, tzinfo=UTC)
+    for changes in (
+        {"end_exclusive": "2026-01-15T00:00:00+00:00"},
+        {"model_id": "M013"},
+        {"daily_positive_cycle_target": 1000},
+    ):
+        with pytest.raises(ValueError, match="OWNER_WEEK_1_SCOPE_REQUIRED"):
+            runner.validate_weekly_scope({**design, **changes})
+
+
+def test_campaign_lock_excludes_second_writer_and_releases_after_failure(tmp_path):
+    with pytest.raises(RuntimeError, match="fixture"), runner.campaign_writer_lock(tmp_path):
+        with pytest.raises(OSError), runner.campaign_writer_lock(tmp_path):
+            pytest.fail("second writer acquired the campaign lock")
+        raise RuntimeError("fixture")
+    with runner.campaign_writer_lock(tmp_path):
+        pass
+
+
+def test_actual_week_stream_saves_seven_strict_boundaries_and_preserves_state(
+    tmp_path, monkeypatch
+):
     start = datetime(2026, 1, 1, tzinfo=UTC)
-    end = datetime(2026, 9, 5, 23, 59, 59, 783644, tzinfo=UTC)
-    times = [
-        start + timedelta(hours=1),
-        start + timedelta(days=90),
-        end - timedelta(microseconds=1),
-    ]
+    end = datetime(2026, 1, 8, tzinfo=UTC)
+    times = [start + timedelta(hours=1), start + timedelta(days=1), end - timedelta(microseconds=1)]
     stamps = [runner._datetime_to_micros(t) for t in times]
+    tape = SimpleNamespace(
+        events=[t * 4096 for t in stamps], price_ticks=[100] * 3, tick_size=Decimal("0.01")
+    )
     calls = []
 
-    class Replay:
-        def __init__(self, *args, **kwargs):
-            assert kwargs["identity"]["capital_mode"] == "COMPOUNDING"
-            self.processed_trades = 0
-            self.last_us = runner._datetime_to_micros(start)
-            self.execution = SimpleNamespace(audit=[], counts={})
-
-        def advance_to(self, boundary):
-            calls.append(("advance", boundary, self.processed_trades))
-
-        def step(self, event):
-            self.last_us = event.time_us
-            self.processed_trades += 1
-            calls.append(("trade", event.time_us, self.processed_trades))
-
-        def checkpoint(self):
-            return {"sha256": "testpayload", "payload": {"processed": self.processed_trades}}
-
-        def metrics(self, as_of_us=None):
-            timestamp = self.last_us if as_of_us is None else as_of_us
-            return {
-                "SIMULATION_TIMESTAMP": str(timestamp),
-                "OPERATING_BANK": "100",
-                "RESERVE": "5",
-                "TOTAL_EQUITY": "105",
-                "CURRENT_POSITION_NOTIONAL": "0",
-            }
-
-        def finish(self):
-            assert self.processed_trades == 3
-
-    class Registry:
-        def get(self, *args):
-            return SimpleNamespace(
-                model={"strategy": "HIGH_UPTIME_DYNAMIC_RECOVERY"}, model_hash="b" * 64
-            )
-
-        def current_status(self, *args):
-            return runner.ModelStatus.CREATED
-
-        def append_scenario(self, *args):
-            return {"payload": {"SCENARIO_HASH": "c" * 64}}
-
-        def append_run(self, *args):
-            return {"payload": {"RUN_HASH": "d" * 64}}
-
-        def transition(self, *args, **kwargs):
-            pass
-
-    for name, value in {
-        "published_sha": lambda: "a" * 40,
-        "published_bytes": lambda *a: None,
-        "runtime_class_evidence": lambda *a: {"class": "test.Replay"},
-        "validate_registered_design": lambda *a: {},
-        "validate_review": lambda *a: None,
-        "ModelRegistry": Registry,
-        "RecoveryReserveRuntime": lambda *a: None,
-    }.items():
-        monkeypatch.setattr(runner, name, value)
-    monkeypatch.setitem(
-        sys.modules,
-        "crypto_strategy_lab.microstructure.high_uptime_recovery",
-        SimpleNamespace(HighUptimeRecoveryReplay=Replay),
-    )
-    audit = tmp_path / "physical.json"
-    audit.write_text(
-        json.dumps(
-            {
-                "coverage_exact": True,
-                "archive_count": 1,
-                "fresh_aggregate": {
-                    k: 1
-                    for k in (
-                        "existing_count",
-                        "manifest_hash_match_count",
-                        "manifest_size_match_count",
-                        "sidecar_hash_match_count",
-                        "zip_test_ok_count",
-                    )
-                },
-            }
-        )
-    )
-    config = json.loads(runner.PROFILE_CONFIG.read_text())
-    for key in (
-        "history_manifest",
-        "physical_archive_audit",
-        "calibration_manifest",
-        "official_rule_manifest",
-    ):
-        config[key] = str(audit)
-        config[key + "_sha256"] = runner.file_sha(audit)
-    config_path = tmp_path / "config.json"
-    config_path.write_text(json.dumps(config))
-    monkeypatch.setattr(runner, "PROFILE_CONFIG", config_path)
-    monkeypatch.setattr(runner, "PROFILE_CONFIG_SHA", runner.file_sha(config_path))
-    review = tmp_path / "review.md"
-    review.write_text("STATUS=PASS_CONDITIONAL_PRE_RUN\n")
-    monkeypatch.setattr(runner, "REVIEW", review)
-    history = SimpleNamespace(
-        symbol="USDCUSDT", kind="trades", integrity_status="VALID", dataset_hash="e" * 64
-    )
-    monkeypatch.setattr(
-        runner, "HistoryManifest", SimpleNamespace(model_validate_json=lambda *a: history)
-    )
-    tape = SimpleNamespace(
-        events=[t * 4096 for t in stamps],
-        price_ticks=[1, 1, 1],
-        tick_size=Decimal(1),
-        tape_hash=runner.TAPE_HASH,
-        timelines=lambda *a: {},
-    )
-    monkeypatch.setattr(
-        runner,
-        "load_evaluated_run_evidence",
-        lambda *a: SimpleNamespace(
-            tape=tape, tape_manifest=SimpleNamespace(dataset_hash=history.dataset_hash)
-        ),
-    )
-    monkeypatch.setattr(
-        runner,
-        "iter_history",
-        lambda *a, **kw: iter(
+    def history_reader(history, *, start, end_exclusive):
+        assert end_exclusive <= end
+        calls.append((start, end_exclusive))
+        return iter(
             [
                 SimpleNamespace(
                     timestamp=t,
@@ -210,22 +112,68 @@ def test_actual_runner_snapshots_strict_day_prefix_and_binds_curves(tmp_path, mo
                     buyer_is_maker=True,
                 )
                 for i, t in enumerate(times)
+                if start <= t < end_exclusive
             ]
-        ),
-    )
-    output = tmp_path / "run"
-    output.mkdir()
-    runner.run(output)
-    for day in (1, 7, 30, 90):
-        point = json.loads((output / "capital-checkpoints" / f"DAY_{day}.json").read_text())
-        boundary = runner._datetime_to_micros(start + timedelta(days=day))
-        assert point["SIMULATION_TIMESTAMP"] == str(boundary)
-        assert point["PROCESSED_TRADES"] == 1
-        assert point["CANONICAL_CUTOFF_EVENT"] == stamps[0] * 4096
-    assert calls.index(("advance", stamps[1], 1)) < calls.index(("trade", stamps[1], 2))
-    checkpoint = json.loads((output / "checkpoint.json").read_text())
-    curve = (output / "capital-curve.jsonl").read_bytes()
-    assert checkpoint["capital_curve"] == {
-        "bytes": len(curve),
-        "sha256": hashlib.sha256(curve).hexdigest(),
+        )
+
+    monkeypatch.setattr(runner, "iter_history", history_reader)
+
+    class Replay:
+        def __init__(self):
+            self.processed_trades = 0
+            self.last_us = runner._datetime_to_micros(start)
+            self.execution = SimpleNamespace(audit=[])
+            self.completed = False
+
+        def advance_to(self, boundary):
+            self.execution.audit.append({"boundary": boundary, "count": self.processed_trades})
+
+        def step(self, event):
+            self.last_us = event.time_us
+            self.processed_trades += 1
+
+        def checkpoint(self):
+            return {
+                "sha256": "fixture",
+                "payload": {"count": self.processed_trades, "open_position_preserved": True},
+            }
+
+        def metrics(self, as_of_us=None):
+            return {
+                "SIMULATION_TIMESTAMP": str(self.last_us if as_of_us is None else as_of_us),
+                "RUN_STATUS": "COMPLETE" if self.completed else "RUNNING",
+            }
+
+        def finish(self):
+            assert self.processed_trades == 3
+            self.completed = True
+
+    identity = {
+        "start": start.isoformat(),
+        "end_exclusive": end.isoformat(),
+        "model_hash": "model",
+        "run_hash": "run",
+        "published_config_sha": "source",
     }
+    runner.stream_week(None, tape, 0, Replay(), identity, tmp_path)
+    for day in range(1, 8):
+        score = json.loads((tmp_path / "capital-checkpoints" / f"DAY_{day}.json").read_bytes())
+        assert score["PROCESSED_TRADES"] == (1 if day == 1 else 3 if day == 7 else 2)
+        assert score["SIMULATION_TIMESTAMP"] == str(
+            runner._datetime_to_micros(start + timedelta(days=day))
+        )
+        assert score["NEXT_WEEK_AUTHORIZED"] is False
+    final = json.loads((tmp_path / "scoreboard.json").read_bytes())
+    assert final["RUN_STATUS"] == "COMPLETE"
+    assert final["EXTENSION_STATUS"] == "AWAITING_OWNER_APPROVAL"
+    saved = json.loads((tmp_path / "checkpoint.json").read_bytes())
+    assert saved["replay"]["payload"]["open_position_preserved"]
+    assert (
+        hashlib.sha256((tmp_path / "checkpoint.json").read_bytes()).hexdigest()
+        == final["CHECKPOINT_SHA256"]
+    )
+    assert (
+        saved["capital_curve"]["sha256"]
+        == hashlib.sha256((tmp_path / "capital-curve.jsonl").read_bytes()).hexdigest()
+    )
+    assert calls == [(datetime(2025, 12, 31, tzinfo=UTC), start), (start, end)]

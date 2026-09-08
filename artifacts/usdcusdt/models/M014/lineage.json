@@ -1,0 +1,17 @@
+{
+  "ancestor_chain": [
+    "M005",
+    "M006",
+    "M007"
+  ],
+  "change_category": "B10_F25_OWNER_RESERVE_RECONSTRUCTION",
+  "change_summary": "B10 F2.5 scientific parent, enhanced reserve, compounding ledger, conditional profile B, first week only.",
+  "parent_model_id": "M007",
+  "parent_run_hash": null,
+  "references": {
+    "autopsy": "reports/usdcusdt/B10-week1-divergence.md",
+    "parent_artifact_identity": "097abdab8225038b091cb721bdd36bedb8a636c94bed1c87120adc0c9e10953a",
+    "preregistration": "docs\\microstructure\\M014_B10_RESERVE_PREREGISTRATION.md",
+    "scientific_parent": "RRV2_H1_B10_F2.5"
+  }
+}

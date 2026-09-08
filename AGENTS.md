@@ -1,5 +1,19 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER vigente — resgate B10 F2.5 e meta 2.000/dia
+
+O OWNER reabriu explicitamente o estudo/otimização do RRV2_H1_B10_F2.5
+da identidade097abdab. Meta agora2.000 ciclos completos líquidos positivos por
+dia, somente1–7janeiro inicialmente; cada extensão exige aprovação específica.
+Consultar M014_MODEL_SPEC.json e M014_B10_RESERVE_PREREGISTRATION.md.
+Primeiro reconstruir B10 H1/F2.5/M007 com a reserva OWNER100+10 e funding10%,
+compounding, usando ledger/fills reais simulados. M013 não é o pai automático.
+Uma fila serial isola essa reconstrução; não importar seletor/urgência6h do M013.
+Qualquer otimização posterior de admissão precisa da autópsia e de identidade nova;
+não mudar configuração no meio da semana para alcançar a meta.
+Preservar B10 antigo, M012 e M013. Reabertura não autoriza retomar gauntlet antigo,
+fazer sweep, acessar conta ou processar a segunda semana sem aprovação.
+
 ## Autoridade OWNER vigente — SEMANA A SEMANA, 2026-09-07
 
 O OWNER substituiu janeiro inteiro e TWO_STAGE por uma primeira semana somente:

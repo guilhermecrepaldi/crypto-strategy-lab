@@ -39,16 +39,31 @@ POLICY = {
     "urgency_hours": [12, 18, 24],
     "withdrawals": False,
 }
+B10_OWNER_POLICY = {
+    "model_id": "M014",
+    "capital_mode": "COMPOUNDING",
+    "initial_operating": "100",
+    "initial_reserve": "10",
+    "profit_funding": "0.10",
+    "reserve_floor_absolute": "2.5",
+    "decisions": "B10_H1_B10_F2.5",
+    "forced_timeout": False,
+}
 
 
 class HighUptimeExecution(B10Execution):
-    def __init__(self, profile: ExecutionProfile, rules: SymbolRules) -> None:
+    def __init__(
+        self, profile: ExecutionProfile, rules: SymbolRules, *, b10_owner_reserve: bool = False
+    ) -> None:
         super().__init__(profile, rules)
+        self.b10_owner_reserve = b10_owner_reserve
+        if b10_owner_reserve:
+            self.reserve = self.reserve_min = D(10)
         self.lot_budget = ZERO
         self.reserve_escrow = ZERO
         self.needs_reselection = False
         self.supported_best_level: Decimal | None = None
-        self.policy_hash = canonical_hash(POLICY)
+        self.policy_hash = canonical_hash(B10_OWNER_POLICY if b10_owner_reserve else POLICY)
 
     @property
     def operating_bank(self) -> Decimal:
@@ -64,6 +79,8 @@ class HighUptimeExecution(B10Execution):
 
     @property
     def reserve_floor(self) -> Decimal:
+        if self.b10_owner_reserve:
+            return D("2.5")
         with localcontext() as ctx:
             ctx.prec = 128
             return max(D("0.00000001"), self.operating_bank * D("0.001"))
@@ -78,6 +95,8 @@ class HighUptimeExecution(B10Execution):
                 return {"eligible": False, "reason": "NO_SELLABLE_QUANTITY"}
             restored_bank = self.operating_bank + self.sold_cost - self.sell_net
             guard = max(D("0.00000001"), D("0.001") * max(self.operating_bank, restored_bank))
+            if self.b10_owner_reserve:
+                guard = D("2.5")
             budget = max(ZERO, self.reserve - guard)
             cost = self.sold_cost + self.cost * quantity / self.inventory
             minimum = max(
@@ -205,7 +224,9 @@ class HighUptimeExecution(B10Execution):
         before = self.order
         super()._advance(time_us)
         if before is not None and before.release and self.order is None:
-            self.reserve_escrow = ZERO
+            self.reserve_escrow = (
+                max(ZERO, self.sold_cost - self.sell_net) if self.b10_owner_reserve else ZERO
+            )
 
     def _settle(self, time_us: int) -> None:
         if self.inventory >= self.rules.step_size:
@@ -217,11 +238,13 @@ class HighUptimeExecution(B10Execution):
         profit = self.sell_net - self.sold_cost
         forced = self.release_execution_started
         deficit = max(ZERO, -profit) if forced else ZERO
-        funding = max(ZERO, profit) * D("0.05")
+        funding = max(ZERO, profit) * (D("0.10") if self.b10_owner_reserve else D("0.05"))
         equity_before = self.cash + self.reserve
         if deficit:
             post_cash = self.cash + deficit
             post_floor = max(D("0.00000001"), (post_cash + self.dust_cost) * D("0.001"))
+            if self.b10_owner_reserve:
+                post_floor = D("2.5")
             if self.reserve - deficit < post_floor or deficit > self.reserve_escrow:
                 raise ValueError("M012_REALIZED_DEFICIT_EXCEEDS_PROTECTED_ESCROW")
             self.reserve -= deficit
@@ -270,9 +293,175 @@ class HighUptimeExecution(B10Execution):
         self.release_signal_bank = self.release_signal_id = None
 
     def restore(self, checkpoint: dict[str, Any]) -> None:
+        expected_policy = self.policy_hash
         super().restore(checkpoint)
-        if self.policy_hash != canonical_hash(POLICY):
+        if self.policy_hash != expected_policy:
             raise ValueError("M012_CHECKPOINT_POLICY_MISMATCH")
+
+
+class B10ReserveReplay(B10RealityReplay):
+    """M014: original F2.5 decisions with OWNER treasury, never M012 urgency."""
+
+    def __init__(
+        self,
+        runtime: Any,
+        profile: ExecutionProfile,
+        rules_at: Callable[[int], SymbolRules],
+        envelope: BookEnvelope,
+        *,
+        start_us: int,
+        end_us: int,
+        identity: dict[str, Any],
+        gaps: tuple[tuple[int, int], ...] = (),
+    ) -> None:
+        if identity.get("model_id") != "M014" or identity.get("capital_mode") != "COMPOUNDING":
+            raise ValueError("M014_COMPOUNDING_IDENTITY_REQUIRED")
+        super().__init__(
+            runtime,
+            profile,
+            rules_at,
+            envelope,
+            start_us=start_us,
+            end_us=end_us,
+            identity=identity,
+            gaps=gaps,
+            decision_reserve_floor=D("2.5"),
+        )
+        self.execution = HighUptimeExecution(profile, rules_at(start_us), b10_owner_reserve=True)
+        self.execution.supported_best_level = envelope.release_depth
+        self.peak_equity = D(110)
+        self.metrics_last_us = start_us
+        self.working_order_us = self.holding_us = 0
+        self.last_release_epoch: int | None = None
+
+    @property
+    def engine(self) -> HighUptimeExecution:
+        return cast(HighUptimeExecution, self.execution)
+
+    def _integrate(self, timestamp: int) -> None:
+        if timestamp < self.metrics_last_us:
+            raise ValueError("M014_NONCAUSAL_METRICS")
+        delta = timestamp - self.metrics_last_us
+        if self.engine.order is not None:
+            self.working_order_us += delta
+        if self.engine.entry_us is not None:
+            self.holding_us += delta
+        self.metrics_last_us = timestamp
+
+    def _clock(self, timestamp: int) -> None:
+        self._integrate(timestamp)
+        super()._clock(timestamp)
+
+    def _submit_next(self, timestamp: int) -> None:
+        if self.engine.releasing:
+            if self.engine.order is not None or self.last_release_epoch == self.depth_epoch:
+                return
+            protected = self.engine.protected_exit()
+            if not protected["eligible"]:
+                self.engine.counts[protected["reason"]] += 1
+                return
+            if self.engine.submit("SELL", protected["price"], timestamp, release=True) is not None:
+                self.last_release_epoch = self.depth_epoch
+            return
+        super()._submit_next(timestamp)
+
+    def step(self, trade: Trade) -> None:
+        # Timer integration must occur in order, before the incoming trade.
+        if self.completed or not self.start_us <= trade.time_us < self.end_us:
+            raise ValueError("TRADE_OUTSIDE_REPLAY_INTERVAL")
+        if trade.time_us < self.metrics_last_us:
+            raise ValueError("M014_NONCAUSAL_TRADE")
+        while self._next_clock() <= trade.time_us:
+            self._clock(self._next_clock())
+        self._integrate(trade.time_us)
+        super().step(trade)
+
+    def advance_to(self, timestamp_us: int) -> None:
+        if timestamp_us < self.metrics_last_us or timestamp_us > self.end_us:
+            raise ValueError("M014_INVALID_TIME_ADVANCE")
+        while self._next_clock() <= timestamp_us and self._next_clock() < self.end_us:
+            self._clock(self._next_clock())
+        self._integrate(timestamp_us)
+
+    def metrics(self, as_of_us: int | None = None) -> dict[str, Any]:
+        timestamp = self.metrics_last_us if as_of_us is None else as_of_us
+        if timestamp != self.metrics_last_us:
+            raise ValueError("M014_METRICS_REQUIRE_ADVANCED_PREFIX")
+        engine = self.engine
+        with localcontext() as ctx:
+            ctx.prec = 128
+            bid = engine.bids[0][0] if engine.bids else ZERO
+            equity = engine.cash + engine.reserve + (engine.inventory + engine.dust) * bid
+            age = timestamp - engine.entry_us if engine.entry_us is not None else 0
+            elapsed = timestamp - self.start_us
+            closed_days = elapsed // (24 * HOUR)
+            cutoff_day = datetime.fromtimestamp(timestamp / 1_000_000, UTC).date().isoformat()
+            active_days = sum(
+                count > 0 and day < cutoff_day for day, count in self.net_days.items()
+            )
+            realized_fees = engine.realized_cycle_fees + sum(
+                (D(row["realized_fees_quote"]) for row in engine.settlements), ZERO
+            )
+            realized_net = engine.operating_bank + engine.reserve - D(110)
+            return {
+                "MODEL_ID": "M014",
+                "CAPITAL_MODE": "COMPOUNDING",
+                "SIMULATION_TIMESTAMP": datetime.fromtimestamp(
+                    timestamp / 1_000_000, UTC
+                ).isoformat(),
+                "SIMULATION_TIMESTAMP_US": timestamp,
+                "PROCESSED_TRADES": self.processed_trades,
+                "OPERATING_BANK": str(engine.operating_bank),
+                "OPERATING_CASH": str(engine.cash),
+                "RESERVE": str(engine.reserve),
+                "TOTAL_EQUITY": str(equity),
+                "NET_REALIZED_PNL": str(engine.operating_bank + engine.reserve - D(110)),
+                "REALIZED_GROSS_PNL": str(realized_net + realized_fees),
+                "REALIZED_FEES_QUOTE": str(realized_fees),
+                "TOTAL_FEES_QUOTE": str(engine.fees),
+                "OPEN_INVENTORY": str(engine.inventory),
+                "DUST_BASE": str(engine.dust),
+                "DUST_COST_BASIS": str(engine.dust_cost),
+                "CURRENT_POSITION_NOTIONAL": str(engine.cost),
+                "CYCLE_NOTIONAL": str(engine.lot_budget),
+                "FULL_FILL_CYCLES": engine.counts["FULLY_FILLED_CYCLES"],
+                "NET_POSITIVE_CYCLES": engine.counts["NET_POSITIVE_CYCLES"],
+                "RELEASE_FILLED": engine.counts["RELEASE_FILLED"],
+                "RESERVE_FUNDING": str(engine.reserve_funding),
+                "RESERVE_CONSUMPTION": str(engine.reserve_consumption),
+                "MIN_RESERVE": str(engine.reserve_min),
+                "RESERVE_ESCROW": str(engine.reserve_escrow),
+                "DAILY_FULL_CYCLES": dict(self.full_days),
+                "DAILY_NET_POSITIVE_CYCLES": dict(self.net_days),
+                "COMPLETED_UTC_DAYS": closed_days,
+                "ZERO_CYCLE_DAYS": max(0, closed_days - active_days),
+                "CURRENT_HOLD_HOURS": str(D(age) / HOUR),
+                "MAX_HOLD_HOURS": str(D(max([*self.holds_us, age])) / HOUR),
+                "HOLDING_HOURS": str(D(self.holding_us) / HOUR),
+                "WORKING_ORDER_HOURS": str(D(self.working_order_us) / HOUR),
+                "FLAT_HOURS": str(D(elapsed - self.holding_us) / HOUR),
+                "MAX_DRAWDOWN_PCT": str(self.max_drawdown * 100),
+                "HOLDS_OVER_24H": sum(h >= 24 * HOUR for h in self.holds_us)
+                + int(age >= 24 * HOUR),
+                "COUNTS": dict(engine.counts),
+                "VERDICT": "PENDING",
+                "STATUS": "AWAITING_OWNER_APPROVAL" if self.completed else "RUNNING",
+                "RUN_STATUS": "COMPLETE" if self.completed else "RUNNING",
+                "EXECUTION_EVIDENCE": "CONDITIONAL_PILOT_NOT_HISTORICAL_L2",
+            }
+
+    def finish(self) -> dict[str, Any]:
+        if self.last_mark is None:
+            raise ValueError("NO_REPLAY_TRADES")
+        if self.last_us != self.identity.get("expected_last_trade_us", self.end_us - 1):
+            raise ValueError("PHYSICAL_CUTOFF_NOT_REACHED")
+        if self.processed_trades != self.identity.get(
+            "expected_trade_count", self.processed_trades
+        ):
+            raise ValueError("FULL_INTERVAL_TRADE_COUNT_MISMATCH")
+        self.advance_to(self.end_us)
+        self.completed = True
+        return self.metrics()
 
 
 class HighUptimeRecoveryReplay(B10RealityReplay):

@@ -565,11 +565,15 @@ class FrozenB10Decisions:
     not an automatic driver: cancellation and release execution stay asynchronous.
     """
 
-    def __init__(self, recovery_runtime: Any, *, start_event: int) -> None:
+    def __init__(
+        self, recovery_runtime: Any, *, start_event: int, reserve_floor: Decimal = ZERO
+    ) -> None:
         from .recovery_reserve import ReserveConfig
         from .serial_replay import _State
 
-        if recovery_runtime.config != ReserveConfig(D("0.02"), 1, D(10), ZERO):
+        if reserve_floor not in (ZERO, D("2.5")):
+            raise ValueError("UNREGISTERED_B10_FLOOR")
+        if recovery_runtime.config != ReserveConfig(D("0.02"), 1, D(10), reserve_floor):
             raise ValueError("B10_FROZEN_CONFIG_MISMATCH")
         if recovery_runtime.parent.model_id != "M007":
             raise ValueError("B10_SELECTOR_ANCESTRY_MISMATCH")
@@ -727,6 +731,7 @@ class B10RealityReplay:
         end_us: int,
         identity: dict[str, Any],
         gaps: tuple[tuple[int, int], ...] = (),
+        decision_reserve_floor: Decimal = ZERO,
     ) -> None:
         from .serial_replay import EVENT_ORDER_SCALE
 
@@ -737,7 +742,9 @@ class B10RealityReplay:
         self.start_us, self.end_us, self.identity = start_us, end_us, identity
         self.rules_at, self.envelope, self.gaps = rules_at, envelope, gaps
         self.execution = B10Execution(profile, rules_at(start_us))
-        self.decisions = FrozenB10Decisions(runtime, start_event=start_us * EVENT_ORDER_SCALE)
+        self.decisions = FrozenB10Decisions(
+            runtime, start_event=start_us * EVENT_ORDER_SCALE, reserve_floor=decision_reserve_floor
+        )
         self.interval = (runtime.parent.decision_interval_minutes or 1) * 60_000_000
         self.next_decision = start_us + self.interval
         self.next_release: int | None = None

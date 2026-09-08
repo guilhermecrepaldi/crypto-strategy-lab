@@ -54,6 +54,44 @@ def test_fixed_primary_report_fails_closed(tmp_path):
         report.publish(tmp_path)
 
 
+def test_m014_daily_cycles_separate_releases_and_require_checkpoint(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(report, "reference_count", lambda _: pytest.fail("F0 is not F2.5 control"))
+    (tmp_path / "docs/research").mkdir(parents=True)
+    folder = tmp_path / "run"
+    folder.mkdir()
+    (folder / "checkpoint.json").write_bytes(b"{}")
+    row = {
+        "MODEL_ID": "M014",
+        "CAPITAL_MODE": "COMPOUNDING",
+        "RUN_STATUS": "RUNNING",
+        "CHECKPOINT_REASON": "DAY_1",
+        "SIMULATION_TIMESTAMP": "2026-01-02T00:00:00+00:00",
+        "OPERATING_BANK": "100.018",
+        "RESERVE": "10.002",
+        "TOTAL_EQUITY": "110.02",
+        "DAILY_FULL_CYCLES": {"2026-01-01": 2},
+        "DAILY_NET_POSITIVE_CYCLES": {"2026-01-01": 2},
+        "RELEASE_FILLED": 1,
+        "FULL_FILL_CYCLES": 2,
+        "CANONICAL_CUTOFF_EVENT": 1,
+        "CHECKPOINT_SHA256": hashlib.sha256(b"{}").hexdigest(),
+    }
+    raw = (json.dumps(row) + "\n").encode()
+    row["CAPITAL_CURVE_PREFIX"] = {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
+    (folder / "capital-curve.jsonl").write_bytes(raw)
+    (folder / "scoreboard.json").write_text(json.dumps(row))
+    result = report.publish(folder, 7, 0)
+    assert result["DAYS_MEETING_2000_TARGET"] == 0
+    assert result["REALITY_RETENTION"] is None
+    assert result["DAILY_CLOSES"]["2026-01-01"]["FULL_FILL_CYCLES"] == 2
+    text = (report.ROOT / "M014-reality-report.md").read_text(encoding="utf-8")
+    assert "100.018000 | 10.002000 | 110.020000 | 2 | 2 | 1" in text
+    (folder / "checkpoint.json").write_bytes(b'{"changed":true}')
+    with pytest.raises(ValueError, match="CHECKPOINT_SCOREBOARD_BINDING_MISMATCH"):
+        report.publish(folder)
+
+
 def test_curve_rejects_tampered_prefix(tmp_path):
     path = tmp_path / "curve.jsonl"
     path.write_bytes(b"{}\n")

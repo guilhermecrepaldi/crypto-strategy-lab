@@ -1,5 +1,9 @@
 # Replay semanal com aprovação humana
 
+Atualização posterior: OWNER reabriu o estudo do B10 F2.5 e elevou a meta para
+2.000 ciclos líquidos positivos por dia. A primeira semana M014 está especificada
+em M014_B10_RESERVE_PREREGISTRATION.md. Extensões continuam sem autorização.
+
 Autoridade: mensagens OWNER de 2026-09-07 nesta tarefa.
 
 > vamos refletir 1 semana somente, conseguindo reproduzir os ciclos, usando a reserva, fazendo funcionar, ampliamos a simulação para 2, dando certo, 3, e por ai vai, semana a semana. mas somente mediante minha aprovação
@@ -34,8 +38,8 @@ O próximo ID livre observado foi M014; observação não é registro nem execu�
 
 ## Placar e objetivo
 
-Objetivo: pelo menos 1.000 ciclos ordinários operacionais completos, com lucro
-líquido positivo, em cada dia UTC. Somar 7.000 ciclos não basta se um dia ficou abaixo.
+Objetivo: pelo menos 2.000 ciclos ordinários operacionais completos, com lucro
+líquido positivo, em cada dia UTC. Somar 14.000 ciclos não basta se um dia ficou abaixo.
 Comprar/vender integralmente é necessário; tentativas, parciais, releases e ciclos
 da reserva ativa são categorias separadas, não infladores da meta operacional.
 

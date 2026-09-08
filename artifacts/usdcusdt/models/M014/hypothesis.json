@@ -1,0 +1,7 @@
+{
+  "change": "B10 F2.5 ancestry; initial reserve 5 to 10 and positive profit funding 2 to 10 percent; original selection and H1 preserved.",
+  "expected_effect": "Increase loss coverage and replenishment without M013 selector/urgency; measure rather than assume throughput improvement.",
+  "hypothesis": "Reconstructing B10 H1 selection and reserve recovery with OWNER compounding treasury restores an interpretable executable baseline.",
+  "observation": "M013 week1 one cycle, no reserve consumption, obsolete BUY bug; selector and recovery timing diverged from B10 F2.5.",
+  "reason_for_new_model": "Owner reopened B10 optimization; new treasury and weekly horizon require new immutable identity."
+}

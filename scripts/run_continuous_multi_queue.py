@@ -76,7 +76,7 @@ def prefix_archives(history, start=WARMUP_START, end=STAGE_1_END):
     return selected
 
 
-def load_stage1_tape(history, output):
+def load_stage1_tape(history, output, *, end=STAGE_1_END):
     """Derive only the authorized physical prefix; never hash or scan sealed array suffixes."""
     import numpy as np
 
@@ -93,7 +93,7 @@ def load_stage1_tape(history, output):
         load_or_build_tape,
     )
 
-    selected = prefix_archives(history)
+    selected = prefix_archives(history, end=end)
     archive_bindings = []
     for item in selected:
         path = Path(item.local_path)
@@ -112,7 +112,7 @@ def load_stage1_tape(history, output):
         raise ValueError("CANONICAL_SOURCE_TAPE_IDENTITY_MISMATCH")
     count = sum(item.record_count for item in selected)
     lower = _datetime_to_micros(WARMUP_START) * EVENT_ORDER_SCALE
-    upper = _datetime_to_micros(STAGE_1_END) * EVENT_ORDER_SCALE
+    upper = _datetime_to_micros(end) * EVENT_ORDER_SCALE
 
     def derive():
         arrays = {}
@@ -153,11 +153,11 @@ def load_stage1_tape(history, output):
     result = load_or_build_tape(
         history,
         start=WARMUP_START,
-        end_exclusive=STAGE_1_END,
+        end_exclusive=end,
         raw_loader=derive,
         progress=lambda name, percentage: print(f"M013_PREFIX_{name}={percentage}%", flush=True),
     )
-    if result.manifest.records != count or result.manifest.end_exclusive != STAGE_1_END:
+    if result.manifest.records != count or result.manifest.end_exclusive != end:
         raise ValueError("DERIVED_PREFIX_COUNT_OR_INTERVAL_MISMATCH")
     provenance = {
         "method": "AUTHORIZED_PREFIX_DERIVED_FROM_CANONICAL_MMAP",
