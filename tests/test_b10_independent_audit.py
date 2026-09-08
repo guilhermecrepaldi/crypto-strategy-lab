@@ -27,6 +27,43 @@ def test_passive_bound_rejects_invalid_queue():
         AUDITOR["passive_cycle_upper_bound"]("100", "100", "0")
 
 
+def test_priority_independent_audit_partial_then_equal_and_own_limit(tmp_path):
+    from test_priority_trade_through import engine
+
+    from crypto_strategy_lab.microstructure.b10_reality import Trade
+
+    value = engine()
+    value._advance(11)
+    value.trade(Trade(12, 2, D(".9998"), D(30), True))
+    value.trade(Trade(13, 3, D(1), D(70), True))
+    value.submit("SELL", D("1.001"), 14)
+    value._advance(25)
+    value.trade(Trade(26, 4, D("1.002"), D(100), False))
+    profile = {"maker_fee": "0", "taker_fee": "0"}
+    ledger = AUDITOR["reconstruct"](iter(value.audit), profile,
+                                    owner_reserve=True, price_priority=True)
+    assert ledger["cash"] == value.cash == D("100.09")
+    assert ledger["reserve"] == value.reserve == D("10.01")
+    assert len(ledger["priority_inferences"]) == 2
+    with pytest.raises(ValueError, match="INVALID_PRICE_PRIORITY_ACTIVATION"):
+        AUDITOR["reconstruct"](iter(value.audit), profile, owner_reserve=True)
+    archive = tmp_path / "trades.zip"
+    with zipfile.ZipFile(archive, "w") as zipped:
+        zipped.writestr("trades.csv", "2,.9998,30,29.994,12,true,true\n"
+                        "3,1,70,70,13,true,true\n4,1.002,100,100.2,26,false,true\n")
+    history = {"archives": [{"utc_date": "1970-01-01", "local_path": str(archive),
+                             "sha256": AUDITOR["digest"](archive)}]}
+    support = AUDITOR["audit_raw_support"](
+        history, ledger["orders"], ledger["fills"], {1, 2}, [], {}, [],
+        priority_inferences=ledger["priority_inferences"])
+    assert support["raw_source_ids_found"] == 3
+    bad = copy.deepcopy(value.audit)
+    next(row for row in bad if row["kind"] == "PRICE_THROUGH_PRIORITY_INFERENCE")[
+        "activation_evaluated_us"] = 12
+    with pytest.raises(ValueError, match="INVALID_PRICE_PRIORITY_ACTIVATION"):
+        AUDITOR["reconstruct"](iter(bad), profile, owner_reserve=True, price_priority=True)
+
+
 @pytest.mark.parametrize("fee", ["0", "0.0001", "0.001"])
 def test_independent_ledger_reconstructs_actual_kernel_and_detects_money_change(fee):
     subject = FIXTURE["engine"](fee)

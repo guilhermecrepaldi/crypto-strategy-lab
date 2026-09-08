@@ -6,11 +6,11 @@ MINIMUM_DAILY_POSITIVE_CYCLES=500
 ASPIRATIONAL_DAILY_POSITIVE_CYCLES=2000
 SECOND_WEEK=PREAUTHORIZED_CONDITIONALLY_ON_500_EACH_DAY_PLUS_AUDIT
 CURRENT_SECOND_WEEK_GATE=NOT_SATISFIED
-NEW_RUN=NONE
+NEW_RUN=M015_CREATED_NOT_YET_EXECUTED
 OBJECTIVE_COMPLETE=false
-RESEARCH_STATE=FROZEN_PASSIVE_PROFILE_CAPACITY_CONSTRAINT_VERIFIED
-NEXT_ACTION=Review support for a genuinely different execution hypothesis;
-do not tune the frozen queue to force the target or access Jan8+ prematurely.
+RESEARCH_STATE=M015_CONDITIONAL_PRICE_PRIORITY_PREFLIGHT_REVIEWED
+NEXT_ACTION=Publish registered M015 and run first week only after clean-source gates.
+M015_MODEL_HASH=4231670b19b1ca5c2b5032b1476b83b3182d1463750ea944da5efb867d81a8fa
 EVIDENCE=reports/usdcusdt/B10-week1-capacity-review.md
 
 O fechamento M014 abaixo é histórico e imutável. "Não autorizado" ali refere-se

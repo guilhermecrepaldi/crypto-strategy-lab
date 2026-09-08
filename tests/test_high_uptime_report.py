@@ -113,3 +113,45 @@ def test_curve_rejects_tampered_prefix(tmp_path):
     path.write_bytes(b"{}\n")
     with pytest.raises(ValueError, match="CAPITAL_CURVE_PREFIX_HASH_MISMATCH"):
         report.read_curve_prefix(path, {"bytes": 3, "sha256": "bad"})
+
+
+def test_m015_week_gate_requires_all_seven_days_and_audit(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "docs/research").mkdir(parents=True)
+    folder = tmp_path / "run"
+    folder.mkdir()
+    (folder / "checkpoint.json").write_bytes(b"m015-checkpoint")
+    row = {
+        "MODEL_ID": "M015",
+        "CAPITAL_MODE": "COMPOUNDING",
+        "RUN_STATUS": "COMPLETE",
+        "SIMULATION_TIMESTAMP": "2026-01-08T00:00:00+00:00",
+        "OPERATING_BANK": "100",
+        "RESERVE": "10",
+        "TOTAL_EQUITY": "110",
+        "FULL_FILL_CYCLES": 3500,
+        "NET_POSITIVE_CYCLES": 3500,
+        "RELEASE_FILLED": 0,
+        "DAILY_NET_POSITIVE_CYCLES": {f"2026-01-0{day}": 500 for day in range(1, 8)},
+        "CHECKPOINT_SHA256": hashlib.sha256(b"m015-checkpoint").hexdigest(),
+        "CANONICAL_CUTOFF_EVENT": 1,
+    }
+    raw = (json.dumps(row) + "\n").encode()
+    row["CAPITAL_CURVE_PREFIX"] = {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
+    (folder / "capital-curve.jsonl").write_bytes(raw)
+    scoreboard_raw = json.dumps(row).encode()
+    (folder / "scoreboard.json").write_bytes(scoreboard_raw)
+    (folder / "independent-audit.json").write_text(
+        json.dumps(
+            {
+                "status": "PASS_CONDITIONAL",
+                "scoreboard_sha256": hashlib.sha256(scoreboard_raw).hexdigest(),
+                "checkpoint_sha256": row["CHECKPOINT_SHA256"],
+            }
+        )
+    )
+    result = report.publish(folder)
+    assert result["DAYS_MEETING_500_TARGET"] == 7
+    assert result["GATE_TO_WEEK_2"] is True
+    assert result["VERDICT"] == "PASS_CONDITIONAL_WEEK_2_GATE"
+    assert (report.ROOT / "M015-reality-report.md").exists()

@@ -53,10 +53,19 @@ B10_OWNER_POLICY = {
 
 class HighUptimeExecution(B10Execution):
     def __init__(
-        self, profile: ExecutionProfile, rules: SymbolRules, *, b10_owner_reserve: bool = False
+        self,
+        profile: ExecutionProfile,
+        rules: SymbolRules,
+        *,
+        b10_owner_reserve: bool = False,
+        priority_trade_through: bool = False,
     ) -> None:
+        if priority_trade_through and not b10_owner_reserve:
+            raise ValueError("PRIORITY_INFERENCE_REQUIRES_OWNER_RESERVE_POLICY")
         super().__init__(profile, rules)
         self.b10_owner_reserve = b10_owner_reserve
+        self.priority_trade_through = priority_trade_through
+        self.activation_evaluated_us: dict[str, int] = {}
         if b10_owner_reserve:
             self.reserve = self.reserve_min = D(10)
         self.lot_budget = ZERO
@@ -64,6 +73,14 @@ class HighUptimeExecution(B10Execution):
         self.needs_reselection = False
         self.supported_best_level: Decimal | None = None
         self.policy_hash = canonical_hash(B10_OWNER_POLICY if b10_owner_reserve else POLICY)
+        if priority_trade_through:
+            self.policy_hash = canonical_hash(
+                {
+                    **B10_OWNER_POLICY,
+                    "model_id": "M015",
+                    "execution_hypothesis": "PRIORITY_TRADE_THROUGH_CONDITIONAL",
+                }
+            )
 
     @property
     def operating_bank(self) -> Decimal:
@@ -222,11 +239,66 @@ class HighUptimeExecution(B10Execution):
 
     def _advance(self, time_us: int) -> None:
         before = self.order
+        was_pending = before is not None and before.status == "PENDING"
         super()._advance(time_us)
+        if (
+            self.priority_trade_through
+            and was_pending
+            and self.order is before
+            and before.status == "ACTIVE"
+            and not before.release
+        ):
+            self.activation_evaluated_us[str(before.order_id)] = time_us
         if before is not None and before.release and self.order is None:
             self.reserve_escrow = (
                 max(ZERO, self.sold_cost - self.sell_net) if self.b10_owner_reserve else ZERO
             )
+
+    def trade(self, trade: Trade) -> None:
+        # The authority performs causal validation, cancellation and ordinary
+        # equality-price queue depletion first. A through print cannot satisfy
+        # that equality branch, so its volume is still entirely unspent here.
+        super().trade(trade)
+        if not self.priority_trade_through:
+            return
+        order = self.order
+        if order is None or order.release or order.status != "ACTIVE" or not self.book_valid:
+            return
+        activated = self.activation_evaluated_us.get(str(order.order_id))
+        if activated is None or activated >= trade.time_us:
+            return
+        if order.cancel_us is not None and trade.time_us >= order.cancel_us:
+            return
+        if trade.buyer_maker != (order.side == "BUY"):
+            return
+        through = trade.price < order.price if order.side == "BUY" else trade.price > order.price
+        if not through:
+            return
+        with localcontext() as ctx:
+            ctx.prec = 128
+            quantity = min(trade.quantity, order.quantity - order.filled)
+            if quantity <= 0:
+                return
+            self._record(
+                "PRICE_THROUGH_PRIORITY_INFERENCE",
+                order_id=order.order_id,
+                time_us=trade.time_us,
+                trade_id=trade.trade_id,
+                raw_price=str(trade.price),
+                raw_quantity=str(trade.quantity),
+                buyer_maker=trade.buyer_maker,
+                order_limit=str(order.price),
+                queue_before=str(order.queue),
+                queue_after="0",
+                activation_evaluated_us=activated,
+                modeled_active_us=order.active_us,
+                own_quantity=str(quantity),
+                remaining_raw_quantity=str(trade.quantity - quantity),
+                evidence_class="COUNTERFACTUAL_PRICE_PRIORITY_NOT_OBSERVED_QUEUE_CLEARANCE",
+            )
+            order.queue = ZERO
+            self.counts["PRICE_THROUGH_PRIORITY_INFERENCE"] += 1
+            self._fill(order, quantity, order.price, trade.time_us, "TRADE_THROUGH", trade.trade_id)
 
     def _settle(self, time_us: int) -> None:
         if self.inventory >= self.rules.step_size:
@@ -314,8 +386,14 @@ class B10ReserveReplay(B10RealityReplay):
         identity: dict[str, Any],
         gaps: tuple[tuple[int, int], ...] = (),
     ) -> None:
-        if identity.get("model_id") != "M014" or identity.get("capital_mode") != "COMPOUNDING":
+        if (
+            identity.get("model_id") not in ("M014", "M015")
+            or identity.get("capital_mode") != "COMPOUNDING"
+        ):
             raise ValueError("M014_COMPOUNDING_IDENTITY_REQUIRED")
+        priority = identity.get("model_id") == "M015"
+        if identity.get("priority_trade_through", False) is not priority:
+            raise ValueError("M015_EXPLICIT_PRIORITY_HYPOTHESIS_REQUIRED")
         super().__init__(
             runtime,
             profile,
@@ -327,7 +405,9 @@ class B10ReserveReplay(B10RealityReplay):
             gaps=gaps,
             decision_reserve_floor=D("2.5"),
         )
-        self.execution = HighUptimeExecution(profile, rules_at(start_us), b10_owner_reserve=True)
+        self.execution = HighUptimeExecution(
+            profile, rules_at(start_us), b10_owner_reserve=True, priority_trade_through=priority
+        )
         self.execution.supported_best_level = envelope.release_depth
         self.peak_equity = D(110)
         self.metrics_last_us = start_us
@@ -404,7 +484,12 @@ class B10ReserveReplay(B10RealityReplay):
             )
             realized_net = engine.operating_bank + engine.reserve - D(110)
             return {
-                "MODEL_ID": "M014",
+                "MODEL_ID": self.identity["model_id"],
+                "EXECUTION_HYPOTHESIS": (
+                    "PRIORITY_TRADE_THROUGH_CONDITIONAL"
+                    if engine.priority_trade_through
+                    else "EXACT_PRICE_FIXED_QUEUE_CONDITIONAL"
+                ),
                 "CAPITAL_MODE": "COMPOUNDING",
                 "SIMULATION_TIMESTAMP": datetime.fromtimestamp(
                     timestamp / 1_000_000, UTC

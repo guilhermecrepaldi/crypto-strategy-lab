@@ -54,13 +54,13 @@ from crypto_strategy_lab.ml.model_registry import (
 )
 
 D = Decimal
-SPEC = Path("docs/microstructure/M014_MODEL_SPEC.json")
+SPEC = Path("docs/microstructure/M015_MODEL_SPEC.json")
 PROFILE_CONFIG = Path("artifacts/binance/b10-reality-profiles.json")
 PROFILE_CONFIG_SHA = "a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d"
 PROFILE = "B_REALISTIC_CONSERVATIVE"
 TAPE_HASH = "505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c"
-PREREG = Path("docs/microstructure/M014_B10_RESERVE_PREREGISTRATION.md")
-REVIEW = Path("reports/usdcusdt/M014-preflight-independent-review.md")
+PREREG = Path("docs/microstructure/M015_PRICE_PRIORITY_PREREGISTRATION.md")
+REVIEW = Path("reports/usdcusdt/M015-preflight-independent-review.md")
 KERNEL = Path("src/crypto_strategy_lab/microstructure/high_uptime_recovery.py")
 
 
@@ -149,10 +149,14 @@ def validate_weekly_scope(design):
     end = datetime.fromisoformat(design["end_exclusive"])
     if (
         design.get("test_plan") != "WEEKLY_OWNER_GATED"
-        or design.get("model_id") != "M014"
+        or design.get("model_id") not in ("M014", "M015")
         or start != datetime(2026, 1, 1, tzinfo=UTC)
         or end != datetime(2026, 1, 8, tzinfo=UTC)
         or design.get("daily_positive_cycle_target") != 2000
+        or (design.get("model_id") == "M015" and (
+            design.get("minimum_daily_positive_cycles") != 500
+            or design.get("priority_trade_through") is not True
+        ))
     ):
         raise ValueError("OWNER_WEEK_1_SCOPE_REQUIRED; EXTENSION_NOT_AUTHORIZED")
     return start, end
@@ -195,6 +199,7 @@ def _run_authorized_week(output: Path):
     # Gates precede even loading the historical data. No resume/extension in this gate.
     design = json.loads(SPEC.read_bytes())
     start, end = validate_weekly_scope(design)
+    model_id = design["model_id"]
     if any(
         (output / name).exists()
         for name in ("checkpoint.json", "execution-audit.jsonl", "run-manifest.json")
@@ -225,10 +230,10 @@ def _run_authorized_week(output: Path):
 
     actual_runtime = runtime_class_evidence(B10ReserveReplay)
     registry = ModelRegistry()
-    model = registry.get("M014")
+    model = registry.get(model_id)
     design_binding = validate_registered_design(model)
-    if registry.current_status("M014") != ModelStatus.CREATED:
-        raise ValueError("M014_FIRST_WEEK_ALREADY_REGISTERED")
+    if registry.current_status(model_id) != ModelStatus.CREATED:
+        raise ValueError(f"{model_id}_FIRST_WEEK_ALREADY_REGISTERED")
     if any(
         registry.current_status(item.model_id) == ModelStatus.RUNNING for item in registry.entries()
     ):
@@ -246,7 +251,7 @@ def _run_authorized_week(output: Path):
         or history.integrity_status != "VALID"
     ):
         raise ValueError("VALID_USDCUSDT_RAW_TRADES_REQUIRED")
-    print("M014_LOADING_AUTHORIZED_WEEK_1_PREFIX", flush=True)
+    print(f"{model_id}_LOADING_AUTHORIZED_WEEK_1_PREFIX", flush=True)
     tape, provenance = load_stage1_tape(history, output, end=end)
     start_us, end_us = _datetime_to_micros(start), _datetime_to_micros(end)
     begin = bisect_left(tape.events, start_us * EVENT_ORDER_SCALE)
@@ -285,10 +290,12 @@ def _run_authorized_week(output: Path):
         raise ValueError("NO_RULE_FOR_EVENT")
 
     scenario_event = registry.append_scenario(
-        "M014",
+        model_id,
         {
             "scenario": {
-                "name": "B10_F25_OWNER_RESERVE_WEEK_1",
+                "name": design["strategy"] + "_WEEK_1",
+                "execution_hypothesis": design.get("execution_hypothesis"),
+                "priority_trade_through": design.get("priority_trade_through", False),
                 "profile": item,
                 "profile_config_sha256": PROFILE_CONFIG_SHA,
                 "initial_operating": "100",
@@ -299,14 +306,14 @@ def _run_authorized_week(output: Path):
         },
     )
     run_event = registry.append_run(
-        "M014",
+        model_id,
         RunSpec(
             scenario_hash=scenario_event["payload"]["SCENARIO_HASH"],
             dataset_hash=history.dataset_hash,
             campaign_snapshot_id=tape.tape_hash,
             interval={"start": start.isoformat(), "end_exclusive": end.isoformat()},
             code_commit=source_sha,
-            technical_revision="B10_F25_OWNER_RESERVE_WEEKLY",
+            technical_revision=design["strategy"],
             backend=BackendSpec(backend="CPU"),
             capital_mode="COMPOUNDING",
             run={
@@ -320,7 +327,9 @@ def _run_authorized_week(output: Path):
     identity = {
         "capital_mode": "COMPOUNDING",
         "published_config_sha": source_sha,
-        "model_id": "M014",
+        "model_id": model_id,
+        "priority_trade_through": design.get("priority_trade_through", False),
+        "minimum_daily_positive_cycles": design.get("minimum_daily_positive_cycles"),
         "model_hash": model.model_hash,
         "run_hash": run_event["payload"]["RUN_HASH"],
         "model_spec_sha256": file_sha(SPEC),
@@ -340,24 +349,24 @@ def _run_authorized_week(output: Path):
         runtime, profile, rules_at, envelope, start_us=start_us, end_us=end_us, identity=identity
     )
     registry.transition(
-        "M014",
+        model_id,
         ModelStatus.RUNNING,
-        reason="OWNER authorized only Jan1-7 B10 reconstruction with enhanced reserve",
+        reason="OWNER first-week execution research; week2 requires per-day minimum and audit",
     )
     write_json(output / "run-manifest.json", identity)
     try:
         stream_week(history, tape, begin, replay, identity, output)
     except BaseException:
         registry.transition(
-            "M014",
+            model_id,
             ModelStatus.INVALIDATED_TECHNICAL,
             reason="See immutable failure.json and last hash-bound checkpoint",
         )
         raise
     registry.transition(
-        "M014",
+        model_id,
         ModelStatus.INCONCLUSIVE,
-        reason="Week1 complete; independent economic audit and OWNER extension approval pending",
+        reason="Week1 complete; independent audit and applicable OWNER extension gate pending",
     )
 
 
@@ -392,7 +401,7 @@ def stream_week(history, tape, begin, replay, identity, output):
         score = replay.metrics(as_of_us=boundary)
         score.update(
             {
-                "MODEL_ID": "M014",
+                "MODEL_ID": identity.get("model_id", "M014"),
                 "MODEL_HASH": identity["model_hash"],
                 "RUN_ID": identity["run_hash"],
                 "EXECUTION_SOURCE_COMMIT": identity["published_config_sha"],
@@ -406,9 +415,12 @@ def stream_week(history, tape, begin, replay, identity, output):
                 "WEEK": 1,
                 "CALENDAR_DAYS_TOTAL": 7,
                 "DAILY_TARGET": 2000,
+                "MINIMUM_DAILY_TARGET": identity.get("minimum_daily_positive_cycles"),
                 "NEXT_WEEK_AUTHORIZED": False,
-                "EXTENSION_STATUS": "AWAITING_OWNER_APPROVAL"
-                if reason == "FINAL_WEEK_1"
+                "EXTENSION_STATUS": (
+                    "AWAITING_MINIMUM_AND_AUDIT_GATE" if identity.get("model_id") == "M015"
+                    else "AWAITING_OWNER_APPROVAL"
+                ) if reason == "FINAL_WEEK_1"
                 else "NOT_AUTHORIZED",
                 "VERDICT": "PENDING_INDEPENDENT_AUDIT" if reason == "FINAL_WEEK_1" else "PENDING",
             }
@@ -491,7 +503,7 @@ def stream_week(history, tape, begin, replay, identity, output):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--output", type=Path, default=Path("artifacts/usdcusdt/models/M014/reality-primary")
+        "--output", type=Path, default=Path("artifacts/usdcusdt/models/M015/reality-primary")
     )
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)

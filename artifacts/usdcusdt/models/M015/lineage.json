@@ -1,0 +1,17 @@
+{
+  "ancestor_chain": [
+    "M005",
+    "M006",
+    "M007",
+    "M014"
+  ],
+  "change_category": "CONDITIONAL_EXECUTION_PRICE_PRIORITY",
+  "change_summary": "One explicit price-priority inference; frozen treasury/selector/release/profile numbers preserved.",
+  "parent_model_id": "M014",
+  "parent_run_hash": "45e1add3ed4fc36f34b17a52205f14f808d304932ca117beca3e3877425da121",
+  "references": {
+    "autopsy": "reports/usdcusdt/M014-week1-autopsy.md",
+    "capacity_bound": "reports/usdcusdt/B10-week1-capacity-review.md",
+    "preregistration": "docs\\microstructure\\M015_PRICE_PRIORITY_PREREGISTRATION.md"
+  }
+}

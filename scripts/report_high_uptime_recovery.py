@@ -125,9 +125,9 @@ def publish(folder, tests_passed=None, tests_failed=None):
         raise ValueError("FIXED_NOTIONAL_PRIMARY_FORBIDDEN")
     score["SOURCE_SCOREBOARD_SHA256"] = hashlib.sha256(raw).hexdigest()
     model_id = score.get("MODEL_ID", "M012")
-    if model_id not in ("M012", "M014"):
+    if model_id not in ("M012", "M014", "M015"):
         raise ValueError("UNSUPPORTED_REPORT_MODEL")
-    if model_id == "M014":
+    if model_id in ("M014", "M015"):
         from scripts.run_high_uptime_recovery import file_sha
 
         if file_sha(folder / "checkpoint.json") != score.get("CHECKPOINT_SHA256"):
@@ -153,7 +153,7 @@ def publish(folder, tests_passed=None, tests_failed=None):
     score["VERDICT"] = (
         "PENDING" if score.get("RUN_STATUS") != "COMPLETE" else "PENDING_INDEPENDENT_AUDIT"
     )
-    if model_id == "M014":
+    if model_id in ("M014", "M015"):
         score["RETENTION_SEMANTICS"] = "UNAVAILABLE_NO_MATCHED_F25_CONTROL"
         audit_path = folder / "independent-audit.json"
         if audit_path.exists():
@@ -207,17 +207,22 @@ def publish(folder, tests_passed=None, tests_failed=None):
             "EXTENSION_STATUS",
         )
     )
-    formatter = owner_display if model_id == "M014" else display
+    formatter = owner_display if model_id in ("M014", "M015") else display
     table = "| Métrica | Valor |\n|---|---|\n" + "".join(
         f"| {key} | {formatter(score.get(key))} |\n" for key in fields
     )
     report = (
-        "# M012 REALITY — CURRENT SCOREBOARD\n\nCOMPOUNDING ·100 USDT i"
-        "niciais +5 de reserva ·95% reinvestimento /5% reserva.\n\n"
+        f"# {model_id} REALITY — CURRENT SCOREBOARD\n\n"
+        + (
+            "PRIORITY_TRADE_THROUGH_CONDITIONAL · 100 USDT + 10 USDT reserve · "
+            "10% positive-profit funding · daily gate 500 / aspiration 2000.\n\n"
+            if model_id == "M015"
+            else "COMPOUNDING ·100 USDT iniciais +5 de reserva ·95% reinvestimento /5% reserva.\n\n"
+        )
     ) + table
-    if model_id == "M014":
+    if model_id in ("M014", "M015"):
         report = (
-            "# M014 — B10 F2.5 com reserva reforçada\n\n"
+            f"# {model_id} — B10 F2.5 com reserva reforçada\n\n"
             "Primeira semana somente · 100 USDT operacionais + 10 de reserva · "
             "COMPOUNDING · 10% dos lucros positivos para a reserva.\n\n"
             f"**{score['FULL_FILL_CYCLES']} ciclos completos, "
@@ -259,8 +264,10 @@ def publish(folder, tests_passed=None, tests_failed=None):
             for day, row in daily.items()
         )
         score["DAILY_TARGET_VERDICT"] = (
-            "PENDING" if score.get("RUN_STATUS") != "COMPLETE"
-            else "MET" if len(daily) == score["DAYS_MEETING_2000_TARGET"] == 7
+            "PENDING"
+            if score.get("RUN_STATUS") != "COMPLETE"
+            else "MET"
+            if len(daily) == score["DAYS_MEETING_2000_TARGET"] == 7
             else "NOT_MET"
         )
         report += (
@@ -269,6 +276,32 @@ def publish(folder, tests_passed=None, tests_failed=None):
             "O resultado é condicional às hipóteses de execução; não é uma operação real. "
             "Próxima semana NÃO autorizada, mesmo que a meta seja atingida.\n\n"
             "[Diagnóstico dos gargalos e comparação com B10](M014-week1-autopsy.md).\n"
+        )
+        (ROOT / f"{model_id}-reality-scoreboard.json").write_text(
+            json.dumps(score, indent=2) + "\n", encoding="utf-8"
+        )
+    if model_id == "M015":
+        daily_source = score.get("DAILY_NET_POSITIVE_CYCLES", {})
+        score["DAILY_TARGET"] = 2000
+        score["MINIMUM_DAILY_TARGET"] = 500
+        score["DAYS_MEETING_500_TARGET"] = sum(value >= 500 for value in daily_source.values())
+        score["GATE_TO_WEEK_2"] = (
+            score.get("RUN_STATUS") == "COMPLETE"
+            and len(daily_source) == 7
+            and score["DAYS_MEETING_500_TARGET"] == 7
+            and score.get("INDEPENDENT_RUN_AUDIT") == "PASS_CONDITIONAL"
+        )
+        score["VERDICT"] = (
+            "PASS_CONDITIONAL_WEEK_2_GATE"
+            if score["GATE_TO_WEEK_2"]
+            else "PENDING"
+            if score.get("RUN_STATUS") != "COMPLETE"
+            else "PENDING_INDEPENDENT_AUDIT"
+        )
+        report += (
+            f"\nMeta mínima de 500 ciclos positivos: {score['DAYS_MEETING_500_TARGET']} de 7 dias. "
+            f"Meta aspiracional: {score['DAILY_TARGET']}. "
+            f"GATE_TO_WEEK_2={score['GATE_TO_WEEK_2']}.\n"
         )
         (ROOT / f"{model_id}-reality-scoreboard.json").write_text(
             json.dumps(score, indent=2) + "\n", encoding="utf-8"
@@ -290,7 +323,8 @@ def publish(folder, tests_passed=None, tests_failed=None):
         "\n## Testes do software\n\n"
         + json.dumps(score["SOFTWARE_VALIDATION"])
         + "\n\nTEST_SUITE_PASS != STRATEGY_PASS. Auditoria independente do replay: "
-        + score["INDEPENDENT_RUN_AUDIT"] + ".\n"
+        + score["INDEPENDENT_RUN_AUDIT"]
+        + ".\n"
     )
     report += (
         "\n## Resultado final\n\n"
@@ -306,10 +340,10 @@ def publish(folder, tests_passed=None, tests_failed=None):
         "RCH_MODEL=M012\nCAPITAL_MODE=COMPOUNDING\nRESERVE_FUNDING=5%\nR"
         "ESERVE_TARGET=5%\nMAX_POSITION_LOCK=24h\n"
     )
-    if model_id == "M014":
+    if model_id in ("M014", "M015"):
         current = (
             "# CURRENT STATE\n\nRESEARCH_PROTOCOL=WEEKLY_OWNER_GATED\n"
-            "ACTIVE_RESEARCH_MODEL=M014\nCAPITAL_MODE=COMPOUNDING\n"
+            f"ACTIVE_RESEARCH_MODEL={model_id}\nCAPITAL_MODE=COMPOUNDING\n"
             "INITIAL_OPERATING=100\nINITIAL_RESERVE=10\nRESERVE_FUNDING=10%\n"
             "DAILY_TARGET=2000\nNEXT_WEEK_AUTHORIZED=false\nAUTOMATIC_EXTENSION_ALLOWED=false\n"
         )
@@ -318,12 +352,14 @@ def publish(folder, tests_passed=None, tests_failed=None):
     )
     current += (
         "\nNEXT_ACTION="
-        + ("Semana encerrada; consultar auditoria e aguardar aprovação OWNER para extensão."
-           if model_id == "M014" and score.get("RUN_STATUS") == "COMPLETE"
-           else "Continuar somente intervalo autorizado; publicar marcos e auditar.")
+        + (
+            "Semana encerrada; consultar auditoria e aguardar aprovação OWNER para extensão."
+            if model_id in ("M014", "M015") and score.get("RUN_STATUS") == "COMPLETE"
+            else "Continuar somente intervalo autorizado; publicar marcos e auditar."
+        )
         + "\nFIXED_100_RESULT_NOT_OWNER_STRATEGY_RETURN=YES\n"
     )
-    if model_id == "M014":
+    if model_id in ("M014", "M015"):
         current += (
             "\nOWNER_GATE=First week only; preserve all state and await explicit approval "
             "before any following week.\nM013=INVALIDATED_TECHNICAL_PRESERVED\n"
@@ -357,7 +393,7 @@ def publish(folder, tests_passed=None, tests_failed=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--run", type=Path, default=Path("artifacts/usdcusdt/models/M014/reality-primary")
+        "--run", type=Path, default=Path("artifacts/usdcusdt/models/M015/reality-primary")
     )
     parser.add_argument("--tests-passed", type=int)
     parser.add_argument("--tests-failed", type=int)

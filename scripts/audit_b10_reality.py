@@ -47,7 +47,7 @@ def same(actual, expected, description):
         raise ValueError(f"{description}: actual={actual}, expected={expected}")
 
 
-def reconstruct(rows, profile, *, owner_reserve=False):
+def reconstruct(rows, profile, *, owner_reserve=False, price_priority=False):
     """Independent balances and lot basis for every fill, including unsold inventory."""
     cash, reserve = D(100), D(10) if owner_reserve else D(5)
     inventory = basis = sold_basis = sale_net = dust = dust_basis = fees = D(0)
@@ -58,6 +58,8 @@ def reconstruct(rows, profile, *, owner_reserve=False):
     signal_records = {}
     cycle_orders = set()
     released = False
+    inferences = []
+    inference_by_fill = {}
     with localcontext() as context:
         context.prec = 128
         for index, row in enumerate(rows):
@@ -68,6 +70,47 @@ def reconstruct(rows, profile, *, owner_reserve=False):
                 terminal.add(row["order_id"])
             if kind == "CANCELED":
                 orders[row["order_id"]]["cancel_effective_us"] = row["time_us"]
+            if kind == "CANCEL_REQUEST":
+                orders[row["order_id"]]["cancel_requested_effective_us"] = row["effective_us"]
+            if kind == "ORDER_ACTIVE":
+                orders[row["order_id"]]["activation_evaluated_us"] = row["evaluated_at_us"]
+            if kind == "QUEUE_FLOW":
+                order = orders[row["order_id"]]
+                before = order["audit_queue"]
+                same(row["queue_before"], before, "QUEUE_FLOW_BEFORE")
+                after = max(D(0), before - number(row["quantity"]))
+                same(row["queue_after"], after, "QUEUE_FLOW_AFTER")
+                order["audit_queue"] = after
+            if kind == "PRICE_THROUGH_PRIORITY_INFERENCE":
+                order = orders[row["order_id"]]
+                stamp = row["time_us"]
+                if (
+                    not price_priority or order["release"] or row["order_id"] in terminal
+                    or order.get("activation_evaluated_us", stamp) >= stamp
+                    or stamp >= order.get("cancel_requested_effective_us", stamp + 1)
+                    or row["activation_evaluated_us"] != order["activation_evaluated_us"]
+                    or row["buyer_maker"] != (order["side"] == "BUY")
+                ):
+                    raise ValueError("INVALID_PRICE_PRIORITY_ACTIVATION")
+                limit, raw_price = number(order["price"]), number(row["raw_price"])
+                if not (raw_price < limit if order["side"] == "BUY" else raw_price > limit):
+                    raise ValueError("PRICE_PRIORITY_REQUIRES_STRICT_THROUGH")
+                same(row["order_limit"], limit, "PRICE_PRIORITY_LIMIT")
+                same(row["queue_after"], 0, "PRICE_PRIORITY_QUEUE_AFTER")
+                same(row["queue_before"], order["audit_queue"], "PRICE_PRIORITY_QUEUE_BEFORE")
+                order["audit_queue"] = D(0)
+                same(row["modeled_active_us"], order["active_us"], "PRICE_PRIORITY_ACTIVE_US")
+                own = min(number(row["raw_quantity"]),
+                          number(order["quantity"]) - order["audit_filled"])
+                same(row["own_quantity"], own, "PRICE_PRIORITY_QUANTITY")
+                same(row["remaining_raw_quantity"], number(row["raw_quantity"]) - own,
+                     "PRICE_PRIORITY_UNUSED_VOLUME")
+                order.setdefault("priority_clear_us", stamp)
+                inferences.append(row)
+                key = (row["order_id"], row["trade_id"])
+                if key in inference_by_fill:
+                    raise ValueError("DUPLICATE_PRICE_PRIORITY_INFERENCE")
+                inference_by_fill[key] = row
             if kind == "RELEASE_BOOK_EVALUATION":
                 release_evaluations.append(row)
                 order = orders[row["order_id"]]
@@ -85,8 +128,15 @@ def reconstruct(rows, profile, *, owner_reserve=False):
                 order_id = row["order_id"]
                 if order_id in orders:
                     raise ValueError("DUPLICATE_ORDER_ID")
-                orders[order_id] = {**row, "audit_filled": D(0), "row_index": index}
+                orders[order_id] = {**row, "audit_filled": D(0), "row_index": index,
+                                    "audit_queue": number(row["queue"])}
             elif kind == "FILL":
+                if row["source"] == "TRADE_THROUGH":
+                    inference = inference_by_fill.get((row["order_id"], row["source_id"]))
+                    if inference is None or inference["time_us"] != row["time_us"]:
+                        raise ValueError("UNBOUND_PRICE_PRIORITY_FILL")
+                    same(row["price"], inference["order_limit"], "PRICE_PRIORITY_OWN_LIMIT_FILL")
+                    same(row["quantity"], inference["own_quantity"], "PRICE_PRIORITY_FILL_QUANTITY")
                 order = orders[row["order_id"]]
                 amount, price = number(row["quantity"]), number(row["price"])
                 if amount <= 0 or price <= 0 or row["time_us"] <= order["active_us"]:
@@ -204,10 +254,12 @@ def reconstruct(rows, profile, *, owner_reserve=False):
         "release_evaluations": release_evaluations,
         "open_cycle_orders": cycle_orders,
         "signal_records": signal_records,
+        "priority_inferences": inferences,
     }
 
 
-def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rules):
+def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rules,
+                      *, priority_inferences=()):
     selected = [row for row in fills if row["order_id"] in chosen]
     for evaluation in evaluations:
         selected.append(
@@ -227,6 +279,7 @@ def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rul
     for order_id in chosen:
         supporting = [
             row for row in selected if row["order_id"] == order_id and row["source"] == "TRADE"
+            and row["time_us"] < orders[order_id].get("priority_clear_us", row["time_us"] + 1)
         ]
         if supporting:
             order = orders[order_id]
@@ -269,6 +322,8 @@ def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rul
             ]
             cutoff = max(end for start, end in required_spans if start <= last and end >= first)
             lines = 0
+            next_window = 0
+            active = []
             with zipfile.ZipFile(path) as zipped:
                 members = [name for name in zipped.namelist() if name.endswith(".csv")]
                 if len(members) != 1:
@@ -282,11 +337,13 @@ def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rul
                         lines += 1
                         if stamp > cutoff:
                             break
-                        active = [
-                            window
-                            for window in relevant
-                            if window["start"] < stamp <= window["end"]
-                        ]
+                        active = [window for window in active if stamp <= window["end"]]
+                        while (next_window < len(relevant)
+                               and relevant[next_window]["start"] < stamp):
+                            window = relevant[next_window]
+                            if stamp <= window["end"]:
+                                active.append(window)
+                            next_window += 1
                         if not active and trade_id not in needed:
                             continue
                         price, quantity = D(columns[1].decode()), D(columns[2].decode())
@@ -315,8 +372,19 @@ def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rul
             raw = wanted_rows.get(fill["source_id"])
             if raw is None or raw["time_us"] != fill["time_us"]:
                 raise ValueError("FILL_SOURCE_NOT_FOUND_OR_TIME_MISMATCH")
-            if fill["source"] == "TRADE":
-                same(fill["price"], raw["price"], "RAW_FILL_PRICE")
+            if fill["source"] in ("TRADE", "TRADE_THROUGH"):
+                if fill["source"] == "TRADE":
+                    same(fill["price"], raw["price"], "RAW_FILL_PRICE")
+                else:
+                    order = orders[fill["order_id"]]
+                    limit = number(order["price"])
+                    if (
+                        order.get("priority_clear_us", fill["time_us"] + 1) > fill["time_us"]
+                        or not (raw["price"] < limit if fill["side"] == "BUY"
+                                else raw["price"] > limit)
+                    ):
+                        raise ValueError("RAW_PRIORITY_THROUGH_UNSUPPORTED")
+                    same(fill["price"], limit, "RAW_PRIORITY_OWN_LIMIT")
                 if raw["buyer_maker"] != (fill["side"] == "BUY"):
                     raise ValueError("RAW_FILL_AGGRESSOR_MISMATCH")
                 allocated[fill["source_id"]] += number(fill["quantity"])
@@ -341,6 +409,13 @@ def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rul
                     orders[fill["order_id"]]["price"]
                 ):
                     raise ValueError("RELEASE_FILL_BELOW_LIMIT")
+        for inference in priority_inferences:
+            raw = wanted_rows[inference["trade_id"]]
+            if (raw["time_us"] != inference["time_us"]
+                    or raw["buyer_maker"] != inference["buyer_maker"]):
+                raise ValueError("PRIORITY_INFERENCE_RAW_IDENTITY_MISMATCH")
+            same(inference["raw_price"], raw["price"], "PRIORITY_INFERENCE_RAW_PRICE")
+            same(inference["raw_quantity"], raw["quantity"], "PRIORITY_INFERENCE_RAW_QUANTITY")
         for evaluation in evaluations:
             before = number(evaluation["available_budget_before"])
             if before < 0 or before > number(envelope["release_depth"]):
@@ -478,13 +553,15 @@ def audit(config_path, folder, *, sample=100):
     }
 
 
-def audit_m014(config_path, folder, *, sample=100):
+def audit_m014(config_path, folder, *, sample=100, model_id="M014"):
     """Hash-bound independent M014 audit; no simulator or strategy imports."""
     if sample < 100:
         raise ValueError("MINIMUM_ORDINARY_SAMPLE_100")
     config = json.loads(config_path.read_text(encoding="utf-8"))
     score = json.loads((folder / "scoreboard.json").read_text(encoding="utf-8"))
-    if score.get("MODEL_ID") != "M014" or score.get("CAPITAL_MODE") != "COMPOUNDING":
+    if model_id not in ("M014", "M015"):
+        raise ValueError("UNSUPPORTED_OWNER_AUDIT_MODEL")
+    if score.get("MODEL_ID") != model_id or score.get("CAPITAL_MODE") != "COMPOUNDING":
         raise ValueError("M014_IDENTITY_OR_CAPITAL_MODE_MISMATCH")
     if score.get("RUN_STATUS") != "COMPLETE":
         raise ValueError("M014_RUN_NOT_COMPLETE")
@@ -544,7 +621,10 @@ def audit_m014(config_path, folder, *, sample=100):
                 raise ValueError("M014_ENVELOPE_EVIDENCE_MISMATCH")
         else:
             same(replay_payload["envelope"][key], value, "M014_ENVELOPE_" + key)
-    ledger = reconstruct(iter_rows(audit_path), profile, owner_reserve=True)
+    if model_id == "M015" and run_manifest.get("priority_trade_through") is not True:
+        raise ValueError("M015_HYPOTHESIS_BINDING_REQUIRED")
+    ledger = reconstruct(iter_rows(audit_path), profile, owner_reserve=True,
+                         price_priority=model_id == "M015")
     ordinary = [row for row in ledger["settlements"] if not row["release"]]
     releases = [row for row in ledger["settlements"] if row["release"]]
     with localcontext() as context:
@@ -588,6 +668,7 @@ def audit_m014(config_path, folder, *, sample=100):
     selected = {order for row in ordinary[:sample] + releases for order in row["order_ids"]}
     selected.update(key for key, order in ledger["orders"].items() if order["release"])
     selected.update(ledger["open_cycle_orders"])
+    selected.update(row["order_id"] for row in ledger["priority_inferences"])
     support = {"status": "NOT_RUN", "reason": "M014_HISTORY_SUPPORT_NOT_BOUND"}
     history_path = config.get("history_manifest")
     if history_path:
@@ -614,12 +695,13 @@ def audit_m014(config_path, folder, *, sample=100):
             ledger["release_evaluations"],
             envelope,
             config.get("rules", []),
+            priority_inferences=ledger["priority_inferences"],
         )
         support["status"] = "VALIDATED"
     if support.get("status") != "VALIDATED":
         raise ValueError("M014_RAW_SUPPORT_NOT_VALIDATED")
     return {
-        "schema": "m014-independent-execution-audit-v1",
+        "schema": model_id.lower() + "-independent-execution-audit-v1",
         "status": "PASS_CONDITIONAL",
         "scope": "ALL_LEDGER_PLUS_FIRST_100_ORDINARY_AND_ALL_RELEASES",
         "config_sha256": digest(config_path),
@@ -630,10 +712,15 @@ def audit_m014(config_path, folder, *, sample=100):
         "ordinary_audited_raw": min(sample, len(ordinary)),
         "ordinary_total": len(ordinary),
         "release_settlements": len(releases),
+        "price_priority_inferences": len(ledger["priority_inferences"]),
+        "price_priority_raw_fills": sum(row["source"] == "TRADE_THROUGH"
+                                        for row in ledger["fills"]),
         "raw_support": support,
         "limitations": ["PASS_CONDITIONAL is an audit status, not strategy PASS."]
         + ([f"Only {len(ordinary)} ordinary cycles available; fewer than 100."]
-           if len(ordinary) < 100 else []),
+           if len(ordinary) < 100 else [])
+        + (["Price-through queue clearance is counterfactual inference, not observed L2."]
+           if model_id == "M015" else []),
     }
 
 

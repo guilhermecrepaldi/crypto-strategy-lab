@@ -1,0 +1,7 @@
+{
+  "change": "Only infer proxy queue clearance on compatible strict trade-through; cap own volume and fill at own limit.",
+  "expected_effect": "Measure omitted conditional fills; no guarantee of 500/day and no historical L2 claim.",
+  "hypothesis": "Strict trade-through of a previously active order can conditionally imply price-priority clearance.",
+  "observation": "M014 72 cycles; fixed queue upper bound below 500 in each day; synthetic queue not historical L2.",
+  "reason_for_new_model": "New counterfactual execution hypothesis, not retroactive bug correction."
+}
