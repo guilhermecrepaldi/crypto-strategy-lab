@@ -47,9 +47,9 @@ def same(actual, expected, description):
         raise ValueError(f"{description}: actual={actual}, expected={expected}")
 
 
-def reconstruct(rows, profile):
+def reconstruct(rows, profile, *, owner_reserve=False):
     """Independent balances and lot basis for every fill, including unsold inventory."""
-    cash, reserve = D(100), D(5)
+    cash, reserve = D(100), D(10) if owner_reserve else D(5)
     inventory = basis = sold_basis = sale_net = dust = dust_basis = fees = D(0)
     funding = consumption = D(0)
     orders, fills, settlements = {}, [], []
@@ -141,16 +141,20 @@ def reconstruct(rows, profile):
                     bank_bps = deficit / signal_bank * 10000
                 if "actual_release_loss" in row:
                     same(row["actual_release_loss"], deficit, "ACTUAL_RELEASE_DEFICIT")
-                    same(row["actual_loss_bps_executed_lot"], lot_bps, "ACTUAL_LOT_BPS")
-                    if bank_bps is not None:
+                    if "actual_loss_bps_executed_lot" in row:
+                        same(row["actual_loss_bps_executed_lot"], lot_bps, "ACTUAL_LOT_BPS")
+                    if bank_bps is not None and "actual_loss_bps_signal_bank" in row:
                         same(row["actual_loss_bps_signal_bank"], bank_bps, "ACTUAL_BANK_BPS")
-                if released:
-                    transfer = min(max(D(0), -profit), reserve)
+                if released and not (owner_reserve and profit > 0):
+                    transfer = max(D(0), -profit)
+                    if owner_reserve and reserve - transfer < D("2.5") - EPSILON:
+                        raise ValueError("OWNER_RESERVE_CORE_FLOOR_VIOLATION")
+                    transfer = min(transfer, reserve) if not owner_reserve else transfer
                     reserve -= transfer
                     cash += transfer
                     consumption += transfer
                 else:
-                    transfer = max(D(0), profit) * D("0.02")
+                    transfer = max(D(0), profit) * (D("0.10") if owner_reserve else D("0.02"))
                     reserve += transfer
                     cash -= transfer
                     funding += transfer
@@ -471,6 +475,165 @@ def audit(config_path, folder, *, sample=100):
             "Theoretical strategy predicates require the separate canonical bridge review.",
             "Unfilled pending release orders remain open, not successful exits.",
         ],
+    }
+
+
+def audit_m014(config_path, folder, *, sample=100):
+    """Hash-bound independent M014 audit; no simulator or strategy imports."""
+    if sample < 100:
+        raise ValueError("MINIMUM_ORDINARY_SAMPLE_100")
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    score = json.loads((folder / "scoreboard.json").read_text(encoding="utf-8"))
+    if score.get("MODEL_ID") != "M014" or score.get("CAPITAL_MODE") != "COMPOUNDING":
+        raise ValueError("M014_IDENTITY_OR_CAPITAL_MODE_MISMATCH")
+    if score.get("RUN_STATUS") != "COMPLETE":
+        raise ValueError("M014_RUN_NOT_COMPLETE")
+    run_manifest = json.loads((folder / "run-manifest.json").read_text(encoding="utf-8"))
+    identity_pairs = {
+        "model_id": "MODEL_ID",
+        "model_hash": "MODEL_HASH",
+        "run_hash": "RUN_ID",
+        "capital_mode": "CAPITAL_MODE",
+    }
+    for manifest_key, score_key in identity_pairs.items():
+        if run_manifest.get(manifest_key) != score.get(score_key):
+            raise ValueError(f"M014_{manifest_key.upper()}_IDENTITY_MISMATCH")
+    if run_manifest.get("profile_config_sha256") != digest(config_path):
+        raise ValueError("M014_PROFILE_CONFIG_HASH_MISMATCH")
+    checkpoint = folder / "checkpoint.json"
+    checkpoint_payload = json.loads(checkpoint.read_text(encoding="utf-8"))
+    if digest(checkpoint) != score.get("CHECKPOINT_SHA256"):
+        raise ValueError("M014_CHECKPOINT_BINDING_MISMATCH")
+    audit_path = folder / "execution-audit.jsonl"
+    if not audit_path.exists():
+        audit_path = folder / "execution-audit.json"
+    binding = score.get("AUDIT_PREFIX")
+    manifest = folder / "audit-manifest.json"
+    if manifest.exists():
+        binding = json.loads(manifest.read_text(encoding="utf-8"))
+    if not isinstance(binding, dict) or audit_path.stat().st_size != int(binding["bytes"]):
+        raise ValueError("M014_AUDIT_SIZE_BINDING_MISMATCH")
+    checkpoint_audit = checkpoint_payload.get("audit")
+    if checkpoint_audit != binding:
+        raise ValueError("M014_CHECKPOINT_AUDIT_BINDING_MISMATCH")
+    replay_payload = checkpoint_payload.get("replay", {}).get("payload", {})
+    checkpoint_identity = replay_payload.get("state", {}).get("identity")
+    if checkpoint_identity != run_manifest:
+        raise ValueError("M014_CHECKPOINT_IDENTITY_MISMATCH")
+    if digest(audit_path) != binding["sha256"]:
+        raise ValueError("M014_AUDIT_HASH_BINDING_MISMATCH")
+    expected_config = config.get("expected_config_sha256") or config.get("config_sha256")
+    if expected_config and digest(config_path) != expected_config:
+        raise ValueError("M014_CONFIG_HASH_MISMATCH")
+    selected_profile = next(
+        item for item in config["profiles"]
+        if item["profile"]["name"] == "B_REALISTIC_CONSERVATIVE"
+    )
+    profile, envelope = selected_profile["profile"], selected_profile["envelope"]
+    engine_state = replay_payload["execution"]["state"]
+    checkpoint_profile = engine_state["profile"]["fields"]
+    for key, value in profile.items():
+        if key in ("name", "evidence_sha256"):
+            if checkpoint_profile[key] != value:
+                raise ValueError("M014_CHECKPOINT_PROFILE_MISMATCH")
+        else:
+            same(checkpoint_profile[key], value, "M014_PROFILE_" + key)
+    for key, value in envelope.items():
+        if key == "evidence_sha256":
+            if replay_payload["envelope"][key] != value:
+                raise ValueError("M014_ENVELOPE_EVIDENCE_MISMATCH")
+        else:
+            same(replay_payload["envelope"][key], value, "M014_ENVELOPE_" + key)
+    ledger = reconstruct(iter_rows(audit_path), profile, owner_reserve=True)
+    ordinary = [row for row in ledger["settlements"] if not row["release"]]
+    releases = [row for row in ledger["settlements"] if row["release"]]
+    with localcontext() as context:
+        context.prec = 128
+        operating = ledger["cash"] + ledger["basis"] + ledger["dust_basis"]
+        total_net = operating + ledger["reserve"] - D("110")
+    reconcile = {
+        "OPERATING_CAPITAL": str(operating),
+        "CORE_RESERVE": str(ledger["reserve"]),
+        "RESERVE": str(ledger["reserve"]),
+        "NET_REALIZED_PNL": str(total_net),
+        "TOTAL_FEES": str(ledger["fees"]),
+        "ORDINARY_CYCLES": len(ordinary),
+        "NET_POSITIVE_CYCLES": sum(D(row["net_profit"]) > 0 for row in ordinary),
+        "RELEASE_SETTLEMENTS": len(releases),
+    }
+    score_fields = {
+        "OPERATING_BANK": reconcile["OPERATING_CAPITAL"],
+        "RESERVE": reconcile["RESERVE"],
+        "NET_REALIZED_PNL": reconcile["NET_REALIZED_PNL"],
+        "TOTAL_FEES_QUOTE": reconcile["TOTAL_FEES"],
+        "FULL_FILL_CYCLES": reconcile["ORDINARY_CYCLES"],
+        "RELEASE_FILLED": reconcile["RELEASE_SETTLEMENTS"],
+        "NET_POSITIVE_CYCLES": reconcile["NET_POSITIVE_CYCLES"],
+        "RESERVE_FUNDING": str(ledger["funding"]),
+        "RESERVE_CONSUMPTION": str(ledger["consumption"]),
+    }
+    for name, expected in score_fields.items():
+        if name not in score:
+            raise ValueError(f"M014_SCORE_FIELD_MISSING:{name}")
+        same(score[name], expected, name)
+    same(engine_state["cash"], ledger["cash"], "CHECKPOINT_CASH")
+    same(engine_state["inventory"], ledger["inventory"], "CHECKPOINT_INVENTORY")
+    same(engine_state["cost"], ledger["basis"], "CHECKPOINT_COST")
+    bids = engine_state["bids"]
+    bid = number(bids[0][0]) if bids else D(0)
+    with localcontext() as context:
+        context.prec = 128
+        marked = ledger["cash"] + ledger["reserve"] + (ledger["inventory"] + ledger["dust"]) * bid
+        same(score["TOTAL_EQUITY"], marked, "TOTAL_EQUITY")
+    selected = {order for row in ordinary[:sample] + releases for order in row["order_ids"]}
+    selected.update(key for key, order in ledger["orders"].items() if order["release"])
+    selected.update(ledger["open_cycle_orders"])
+    support = {"status": "NOT_RUN", "reason": "M014_HISTORY_SUPPORT_NOT_BOUND"}
+    history_path = config.get("history_manifest")
+    if history_path:
+        if (
+            config.get("history_manifest_sha256")
+            and digest(Path(history_path)) != config["history_manifest_sha256"]
+        ):
+            raise ValueError("M014_HISTORY_MANIFEST_HASH_MISMATCH")
+        history = json.loads(Path(history_path).read_text(encoding="utf-8"))
+        archives = history.get("archives", [])
+        filtered = []
+        for archive in archives:
+            day = datetime.fromisoformat(archive["utc_date"]).date()
+            if day >= datetime(2026, 1, 1).date() and day < datetime(2026, 1, 8).date():
+                filtered.append(archive)
+        if any(not ("2026-01-01" <= item["utc_date"] < "2026-01-08") for item in filtered):
+            raise ValueError("M014_HISTORY_SUPPORT_OUTSIDE_FIRST_WEEK")
+        history["archives"] = filtered
+        support = audit_raw_support(
+            history,
+            ledger["orders"],
+            ledger["fills"],
+            selected,
+            ledger["release_evaluations"],
+            envelope,
+            config.get("rules", []),
+        )
+        support["status"] = "VALIDATED"
+    if support.get("status") != "VALIDATED":
+        raise ValueError("M014_RAW_SUPPORT_NOT_VALIDATED")
+    return {
+        "schema": "m014-independent-execution-audit-v1",
+        "status": "PASS_CONDITIONAL",
+        "scope": "ALL_LEDGER_PLUS_FIRST_100_ORDINARY_AND_ALL_RELEASES",
+        "config_sha256": digest(config_path),
+        "scoreboard_sha256": digest(folder / "scoreboard.json"),
+        "checkpoint_sha256": digest(checkpoint),
+        "audit_sha256": digest(audit_path),
+        "reconcile": reconcile,
+        "ordinary_audited_raw": min(sample, len(ordinary)),
+        "ordinary_total": len(ordinary),
+        "release_settlements": len(releases),
+        "raw_support": support,
+        "limitations": ["PASS_CONDITIONAL is an audit status, not strategy PASS."]
+        + ([f"Only {len(ordinary)} ordinary cycles available; fewer than 100."]
+           if len(ordinary) < 100 else []),
     }
 
 

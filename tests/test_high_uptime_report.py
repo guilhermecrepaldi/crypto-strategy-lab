@@ -87,6 +87,22 @@ def test_m014_daily_cycles_separate_releases_and_require_checkpoint(tmp_path, mo
     assert result["DAILY_CLOSES"]["2026-01-01"]["FULL_FILL_CYCLES"] == 2
     text = (report.ROOT / "M014-reality-report.md").read_text(encoding="utf-8")
     assert "100.018000 | 10.002000 | 110.020000 | 2 | 2 | 1" in text
+    row["RUN_STATUS"] = "COMPLETE"
+    (folder / "scoreboard.json").write_text(json.dumps(row))
+    audit = {
+        "status": "PASS_CONDITIONAL",
+        "scoreboard_sha256": hashlib.sha256((folder / "scoreboard.json").read_bytes()).hexdigest(),
+        "checkpoint_sha256": row["CHECKPOINT_SHA256"],
+        "ordinary_audited_raw": 2,
+    }
+    (folder / "independent-audit.json").write_text(json.dumps(audit))
+    audited = report.publish(folder, 7, 0)
+    assert audited["INDEPENDENT_RUN_AUDIT"] == "PASS_CONDITIONAL"
+    assert "AWAITING_OWNER_APPROVAL" in audited["VERDICT"]
+    audit["scoreboard_sha256"] = "tampered"
+    (folder / "independent-audit.json").write_text(json.dumps(audit))
+    with pytest.raises(ValueError, match="INDEPENDENT_AUDIT_BINDING_MISMATCH"):
+        report.publish(folder)
     (folder / "checkpoint.json").write_bytes(b'{"changed":true}')
     with pytest.raises(ValueError, match="CHECKPOINT_SCOREBOARD_BINDING_MISMATCH"):
         report.publish(folder)

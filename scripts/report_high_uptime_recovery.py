@@ -144,6 +144,22 @@ def publish(folder, tests_passed=None, tests_failed=None):
     score["VERDICT"] = (
         "PENDING" if score.get("RUN_STATUS") != "COMPLETE" else "PENDING_INDEPENDENT_AUDIT"
     )
+    if model_id == "M014":
+        score["RETENTION_SEMANTICS"] = "UNAVAILABLE_NO_MATCHED_F25_CONTROL"
+        audit_path = folder / "independent-audit.json"
+        if audit_path.exists():
+            audit = json.loads(audit_path.read_bytes())
+            if (
+                audit.get("scoreboard_sha256") != score["SOURCE_SCOREBOARD_SHA256"]
+                or audit.get("checkpoint_sha256") != score["CHECKPOINT_SHA256"]
+                or audit.get("status") != "PASS_CONDITIONAL"
+            ):
+                raise ValueError("INDEPENDENT_AUDIT_BINDING_MISMATCH")
+            score["INDEPENDENT_RUN_AUDIT"] = "PASS_CONDITIONAL"
+            score["SOFTWARE_VALIDATION"]["independent_audit_samples"] = audit.get(
+                "ordinary_audited_raw"
+            )
+            score["VERDICT"] = "WEEK_COMPLETE_CONDITIONAL; AWAITING_OWNER_APPROVAL"
     stamp = score.get("SIMULATION_TIMESTAMP")
     curve_path = folder / "capital-curve.jsonl"
     rows = []
@@ -167,6 +183,7 @@ def publish(folder, tests_passed=None, tests_failed=None):
             "FULL_FILL_CYCLES",
             "NET_POSITIVE_CYCLES",
             "NET_REALIZED_PNL",
+            "TOTAL_FEES_QUOTE",
             "RESERVE_FUNDING",
             "RESERVE_CONSUMPTION",
             "MIN_RESERVE",
@@ -250,7 +267,8 @@ def publish(folder, tests_passed=None, tests_failed=None):
     report += (
         "\n## Testes do software\n\n"
         + json.dumps(score["SOFTWARE_VALIDATION"])
-        + "\n\nTEST_SUITE_PASS != STRATEGY_PASS. Auditoria independente do replay: PENDING.\n"
+        + "\n\nTEST_SUITE_PASS != STRATEGY_PASS. Auditoria independente do replay: "
+        + score["INDEPENDENT_RUN_AUDIT"] + ".\n"
     )
     report += (
         "\n## Resultado final\n\n"
@@ -277,9 +295,11 @@ def publish(folder, tests_passed=None, tests_failed=None):
         f"{key}={display(score.get(key))}" for key in ("RUN_ID", "RUN_STATUS", *fields, "VERDICT")
     )
     current += (
-        "\nNEXT_ACTION=Continuar configuração congelada; publicar marc"
-        "os materiais e auditar.\nFIXED_100_RESULT_NOT_OWNER_STRATEGY_"
-        "RETURN=YES\n"
+        "\nNEXT_ACTION="
+        + ("Auditar semana concluída e aguardar aprovação OWNER para extensão."
+           if model_id == "M014" and score.get("RUN_STATUS") == "COMPLETE"
+           else "Continuar somente intervalo autorizado; publicar marcos e auditar.")
+        + "\nFIXED_100_RESULT_NOT_OWNER_STRATEGY_RETURN=YES\n"
     )
     if model_id == "M014":
         current += (

@@ -23,3 +23,16 @@ filas adicionais e filtro post-only não introduzidos neste modelo. Não é reto
 literal do histórico100+5/2%. Fonte de execução será o commit publicado antes do run.
 Regressões cobrem compounding/funding/escrow parcial/restore/boundary/sem fill fictício;
 revisão independente é gate separado e não comprova2.000 ciclos/dia.
+
+## Preflight publicado e bloqueio antes do replay
+
+IMPLEMENTATION_COMMIT=4d8ad6c54bd84b63d2c0cc96afdc140bbe077e1d
+INDEPENDENT_REVIEW=PASS_CONDITIONAL_PRE_RUN
+SOFTWARE_TESTS=105_PASSED_0_FAILED
+FIRST_LAUNCH=BLOCKED_BEFORE_DATA_OR_RUN_REGISTRATION
+REASON=PRE_RUN_TRACKED_CODE_DIRTY
+
+Auditor independente tinha alterações locais, embora não fosse fonte econômica.
+O gate canônico exige toda árvore rastreada publicada; não foi contornado.
+Publicar auditor/reporting concluídos antes da primeira execução econômica.
+Configuração, identidade e fontes econômicas permanecem inalteradas.

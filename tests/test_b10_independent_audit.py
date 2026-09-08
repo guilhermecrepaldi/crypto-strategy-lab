@@ -4,6 +4,7 @@ import copy
 import json
 import runpy
 import zipfile
+from decimal import Decimal as D
 from pathlib import Path
 
 import pytest
@@ -72,3 +73,90 @@ def test_auditor_streams_jsonl_without_loading_trace_array(tmp_path):
     )
     assert len(result["settlements"]) == 1
     assert result["cash"] == subject.cash
+
+
+def test_owner_reserve_reconstructs_from_100_plus_10_and_funds_ten_percent():
+    subject = FIXTURE["engine"](reserve="10")
+    FIXTURE["buy"](subject)
+    FIXTURE["sell"](subject)
+    rows = copy.deepcopy(subject.audit)
+    settlement = rows[-1]
+    settlement.update({"reserve": "10.01000", "cash": "100.09000", "reserve_transfer": "0.01000"})
+    ledger = AUDITOR["reconstruct"](
+        iter(rows), {"maker_fee": "0", "taker_fee": "0"}, owner_reserve=True
+    )
+    assert ledger["reserve"] == D("10.01000")
+    assert ledger["cash"] == D("100.09000")
+
+
+def test_m014_wrapper_rejects_score_manifest_identity_before_ledger(tmp_path):
+    folder = tmp_path / "m014"
+    folder.mkdir()
+    (folder / "execution-audit.jsonl").write_text("", encoding="utf-8")
+    (folder / "checkpoint.json").write_text("{}", encoding="utf-8")
+    (folder / "run-manifest.json").write_text(
+        json.dumps(
+            {
+                "model_id": "M014",
+                "model_hash": "model",
+                "run_hash": "run",
+                "capital_mode": "COMPOUNDING",
+                "profile_config_sha256": "profile",
+            }
+        ),
+        encoding="utf-8",
+    )
+    score = {
+        "MODEL_ID": "M014",
+        "MODEL_HASH": "wrong",
+        "RUN_ID": "run",
+        "CAPITAL_MODE": "COMPOUNDING",
+        "RUN_STATUS": "COMPLETE",
+        "PROFILE_CONFIG_SHA256": "profile",
+    }
+    (folder / "scoreboard.json").write_text(json.dumps(score), encoding="utf-8")
+    config = tmp_path / "config.json"
+    config.write_text(json.dumps({}), encoding="utf-8")
+    with pytest.raises(ValueError, match="MODEL_HASH_IDENTITY_MISMATCH"):
+        AUDITOR["audit_m014"](config, folder)
+
+
+def test_m014_wrapper_real_checkpoint_shape_and_balance_gate(tmp_path):
+    from dataclasses import asdict
+
+    from test_b10_reserve_weekly import replay
+
+    value, _ = replay()
+    folder = tmp_path / "run"
+    folder.mkdir()
+    history = tmp_path / "history.json"
+    history.write_text('{"archives": []}')
+    config = tmp_path / "profile.json"
+    profile = asdict(value.engine.profile)
+    profile["name"] = "B_REALISTIC_CONSERVATIVE"
+    from dataclasses import replace
+    value.engine.profile = replace(value.engine.profile, name=profile["name"])
+    config.write_text(json.dumps({
+        "profiles": [{"profile": profile, "envelope": asdict(value.envelope)}],
+        "history_manifest": str(history), "history_manifest_sha256": AUDITOR["digest"](history),
+        "rules": [],
+    }, default=str))
+    value.identity.update(model_hash="model", run_hash="run",
+                          profile_config_sha256=AUDITOR["digest"](config))
+    (folder / "run-manifest.json").write_text(json.dumps(value.identity))
+    trace = folder / "execution-audit.jsonl"
+    trace.write_bytes(b"")
+    binding = {"bytes": 0, "sha256": AUDITOR["digest"](trace)}
+    checkpoint = folder / "checkpoint.json"
+    checkpoint.write_text(json.dumps({"replay": value.checkpoint(), "audit": binding}))
+    score = value.metrics()
+    score.update(MODEL_HASH="model", RUN_ID="run", RUN_STATUS="COMPLETE",
+                 CHECKPOINT_SHA256=AUDITOR["digest"](checkpoint), AUDIT_PREFIX=binding)
+    (folder / "scoreboard.json").write_text(json.dumps(score))
+    result = AUDITOR["audit_m014"](config, folder)
+    assert result["ordinary_audited_raw"] == 0
+    assert "fewer than 100" in result["limitations"][-1]
+    score["OPERATING_BANK"] = "99"
+    (folder / "scoreboard.json").write_text(json.dumps(score))
+    with pytest.raises(ValueError, match="OPERATING_BANK"):
+        AUDITOR["audit_m014"](config, folder)
