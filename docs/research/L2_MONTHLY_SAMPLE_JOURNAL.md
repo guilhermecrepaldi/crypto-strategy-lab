@@ -599,3 +599,56 @@ executed as a new replay. Registry RUNNING→EVALUATED→REJECTED; evaluation
 REJECT refers to this configuration/day and OWNER gates, not impossible future
 strategy performance. Every financial total above remains conditional on the
 frozen fee-zero/PRICE_PRIORITY execution assumptions. No day2 was opened.
+
+## 2026-09-08 — OWNER review and live-versus-simulator research
+
+Read-only review; no strategy changes, replay, private API, Testnet or live order.
+The previously identified queue-depth discrepancy remains in M018. A current
+in-memory fixture confirmed ACTIVE queue100, displayed depth100→40, queue still100,
+inventory0. This is a diagnostic of model semantics, not a measured historical
+cycle uplift. Changing it requires a separate execution hypothesis and trade/depth
+reconciliation, not free cancellation credit. Current first-day34428/34441
+compatible exact-price prints left nothing after the estimated queue(99.9623%).
+
+External primary references rechecked through agent-reach GitHub/Jina routes;
+Exa was unavailable, so web search was the explicit fallback:
+
+- HftBacktest queue.rs at5f3ec40b2afb764e0fea112f941ed85523ef4e88 caps
+  RiskAdverseQueueModel ahead quantity to new displayed depth:
+  https://github.com/nkaz001/hftbacktest/blob/5f3ec40b2afb764e0fea112f941ed85523ef4e88/hftbacktest/src/backtest/models/queue.rs#L80
+- NautilusTrader documents L2 UPDATE queue caps, DELETE clearing and shared
+  liquidity-consumption controls; defaults/features must be explicitly selected:
+  https://nautilustrader.io/docs/latest/concepts/backtesting/trade-execution/
+- HftBacktest explains queue inference without per-order data and immutable
+  market-replay impact limitations. Small orders reduce impact concerns but do
+  not bypass queue priority:
+  https://hftbacktest.readthedocs.io/en/latest/order_fill.html
+- Feed arrival, exchange order arrival and response latency are distinct;
+  supplier capture times do not measure our hypothetical account round trip:
+  https://hftbacktest.readthedocs.io/en/latest/latency_models.html
+- A2023user report described MORE live fills while losing despite profitable
+  backtests. Maintainer response recommends matching order/position paths,
+  feed/order latency and queue assumptions. Anecdote, not controlled evidence:
+  https://github.com/nkaz001/hftbacktest/discussions/54
+- QuantConnect recommends same-period/initial-state reconciliation and separates
+  data, fill, cost and brokerage-model discrepancies:
+  https://www.quantconnect.com/docs/v2/cloud-platform/live-trading/reconciliation
+- Binance commission documentation distinguishes account/symbol/rate components;
+  fee-zero remains a frozen conditional assumption, not verified account economics:
+  https://developers.binance.com/docs/binance-spot-api-docs/faqs/commission_faq
+
+Local constraints also matter independently of simulator fidelity: the executed
+deadline was2h, NOT the OWNER's requested possible1h holding policy; four holds
+exceeded1h. H1 predicate evaluations included2NONPOSITIVE_DEFICIT and1SAME_CANDIDATE
+veto, not reserve insufficiency. BUY8 waited5.004h unfilled; holding clock starts
+only at first fill. No PROTECTED_EXIT_BLOCKED occurred; reserve minimum9.95347
+was far above floor2.5. A larger reserve alone does not remove these rules.
+
+CONCLUSION: no actual live-order record exists for this strategy in the evidence
+reviewed, so live/simulator cycle ratio is UNKNOWN. Neither9 simulated cycles
+nor favorable older price-path counts prove live capacity. Prioritize isolated
+queue-consistency sensitivity, explicit1h/entry-wait protocol and causal
+fill-time/edge-aware selection before tuning funding. Keep paired source/costs,
+never optimize the execution model simply until1000cycles appear. Public shadow
+data could later validate signals/arrival sequencing, not actual personal fills;
+any private/live calibration requires separate OWNER authorization.
