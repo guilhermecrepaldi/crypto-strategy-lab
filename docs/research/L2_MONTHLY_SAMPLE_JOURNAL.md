@@ -240,3 +240,44 @@ claim any external project achieved500/2000 cycles under our identical condition
 External research used GitHub CLI, Jina Reader and available web search; Exa was
 not configured and agent-reach executable/update-check was unavailable. No external
 trading package was installed or used to execute economic simulations.
+
+## 2026-09-08 — Deeper exchange/repository research and local adaptation feasibility
+
+Extended the SAME reports/usdcusdt/B10-execution-research.html at OWNER request.
+Added Coinbase Exchange, Kraken Spot, Bybit V5 and dated OKX feed contracts;
+PythonMatchingEngine, cryptofeed and LEAN; source-pinned code, licensing and
+reported bootstrap/coverage cases. GitHub API state was checked separately from
+cached search: cryptofeed issues604/1082 CLOSED, PR606 MERGED on2021-10-09.
+Those states do not establish a universally corrected or locally reproduced case.
+
+Independent GPT-6 Astra review: adaptation fits existing authorities, no second
+backend required; final scientific delta review PASS. Candidate queue cap is a
+NEW EXECUTION HYPOTHESIS, not an unannounced fix to frozen M015. Probabilistic
+cancellation requires trade/depth reconciliation and explicit ambiguity; repricing
+or changed admission requires new Mn. Eight proposed acceptance fixtures are
+listed separately from tests actually run. No claim of500/2000 cycles achieved.
+
+Read-only synthetic diagnostic executed in memory using helpers engine/batch/trade
+from tests/test_observed_l2_execution.py, envelope CONSERVATIVE_QUEUE:
+- batch(t=1,order=2,bids=[(1,100),(.99,100)]); submit BUY at1 at t=1;
+- batch(t=12,order=3,same bids): activated queue100;
+- batch(t=13,order=4,bids=[(1,40),(.99,100)]): queue100, inventory0;
+- trade(t=14,order=5,quantity50,price1,buyer=True): queue50, inventory0.
+No historical data were loaded. The alternative cap40 then up-to10 fill example
+is explanatory arithmetic, NOT an implemented or Binance-validated fill result.
+Command: .venv/Scripts/python.exe -m pytest tests/test_observed_l2_execution.py -q
+SOFTWARE_VALIDATION:27 passed,0 failed. TEST_SUITE_PASS != STRATEGY_PASS.
+
+Document distinctions: Kraken L3 authentication remains out of scope; Coinbase L3
+is not historical Binance calibration; Bybit standard book excludes RPI; OKX
+checksum deprecation is channel/date-specific, not grounds to bypass Binance
+validation. PythonMatchingEngine historical-price impact transformation is
+incompatible with the current immutable tape. cryptofeed LICENSE at39ff878 is
+AGPL-3.0-or-later with added attribution, not assumed permissive. No external
+trading library was copied, installed or executed, and no security audit is claimed.
+
+HTML browser checks:1440x1000 and390x844;11 sections, no broken hash anchors,
+zero scripts and no page overflow; console0 errors/0 warnings. Existing economic
+reference remains the closed FIRST synthetic day, explicitly not a live scoreboard.
+This milestone changes only the report and append-only journal. Frozen execution,
+profiles, parameters, financial state, existing artifacts and active runner untouched.
