@@ -229,6 +229,16 @@ def test_real_stream_path_saves_all_boundaries_before_trade_and_never_opens_exte
     final = json.loads((tmp_path / "capital-checkpoints" / "FINAL_5_MONTH.json").read_bytes())
     assert final["PROCESSED_TRADES"] == 3
     assert final["RUN_STATUS"] == "COMPLETE"
+    assert final["MONTH_CLOSED"] == "2026-05"
+    for month, reason, count in (
+        ("01", "MONTH_2026-01", 1),
+        ("02", "MONTH_2026-02", 1),
+        ("03", "DAY_90", 2),
+        ("04", "DAY_120", 2),
+    ):
+        close = json.loads((tmp_path / "capital-checkpoints" / f"{reason}.json").read_bytes())
+        assert close["MONTH_CLOSED"] == f"2026-{month}"
+        assert close["PROCESSED_TRADES"] == count
     assert (
         hashlib.sha256((tmp_path / "stage1-final-checkpoint.json").read_bytes()).hexdigest()
         == (final["CHECKPOINT_SHA256"])

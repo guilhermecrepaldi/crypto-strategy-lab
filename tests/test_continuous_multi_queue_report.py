@@ -1,7 +1,7 @@
 import hashlib
 import json
 
-from scripts.report_continuous_multi_queue import publish
+from scripts.report_continuous_multi_queue import monthly_results, publish
 
 
 def test_report_validates_prefix_and_preserves_missing_fields(tmp_path):
@@ -64,3 +64,35 @@ def test_hash_mismatch_fails_closed(tmp_path):
         assert str(exc) == "CAPITAL_CURVE_PREFIX_HASH_MISMATCH"
     else:
         raise AssertionError("expected hash validation failure")
+
+
+def test_monthly_balances_are_snapshots_and_cycles_are_monthly_not_cumulative():
+    rows = [
+        {
+            "MONTH_CLOSED": "2026-01",
+            "OPERATING_CAPITAL": "101",
+            "RECOVERY_RESERVE": "10.1",
+            "TOTAL_EQUITY": "111.1",
+            "ORDINARY_OPERATING_CYCLES": 100,
+            "ACTIVE_RESERVE_CYCLES": 2,
+            "RELEASE_COUNT": 3,
+        },
+        {
+            "MONTH_CLOSED": "2026-02",
+            "OPERATING_CAPITAL": "103",
+            "RECOVERY_RESERVE": "10.3",
+            "TOTAL_EQUITY": "113.3",
+            "ORDINARY_OPERATING_CYCLES": 250,
+            "ACTIVE_RESERVE_CYCLES": 7,
+            "RELEASE_COUNT": 4,
+        },
+        {"SIMULATION_TIMESTAMP": "2026-03-10T00:00:00+00:00", "TOTAL_EQUITY": "115"},
+    ]
+    result = monthly_results(rows)
+    assert len(result) == 2  # Never invent the unclosed March balance.
+    assert result[0]["CYCLES_MONTH"] == 102
+    assert result[1]["CYCLES_MONTH"] == 155
+    assert result[1]["RELEASES_MONTH"] == 1
+    assert result[1]["OPERATING_CAPITAL"] == "103"
+    assert result[1]["TOTAL_EQUITY"] == "113.3"
+    assert monthly_results(rows[1:])[0]["CYCLES_MONTH"] is None  # Missing January is not zero.

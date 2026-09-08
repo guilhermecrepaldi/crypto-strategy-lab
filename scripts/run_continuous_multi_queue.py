@@ -576,6 +576,13 @@ def stream_stage(history, tape, begin, replay, identity, output, *, saved=None):
     journal = AuditJournal(output / "execution-audit.jsonl", saved["audit"] if saved else None)
     curve = AuditJournal(output / "capital-curve.jsonl", saved["capital_curve"] if saved else None)
     milestones = [start_us + d * 86_400_000_000 for d in DAY_CHECKPOINTS] if not saved else []
+    month_boundaries = {
+        _datetime_to_micros(datetime(2026, month, 1, tzinfo=UTC)): f"2026-{month - 1:02}"
+        for month in range(2 if not saved else 7, 7 if not saved else 10)
+        if start < datetime(2026, month, 1, tzinfo=UTC) < end
+    }
+    day_boundaries = set(milestones)
+    milestones = sorted(set(milestones) | set(month_boundaries))
     checkpoint_at = time.monotonic()
     previous_id = None
     previous_stamp = None
@@ -616,9 +623,15 @@ def stream_stage(history, tape, begin, replay, identity, output, *, saved=None):
                 "VERDICT": "PENDING",
                 "STAGE_1_DECISION": "PENDING_INDEPENDENT_AUDIT"
                 if reason == "FINAL_5_MONTH"
+                else "PASS_TO_EXTENSION"
+                if stage == "STAGE_2"
                 else "PENDING",
             }
         )
+        if as_of_us in month_boundaries:
+            score["MONTH_CLOSED"] = month_boundaries[as_of_us]
+        elif reason == "FINAL_5_MONTH":
+            score["MONTH_CLOSED"] = "2026-05"
         curve.drain(SimpleNamespace(audit=[score]))
         curve_binding = curve.durable()
         physical = {"replay": state, "audit": binding, "capital_curve": curve_binding}
@@ -626,7 +639,7 @@ def stream_stage(history, tape, begin, replay, identity, output, *, saved=None):
         score["CHECKPOINT_SHA256"] = file_sha(output / "checkpoint.json")
         score["CAPITAL_CURVE_PREFIX"] = curve_binding
         write_json(output / "scoreboard.json", score)
-        if reason.startswith("DAY_") or reason in ("FINAL_5_MONTH", "FINAL_EXTENSION"):
+        if reason.startswith(("DAY_", "MONTH_")) or reason in ("FINAL_5_MONTH", "FINAL_EXTENSION"):
             write_json(output / "capital-checkpoints" / f"{reason}.json", score)
         if reason == "FINAL_5_MONTH":
             write_json(output / "stage1-final-checkpoint.json", physical)
@@ -653,7 +666,12 @@ def stream_stage(history, tape, begin, replay, identity, output, *, saved=None):
             stamp = _datetime_to_micros(event.timestamp)
             for boundary in due_boundaries(milestones, stamp):
                 replay.advance_to(boundary)
-                checkpoint(f"DAY_{(boundary - start_us) // 86_400_000_000}", boundary)
+                reason = (
+                    f"DAY_{(boundary - start_us) // 86_400_000_000}"
+                    if boundary in day_boundaries
+                    else "MONTH_" + month_boundaries[boundary]
+                )
+                checkpoint(reason, boundary)
             if previous_id is not None and event.trade_id != previous_id + 1:
                 raise ValueError("UNDECLARED_RAW_TRADE_ID_GAP")
             previous_id = event.trade_id
@@ -675,7 +693,12 @@ def stream_stage(history, tape, begin, replay, identity, output, *, saved=None):
                 checkpoint_at = time.monotonic()
         for boundary in due_boundaries(milestones, end_us):
             replay.advance_to(boundary)
-            checkpoint(f"DAY_{(boundary - start_us) // 86_400_000_000}", boundary)
+            reason = (
+                f"DAY_{(boundary - start_us) // 86_400_000_000}"
+                if boundary in day_boundaries
+                else "MONTH_" + month_boundaries[boundary]
+            )
+            checkpoint(reason, boundary)
         replay.finish()
         checkpoint("FINAL_5_MONTH" if not saved else "FINAL_EXTENSION", end_us)
     except BaseException as exc:

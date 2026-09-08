@@ -73,3 +73,46 @@ até maio, sem criar run ou executar estratégia. Junho-setembro não é atraves
 O primeiro replay permanece fail-closed até revisão independente do código concluída.
 Correções pré-run em andamento: cancel/ACK da reserva e contabilização de parciais.
 Não são resultados econômicos; nenhum parâmetro foi alterado por resultado.
+
+## Prefixo físico preparado e placar mensal
+
+DATA_PREPARATION=COMPLETE
+PREPARATION_CODE_COMMIT=afad9795d5eea7ae1f585600a43722d370c6490b
+PREFIX_TAPE_HASH=f2eb7e98f50fa731202e371facc7c6dbd5f4dc2c7d1f06451f656d42325e31cf
+PREFIX_CACHE_KEY=437eb38f241f8b2d0360e22a59a3a0dbb65c005082259e3e40321751bfdc0d5c
+PREFIX_RECORDS_INCLUDING_DEC31_WARMUP=60870538
+STAGE_1_RAW_TRADES=60478963
+SEALED_FUTURE_SUFFIX_SCANNED=NO
+ECONOMIC_REPLAY_STARTED=NO
+
+SHA256s dos 152 arquivos autorizados foram conferidos. O cache prefixado foi gravado
+e validado pelas rotinas canônicas. Hash integral anterior é provenance histórica,
+não foi rechecado atravessando junho-setembro. A reconciliação raw/timestamp/preço/
+ordinal de todos os eventos ainda será feita durante o replay.
+
+Novo pedido OWNER: saldo da banca e ciclos mês a mês. Runner captura fechamentos
+de janeiro, fevereiro, março, abril e maio antes do primeiro evento do mês seguinte.
+Reporter mostra banca operacional, reserva, patrimônio e ciclos ordinários do mês
+(operacionais + Q4), por diferença dos contadores, com releases separados. Não soma
+saldos mensais nem projeta mês aberto. Fixtures confirmam fechamento e diferenças.
+
+TEST_SCOPE=M013 kernel/runner/report + M012 regression + frozen B10 execution
+TESTS_PASSED=79
+TESTS_FAILED=0
+TEST_SUITE_PASS_IS_STRATEGY_PASS=NO
+IMPLEMENTATION_REVIEW=PENDING
+
+## Revisão final e autorização de início
+
+IMPLEMENTATION_STATUS=COMPLETE
+REVIEW_STATUS=PASS_CONDITIONAL_PRE_RUN
+SOFTWARE_VALIDATION_ROOT=101 passed; 0 failed
+INDEPENDENT_SOFTWARE_VALIDATION=78 passed; 0 failed
+NEW_RUN_STATUS=AUTHORIZED_NOT_YET_STARTED
+VERDICT=PENDING
+
+Reviewer Astra vinculou SHA256 LF de kernel, runner e reporter e confirmou prefixo,
+quatro filas compartilhando print/depth, parciais/escrows, cancel/ACK, dust idle,
+24h dentro da etapa e continuidade da fronteira exclusiva. A auditoria do histórico
+completo continua necessária para Stage 2. Nenhum teste aprova retorno financeiro.
+Próxima ação autorizada: publicar a implementação e iniciar Stage 1 automaticamente.

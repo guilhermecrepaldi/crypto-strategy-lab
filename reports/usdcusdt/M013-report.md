@@ -2,8 +2,8 @@
 
 ## Progresso do replay
 
-NOT_STARTED. M013 registrado, pré-registro científico aprovado; implementação e
-revisão independente do código em andamento. Stage 1: janeiro–maio, 151 dias.
+NOT_STARTED. M013 registrado, implementação concluída e revisão independente
+PASS_CONDITIONAL_PRE_RUN. Stage 1: janeiro–maio, 151 dias; início autorizado.
 Junho–setembro bloqueado até PASS_TO_EXTENSION, sem reset nem ajuste de parâmetros.
 
 ## Resultado econômico parcial
@@ -16,7 +16,21 @@ Q4 começa inativa porque seu orçamento seguro inicial é inferior ao mínimo d
 
 ## Testes do software
 
-Validação integrada pendente. TEST_SUITE_PASS != STRATEGY_PASS.
+101 testes integrados passaram; 78 também passaram na execução independente do
+reviewer. TEST_SUITE_PASS != STRATEGY_PASS. Auditoria do replay ainda pendente.
+
+## Banca e ciclos mês a mês
+
+| Mês | Banca operacional | Reserva | Patrimônio | Ciclos do mês |
+|---|---:|---:|---:|---:|
+| Janeiro | Aguardando replay | — | — | — |
+| Fevereiro | Aguardando replay | — | — | — |
+| Março | Aguardando replay | — | — | — |
+| Abril | Aguardando replay | — | — | — |
+| Maio | Aguardando replay | — | — | — |
+
+Saldos no fechamento; ciclos ordinários operacionais + Q4 produzidos no mês, não
+acumulados. Releases serão mostrados separadamente. Nenhum saldo projetado.
 
 ## Resultado final
 
