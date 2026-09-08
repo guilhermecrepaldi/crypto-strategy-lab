@@ -373,6 +373,195 @@ def iter_native_delta_rows(lines: Iterable[str]) -> Iterator[dict[str, str]]:
                 }
 
 
+def iter_native_events(
+    lines: Iterable[str],
+    *,
+    include_book: bool = True,
+) -> Iterator[dict[str, Any]]:
+    """Reconstruct Tardis snapshot-plus-buffer normalization in capture order.
+
+    A REST snapshot is behind already captured updates. Apply its buffered
+    bridging updates first, then expose the reconstructed snapshot at REST
+    capture time. Pre-snapshot updates are represented by that snapshot, not
+    emitted again. Subsequent stale deltas are ignored by their native IDs.
+    Gaps and disconnects raise; execution cannot cross an unknown interval.
+    This projection must be compared to the immutable CSV before being trusted.
+    BOOK events include physical capture_order, native ID, conservative initial
+    coverage bounds, changes and optionally full sorted immutable Decimal levels.
+    TRADE events retain native payloads even before the first snapshot. A BOOK
+    with sequence_validated=False must not enable order activation: wait until
+    a bridging update arrives. Empty but sequenced deltas remain BOOK events.
+    """
+    book = _Book()
+    last_id: int | None = None
+    pending: list[Mapping[str, Any]] = []
+    known_bid_floor = known_ask_ceiling = None
+    bridged = False
+
+    def apply(data: Mapping[str, Any]) -> list[tuple[str, Decimal, Decimal]]:
+        nonlocal last_id, bridged
+        first, final = data["U"], data["u"]
+        if type(first) is not int or type(final) is not int or first < 0 or final < first:
+            raise ValueError("invalid native update IDs")
+        if last_id is None:
+            raise ValueError("snapshot required")
+        if final <= last_id:
+            return []
+        if first > last_id + 1:
+            raise ValueError("native sequence gap during normalization")
+        changes = []
+        for side, key in (("bid", "b"), ("ask", "a")):
+            for item in data[key]:
+                price, quantity = _level(*item)
+                book.apply(side, price, quantity)
+                changes.append((side, price, quantity))
+        last_id = final
+        bridged = True
+        return changes
+
+    for capture_order, line in enumerate(lines, 1):
+        if not line.strip():
+            raise ValueError("native disconnect in execution projection")
+        local_text, encoded = line.strip().split(" ", 1)
+        payload = json.loads(encoded)
+        data = payload["data"]
+        local = _local_microseconds(local_text)
+        snapshot = "lastUpdateId" in data
+        if data.get("e") == "trade":
+            if payload["stream"].lower() != "usdcusdt@trade" or data.get("s") != "USDCUSDT":
+                raise ValueError("wrong native trade identity")
+            yield {
+                "kind": "TRADE",
+                "local_us": local,
+                "exchange_us": native_exchange_microseconds(data["T"]),
+                "capture_order": capture_order,
+                "data": data,
+            }
+            continue
+        if snapshot:
+            if not payload["stream"].lower().startswith("usdcusdt@depth"):
+                raise ValueError("wrong snapshot stream")
+            last_id = data["lastUpdateId"]
+            if type(last_id) is not int or last_id < 0:
+                raise ValueError("invalid snapshot ID")
+            book.clear()
+            bridged = False
+            for side, key in (("bid", "bids"), ("ask", "asks")):
+                for item in data[key]:
+                    price, quantity = _level(*item)
+                    book.apply(side, price, quantity)
+            if not book.bids or not book.asks:
+                raise ValueError("native snapshot lacks two-sided coverage")
+            known_bid_floor, known_ask_ceiling = min(book.bids), max(book.asks)
+            for update in pending:
+                apply(update)
+            pending.clear()
+            changes = [("bid", p, q) for p, q in book.bids.items()]
+            changes.extend(("ask", p, q) for p, q in book.asks.items())
+            exchange = local
+        elif data.get("e") == "depthUpdate":
+            if data.get("s", "USDCUSDT") != "USDCUSDT":
+                raise ValueError("wrong native symbol")
+            if last_id is None:
+                pending.append(data)
+                continue
+            old_id = last_id
+            changes = apply(data)
+            if old_id == last_id:
+                continue
+            exchange = native_exchange_microseconds(data["E"])
+        else:
+            continue
+        event: dict[str, Any] = {
+            "kind": "BOOK",
+            "local_us": local,
+            "exchange_us": exchange,
+            "capture_order": capture_order,
+            "native_update_id": last_id,
+            "is_snapshot": snapshot,
+            "sequence_validated": bridged,
+            "known_bid_floor": known_bid_floor,
+            "known_ask_ceiling": known_ask_ceiling,
+            "changes": tuple(changes),
+        }
+        if include_book:
+            event["bids"] = tuple(sorted(book.bids.items(), reverse=True))
+            event["asks"] = tuple(sorted(book.asks.items()))
+        yield event
+
+
+def iter_reconstructed_native_rows(lines: Iterable[str]) -> Iterator[dict[str, str]]:
+    """Normalized projection of the single native-event reconstruction authority."""
+    for event in iter_native_events(lines, include_book=False):
+        if event["kind"] != "BOOK":
+            continue
+        for side, price, quantity in event["changes"]:
+            yield {
+                "exchange": "binance",
+                "symbol": "USDCUSDT",
+                "timestamp": str(event["exchange_us"]),
+                "local_timestamp": str(event["local_us"]),
+                "is_snapshot": "true" if event["is_snapshot"] else "false",
+                "side": side,
+                "price": str(price),
+                "amount": str(quantity),
+            }
+
+
+def bind_csv_reconstructed_native(
+    rows: Iterable[Mapping[str, str]],
+    raw_lines: Iterable[str],
+) -> dict[str, Any]:
+    """Compare all normalized snapshot/delta batches against native reconstruction."""
+    counts: Counter[str] = Counter()
+    digests = {"csv": hashlib.sha256(), "native": hashlib.sha256()}
+    errors: list[str] = []
+    mismatches: list[dict[str, Any]] = []
+
+    def signatures(source: Iterable[Mapping[str, str]]) -> Iterator[tuple[bool, int, int, str]]:
+        for (_, snapshot), batch in groupby(
+            source, key=lambda item: (item["local_timestamp"], _snapshot(item))
+        ):
+            # Reuse exact Decimal multiset implementation; snapshot identity is
+            # carried outside its hash, so it cannot match a delta accidentally.
+            projected = ({**item, "is_snapshot": "false"} for item in batch)
+            for local, count, digest in _delta_batch_signatures(projected):
+                yield snapshot, local, count, digest
+
+    try:
+        for left, right in zip_longest(
+            signatures(rows), signatures(iter_reconstructed_native_rows(raw_lines))
+        ):
+            for label, batch in (("csv", left), ("native", right)):
+                if batch is not None:
+                    counts[f"{label}_rows"] += batch[2]
+                    counts[f"{label}_snapshots" if batch[0] else f"{label}_delta_batches"] += 1
+                    digests[label].update(json.dumps(batch, separators=(",", ":")).encode())
+                    digests[label].update(b"\n")
+            if left != right:
+                counts["mismatched_batches"] += 1
+                if len(mismatches) < 10:
+                    mismatches.append({"csv": left, "native": right})
+            else:
+                counts["matched_batches"] += 1
+    except (ValueError, TypeError, KeyError) as exc:
+        errors.append(str(exc))
+    gate = (
+        "FAIL"
+        if errors or counts["mismatched_batches"]
+        else ("PASS" if counts["csv_snapshots"] and counts["matched_batches"] else "UNKNOWN")
+    )
+    return {
+        "normalized_binding_gate": gate,
+        "counts": dict(counts),
+        "errors": errors,
+        "mismatches": mismatches,
+        "csv_sha256": digests["csv"].hexdigest(),
+        "native_sha256": digests["native"].hexdigest(),
+        "semantics": "REST_SNAPSHOT_PLUS_BUFFERED_BRIDGE_THEN_NONSTALE_DELTAS",
+    }
+
+
 def _delta_batch_signatures(
     rows: Iterable[Mapping[str, str]],
 ) -> Iterator[tuple[int, int, str]]:
