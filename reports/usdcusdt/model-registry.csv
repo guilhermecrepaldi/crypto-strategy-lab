@@ -2573,7 +2573,7 @@ M015,INCONCLUSIVE,100,USDT,COMPOUNDING,RUN_MANIFEST,4231670b19b1ca5c2b5032b1476b
   ""trading_enabled"": false,
   ""warmup_start"": ""2025-12-31T00:00:00+00:00""
 }",,,"New counterfactual execution hypothesis, not retroactive bug correction.",,,,,,,,,
-M016,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,4f582f23ea4f6e09eefbeceaa70a60f5a5013129a57e6628a6a7916f112bdaed,M015,2026-09-08T14:31:59.884838Z,An explicit protected deadline without opportunity veto can improve continuity while exposing financial/liquidity violations.,M015 PRICE_PRIORITY 132h hold before release signal; reserve remained above floor; H1 is evaluation not timeout.,"Protected deadline contract2h, actual aggregate10bps cap, preserved100+10/funding10 and PRICE_PRIORITY.",Reduce presignal waiting; measure late exits and economic cost without fabricated fills.,"{
+M016,RUNNING,100,USDT,COMPOUNDING,RUN_MANIFEST,4f582f23ea4f6e09eefbeceaa70a60f5a5013129a57e6628a6a7916f112bdaed,M015,2026-09-08T14:31:59.884838Z,An explicit protected deadline without opportunity veto can improve continuity while exposing financial/liquidity violations.,M015 PRICE_PRIORITY 132h hold before release signal; reserve remained above floor; H1 is evaluation not timeout.,"Protected deadline contract2h, actual aggregate10bps cap, preserved100+10/funding10 and PRICE_PRIORITY.",Reduce presignal waiting; measure late exits and economic cost without fabricated fills.,"{
   ""active_reserve_queues"": 0,
   ""calendar_days"": 12,
   ""capital_mode"": ""COMPOUNDING"",

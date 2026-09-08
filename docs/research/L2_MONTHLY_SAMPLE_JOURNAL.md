@@ -330,3 +330,32 @@ Existing canonical HTML now includes twelve-day autopsy, daily cycle bars,
 funding/recovery tables and unrecovered cases. Browser visual checks desktop1440x1000
 and mobile390x844; no external chart dependency. Full comparison remains pending
 the actual successor replay. No optimal funding percentage has been selected.
+
+## 2026-09-08 — M016 launched from published source
+
+SOURCE_SHA=44d75f9183aa052be20734fac0f244bc4ba238bd
+PHYSICAL_RUN_HASH=0b4f726bfa4724009a9d37c07c078976a77179dd82cb09ae98871254307fad5a
+REGISTRY_RUN_HASH=d753560ef93ea5598fbdcf5c17a538932a5a4b7716ba8262840ff33a9e7b024b
+The registry entry binds the canonical monthly runner's unchanged physical run
+hash/manifest; these are explicitly different provenance hashes, not a substituted
+execution identity. Source was published and clean before the preflight.
+
+Command: .venv/Scripts/python.exe -m scripts.run_l2_monthly_samples --model M016
+An initial direct-file invocation failed to import scripts before preflight or any
+economic output; correct module invocation uses the existing package workflow.
+Bound input revalidation completed and4,535,834 canonical trades were selected
+only from the approved12 source dates. One writer, no additional market/history.
+Model registry now RUNNING. Economic VERDICT=PENDING; immutable physical daily
+checkpoints and terminal audit, when produced, determine progress and results.
+Journal/reporting commits do not replace the execution SOURCE_SHA above.
+
+### M016 day1 checkpoint — partial economic evidence, not final approval
+
+Source day2025-01-01, logical day1/12 closed; progress8.3333%.
+Positive complete cycles12; operating100→100.10692; reserve10→9.99208;
+marked equity110→110.099; net+0.099USDT. One release consumed0.0198;
+positive-cycle funding0.01188. Exposure closed at cutoff. Maximum hold
+2.0000132964h: deadline exceeded by47.867milliseconds and explicitly counted.
+M015 PRICE_PRIORITY same day also12 cycles/equity110.099 but maximum hold3.001h.
+This checkpoint improves maximum holding, NOT cycle count or economics so far.
+Full-run and all-fill terminal audits pending; VERDICT=PENDING.
