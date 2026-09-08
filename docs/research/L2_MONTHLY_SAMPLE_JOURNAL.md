@@ -359,3 +359,21 @@ positive-cycle funding0.01188. Exposure closed at cutoff. Maximum hold
 M015 PRICE_PRIORITY same day also12 cycles/equity110.099 but maximum hold3.001h.
 This checkpoint improves maximum holding, NOT cycle count or economics so far.
 Full-run and all-fill terminal audits pending; VERDICT=PENDING.
+
+### M016 deadlineD2 autopsy — cause isolated, trajectory still partial
+
+Read-only source-prefix reconstruction and separate GPT-6 Astra reproduction:
+reports/usdcusdt/M016-deadline-autopsy.md. At source2025-02-01T02:00:10.349574Z,
+99USDC fit in the observed remaining bid budget at1.0002. Conditional proceeds
+99.0198 against cost99.1881 imply loss0.1683(16.81202458bps), whereas cap10bps
+allowed0.10010692 and reserve above floor was7.49208. The logged veto is LOSS_CAP.
+Native update1255530829; book age10.502ms; available quantity13,707,359USDC.
+Independent audit reproduced48,908 BOOK batches, original hashes and checkpoint
+bindings; confirmed five BUY fills and no IOC consumption before this deadline.
+This is conditional depth cost, NOT an actual fill or a guaranteed alternative exit.
+
+Closed logical days2/3/4 had zero new ordinary positive cycles. Cumulative marked
+equity109.9307/109.9406/109.901; reserve9.99208 unchanged. At day4 close open
+position age71.997125h. M016 exposes the incompatible cap/time objectives but does
+not yet meet the2h objective. Funding or extra reserve alone cannot remove this
+specific cap veto. No parameter changed during the run; successor not selected.
