@@ -171,3 +171,186 @@ with localcontext() as context:
 
 Arithmetic inputs99USDC, cost99.1881 and bank100.10692 derive from the five BUY
 fills and closed day-1 checkpoint listed above, not a new sizing decision.
+
+## ADDENDUM — todos os oito excessos no M016 concluído
+
+ADDENDUM_STATUS=COMPLETE_READONLY_DIAGNOSTIC. A seção de D2 acima permanece
+inalterada como evidência publicada do prefixo; seu antigo status PARTIAL
+não descreve a situação final. Este complemento usa somente o ledger fechado
+e o estado terminal. Nenhum novo replay, reconstrução integral de L2, ajuste
+de política ou hipótese M018 foi executado.
+
+### Resultado: sete atrasos curtos e um bloqueio financeiro prolongado
+
+| Lote / BUY | Dia de entrada | Excesso sobre2h (s) | Sinal→fechamento (s) | Perda/consumo USDT | H1 anterior |
+|---|---:|---:|---:|---:|---|
+|5 / 164|1|0.047867|3.586444|0.0198000000000000|SAME_CANDIDATE|
+|14 / 2578|2|424792.190715|424795.729292|0.0792000000000000|LOSS_CAP|
+|15 / 2582|7|0.078352|3.616929|0.0198000000000000|NONPOSITIVE_DEFICIT|
+|16 / 91188|8|0.154896|3.693473|0.1000000000000000|SAME_CANDIDATE|
+|17 / 117252|9|0.335338|3.873915|0|NONPOSITIVE_DEFICIT|
+|19 / 117258|10|0.056144|3.594721|0.0100000000000000|NONPOSITIVE_DEFICIT|
+|21 / 120008|11|1.113711|4.652288|0.0010000000000000|SAME_CANDIDATE|
+|23 / 126954|11|0.096399|3.634976|0.0030000000000000|NONPOSITIVE_DEFICIT|
+
+Lote é o índice1–27 de settlement, não o número de ciclo ordinário. Todos os oito
+foram releases; sete tiveram perda e um fechou a zero. Todos são violações reais
+da regra estrita de2h, inclusive os atrasos subsegundo. Nenhum grace foi aplicado.
+
+Nos sete casos curtos, a ordem IOC estava programada para ativar em deadline−1us.
+Cancelamento, resposta e submissão completaram sua sequência antes do limite.
+O fill aconteceu numa observação posterior: atraso de47,867ms a1,113711s além
+do deadline. Cada lote teve um único IOC, integralmente preenchido na primeira
+RELEASE_BOOK_EVALUATION registrada, sem PROTECTED_EXIT_BLOCKED no lote.
+Não houve veto financeiro ou falta de orçamento documentada nesses sete casos.
+
+Classificação suportada: atraso de avaliação/observação após a ativação programada.
+Não chamar todos de “milissegundos”: um ultrapassou1s. A fonte exige observação
+estritamente posterior à ativação e não inventa um book/evento no relógio exato.
+Esta projeção seletiva não mede o intervalo de todas as capturas nem separa
+ausência de evento de cada possível inelegibilidade microtemporal. Não afirma
+que antecipar a ordem produziria o mesmo preço/fill, nem que aumentar cap elimina
+essas sete violações. O preço observado na execução não substitui cotação
+desconhecida no instante exato do deadline.
+
+### Identificadores e relógios exatos
+
+Todos os timestamps abaixo são microssegundos do relógio lógico sintético.
+O manifesto mapeia cada dia para sua data original, preservada nos eventos;
+não apresentar os dias comprimidos como datas históricas contíguas.
+
+| Lote | First BUY | Deadline | Fechamento | IOC release |
+|---|---:|---:|---:|---:|
+|5|1735720136091500|1735727336091500|1735727336139367|166|
+|14|1735776010349574|1735783210349574|1736208002540289|2580|
+|15|1736253909061248|1736261109061248|1736261109139600|2584|
+|16|1736377661164284|1736384861164284|1736384861319180|91190|
+|17|1736441317104188|1736448517104188|1736448517439526|117254|
+|19|1736543163183119|1736550363183119|1736550363239263|117260|
+|21|1736568094025599|1736575294025599|1736575295139310|120010|
+|23|1736588800841439|1736596000841439|1736596000937838|126956|
+
+O sinal de cada lote ocorreu deadline−3538577us. Nos sete curtos:
+cancelamento efetivo=sinal+1179525us; ack=sinal+2359050us;
+submissão=sinal+2359051us; ativação nominal=deadline−1us.
+DEADLINE_VIOLATION foi registrado em deadline+1us nos oito lotes.
+O atraso de fill após ativação nominal é, portanto, excesso+1us nos sete curtos.
+
+### Lote14/D2: cap, seams e desbloqueio
+
+O único lote longo permaneceu119,997830754167h desde a primeira BUY, excedendo2h
+em424792,190715s. Os onze PROTECTED_EXIT_BLOCKED de toda a campanha pertencem
+a ele: seis registros LOSS_CAP intercalados com cinco NO_LIQUIDITY.
+
+| Transição | Relógio lógico us |
+|---|---:|
+| Primeiro LOSS_CAP |1735783207990523|
+| Seam, NO_LIQUIDITY |1735862400000000|
+| Retorno a LOSS_CAP |1735862413216064|
+| Seam, NO_LIQUIDITY |1735948800000000|
+| Retorno a LOSS_CAP |1735948801302055|
+| Seam, NO_LIQUIDITY |1736035200000000|
+| Retorno a LOSS_CAP |1736035202302083|
+| Seam, NO_LIQUIDITY |1736121600000000|
+| Retorno a LOSS_CAP |1736121600784423|
+| Seam, NO_LIQUIDITY |1736208000000000|
+| Retorno a LOSS_CAP |1736208001122713|
+| PROTECTED_EXIT_UNBLOCKED e submissãoIOC |1736208001340105|
+| Ativação nominalIOC |1736208002519630|
+| Fill/settlement |1736208002540289|
+
+NO_LIQUIDITY aqui coincide exatamente com a indisponibilidade inicial de book
+nas cinco emendas. Não prova esgotamento real de todo o mercado. Depois do último
+retorno do book houve ainda veto de cap; só em seguida ocorreu desbloqueio.
+A ordem finalmente admitida levou1,200184s da submissão ao fechamento, sendo
+20,659ms após ativação nominal. A perda final0,0792 foi menor que o custo0,1683
+reconstruído no deadline D2 porque preço e momento mudaram. Não são estimativas
+concorrentes do mesmo fill.
+
+Em todos os seis registros financeiros: restored_bank100,10692,
+loss_cap_budget0,10010692, reserve_budget7,49208, protected_price1,0009 e
+binding_constraint=LOSS_CAP. O orçamento não aumentou para tornar a saída
+possível. O desbloqueio ocorreu com nova evidência; o fill consumiu99USDC a1,0011,
+quantidade disponível antes119366 e native_update_id2005937555. O saldo de
+reserva cobriu exatamente0,0792, sem tocar o piso2,5.
+
+Os eventos BLOCKED são transições de motivo, não cada avaliação de preço.
+O contador terminal677344 avaliações bloqueadas pelo preço/cap não significa
+677344 ordens, nem677344 quotes preservadas. Não é possível reconstruir a curva
+completa de custo necessário a partir desses onze registros.
+
+### Orçamentos, H1 e o que continua desconhecido
+
+A regra executável10bps permaneceu fixa. Os valores abaixo são cálculo da política
+sobre o lot_budget/restored bank dos lotes sem venda parcial anterior, não
+novos registros de preço ou custo no deadline:
+
+| Lote(s) | Cap10bps calculado USDT |
+|---|---:|
+|5|0,10003564|
+|14,15,16,17|0,10010692|
+|19|0,10011592|
+|21|0,10011682|
+|23|0,10011772|
+
+São pequenos degraus por compounding, não relaxamentos. Somente no lote14 esses
+campos de orçamento foram também persistidos como veto explícito. Não houve
+binding_constraint=RESERVE_FLOOR em nenhum dos oito episódios. Isso não prova
+que reserva/piso jamais limitariam outra trajetória.
+
+Em cada lote houve uma avaliação H1 anterior ao preparo:3 SAME_CANDIDATE,
+4 NONPOSITIVE_DEFICIT e1 LOSS_CAP. Os rótulos são os motivos reais do predicate,
+não garantias de rentabilidade de uma alternativa. Depois do sinal de deadline
+o latch substituiu o veto por oportunidade e preservou cap/floor; o relógio não
+conseguiu sobrepor-se à incompatibilidade financeira de D2.
+
+Apenas D2 possui nesta autópsia custo executável reconstruído no prefixo exato
+do deadline, com consumo anterior de profundidade reconciliado. Nos outros sete,
+conhecemos custo/perda do fill posterior e os eventos do lifecycle; o custo
+exato no deadline permanece UNKNOWN. Não há base para estimar “cap necessário”
+dos oito com seus preços finais nem para prometer sucesso de20bps.
+
+### Proveniência e reprodução
+
+Mesmo source publicado44d75f9183aa052be20734fac0f244bc4ba238bd.
+Ledger fechado3353263655bytes, SHA256
+b22abb83aec4fb0988e390f89b6ac0dcc445e483762d272e41105b005cacc873;
+estado canônico SHA25651927d16e16c73c73b00cb234ba5ade81f6d57b30b4b4200cb9d7ae314116a35.
+O comando abaixo foi executado uma vez, fez uma passagem sequencial com hash,
+projetou eventos relevantes e correlacionou27 settlements/primeiras BUYs.
+Não escreveu arquivos e não executou o motor. Os eventos anteriores à entrada
+incluídos na janela entre settlements são contexto flat, não causas do deadline.
+
+```powershell
+@'
+import hashlib,json,re
+from pathlib import Path
+from decimal import Decimal as D
+from crypto_strategy_lab.microstructure.b10_reality import _decode
+from crypto_strategy_lab.domain import canonical_hash
+p=Path("artifacts/usdcusdt/l2-monthly-samples/M016/SYNTHETIC_CONSECUTIVE_12D/PRICE_PRIORITY")
+t=json.loads((p/"terminal-engine-state.json").read_bytes())
+assert canonical_hash(t["state"])==t["sha256"]
+s=_decode(t["state"]); settlements=s["settlements"]
+wanted={"FILL","DEADLINE_EXIT_SIGNAL","DEADLINE_VIOLATION","PROTECTED_EXIT_BLOCKED","PROTECTED_EXIT_UNBLOCKED","RELEASE_PREDICATE_EVALUATION","RELEASE_BOOK_EVALUATION","CANCEL_REQUEST","CANCELED","CANCEL_ACK_SCHEDULED","OBSERVED_DEPTH_CONSUMPTION"}
+rows=[]; sha=hashlib.sha256(); pat=re.compile(rb'"kind":"([^"]+)"')
+for raw in (p/"execution-audit.jsonl").open("rb"):
+ sha.update(raw)
+ if pat.search(raw).group(1).decode() in wanted: rows.append(json.loads(raw))
+assert sha.hexdigest()==json.loads((p/"all-fill-audit.json").read_bytes())["journal"]["sha256"]
+lots=[]; previous=1735689600000000
+for index,settle in enumerate(settlements,1):
+ closure=settle["time_us"]
+ buys=[r for r in rows if r["kind"]=="FILL" and r["side"]=="BUY" and previous<r["time_us"]<=closure]
+ entry=min(r["time_us"] for r in buys); deadline=entry+7200000000
+ if closure>deadline:
+  events=[r for r in rows if previous<r.get("time_us",0)<=closure and r["kind"]!="FILL"]
+  oid=buys[0]["order_id"]
+  release_orders=[{"id":o.order_id,"submitted":o.submitted_us,"active":o.active_us,"price":str(o.price),"status":o.status} for o in s["orders"] if o.release and entry<=o.submitted_us<=closure]
+  lots.append({"lot":index,"buy_order":oid,"entry":entry,"deadline":deadline,"closure":closure,
+  "hold_hours":str(D(closure-entry)/D(3600000000)),"excess_seconds":str(D(closure-deadline)/D(1000000)),
+  "settlement":settle,"release_orders":release_orders,"events":events})
+ previous=closure
+print(json.dumps({"ledger_sha256":sha.hexdigest(),"lots":lots},indent=2,default=str))
+'@ | .venv/Scripts/python.exe -
+```

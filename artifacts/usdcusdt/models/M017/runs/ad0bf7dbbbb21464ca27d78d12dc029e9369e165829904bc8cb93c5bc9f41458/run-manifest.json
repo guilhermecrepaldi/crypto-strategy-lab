@@ -1,0 +1,35 @@
+{
+  "MODEL_HASH": "b82a5ef829ca396db0f80885807aa4895ec359db3f10d7e917d6e8be0db65af8",
+  "RUN_HASH": "ad0bf7dbbbb21464ca27d78d12dc029e9369e165829904bc8cb93c5bc9f41458",
+  "SCENARIO_HASH": "49e8e9bb4dd39e41a668c8c5308345184740e2078f99908782b415bce8237e61",
+  "artifact_directory": "artifacts\\usdcusdt\\models\\M017\\runs\\ad0bf7dbbbb21464ca27d78d12dc029e9369e165829904bc8cb93c5bc9f41458",
+  "backend": {
+    "backend": "CPU",
+    "batch_size": null,
+    "benchmark_hash": null,
+    "device": null,
+    "driver": null,
+    "library": null,
+    "library_version": null,
+    "runtime": null
+  },
+  "campaign_snapshot_id": "7f55d29131f0e4e8cfdce00594553c48994dbe85ca4262f4a1ddf596fd84585c",
+  "capital_mode": "COMPOUNDING",
+  "code_commit": "b5379f6fee40e33334e3d3cc32f14f42d5c0cf85",
+  "currency": "USDT",
+  "dataset_hash": "1c564f88935a7c694d2f15cd4c9a8710013a19095f4eaece32529b22e7ba7fa2",
+  "initial_capital": "100",
+  "interval": {
+    "clock": "SYNTHETIC",
+    "end_exclusive": "2025-01-13T00:00:00Z",
+    "start": "2025-01-01T00:00:00Z"
+  },
+  "model_id": "M017",
+  "run": {
+    "output": "artifacts\\usdcusdt\\l2-monthly-samples\\M017\\SYNTHETIC_CONSECUTIVE_12D\\PRICE_PRIORITY",
+    "physical_manifest": "artifacts\\usdcusdt\\l2-monthly-samples\\M017\\SYNTHETIC_CONSECUTIVE_12D\\PRICE_PRIORITY\\run-manifest.json",
+    "physical_run_hash": "7f55d29131f0e4e8cfdce00594553c48994dbe85ca4262f4a1ddf596fd84585c",
+    "registry_binding": "APPENDED_AFTER_CANONICAL_RUNNER_PREFLIGHT_AND_START; PHYSICAL_ID_UNCHANGED"
+  },
+  "technical_revision": "M017_PROTECTED_EXECUTABLE_CAP20"
+}

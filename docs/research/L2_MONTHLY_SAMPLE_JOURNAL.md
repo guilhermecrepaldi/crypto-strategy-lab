@@ -437,3 +437,20 @@ local anchors, no document horizontal overflow,0 console errors/warnings.
 HTTP local preview verified; tool blocks file-protocol navigation, so no claim
 of direct-file browser QA. HTML embeds its charts without script/CDN dependency.
 Funding sensitivity remains frozen-fill diagnostics, not extra economic replays.
+
+## 2026-09-08 — M017 running; first closed day
+
+Executed source=b5379f6fee40e33334e3d3cc32f14f42d5c0cf85; physical run
+7f55d29131f0e4e8cfdce00594553c48994dbe85ca4262f4a1ddf596fd84585c.
+Registry runad0bf7dbbbb21464ca27d78d12dc029e9369e165829904bc8cb93c5bc9f41458
+links the unchanged physical manifest; scenario49e8e9bb4dd39e41a668c8c5308345184740e2078f99908782b415bce8237e61.
+Canonical clean/published-source, review and exact-data preflight passed before
+the process started. Registry RUNNING. Reporting commits do not change run SHA.
+
+Closed prefix day1/12:12 positive cycles, operating100.10692, reserve9.99208,
+equity110.099, net+0.099.13 settlements include1 release costing0.0198.
+Funding0.01188, debt payments0.00792, surplus0.00396, remaining debt0.01188.
+0/1 loss recovered;8 positive cycles after that loss did not yet repay it at10%.
+One >2h hold:2.000013296389h (47.867ms excess); no grace applied.
+Same-prefix M016 has the same day1 economics. No full-history comparison or
+strategy approval. RUN_STATUS=RUNNING; VERDICT=PENDING. Final all-fill audit pending.

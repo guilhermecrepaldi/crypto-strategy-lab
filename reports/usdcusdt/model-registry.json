@@ -8547,6 +8547,146 @@
         "schema_version": "usdcusdt-model-registry-v2",
         "status": "CREATED"
       }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-08T15:48:48.752521+00:00",
+      "payload": {
+        "SCENARIO_HASH": "49e8e9bb4dd39e41a668c8c5308345184740e2078f99908782b415bce8237e61",
+        "label": null,
+        "model_id": "M017",
+        "scenario": {
+          "capital_mode": "COMPOUNDING",
+          "data_manifest_sha256": "1c564f88935a7c694d2f15cd4c9a8710013a19095f4eaece32529b22e7ba7fa2",
+          "execution_envelope": "PRICE_PRIORITY",
+          "initial_operating": "100",
+          "initial_reserve": "10",
+          "profile_sha256": "a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d",
+          "source_day_mapping": [
+            {
+              "day_index": 0,
+              "logical_start_us": 1735689600000000,
+              "source_date": "2025-01-01",
+              "source_start_us": 1735689600000000
+            },
+            {
+              "day_index": 1,
+              "logical_start_us": 1735776000000000,
+              "source_date": "2025-02-01",
+              "source_start_us": 1738368000000000
+            },
+            {
+              "day_index": 2,
+              "logical_start_us": 1735862400000000,
+              "source_date": "2025-03-01",
+              "source_start_us": 1740787200000000
+            },
+            {
+              "day_index": 3,
+              "logical_start_us": 1735948800000000,
+              "source_date": "2025-04-01",
+              "source_start_us": 1743465600000000
+            },
+            {
+              "day_index": 4,
+              "logical_start_us": 1736035200000000,
+              "source_date": "2025-06-01",
+              "source_start_us": 1748736000000000
+            },
+            {
+              "day_index": 5,
+              "logical_start_us": 1736121600000000,
+              "source_date": "2025-08-01",
+              "source_start_us": 1754006400000000
+            },
+            {
+              "day_index": 6,
+              "logical_start_us": 1736208000000000,
+              "source_date": "2026-01-01",
+              "source_start_us": 1767225600000000
+            },
+            {
+              "day_index": 7,
+              "logical_start_us": 1736294400000000,
+              "source_date": "2026-02-01",
+              "source_start_us": 1769904000000000
+            },
+            {
+              "day_index": 8,
+              "logical_start_us": 1736380800000000,
+              "source_date": "2026-03-01",
+              "source_start_us": 1772323200000000
+            },
+            {
+              "day_index": 9,
+              "logical_start_us": 1736467200000000,
+              "source_date": "2026-04-01",
+              "source_start_us": 1775001600000000
+            },
+            {
+              "day_index": 10,
+              "logical_start_us": 1736553600000000,
+              "source_date": "2026-05-01",
+              "source_start_us": 1777593600000000
+            },
+            {
+              "day_index": 11,
+              "logical_start_us": 1736640000000000,
+              "source_date": "2026-07-01",
+              "source_start_us": 1782864000000000
+            }
+          ]
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-08T15:49:04.024071+00:00",
+      "payload": {
+        "MODEL_HASH": "b82a5ef829ca396db0f80885807aa4895ec359db3f10d7e917d6e8be0db65af8",
+        "RUN_HASH": "ad0bf7dbbbb21464ca27d78d12dc029e9369e165829904bc8cb93c5bc9f41458",
+        "SCENARIO_HASH": "49e8e9bb4dd39e41a668c8c5308345184740e2078f99908782b415bce8237e61",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M017\\runs\\ad0bf7dbbbb21464ca27d78d12dc029e9369e165829904bc8cb93c5bc9f41458",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "7f55d29131f0e4e8cfdce00594553c48994dbe85ca4262f4a1ddf596fd84585c",
+        "capital_mode": "COMPOUNDING",
+        "code_commit": "b5379f6fee40e33334e3d3cc32f14f42d5c0cf85",
+        "currency": "USDT",
+        "dataset_hash": "1c564f88935a7c694d2f15cd4c9a8710013a19095f4eaece32529b22e7ba7fa2",
+        "initial_capital": "100",
+        "interval": {
+          "clock": "SYNTHETIC",
+          "end_exclusive": "2025-01-13T00:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M017",
+        "run": {
+          "output": "artifacts\\usdcusdt\\l2-monthly-samples\\M017\\SYNTHETIC_CONSECUTIVE_12D\\PRICE_PRIORITY",
+          "physical_manifest": "artifacts\\usdcusdt\\l2-monthly-samples\\M017\\SYNTHETIC_CONSECUTIVE_12D\\PRICE_PRIORITY\\run-manifest.json",
+          "physical_run_hash": "7f55d29131f0e4e8cfdce00594553c48994dbe85ca4262f4a1ddf596fd84585c",
+          "registry_binding": "APPENDED_AFTER_CANONICAL_RUNNER_PREFLIGHT_AND_START; PHYSICAL_ID_UNCHANGED"
+        },
+        "technical_revision": "M017_PROTECTED_EXECUTABLE_CAP20"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-08T15:49:15.315760+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M017",
+        "reason": "Canonical clean-source/exact-data preflight passed; physical replay7f55d291... is running from publishedb5379f6. No source/policy change during run.",
+        "to": "RUNNING"
+      }
     }
   ],
   "models": [
@@ -10108,7 +10248,7 @@
         "monthly": null,
         "run_manifest": null
       },
-      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
+      "capital_evidence": "RUN_MANIFEST",
       "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-08T15:36:39.568304Z",
       "currency": "USDT",
@@ -10197,7 +10337,7 @@
       "model_id": "M017",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "RUNNING"
     }
   ],
   "pair": "USDCUSDT",
