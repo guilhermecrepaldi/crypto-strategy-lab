@@ -1,39 +1,108 @@
-# M013 — cinco meses primeiro
+# M013 CONTINUOUS MULTI-QUEUE — STAGE_1
 
-## Progresso do replay
+## PROGRESSO
 
-NOT_STARTED. M013 registrado, implementação concluída e revisão independente
-PASS_CONDITIONAL_PRE_RUN. Stage 1: janeiro–maio, 151 dias; início autorizado.
-Junho–setembro bloqueado até PASS_TO_EXTENSION, sem reset nem ajuste de parâmetros.
+RUN_ID=e73ab0814cd5fd82fc3a459e9e59c83435ff2c0e4f2cd4909f644ea485dfbe65; STAGE=STAGE_1; RUN_STATUS=RUNNING.
 
-## Resultado econômico parcial
+## RESULTADO ECONÔMICO PARCIAL
 
-Ainda indisponível: nenhum evento econômico executado. Inicialização congelada:
-100 USDT operacionais +10 de reserva; reinvestimento composto de 90% do lucro
-operacional líquido positivo, 10% para reserva; lucro Q4 integralmente na reserva.
-Até três filas operacionais e uma Q4, com liquidez/tesouraria compartilhadas.
-Q4 começa inativa porque seu orçamento seguro inicial é inferior ao mínimo de ordem.
+Composição contínua. Cinco meses; extensão condicionada a PASS_TO_EXTENSION.
 
-## Testes do software
+| Mês fechado | Banca operacional USDT | Reserva USDT | Patrimônio USDT | Ciclos do mês | Releases |
+|---|---:|---:|---:|---:|---:|
+| Nenhum mês concluído | — | — | — | — | — |
 
-101 testes integrados passaram; 78 também passaram na execução independente do
-reviewer. TEST_SUITE_PASS != STRATEGY_PASS. Auditoria do replay ainda pendente.
+Ciclos do mês = ciclos ordinários completos operacionais + Q4, sem somar releases. Saldos de fechamento, sem reset; mês ainda aberto não é projetado. Valores visuais arredondados; JSON preserva precisão integral.
 
-## Banca e ciclos mês a mês
+Placar atual:
 
-| Mês | Banca operacional | Reserva | Patrimônio | Ciclos do mês |
-|---|---:|---:|---:|---:|
-| Janeiro | Aguardando replay | — | — | — |
-| Fevereiro | Aguardando replay | — | — | — |
-| Março | Aguardando replay | — | — | — |
-| Abril | Aguardando replay | — | — | — |
-| Maio | Aguardando replay | — | — | — |
+| Métrica atual | Valor |
+|---|---|
+| OPERATING_CAPITAL | 100 |
+| RECOVERY_RESERVE | 10 |
+| RESERVE_RATIO | 0.1 |
+| CORE_RESERVE | 10 |
+| ACTIVE_RESERVE_CAPITAL | 0 |
+| TOTAL_EQUITY | 110 |
+| TOTAL_PROFIT | 0 |
+| OPERATING_QUEUES_ACTIVE | 0 |
+| RESERVE_QUEUE_ACTIVE | False |
+| CYCLES | 0 |
+| NET_POSITIVE_CYCLES | 0 |
+| MOTOR_UPTIME | UNAVAILABLE |
+| CAPITAL_WEIGHTED_UPTIME | UNAVAILABLE |
+| FULL_STOP_HOURS | 0 |
+| ZERO_CYCLE_DAYS | 0 |
+| MAX_HOLD | 0 |
+| LOCK_HOURS_GT24 | 0 |
+| HARD_LOCK_VIOLATIONS | 0 |
+| RELEASE_COUNT | 0 |
+| TOTAL_RELEASE_LOSS | 0 |
+| RESERVE_CONTRIBUTIONS | 0 |
+| ACTIVE_RESERVE_PROFIT | 0 |
+| RESERVE_CONSUMPTION | 0 |
+| RESERVE_SELF_SUSTAINABILITY_RATIO | UNAVAILABLE |
+| CAPACITY_PRESSURE_EVENTS | 0 |
+| VERDICT | PENDING |
 
-Saldos no fechamento; ciclos ordinários operacionais + Q4 produzidos no mês, não
-acumulados. Releases serão mostrados separadamente. Nenhum saldo projetado.
+Marcos observados:
 
-## Resultado final
+| Métrica | DAY_1 | DAY_7 | DAY_30 | DAY_60 | DAY_90 | DAY_120 | FINAL_5_MONTH |
+|---|---|---|---|---|---|---|---|
+| OPERATING_CAPITAL | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| RECOVERY_RESERVE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| RESERVE_RATIO | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| CORE_RESERVE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| ACTIVE_RESERVE_CAPITAL | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| TOTAL_EQUITY | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| TOTAL_PROFIT | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| OPERATING_QUEUES_ACTIVE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| RESERVE_QUEUE_ACTIVE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| CYCLES | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| NET_POSITIVE_CYCLES | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| MOTOR_UPTIME | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| CAPITAL_WEIGHTED_UPTIME | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| FULL_STOP_HOURS | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| ZERO_CYCLE_DAYS | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| MAX_HOLD | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| LOCK_HOURS_GT24 | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| HARD_LOCK_VIOLATIONS | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| RELEASE_COUNT | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| TOTAL_RELEASE_LOSS | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| RESERVE_CONTRIBUTIONS | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| ACTIVE_RESERVE_PROFIT | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| RESERVE_CONSUMPTION | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| RESERVE_SELF_SUSTAINABILITY_RATIO | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| CAPACITY_PRESSURE_EVENTS | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
+| VERDICT | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE | UNAVAILABLE |
 
-PENDING. Gates e limitações estão no pré-registro. Nenhuma curva de retorno é
-fabricada antes dos checkpoints reais. Perfil de execução condicional, não garantia
-de fills ou retorno em uma conta Binance real.
+Checkpoint summary:
+
+| Checkpoint | Total equity | Operating capital | Reserve | Cycles | Verdict |
+|---|---:|---:|---:|---:|---|
+| DAY_1 | None | None | None | None | None |
+| DAY_7 | None | None | None | None | None |
+| DAY_30 | None | None | None | None | None |
+| DAY_60 | None | None | None | None | None |
+| DAY_90 | None | None | None | None | None |
+| DAY_120 | None | None | None | None | None |
+| FINAL_5_MONTH | None | None | None | None | None |
+
+## TESTES DO SOFTWARE
+
+TESTS_PASSED=null; TESTS_FAILED=null; INDEPENDENT_AUDIT=PENDING.
+
+## RESULTADO FINAL
+
+PENDING. Nenhum PASS é derivado sem auditoria independente e gates do runner.
+
+Evidence-only curves:
+
+![Operating capital](M013-operating-capital.svg)
+![Recovery reserve](M013-recovery-reserve.svg)
+![Total equity](M013-total-equity.svg)
+![Queue Q1](M013-q1.svg)
+![Queue Q2](M013-q2.svg)
+![Queue Q3](M013-q3.svg)
+![Queue Q4](M013-q4.svg)
+Missing fields remain null/UNAVAILABLE.

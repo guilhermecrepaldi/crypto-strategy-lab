@@ -116,3 +116,44 @@ quatro filas compartilhando print/depth, parciais/escrows, cancel/ACK, dust idle
 24h dentro da etapa e continuidade da fronteira exclusiva. A auditoria do histórico
 completo continua necessária para Stage 2. Nenhum teste aprova retorno financeiro.
 Próxima ação autorizada: publicar a implementação e iniciar Stage 1 automaticamente.
+
+## M013 checkpoint
+
+TYPE=TWO_STAGE
+SOURCE_SCOREBOARD_SHA256=b8a0146c93d4664a7abee2349d11135679d658ca32a163cd56a946d6a4f290dd
+| Métrica atual | Valor |
+|---|---|
+| OPERATING_CAPITAL | 100 |
+| RECOVERY_RESERVE | 10 |
+| RESERVE_RATIO | 0.1 |
+| CORE_RESERVE | 10 |
+| ACTIVE_RESERVE_CAPITAL | 0 |
+| TOTAL_EQUITY | 110 |
+| TOTAL_PROFIT | 0 |
+| OPERATING_QUEUES_ACTIVE | 0 |
+| RESERVE_QUEUE_ACTIVE | False |
+| CYCLES | 0 |
+| NET_POSITIVE_CYCLES | 0 |
+| MOTOR_UPTIME | UNAVAILABLE |
+| CAPITAL_WEIGHTED_UPTIME | UNAVAILABLE |
+| FULL_STOP_HOURS | 0 |
+| ZERO_CYCLE_DAYS | 0 |
+| MAX_HOLD | 0 |
+| LOCK_HOURS_GT24 | 0 |
+| HARD_LOCK_VIOLATIONS | 0 |
+| RELEASE_COUNT | 0 |
+| TOTAL_RELEASE_LOSS | 0 |
+| RESERVE_CONTRIBUTIONS | 0 |
+| ACTIVE_RESERVE_PROFIT | 0 |
+| RESERVE_CONSUMPTION | 0 |
+| RESERVE_SELF_SUSTAINABILITY_RATIO | UNAVAILABLE |
+| CAPACITY_PRESSURE_EVENTS | 0 |
+| VERDICT | PENDING |
+
+| Mês fechado | Banca operacional USDT | Reserva USDT | Patrimônio USDT | Ciclos do mês | Releases |
+|---|---:|---:|---:|---:|---:|
+| Nenhum mês concluído | — | — | — | — | — |
+
+Ciclos do mês = ciclos ordinários completos operacionais + Q4, sem somar releases. Saldos de fechamento, sem reset; mês ainda aberto não é projetado. Valores visuais arredondados; JSON preserva precisão integral.
+
+VERDICT=PENDING
