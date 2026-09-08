@@ -1,5 +1,24 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER vigente — bateria mensal L2 histórico gratuito
+
+Seguir `docs/microstructure/L2_MONTHLY_SAMPLE_OWNER_DIRECTIVE.md`: pesquisar,
+baixar, validar e executar todas as 21 amostras acessíveis de primeiro dia mensal,
+2025-01-01 a 2026-09-01, dentro do histórico canônico USDCUSDT. Cada dia/envelope
+é independente, FLAT, operacional100 + reserva10, compounding somente intradia,
+funding10% de lucro positivo. Separar2025 calibração de2026 avaliação.
+Preservar estratégia vigente conferida no CURRENT_STATE/registry; mudança de
+evidência de execução tem identidade própria, não edição de modelo congelado.
+Dois envelopes pré-registrados: CONSERVATIVE_QUEUE e PRICE_PRIORITY com L2
+observado. Não afirmar posição exata de fila; não duplicar liquidez/trades.
+Validar snapshots, sequência nativa, captura, gaps e book; CSV sem U/u não
+prova continuidade local. Dados inválidos/inacessíveis são explícitos e não
+impedem verificar os demais. Não exigir500 para executar outros dias válidos.
+Publicar manifest, journal e placar leve no GitHub; originais imutáveis locais.
+Autorização inclui fontes públicas gratuitas, não chaves/contas/compras/live.
+Esta bateria NÃO autoriza Jan8–14 contínuo nem composição entre meses.
+Retornar placar de dados/commit antes da simulação e iniciar válidos automaticamente.
+
 ## Autoridade OWNER vigente — mínimo500/dia e segunda semana condicional
 
 O OWNER autorizou estudar bugs e otimizar a estratégia até obter pelo menos500
