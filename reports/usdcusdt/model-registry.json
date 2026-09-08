@@ -5865,6 +5865,174 @@
         "schema_version": "usdcusdt-model-registry-v2",
         "status": "CREATED"
       }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-08T02:25:34.223087+00:00",
+      "payload": {
+        "SCENARIO_HASH": "c4f877aef199e748fdf180c9ff0878592c17403fec57fd5e3d93d338ad8203e0",
+        "label": null,
+        "model_id": "M014",
+        "scenario": {
+          "capital_mode": "COMPOUNDING",
+          "initial_operating": "100",
+          "initial_reserve": "10",
+          "name": "B10_F25_OWNER_RESERVE_WEEK_1",
+          "prefix_tape_hash": "9bcfc389de2e6b23214cf4dfe2dbddd4605bdcbb2025fc3988d413e9b8d1f247",
+          "profile": {
+            "difficulty_percentile": 50,
+            "envelope": {
+              "depth_refresh_us": 299570,
+              "evidence_sha256": "04fd09fc048602273276ecdebe583438e3dea3d28f9be6a0e7d997313d9019d6",
+              "half_spread": "0.00000500",
+              "release_depth": "1144901.00000000",
+              "release_limit_distance": "0.00001000",
+              "release_slippage": "0"
+            },
+            "evidence_class": "CONDITIONAL_PILOT_PARAMETERIZED_EXECUTION_ENVELOPE",
+            "joint_sample": {
+              "ask": "1.00011000",
+              "ask_best_qty": "2330544.00000000",
+              "ask_one_tick_qty": "197019.00000000",
+              "ask_two_level_qty": "2527563.00000000",
+              "bid": "1.00010000",
+              "bid_best_qty": "1144901.00000000",
+              "bid_one_tick_qty": "1386903.00000000",
+              "bid_two_level_qty": "2531804.00000000",
+              "duration_ns": 301729100,
+              "received_us": 1788817110702832,
+              "spread": "0.00001000",
+              "start_monotonic_ns": 359737546914200,
+              "update_id": 2537239207,
+              "ws_delay_offset_adjusted_us": "587657.5"
+            },
+            "latency_sample_quantile": "p50",
+            "latency_tail_evidence": "DESCRIPTIVE_SAMPLE_ONLY; p99 of12 is sample maximum",
+            "profile": {
+              "cancel_latency_us": 1179525,
+              "evidence_sha256": "04fd09fc048602273276ecdebe583438e3dea3d28f9be6a0e7d997313d9019d6",
+              "latency_us": 1179525,
+              "maker_fee": "0",
+              "name": "B_REALISTIC_CONSERVATIVE",
+              "queue_ahead": "2330544.00000000",
+              "taker_fee": "0"
+            }
+          },
+          "profile_config_sha256": "a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-08T02:25:34.352732+00:00",
+      "payload": {
+        "MODEL_HASH": "e612c45b069fef4c5c71cf092f76dadfa314476848e2663d6315693c7b953469",
+        "RUN_HASH": "45e1add3ed4fc36f34b17a52205f14f808d304932ca117beca3e3877425da121",
+        "SCENARIO_HASH": "c4f877aef199e748fdf180c9ff0878592c17403fec57fd5e3d93d338ad8203e0",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M014\\runs\\45e1add3ed4fc36f34b17a52205f14f808d304932ca117beca3e3877425da121",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "9bcfc389de2e6b23214cf4dfe2dbddd4605bdcbb2025fc3988d413e9b8d1f247",
+        "capital_mode": "COMPOUNDING",
+        "code_commit": "088ebd62af5f3866b83d8c9b825e988a15d7d6c7",
+        "currency": "USDT",
+        "dataset_hash": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+        "initial_capital": "100",
+        "interval": {
+          "end_exclusive": "2026-01-08T00:00:00+00:00",
+          "start": "2026-01-01T00:00:00+00:00"
+        },
+        "model_id": "M014",
+        "run": {
+          "model_spec_sha256_lf": "03e7131f2ebefc3c08c30283829473d1ce22f8b4fefd57a18f7751b7790285da",
+          "output": "artifacts\\usdcusdt\\models\\M014\\reality-primary",
+          "prefix_data_provenance": {
+            "archives_freshly_hashed": [
+              {
+                "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2025-12-31.zip",
+                "sha256": "552c52dbb819b2e5177ca6d386bc67cb94b313540af33a566f90be120bee6315"
+              },
+              {
+                "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-01.zip",
+                "sha256": "a7d8a5f44fffecc1e29294926a23f936e82c82b87915ad40c740504edfe391a4"
+              },
+              {
+                "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-02.zip",
+                "sha256": "c0e3c17205db87315237638761f889fd7f0430460aee1f7908bc1fa3eab97b38"
+              },
+              {
+                "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-03.zip",
+                "sha256": "1183e1cc96fd0c5825fbc7330c81ca00c61fa811eeda3bc96081fed4172cdd9e"
+              },
+              {
+                "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-04.zip",
+                "sha256": "62ea8a6db1335175d1b06524d4fcc7d815de155b32322acc16ee34923a10b8e2"
+              },
+              {
+                "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-05.zip",
+                "sha256": "b37ec1e39d6c9278c6f5fb6a98cc7d0727707ceec99a87566d0306af37d9c940"
+              },
+              {
+                "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-06.zip",
+                "sha256": "b77a51c500237627c7c95c2885b029f1f0940e87136fe06bff69b92b686a5e5b"
+              },
+              {
+                "path": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-07.zip",
+                "sha256": "72a1dec48f0b73b34254a4a37605dc0125da8f320e1bf32159b6234c3517cb63"
+              }
+            ],
+            "method": "AUTHORIZED_PREFIX_DERIVED_FROM_CANONICAL_MMAP",
+            "prefix_cache_key": "e9e48117eacc68d8d6cdd5d78c29bc138aa70103c46e050a0e6e6833089a35c8",
+            "prefix_records_including_warmup": 2880779,
+            "prefix_tape_hash": "9bcfc389de2e6b23214cf4dfe2dbddd4605bdcbb2025fc3988d413e9b8d1f247",
+            "raw_prefix_reconciliation": "REQUIRED_PER_EVENT_DURING_REPLAY_INCLUDING_WARMUP",
+            "sealed_suffix_scanned": false,
+            "source_full_array_hashes": "HISTORICAL_PROVENANCE_NOT_REHASHED_IN_STAGE_1",
+            "source_manifest_sha256": "9ab5db213673e5f0371c86b1aa35cff3d8925287e77af41cff2e54446c16d907",
+            "source_tape_hash": "505fd6c31b010eac4e8da2d7e290137bb455d475b95409ac306d1ded7be55b6c"
+          },
+          "preregistration_sha256_lf": "9740ae1014ed1d77d4c8c7ee30853894373a0af19aecc16d3e7a166bf5fe05a7",
+          "runtime": {
+            "class": "crypto_strategy_lab.microstructure.high_uptime_recovery.B10ReserveReplay",
+            "mro": [
+              "crypto_strategy_lab.microstructure.high_uptime_recovery.B10ReserveReplay",
+              "crypto_strategy_lab.microstructure.b10_reality.B10RealityReplay",
+              "builtins.object"
+            ],
+            "source_path": "D:\\projetos\\crypto change\\src\\crypto_strategy_lab\\microstructure\\high_uptime_recovery.py",
+            "source_sha256": "705dc59cf7386eeb3b70f9b88b24b56dece74ba85380a3d62b1ed717270b5645"
+          }
+        },
+        "technical_revision": "B10_F25_OWNER_RESERVE_WEEKLY"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-08T02:25:34.473914+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M014",
+        "reason": "OWNER authorized only Jan1-7 B10 reconstruction with enhanced reserve",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-08T02:27:08.389164+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M014",
+        "reason": "Week1 complete; independent economic audit and OWNER extension approval pending",
+        "to": "INCONCLUSIVE"
+      }
     }
   ],
   "models": [
@@ -7103,7 +7271,7 @@
         "monthly": null,
         "run_manifest": null
       },
-      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
+      "capital_evidence": "RUN_MANIFEST",
       "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-08T02:07:16.788876Z",
       "currency": "USDT",
@@ -7184,7 +7352,7 @@
       "model_id": "M014",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "INCONCLUSIVE"
     }
   ],
   "pair": "USDCUSDT",

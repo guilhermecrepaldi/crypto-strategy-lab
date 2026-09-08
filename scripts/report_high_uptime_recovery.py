@@ -50,6 +50,15 @@ def display(value):
     return "UNAVAILABLE" if value is None else str(value)
 
 
+def owner_display(value):
+    if value is None:
+        return "UNAVAILABLE"
+    try:
+        return f"{Decimal(str(value)):.6f}".rstrip("0").rstrip(".")
+    except ArithmeticError:
+        return str(value)
+
+
 def read_curve_prefix(path, binding):
     if binding is None:
         raise ValueError("CAPITAL_CURVE_BINDING_REQUIRED")
@@ -198,8 +207,9 @@ def publish(folder, tests_passed=None, tests_failed=None):
             "EXTENSION_STATUS",
         )
     )
+    formatter = owner_display if model_id == "M014" else display
     table = "| Métrica | Valor |\n|---|---|\n" + "".join(
-        f"| {key} | {display(score.get(key))} |\n" for key in fields
+        f"| {key} | {formatter(score.get(key))} |\n" for key in fields
     )
     report = (
         "# M012 REALITY — CURRENT SCOREBOARD\n\nCOMPOUNDING ·100 USDT i"
@@ -210,6 +220,12 @@ def publish(folder, tests_passed=None, tests_failed=None):
             "# M014 — B10 F2.5 com reserva reforçada\n\n"
             "Primeira semana somente · 100 USDT operacionais + 10 de reserva · "
             "COMPOUNDING · 10% dos lucros positivos para a reserva.\n\n"
+            f"**{score['FULL_FILL_CYCLES']} ciclos completos, "
+            f"{score['RELEASE_FILLED']} releases; patrimônio "
+            f"{Decimal(score['TOTAL_EQUITY']):.6f} USDT.** "
+            "Banca operacional é caixa + custo do inventário; patrimônio marca "
+            "o inventário ao preço de venda observado. Por isso banca + reserva "
+            "pode diferir do patrimônio durante uma posição aberta.\n\n"
         ) + table
         daily = {}
         for row in rows:
@@ -242,11 +258,17 @@ def publish(folder, tests_passed=None, tests_failed=None):
             row.get("DAILY_NET_POSITIVE_CYCLES", {}).get(day, 0) >= 2000
             for day, row in daily.items()
         )
+        score["DAILY_TARGET_VERDICT"] = (
+            "PENDING" if score.get("RUN_STATUS") != "COMPLETE"
+            else "MET" if len(daily) == score["DAYS_MEETING_2000_TARGET"] == 7
+            else "NOT_MET"
+        )
         report += (
             f"\nMeta de 2.000 ciclos positivos: {score['DAYS_MEETING_2000_TARGET']} de "
             f"{len(daily)} dias fechados. Releases não entram na meta.\n\n"
             "O resultado é condicional às hipóteses de execução; não é uma operação real. "
-            "Próxima semana NÃO autorizada, mesmo que a meta seja atingida.\n"
+            "Próxima semana NÃO autorizada, mesmo que a meta seja atingida.\n\n"
+            "[Diagnóstico dos gargalos e comparação com B10](M014-week1-autopsy.md).\n"
         )
         (ROOT / f"{model_id}-reality-scoreboard.json").write_text(
             json.dumps(score, indent=2) + "\n", encoding="utf-8"
@@ -296,7 +318,7 @@ def publish(folder, tests_passed=None, tests_failed=None):
     )
     current += (
         "\nNEXT_ACTION="
-        + ("Auditar semana concluída e aguardar aprovação OWNER para extensão."
+        + ("Semana encerrada; consultar auditoria e aguardar aprovação OWNER para extensão."
            if model_id == "M014" and score.get("RUN_STATUS") == "COMPLETE"
            else "Continuar somente intervalo autorizado; publicar marcos e auditar.")
         + "\nFIXED_100_RESULT_NOT_OWNER_STRATEGY_RETURN=YES\n"
