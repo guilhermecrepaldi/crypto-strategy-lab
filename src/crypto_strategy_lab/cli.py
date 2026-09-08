@@ -102,6 +102,9 @@ from crypto_strategy_lab.ml.historical_workflow import run_historical_smoke
 from crypto_strategy_lab.ml.persistence import persist_ml_evaluation
 from crypto_strategy_lab.ml.reporting import write_ml_reports
 from crypto_strategy_lab.ml.workflow import run_short_training, workflow_payload
+from crypto_strategy_lab.operator_dashboard.server import DEFAULT_PORT, serve_dashboard
+from crypto_strategy_lab.operator_dashboard.storage import OperatorStore
+from crypto_strategy_lab.operator_dashboard.vault import DpapiCredentialVault
 from crypto_strategy_lab.reporting import write_reports
 from crypto_strategy_lab.simulation.engine import SimulationConfig, SimulationEngine
 from crypto_strategy_lab.simulation.portfolio import ExecutionCosts
@@ -113,6 +116,49 @@ DEFAULT_MICROSTRUCTURE_KIND: Literal["trades", "aggTrades"] = "trades"
 DEFAULT_MICROSTRUCTURE_MANIFEST = Path(
     f"data/manifests/{DEFAULT_MICROSTRUCTURE_SYMBOL.lower()}-{DEFAULT_MICROSTRUCTURE_KIND}-history.json"
 )
+
+
+@app.command("operator-dashboard")
+def operator_dashboard(
+    port: Annotated[int, typer.Option(min=1024, max=65535)] = DEFAULT_PORT,
+    demo: Annotated[bool, typer.Option(help="Use deterministic fake Binance data")] = False,
+    no_browser: Annotated[bool, typer.Option(help="Do not open the system browser")] = False,
+) -> None:
+    """Run the local-only, SHADOW-only CryptoChange operator cockpit."""
+    root = Path.cwd().resolve()
+    if not (root / "docs/research/CURRENT_STATE.md").is_file():
+        raise typer.BadParameter("run this command from the crypto-strategy-lab repository root")
+    serve_dashboard(root, port=port, demo=demo, open_browser=not no_browser)
+
+
+@app.command("operator-status")
+def operator_status() -> None:
+    """Show non-secret local operator state without starting the dashboard."""
+    runtime = Path.cwd().resolve() / "runtime"
+    store = OperatorStore(runtime / "operator.sqlite3", runtime / "operator-events.jsonl")
+    payload = {
+        "BOT_STATUS": store.get_metadata("bot_status", "OFFLINE"),
+        "MODE": "SHADOW",
+        "OPERATOR_INSTANCE_ID": store.get_metadata("operator_instance_id", "NONE"),
+        "LIVE_TRADING_ENABLED": "NO",
+    }
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+
+
+@app.command("credentials-status")
+def credentials_status() -> None:
+    """Show credential metadata only; never decrypt or print credentials."""
+    runtime = Path.cwd().resolve() / "runtime"
+    store = OperatorStore(runtime / "operator.sqlite3", runtime / "operator-events.jsonl")
+    vault = DpapiCredentialVault(runtime / "operator-credentials.dpapi")
+    payload = {
+        "API_KEY_LAST4": store.get_metadata("api_key_last4", ""),
+        "SECRET_CONFIGURED": "YES" if vault.configured() else "NO",
+        "PERMISSIONS_STATUS": store.get_metadata("permissions_status", "UNKNOWN"),
+        "CREATED_AT": store.get_metadata("credentials_created_at", ""),
+        "LAST_VALIDATED_AT": store.get_metadata("credentials_last_validated_at", ""),
+    }
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
 
 
 def _microstructure_manifest_path(

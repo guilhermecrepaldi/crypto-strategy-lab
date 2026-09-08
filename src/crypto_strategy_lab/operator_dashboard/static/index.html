@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>CryptoChange · Operator</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark">CC</div>
+        <div><p class="eyebrow">Performance Lab</p><h1>CryptoChange Operator</h1></div>
+      </div>
+      <div class="status-strip" aria-label="Estado operacional">
+        <span class="status-pill"><small>BOT</small><strong id="bot-status">OFFLINE</strong></span>
+        <span class="status-pill"><small>BINANCE</small><strong id="binance-status">DISCONNECTED</strong></span>
+        <span class="status-pill accent"><small>MODE</small><strong id="mode-status">SHADOW</strong></span>
+        <span class="status-pill"><small>MODEL</small><strong id="model-status">—</strong></span>
+      </div>
+      <div class="operator-actions">
+        <button id="play-button" class="button primary">▶ PLAY</button>
+        <button id="stop-button" class="button secondary">■ STOP</button>
+        <button id="emergency-button" class="button danger-ghost">Emergency</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero-row">
+        <div>
+          <p class="eyebrow">LOCAL COCKPIT · <span id="instance-id">—</span></p>
+          <h2 id="strategy-name">Carregando estratégia…</h2>
+          <p class="muted" id="strategy-meta">Autoridade científica somente leitura.</p>
+        </div>
+        <div class="safe-mode"><span class="pulse"></span><div><small>TRADING AUTHORIZATION</small><strong>SHADOW · SAFE MODE</strong></div></div>
+      </section>
+
+      <div id="notice" class="notice hidden" role="status"></div>
+
+      <section class="metric-grid five" aria-label="Resumo financeiro">
+        <article class="metric-card"><span>Total equity</span><strong id="total-equity">—</strong><small>USDT</small></article>
+        <article class="metric-card"><span>Operating bank</span><strong id="operating-bank">—</strong><small>COMPOUNDING</small></article>
+        <article class="metric-card"><span>Recovery reserve</span><strong id="reserve-total">—</strong><small id="reserve-ratio">—</small></article>
+        <article class="metric-card"><span>Realized PnL</span><strong id="realized-pnl">—</strong><small>desde o início</small></article>
+        <article class="metric-card"><span>Motor uptime</span><strong id="motor-uptime">—</strong><small id="capital-uptime">capital-weighted —</small></article>
+      </section>
+
+      <section class="section-block">
+        <div class="section-heading"><div><p class="eyebrow">MACHINE</p><h3>Filas independentes</h3></div><p>Até 3 operating + 1 active reserve</p></div>
+        <div id="queue-grid" class="queue-grid"></div>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel span-5">
+          <div class="panel-heading"><div><p class="eyebrow">BINANCE CONNECTION</p><h3>Credenciais locais</h3></div><span id="credential-badge" class="badge">NOT_CONFIGURED</span></div>
+          <form id="credential-form" autocomplete="off">
+            <label>API key<input id="api-key" name="api_key" autocomplete="off" spellcheck="false" required></label>
+            <label>API secret
+              <div class="password-wrap"><input id="api-secret" name="api_secret" type="password" autocomplete="new-password" spellcheck="false" required><button id="show-secret" type="button" class="icon-button">Show</button></div>
+            </label>
+            <p class="fine" id="credential-meta">Secret não configurada.</p>
+            <div class="button-row"><button class="button primary" type="submit">Save locally</button><button class="button secondary" type="button" id="test-connection">Test connection</button><button class="button ghost" type="button" id="disconnect">Disconnect</button><button class="button danger-ghost" type="button" id="delete-credentials">Delete</button></div>
+          </form>
+          <div id="connection-results" class="check-list"></div>
+        </article>
+
+        <article class="panel span-3">
+          <div class="panel-heading"><div><p class="eyebrow">MARKET</p><h3>USDCUSDT</h3></div><span id="market-source" class="badge neutral">—</span></div>
+          <dl class="kv-list" id="market-list"></dl>
+        </article>
+
+        <article class="panel span-4">
+          <div class="panel-heading"><div><p class="eyebrow">MACHINE HEALTH</p><h3>Capital produtivo</h3></div><span id="health-badge" class="badge neutral">IDLE</span></div>
+          <div class="donut-row"><div class="donut" id="productive-donut"><span id="productive-percent">0%</span></div><dl class="kv-list compact" id="health-list"></dl></div>
+        </article>
+
+        <article class="panel span-4">
+          <div class="panel-heading"><div><p class="eyebrow">RECOVERY RESERVE</p><h3>Proteção do motor</h3></div><span class="badge neutral">CORE PROTECTED</span></div>
+          <dl class="kv-list" id="reserve-list"></dl>
+        </article>
+
+        <article class="panel span-8">
+          <div class="panel-heading"><div><p class="eyebrow">CAPITAL HISTORY</p><h3>Equity · Operating · Reserve</h3></div><span class="badge neutral">LOCAL DATA</span></div>
+          <canvas id="capital-chart" height="190" aria-label="Curvas de capital"></canvas>
+          <div class="chart-legend"><span class="equity">Total equity</span><span class="operating">Operating</span><span class="reserve">Reserve</span></div>
+        </article>
+
+        <article class="panel span-12">
+          <div class="panel-heading"><div><p class="eyebrow">ORDERS</p><h3>Open orders</h3></div><span class="badge neutral">SHADOW</span></div>
+          <div class="table-wrap"><table><thead><tr><th>Timestamp</th><th>Queue</th><th>Side</th><th>Type</th><th>Price</th><th>Quantity</th><th>Filled</th><th>Status</th><th>Exchange ID</th></tr></thead><tbody id="orders-body"></tbody></table></div>
+        </article>
+
+        <article class="panel span-5">
+          <div class="panel-heading"><div><p class="eyebrow">STRATEGY</p><h3>Frozen configuration</h3></div><span class="badge neutral">READ ONLY</span></div>
+          <dl class="kv-list" id="strategy-list"></dl>
+        </article>
+
+        <article class="panel span-7">
+          <div class="panel-heading"><div><p class="eyebrow">EVENT LOG</p><h3>Operator events</h3></div><span class="badge neutral">LOCAL JSONL + SQLITE</span></div>
+          <div id="event-list" class="event-list"></div>
+        </article>
+
+        <article class="panel span-12 assistant-panel">
+          <div><p class="eyebrow">BOT ASSISTANT</p><h3>Pergunte sobre o estado atual</h3><p class="muted">Respostas estruturadas. CHAT_ACTIONS=READ_ONLY.</p></div>
+          <form id="assistant-form"><input id="assistant-question" placeholder="Por que não está comprando?" autocomplete="off"><button class="button secondary">Ask</button></form>
+          <p id="assistant-answer" class="assistant-answer">Nenhuma ação operacional é executada por linguagem natural.</p>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="play-dialog">
+    <form method="dialog" class="dialog-card"><p class="eyebrow">PRE-FLIGHT</p><h3>Start Shadow</h3><div id="preflight-list" class="check-list"></div><p class="warning-copy">Nenhuma ordem real será enviada. LIVE está desabilitado no código.</p><div class="button-row end"><button class="button ghost" value="cancel">Cancel</button><button id="confirm-play" class="button primary" value="default">Start Shadow</button></div></form>
+  </dialog>
+  <dialog id="emergency-dialog">
+    <form method="dialog" class="dialog-card"><p class="eyebrow danger-text">EMERGENCY STOP</p><h3>Interromper novas entradas</h3><p>Esta entrega cancela apenas trabalho SHADOW e preserva holdings/estado. Não existe liquidação cega.</p><label>Digite CONFIRM STOP<input id="emergency-confirmation" autocomplete="off"></label><div class="button-row end"><button class="button ghost" value="cancel">Cancel</button><button id="confirm-emergency" class="button danger" value="default">Confirm emergency stop</button></div></form>
+  </dialog>
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>

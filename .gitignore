@@ -25,3 +25,8 @@ reports/*.md
 reports/runs/
 output/
 .playwright-cli/
+/runtime/
+*.secret
+*.dpapi
+*.credential
+*.session
