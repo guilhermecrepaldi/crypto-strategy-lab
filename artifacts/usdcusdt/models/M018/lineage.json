@@ -1,0 +1,19 @@
+{
+  "ancestor_chain": [
+    "M005",
+    "M006",
+    "M007",
+    "M014",
+    "M015"
+  ],
+  "change_category": "PASSIVE_BUY_ADMISSION",
+  "change_summary": "One causal placement delta; M017 technical control, not champion promotion.",
+  "parent_model_id": "M015",
+  "parent_run_hash": null,
+  "references": {
+    "audit": "reports/usdcusdt/M017-one-day-independent-audit.md",
+    "control": "M017_DAY_1_PREFIX",
+    "owner": "docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md",
+    "technical_ancestor": "M017"
+  }
+}

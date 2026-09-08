@@ -71,9 +71,19 @@ M017_DEADLINE_POLICY = {
     "executable_loss_cap_bps": "20",
 }
 M017_DEADLINE_POLICY_HASH = canonical_hash(M017_DEADLINE_POLICY)
+M018_ENTRY_ADMISSION_POLICY = {
+    "name": "CAUSAL_PASSIVE_BUY_CAP",
+    "new_entry_price": "MIN_SELECTED_LOW_FLOOR_TO_TICK_ASK_MINUS_TICK",
+    "exit_target": "PRESERVE_SELECTED_HIGH",
+    "partial_entry": "FREEZE_FIRST_FILL_ORDER_LIMIT",
+    "active_orders": "NO_BOOK_DRIVEN_CANCEL_OR_REPRICE",
+    "unknown_book": "WAIT_FAIL_CLOSED",
+}
+M018_ENTRY_ADMISSION_POLICY_HASH = canonical_hash(M018_ENTRY_ADMISSION_POLICY)
 DEADLINE_POLICY_HASHES = {
     "M016": M016_DEADLINE_POLICY_HASH,
     "M017": M017_DEADLINE_POLICY_HASH,
+    "M018": M017_DEADLINE_POLICY_HASH,
 }
 DEADLINE_POLICIES = {
     M016_DEADLINE_POLICY_HASH: M016_DEADLINE_POLICY,
@@ -450,6 +460,11 @@ class B10ReserveReplay(B10RealityReplay):
             or identity.get("capital_mode") != "COMPOUNDING"
         ):
             raise ValueError("M014_COMPOUNDING_IDENTITY_REQUIRED")
+        if identity.get("model_id") == "M018":
+            if identity.get("entry_admission_policy_hash") != M018_ENTRY_ADMISSION_POLICY_HASH:
+                raise ValueError("M018_ENTRY_ADMISSION_POLICY_IDENTITY_REQUIRED")
+        elif identity.get("entry_admission_policy_hash") is not None:
+            raise ValueError("ENTRY_ADMISSION_POLICY_REQUIRES_M018")
         if (
             identity.get("model_id") in DEADLINE_POLICY_HASHES
             and identity.get("deadline_policy_hash")

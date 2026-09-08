@@ -8687,6 +8687,125 @@
         "reason": "Canonical clean-source/exact-data preflight passed; physical replay7f55d291... is running from publishedb5379f6. No source/policy change during run.",
         "to": "RUNNING"
       }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-08T16:05:21.891241+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M017",
+        "reason": "OWNER_SCOPE_CHANGE: user now limits comparison to3days and requires explicit approval to extend. Process stopped; original12-day run incomplete, artifacts preserved. Not technical invalidation or economic full-run FAIL.",
+        "to": "INCONCLUSIVE"
+      }
+    },
+    {
+      "event_type": "MODEL_CREATED",
+      "occurred_at": "2026-09-08T16:40:45.771701+00:00",
+      "payload": {
+        "MODEL_HASH": "68e9b01e0f4646319364199fe17970c5c1ec9b22e46c6a498df131ac2f0f43e5",
+        "artifacts": {
+          "config": "artifacts\\usdcusdt\\models\\M018\\config.json",
+          "daily": null,
+          "decision": null,
+          "directory": "artifacts\\usdcusdt\\models\\M018",
+          "hypothesis": "artifacts\\usdcusdt\\models\\M018\\hypothesis.json",
+          "lineage": "artifacts\\usdcusdt\\models\\M018\\lineage.json",
+          "metrics": null,
+          "model_spec": "artifacts\\usdcusdt\\models\\M018\\MODEL_SPEC.md",
+          "monthly": null,
+          "run_manifest": null
+        },
+        "created_at": "2026-09-08T16:40:45.771701Z",
+        "hypothesis": {
+          "change": "Cap new BUY at min(original LOW, floor_to_tick(ask-tick)); preserve original HIGH and partial entry anchor.",
+          "expected_effect": "Fewer post-only rejects; cycle/equity improvement uncertain, lower entry may increase hold.",
+          "hypothesis": "Causal passive BUY admission may reduce rejects and improve positive cycle productivity without execution relaxation.",
+          "observation": "M017 day1:12 positive cycles and2546 post-only BUY rejections; equity110.099.",
+          "reason_for_new_model": "Material strategic order-admission change; M015/M017 evidence preserved."
+        },
+        "lineage": {
+          "ancestor_chain": [
+            "M005",
+            "M006",
+            "M007",
+            "M014",
+            "M015"
+          ],
+          "change_category": "PASSIVE_BUY_ADMISSION",
+          "change_summary": "One causal placement delta; M017 technical control, not champion promotion.",
+          "parent_model_id": "M015",
+          "parent_run_hash": null,
+          "references": {
+            "audit": "reports/usdcusdt/M017-one-day-independent-audit.md",
+            "control": "M017_DAY_1_PREFIX",
+            "owner": "docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md",
+            "technical_ancestor": "M017"
+          }
+        },
+        "model": {
+          "active_reserve_queues": 0,
+          "calendar_days": 3,
+          "capital_mode": "COMPOUNDING",
+          "currency": "USDT",
+          "deadline_policy_hash": "88b14751e15093cadc6abbaa9f3e1a70e875ff4e884b1cd911cf7146af494224",
+          "deadline_us": 7200000000,
+          "debt_mode": "REPORT_ONLY_NO_FUNDING_STATE_CHANGE",
+          "economic_early_stop": false,
+          "entry_admission_policy": {
+            "active_orders": "NO_BOOK_DRIVEN_CANCEL_OR_REPRICE",
+            "exit_target": "PRESERVE_SELECTED_HIGH",
+            "name": "CAUSAL_PASSIVE_BUY_CAP",
+            "new_entry_price": "MIN_SELECTED_LOW_FLOOR_TO_TICK_ASK_MINUS_TICK",
+            "partial_entry": "FREEZE_FIRST_FILL_ORDER_LIMIT",
+            "unknown_book": "WAIT_FAIL_CLOSED"
+          },
+          "entry_admission_policy_hash": "3fbb1dd25550f017bafe811a6b6e2a92f33af1df94d9835f8e525aa56aec778a",
+          "executable_loss_cap_bps": "20",
+          "execution_config_sha256": "a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d",
+          "execution_envelope": "PRICE_PRIORITY",
+          "experimental_control": "M017_DAY_1_PREFIX",
+          "extension_gate": "SAME_MODEL_AND_FULL_STATE; EACH_DAY_1000_AUDITED; OWNER_WINDOW_AUTHORITY",
+          "initial_capital": "100",
+          "initial_operating": "100",
+          "initial_reserve": "10",
+          "initial_stage_days": 1,
+          "initial_total_equity": "110",
+          "max_stage_days": 3,
+          "minimum_daily_positive_cycles": 1000,
+          "model_id": "M018",
+          "normal_release": "B10_H1_B10_F2.5",
+          "normal_theoretical_loss_cap_bps": "10",
+          "one_hour_owner_wording": "UNRESOLVED_NO_SILENT_DEADLINE_CHANGE",
+          "operating_queues": 1,
+          "owner_withdrawals": false,
+          "phase": "DEVELOPMENT",
+          "position_sizing": "USE_AVAILABLE_OPERATING_BANK",
+          "precedence": "LOSS_CAP_AND_RESERVE_FLOOR_BEFORE_DEADLINE",
+          "preregistration_sha256_lf": "dee6c34183817b17abe17b7d224705934d22d73789b566dc519ba90683d3bf10",
+          "priority_trade_through": true,
+          "profit_funding": "0.10",
+          "reserve_floor_absolute": "2.5",
+          "scientific_parent": "M015",
+          "selector": "UNCHANGED_M007_HYSTERESIS_AND_AFTER_ORDINARY_EXIT",
+          "source_dates": [
+            "2025-01-01",
+            "2025-02-01",
+            "2025-03-01"
+          ],
+          "source_dates_semantics": "MAXIMUM_CONDITIONAL_STAGE_UNIVERSE_NOT_READ_AUTHORIZATION",
+          "spec_sha256_lf": "e8a4f454da94cf0b51cdbacca61ba1b5da8d23553882f562ea89e3411a16d777",
+          "strategy": "B10_CAUSAL_PASSIVE_BUY_ADMISSION",
+          "symbol": "USDCUSDT",
+          "technical_ancestor": "M017",
+          "test_plan": "OWNER_GATED_DAY1",
+          "trading_enabled": false
+        },
+        "model_hash": "68e9b01e0f4646319364199fe17970c5c1ec9b22e46c6a498df131ac2f0f43e5",
+        "model_id": "M018",
+        "pair": "USDCUSDT",
+        "schema_version": "usdcusdt-model-registry-v2",
+        "status": "CREATED"
+      }
     }
   ],
   "models": [
@@ -10337,7 +10456,124 @@
       "model_id": "M017",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "RUNNING"
+      "status": "INCONCLUSIVE"
+    },
+    {
+      "BEST_1D_CYCLES": null,
+      "BEST_30D_CYCLES": null,
+      "BEST_7D_CYCLES": null,
+      "BEST_MONTH": null,
+      "BEST_REGIME": null,
+      "HOT_PERIOD_COUNT": null,
+      "LONGEST_COLD_STREAK": null,
+      "LONGEST_HOT_STREAK": null,
+      "WORST_MONTH": null,
+      "artifacts": {
+        "config": "artifacts\\usdcusdt\\models\\M018\\config.json",
+        "daily": null,
+        "decision": null,
+        "directory": "artifacts\\usdcusdt\\models\\M018",
+        "hypothesis": "artifacts\\usdcusdt\\models\\M018\\hypothesis.json",
+        "lineage": "artifacts\\usdcusdt\\models\\M018\\lineage.json",
+        "metrics": null,
+        "model_spec": "artifacts\\usdcusdt\\models\\M018\\MODEL_SPEC.md",
+        "monthly": null,
+        "run_manifest": null
+      },
+      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
+      "capital_mode": "COMPOUNDING",
+      "created_at": "2026-09-08T16:40:45.771701Z",
+      "currency": "USDT",
+      "hypothesis": {
+        "change": "Cap new BUY at min(original LOW, floor_to_tick(ask-tick)); preserve original HIGH and partial entry anchor.",
+        "expected_effect": "Fewer post-only rejects; cycle/equity improvement uncertain, lower entry may increase hold.",
+        "hypothesis": "Causal passive BUY admission may reduce rejects and improve positive cycle productivity without execution relaxation.",
+        "observation": "M017 day1:12 positive cycles and2546 post-only BUY rejections; equity110.099.",
+        "reason_for_new_model": "Material strategic order-admission change; M015/M017 evidence preserved."
+      },
+      "initial_capital": "100",
+      "lineage": {
+        "ancestor_chain": [
+          "M005",
+          "M006",
+          "M007",
+          "M014",
+          "M015"
+        ],
+        "change_category": "PASSIVE_BUY_ADMISSION",
+        "change_summary": "One causal placement delta; M017 technical control, not champion promotion.",
+        "parent_model_id": "M015",
+        "parent_run_hash": null,
+        "references": {
+          "audit": "reports/usdcusdt/M017-one-day-independent-audit.md",
+          "control": "M017_DAY_1_PREFIX",
+          "owner": "docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md",
+          "technical_ancestor": "M017"
+        }
+      },
+      "model": {
+        "active_reserve_queues": 0,
+        "calendar_days": 3,
+        "capital_mode": "COMPOUNDING",
+        "currency": "USDT",
+        "deadline_policy_hash": "88b14751e15093cadc6abbaa9f3e1a70e875ff4e884b1cd911cf7146af494224",
+        "deadline_us": 7200000000,
+        "debt_mode": "REPORT_ONLY_NO_FUNDING_STATE_CHANGE",
+        "economic_early_stop": false,
+        "entry_admission_policy": {
+          "active_orders": "NO_BOOK_DRIVEN_CANCEL_OR_REPRICE",
+          "exit_target": "PRESERVE_SELECTED_HIGH",
+          "name": "CAUSAL_PASSIVE_BUY_CAP",
+          "new_entry_price": "MIN_SELECTED_LOW_FLOOR_TO_TICK_ASK_MINUS_TICK",
+          "partial_entry": "FREEZE_FIRST_FILL_ORDER_LIMIT",
+          "unknown_book": "WAIT_FAIL_CLOSED"
+        },
+        "entry_admission_policy_hash": "3fbb1dd25550f017bafe811a6b6e2a92f33af1df94d9835f8e525aa56aec778a",
+        "executable_loss_cap_bps": "20",
+        "execution_config_sha256": "a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d",
+        "execution_envelope": "PRICE_PRIORITY",
+        "experimental_control": "M017_DAY_1_PREFIX",
+        "extension_gate": "SAME_MODEL_AND_FULL_STATE; EACH_DAY_1000_AUDITED; OWNER_WINDOW_AUTHORITY",
+        "initial_capital": "100",
+        "initial_operating": "100",
+        "initial_reserve": "10",
+        "initial_stage_days": 1,
+        "initial_total_equity": "110",
+        "max_stage_days": 3,
+        "minimum_daily_positive_cycles": 1000,
+        "model_id": "M018",
+        "normal_release": "B10_H1_B10_F2.5",
+        "normal_theoretical_loss_cap_bps": "10",
+        "one_hour_owner_wording": "UNRESOLVED_NO_SILENT_DEADLINE_CHANGE",
+        "operating_queues": 1,
+        "owner_withdrawals": false,
+        "phase": "DEVELOPMENT",
+        "position_sizing": "USE_AVAILABLE_OPERATING_BANK",
+        "precedence": "LOSS_CAP_AND_RESERVE_FLOOR_BEFORE_DEADLINE",
+        "preregistration_sha256_lf": "dee6c34183817b17abe17b7d224705934d22d73789b566dc519ba90683d3bf10",
+        "priority_trade_through": true,
+        "profit_funding": "0.10",
+        "reserve_floor_absolute": "2.5",
+        "scientific_parent": "M015",
+        "selector": "UNCHANGED_M007_HYSTERESIS_AND_AFTER_ORDINARY_EXIT",
+        "source_dates": [
+          "2025-01-01",
+          "2025-02-01",
+          "2025-03-01"
+        ],
+        "source_dates_semantics": "MAXIMUM_CONDITIONAL_STAGE_UNIVERSE_NOT_READ_AUTHORIZATION",
+        "spec_sha256_lf": "e8a4f454da94cf0b51cdbacca61ba1b5da8d23553882f562ea89e3411a16d777",
+        "strategy": "B10_CAUSAL_PASSIVE_BUY_ADMISSION",
+        "symbol": "USDCUSDT",
+        "technical_ancestor": "M017",
+        "test_plan": "OWNER_GATED_DAY1",
+        "trading_enabled": false
+      },
+      "model_hash": "68e9b01e0f4646319364199fe17970c5c1ec9b22e46c6a498df131ac2f0f43e5",
+      "model_id": "M018",
+      "pair": "USDCUSDT",
+      "schema_version": "usdcusdt-model-registry-v2",
+      "status": "CREATED"
     }
   ],
   "pair": "USDCUSDT",

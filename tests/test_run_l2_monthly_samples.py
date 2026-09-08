@@ -19,6 +19,120 @@ from scripts.run_l2_monthly_samples import (
 )
 
 
+@pytest.mark.parametrize("model", ["M015", "M016", "M017"])
+def test_current_owner_pause_blocks_run_before_preflight_or_inputs(monkeypatch, model):
+    from scripts import run_l2_monthly_samples as runner
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("Owner gate must precede preflight, data and writer access")
+
+    monkeypatch.setattr(runner, "campaign_preflight", forbidden)
+    monkeypatch.setattr(runner, "build_stitched_inputs", forbidden)
+    monkeypatch.setattr(runner, "campaign_writer_lock", forbidden)
+    with pytest.raises(ValueError, match=r"OWNER_APPROVAL_REQUIRED|OWNER_WINDOW_EXCEEDED"):
+        runner.run(model)
+
+
+def test_m018_owner_window_is_one_day_and_extensions_fail_closed(tmp_path):
+    from scripts import run_l2_monthly_samples as runner
+
+    path = tmp_path / runner.OWNER_WINDOW_AUTHORITY
+    path.parent.mkdir(parents=True)
+    base = ("APPROVED_COMPARISON_DAYS={days}\nEXTENSION_AUTHORIZED=false\n"
+            "NEW_REPLAY_AUTHORIZED_NOW=true\nAUTHORIZED_MODEL=M018\n")
+    path.write_text(base.format(days=1), encoding="utf-8")
+    assert runner.require_owner_replay_approval(tmp_path, "M018") == ("2025-01-01",)
+    for days in (2, 3, 12, 21):
+        path.write_text(base.format(days=days), encoding="utf-8")
+        with pytest.raises(ValueError, match="OWNER_EXTENSION_REQUIRES"):
+            runner.require_owner_replay_approval(tmp_path, "M018")
+
+
+def test_m018_run_verifies_and_builds_only_first_day(monkeypatch):
+    from contextlib import nullcontext
+    from types import SimpleNamespace
+
+    from scripts import run_l2_monthly_samples as runner
+
+    first = "2025-01-01"
+    manifest = {"canonical_trade_manifest_sha256": "sha",
+                "dates": [{"date": first}, {"date": "2025-02-01", "poison": True}]}
+    validation = {"days": manifest["dates"]}
+    monkeypatch.setattr(runner, "campaign_preflight", lambda **kw: ("source", manifest, validation))
+    monkeypatch.setattr(runner, "PROFILE_CONFIG", SimpleNamespace(read_bytes=lambda: b"{}"))
+    monkeypatch.setattr(runner, "TRADE_MANIFEST", SimpleNamespace(read_bytes=lambda: b"{}"))
+    monkeypatch.setattr(
+        runner, "HistoryManifest", SimpleNamespace(model_validate_json=lambda x: {})
+    )
+    monkeypatch.setattr(runner, "file_sha", lambda path: "sha")
+    seen = []
+
+    def verify(entry, result, history):
+        assert entry["date"] == result["date"] == first
+        assert "poison" not in entry
+        seen.append(first)
+        return {"input_sha256": "day"}
+
+    def build(history, config, mapping):
+        assert seen == [first]
+        assert [row["source_date"] for row in mapping] == [first]
+        raise RuntimeError("ONE_DAY_INPUT_BOUNDARY_VERIFIED")
+
+    monkeypatch.setattr(runner, "verify_published_day_evidence", verify)
+    monkeypatch.setattr(runner, "campaign_writer_lock", nullcontext)
+    monkeypatch.setattr(runner, "build_stitched_inputs", build)
+    with pytest.raises(RuntimeError, match="ONE_DAY_INPUT_BOUNDARY_VERIFIED"):
+        runner.run("M018")
+
+
+@pytest.mark.parametrize(
+    "text,reason",
+    [
+        (None, "OWNER_APPROVAL_REQUIRED"),
+        ("", "OWNER_APPROVAL_REQUIRED"),
+        (
+            "APPROVED_COMPARISON_DAYS=2\nEXTENSION_AUTHORIZED=false\n"
+            "NEW_REPLAY_AUTHORIZED_NOW=true\n",
+            "OWNER_WINDOW_EXCEEDED",
+        ),
+        (
+            "APPROVED_COMPARISON_DAYS=12\nEXTENSION_AUTHORIZED=false\n"
+            "NEW_REPLAY_AUTHORIZED_NOW=false\n",
+            "OWNER_APPROVAL_REQUIRED",
+        ),
+        (
+            "APPROVED_COMPARISON_DAYS=2\nEXTENSION_AUTHORIZED=true\n"
+            "NEW_REPLAY_AUTHORIZED_NOW=true\n",
+            "OWNER_WINDOW_EXCEEDED",
+        ),
+        (
+            "APPROVED_COMPARISON_DAYS=2\nEXTENSION_AUTHORIZED=false\n"
+            "NEW_REPLAY_AUTHORIZED_NOW=True\n",
+            "OWNER_APPROVAL_REQUIRED",
+        ),
+        (
+            "APPROVED_COMPARISON_DAYS=2\nAPPROVED_COMPARISON_DAYS=12\n"
+            "EXTENSION_AUTHORIZED=false\nNEW_REPLAY_AUTHORIZED_NOW=true\n",
+            "OWNER_APPROVAL_REQUIRED",
+        ),
+        (
+            "APPROVED_COMPARISON_DAYS=0\nEXTENSION_AUTHORIZED=false\n"
+            "NEW_REPLAY_AUTHORIZED_NOW=true\n",
+            "OWNER_APPROVAL_REQUIRED",
+        ),
+    ],
+)
+def test_owner_authority_missing_invalid_or_too_short_fails_closed(tmp_path, text, reason):
+    from scripts import run_l2_monthly_samples as runner
+
+    path = tmp_path / runner.OWNER_WINDOW_AUTHORITY
+    if text is not None:
+        path.parent.mkdir(parents=True)
+        path.write_text(text, encoding="utf-8")
+    with pytest.raises(ValueError, match=reason):
+        runner.campaign_preflight(root=tmp_path, model_id="M017")
+
+
 def fixture():
     base, trades = replay_fixture()
     runtime = copy.copy(base.decisions.runtime)

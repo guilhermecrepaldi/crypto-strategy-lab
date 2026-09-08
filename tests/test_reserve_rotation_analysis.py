@@ -6,10 +6,12 @@ from pathlib import Path
 
 from crypto_strategy_lab.microstructure.reserve_recovery_diagnostics import analyze_recovery
 from scripts.analyze_reserve_rotation import (
+    CURRENT_APPROVED_DAYS,
     FUNDING,
     _augment_metrics,
     _checkpoint_run,
     _owner_m016_summary,
+    _prefix_positions,
     _prefix_summary,
     _prefix_view,
     build_model_comparison,
@@ -74,11 +76,11 @@ def test_m015_m016_comparison_labels_partial_and_defers_debt(tmp_path: Path):
     html = render_model_comparison(comparison)
     assert comparison["models"]["M015"]["status"] == "CHECKPOINT_PARTIAL"
     assert comparison["models"]["M016"]["status"] == "UNAVAILABLE"
-    assert "REPORTING_COMPARISON_OF_TWO_SIMULATED_REPLAYS" in html
-    assert "TWO_SIMULATED_REPLAYS_FUNDING_REAL_10_PERCENT_SENSITIVITY_DIAGNOSTIC_ONLY" in html
+    assert "REPORTING_COMPARISON_OF_THREE_SIMULATED_REPLAYS" in html
+    assert "THREE_SIMULATED_REPLAYS_FUNDING_REAL_10_PERCENT_SENSITIVITY_DIAGNOSTIC_ONLY" in html
     assert "DEFERRED_UNAVAILABLE" in html
     assert "UNAVAILABLE" in html
-    assert "M015" in html and "M016" in html
+    assert "M015" in html and "M016" in html and "M017" in html
     assert "patrimônio final" in html
     assert "Placar completo e definições" in html
     assert html.index("comparison-charts") < html.index("Placar completo e definições")
@@ -143,6 +145,117 @@ def test_owner_m016_headline_formats_derived_counts_and_money() -> None:
     assert "reserva 10.000000 → 9.780680 USDT" in headline
     assert "8 posições >2h" in headline
     assert "equity final 109.902000 USDT" in headline
+
+
+def test_m017_not_started_is_explicit_and_spec_binding_is_reported(tmp_path: Path) -> None:
+    comparison = build_model_comparison(tmp_path / "m015", tmp_path / "m016", tmp_path / "m017")
+    assert comparison["models"]["M017"]["status"] == "NOT_STARTED"
+    assert comparison["approved_window_days"] == CURRENT_APPROVED_DAYS
+    assert "M017 NOT_STARTED" in comparison["comparison_period"]
+    assert "M015/M016 12D completos" in comparison["historical_control_period"]
+    assert comparison["configuration"]["M017"]["status"] == "VALIDATED_SPEC_REGISTRY"
+    assert comparison["configuration"]["M017"]["executable_loss_cap_bps"] == "20"
+
+
+def test_partial_m017_sets_common_prefix_for_all_models(tmp_path: Path) -> None:
+    roots = [tmp_path / model_id for model_id in ("m015", "m016", "m017")]
+    for root in roots:
+        (root / "daily").mkdir(parents=True)
+        (root / "daily" / "01.json").write_text(
+            json.dumps({"LOGICAL_DAY": 1, "DAILY_NET_POSITIVE_CYCLES": 2}),
+            encoding="utf-8",
+        )
+    comparison = build_model_comparison(*roots)
+    assert comparison["comparison_period"] == f"mesmo prefixo lógico, dias 1{chr(0x2013)}1"
+    assert all(
+        comparison["models"][model_id]["period_label"]
+        == f"dias 1{chr(0x2013)}1 (mesmo prefixo comparável)"
+        for model_id in comparison["model_ids"]
+    )
+
+
+def test_owner_gate_does_not_read_m017_beyond_approved_prefix(tmp_path: Path) -> None:
+    roots = [tmp_path / model_id for model_id in ("m015", "m016", "m017")]
+    for root in roots:
+        (root / "daily").mkdir(parents=True)
+        for day in (1, 2):
+            (root / "daily" / f"{day:02}.json").write_text(
+                json.dumps({"LOGICAL_DAY": day, "DAILY_NET_POSITIVE_CYCLES": day}),
+                encoding="utf-8",
+            )
+        for day in (1, 2):
+            (root / "daily" / f"{day:02}-engine-state.json").write_text(
+                json.dumps({"state": {"settlements": []}}), encoding="utf-8"
+            )
+    # This must remain unread: the current OWNER gate is read from the directive.
+    (roots[2] / "daily" / "03.json").write_text("{invalid json", encoding="utf-8")
+
+    comparison = build_model_comparison(*roots)
+
+    assert comparison["approved_window_days"] == CURRENT_APPROVED_DAYS
+    assert comparison["comparison_period"] == (
+        f"mesmo prefixo lógico, dias 1{chr(0x2013)}{CURRENT_APPROVED_DAYS}"
+    )
+    assert comparison["models"]["M017"]["status"] == "M017_OWNER_PAUSED_AFTER_SCOPE"
+    assert "OWNER_PAUSED_AFTER_SCOPE" in _owner_m016_summary(comparison)
+
+
+def test_prefix_positions_stops_before_post_gate_seam_and_poison(tmp_path: Path) -> None:
+    ledger = tmp_path / "execution-audit.jsonl"
+    ledger.write_text(
+        "\n".join(
+            (
+                json.dumps({"kind": "SYNTHETIC_SAMPLE_SEAM", "time_us": 0}),
+                json.dumps({"kind": "FILL", "side": "BUY", "time_us": 100}),
+                json.dumps({"kind": "SYNTHETIC_SAMPLE_SEAM", "time_us": 200}),
+                json.dumps({"kind": "FILL", "side": "BUY", "time_us": 250, "poison": True}),
+                "{poison is beyond the approved prefix",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    positions = _prefix_positions(
+        tmp_path,
+        [{"time_us": 150, "release": False}],
+        cutoff_us=200,
+    )
+
+    assert len(positions) == 1
+    assert positions[0]["entry_us"] == 100
+
+
+def test_owner_paused_prefix_ignores_global_summary(tmp_path: Path) -> None:
+    (tmp_path / "daily").mkdir(parents=True)
+    (tmp_path / "daily" / "01.json").write_text(
+        json.dumps({"LOGICAL_DAY": 1, "DAILY_NET_POSITIVE_CYCLES": 1}),
+        encoding="utf-8",
+    )
+    (tmp_path / "daily" / "01-engine-state.json").write_text(
+        json.dumps({"state": {"settlements": []}}), encoding="utf-8"
+    )
+    (tmp_path / "summary.json").write_text("{global summary is outside the gate", encoding="utf-8")
+
+    result = _checkpoint_run(
+        tmp_path,
+        "M017_PRICE_PRIORITY",
+        max_day=CURRENT_APPROVED_DAYS,
+    )
+
+    assert result["status"] == "M017_OWNER_PAUSED_AFTER_SCOPE"
+    assert result["error"] == "OWNER_SCOPE_LIMIT"
+
+
+def test_complete_summary_without_terminal_state_is_not_passed_as_complete(tmp_path: Path) -> None:
+    root = tmp_path / "m017"
+    root.mkdir()
+    (root / "summary.json").write_text(
+        json.dumps({"RUN_STATUS": "COMPLETE", "MODEL_ID": "M017"}),
+        encoding="utf-8",
+    )
+    result = _checkpoint_run(root, "M017_PRICE_PRIORITY")
+    assert result["status"] == "NO_COMPLETE_BOUND_STATE"
+    assert result["debt_states"] == "NO_COMPLETE_BOUND_STATE"
 
 
 def test_comparison_does_not_invent_recovery_average_when_none_are_paid(tmp_path: Path):

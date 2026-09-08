@@ -1,5 +1,36 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER mais recente — progressão1→2→3 e suporte,2026-09-08
+
+Seguir OWNER_GATED_REPLAY_WINDOW.md: primeiro dia somente; ao demonstrar1000
+ciclos completos líquidos positivos em CADA dia, com economia/execução/auditoria
+válidas, avançar condicionalmente ao segundo e terceiro, mesma estratégia e
+estado integral. Depois de três dias aprovados, hipótese de2000/dia retorna ao
+primeiro dia com nova identidade e100+10 iniciais. M017 fez12 no dia1; extensão
+atualmente bloqueada. OWNER autorizou continuar elaborando com estratégias de
+suporte; M018 é o caso isolado de admissão passiva, com registro/revisão/publicação
+antes de executar. Não gerar gráficos/HTML: informar ciclos, banca, reserva,total.
+A ambiguidade da frase1hora permanece explícita; não relabelar o controle2h.
+Esta seção supera a proibição de novo caso e a exigência de nova aprovação manual
+para dias2/3 abaixo, exclusivamente quando os novos gates forem demonstrados.
+
+## Autoridade OWNER vigente — somente1dia, ampliação após aprovação,2026-09-08
+
+O OWNER reduziu o escopo12→3→2→1dia. Sua frase “1hora de espera máxima” está
+aguardando distinção entre hold simulado e prazo de entrega; não mudar a política
+de2h registrada do M017 silenciosamente ou dizer que já foi executada com1h.
+Isso NÃO é aprovação de extensão. Seguir
+`docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md`. Nenhum replay além
+do primeiro dia nem novo caso pode iniciar automaticamente. M017 foi interrompido
+por mudança de escopo; preservar o prefixo fechado do dia1 e todos os artifacts já
+produzidos sob autorização anterior. O excedente permanece histórico conhecido,
+fora do comparativo atual, não é teste ainda não visto. Não modificar a evidência
+ou os parâmetros para aparentar que a execução original tinha apenas1dia.
+Mesma primeira amostra nos controles; compounding/posição/ordens/timers
+preservados no checkpoint, nenhuma liquidação ou reset artificial no cutoff.
+Publicar comparação/auditoria do dia1 e aguardar aprovação explícita antes de
+ampliar. Esta seção supera os antigos gates automáticos e o horizonte de12dias.
+
 ## Autoridade OWNER vigente — equilíbrio reserva/recuperação/rotação,2026-09-08
 
 Seguir `docs/microstructure/RESERVE_ROTATION_OWNER_DIRECTIVE.md`. OWNER autorizou

@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 from collections import Counter
@@ -22,12 +23,86 @@ from crypto_strategy_lab.microstructure.reserve_recovery_diagnostics import anal
 ROOT = Path("artifacts/usdcusdt/l2-monthly-samples/SYNTHETIC_CONSECUTIVE_12D")
 M015_ROOT = ROOT / "PRICE_PRIORITY"
 M016_ROOT = ROOT.parent / "M016" / "SYNTHETIC_CONSECUTIVE_12D" / "PRICE_PRIORITY"
+M017_ROOT = ROOT.parent / "M017" / "SYNTHETIC_CONSECUTIVE_12D" / "PRICE_PRIORITY"
+M017_SPEC = Path("docs/microstructure/M017_MODEL_SPEC.json")
+MODEL_REGISTRY = Path("artifacts/usdcusdt/models/registry.jsonl")
+OWNER_WINDOW_DOC = Path("docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md")
+MODEL_IDS = ("M015", "M016", "M017")
+MODEL_COLORS = {"M015": "#175cd3", "M016": "#c2410c", "M017": "#15803d"}
 OUTPUT = Path("reports/usdcusdt/reserve-rotation-analysis.json")
 HTML = Path("reports/usdcusdt/B10-execution-research.html")
 FUNDING = ("0.10", "0.25", "0.50", "0.70", "0.80", "1.00")
 UNAVAILABLE = "UNAVAILABLE"
 NOT_IMPLEMENTED = "NOT_IMPLEMENTED"
 DAY_US = 86_400_000_000
+
+
+def _approved_comparison_days() -> int:
+    """Read the current OWNER gate; fail closed to one day if the gate is absent."""
+    try:
+        for line in OWNER_WINDOW_DOC.read_text(encoding="utf-8").splitlines():
+            if line.startswith("APPROVED_COMPARISON_DAYS="):
+                value = int(line.partition("=")[2])
+                if value >= 1:
+                    return value
+    except (OSError, TypeError, ValueError):
+        pass
+    return 1
+
+
+CURRENT_APPROVED_DAYS = _approved_comparison_days()
+
+
+def _sha256_lf(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def _validated_m017_configuration(run_root: Path | None = None) -> dict[str, Any]:
+    """Expose M017 policy metadata only when the registry binds its spec hash."""
+    try:
+        spec = json.loads(M017_SPEC.read_bytes())
+        spec_hash = _sha256_lf(M017_SPEC)
+        registry_entry = None
+        for line in MODEL_REGISTRY.read_text(encoding="utf-8").splitlines():
+            payload = json.loads(line).get("payload", {})
+            if payload.get("model_id") == "M017" and isinstance(payload.get("model"), dict):
+                registry_entry = payload
+        registry_model = (registry_entry or {}).get("model", {})
+        if (
+            spec.get("model_id") != "M017"
+            or registry_model.get("model_id") != "M017"
+            or registry_model.get("spec_sha256_lf") != spec_hash
+        ):
+            return {"status": "UNKNOWN_SPEC_REGISTRY_BINDING"}
+        metadata = {
+            "status": "VALIDATED_SPEC_REGISTRY",
+            "policy": spec.get("strategy", UNAVAILABLE),
+            "initial_capital": spec.get("initial_capital", UNAVAILABLE),
+            "initial_operating": spec.get("initial_operating", UNAVAILABLE),
+            "initial_reserve": spec.get("initial_reserve", UNAVAILABLE),
+            "reserve_floor": spec.get("reserve_floor_absolute", UNAVAILABLE),
+            "profit_funding": spec.get("profit_funding", UNAVAILABLE),
+            "executable_loss_cap_bps": spec.get("executable_loss_cap_bps", UNAVAILABLE),
+            "spec_sha256_lf": spec_hash,
+            "registry_model_hash": registry_entry.get("model_hash", UNAVAILABLE) if registry_entry else UNAVAILABLE,
+        }
+        if run_root is None or not run_root.exists():
+            metadata["run_binding"] = "NOT_PRESENT"
+        else:
+            manifest_path = run_root / "run-manifest.json"
+            try:
+                manifest = json.loads(manifest_path.read_bytes())
+                metadata["run_binding"] = (
+                    "VALIDATED_RUN_MANIFEST"
+                    if manifest.get("model_id") == "M017"
+                    and manifest.get("model_hash") == metadata["registry_model_hash"]
+                    else "UNKNOWN_RUN_MANIFEST_BINDING"
+                )
+            except (OSError, TypeError, ValueError, KeyError, json.JSONDecodeError):
+                metadata["run_binding"] = "UNKNOWN_RUN_MANIFEST_BINDING"
+        return metadata
+    except (OSError, TypeError, ValueError, KeyError, json.JSONDecodeError):
+        return {"status": "UNKNOWN_SPEC_REGISTRY_BINDING"}
 
 
 def inspect_run(root):
@@ -148,10 +223,10 @@ def inspect_run(root):
     }
 
 
-def _daily_rows(root: Path) -> list[dict[str, Any]]:
+def _daily_rows(root: Path, max_day: int = 12) -> list[dict[str, Any]]:
     """Read the twelve daily checkpoints without filling missing values."""
     rows: list[dict[str, Any]] = []
-    for day in range(1, 13):
+    for day in range(1, max_day + 1):
         path = root / "daily" / f"{day:02}.json"
         if not path.exists():
             rows.append({"logical_day": day, "status": UNAVAILABLE})
@@ -303,32 +378,33 @@ def _prefix_summary(
     return result
 
 
-def _prefix_positions(root: Path, settlements: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Project only fill/signal timestamps needed for the 2-hour diagnostic."""
+def _prefix_positions(
+    root: Path,
+    settlements: list[dict[str, Any]],
+    cutoff_us: int | None,
+) -> list[dict[str, Any]]:
+    """Project fills/signals without parsing ledger events beyond the prefix cutoff."""
     ledger = root / "execution-audit.jsonl"
     if not settlements:
         return []
-    if not ledger.exists():
+    if cutoff_us is None or not ledger.exists():
         raise ValueError("PREFIX_POSITION_EVIDENCE_UNAVAILABLE")
+    evidence: list[dict[str, Any]] = []
     try:
-        result = subprocess.run(
-            [
-                "rg",
-                "--no-line-number",
-                "-e",
-                '"kind":"FILL"',
-                "-e",
-                '"kind":"RELEASE_SIGNAL"',
-                "-e",
-                '"kind":"DEADLINE_EXIT_SIGNAL"',
-                str(ledger),
-            ],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        evidence = [json.loads(line) for line in result.stdout.splitlines()]
-    except (OSError, subprocess.CalledProcessError, KeyError, TypeError, json.JSONDecodeError) as exc:
+        with ledger.open("r", encoding="utf-8") as stream:
+            for line in stream:
+                row = json.loads(line)
+                if not isinstance(row, dict):
+                    raise ValueError("PREFIX_POSITION_EVIDENCE_UNAVAILABLE")
+                event_time = row.get("time_us", row.get("local_us"))
+                if row.get("kind") == "SYNTHETIC_SAMPLE_SEAM":
+                    if event_time is None or int(event_time) >= cutoff_us:
+                        break
+                elif event_time is not None and int(event_time) >= cutoff_us:
+                    break
+                if row.get("kind") in {"FILL", "RELEASE_SIGNAL", "DEADLINE_EXIT_SIGNAL"}:
+                    evidence.append(row)
+    except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
         raise ValueError("PREFIX_POSITION_EVIDENCE_UNAVAILABLE") from exc
     fills = [row for row in evidence if row.get("kind") == "FILL"]
     positions: list[dict[str, Any]] = []
@@ -395,26 +471,28 @@ def _checkpoint_positions(
     if state is None:
         return [], False
     try:
-        positions = _prefix_positions(root, settlements)
+        positions = _prefix_positions(root, settlements, cutoff_us)
     except ValueError:
         return [], False
     return _include_open_hold(positions, state, settlements, cutoff_us), True
 
 
-def _checkpoint_run(root: Path, label: str) -> dict[str, Any]:
+def _checkpoint_run(root: Path, label: str, max_day: int = 12) -> dict[str, Any]:
     """Return a complete run or an explicitly labelled partial checkpoint.
 
     Complete runs retain the existing closed-ledger validation.  A pending run
     uses the latest closed daily engine checkpoint for prefix accounting; only
     policy/deadline state remains deferred.
     """
-    daily = _daily_rows(root)
+    not_started = label.startswith("M017")
+    scope_paused = not_started and max_day < 12
+    daily = _daily_rows(root, max_day=max_day)
     summary_path = root / "summary.json"
     if not root.exists():
         return {
             "label": label,
             "model_id": label,
-            "status": UNAVAILABLE,
+            "status": "NOT_STARTED" if not_started else UNAVAILABLE,
             "checkpoint": True,
             "summary": {},
             "daily": daily,
@@ -423,34 +501,55 @@ def _checkpoint_run(root: Path, label: str) -> dict[str, Any]:
             "daily_reserve": _daily_series(daily, "RESERVE_FINAL"),
             "debt_states": "DEFERRED_UNAVAILABLE",
             "recovery_sensitivity": {},
-            "error": "ARTIFACT_ROOT_UNAVAILABLE",
+            "error": "ARTIFACT_NOT_STARTED" if not_started else "ARTIFACT_ROOT_UNAVAILABLE",
         }
     day = _last_closed_day(daily)
-    state = _load_checkpoint_state(root, day)
-    cutoff_us = _checkpoint_cutoff(root, day)
-    try:
-        summary = json.loads(summary_path.read_bytes()) if summary_path.exists() else {}
-    except (OSError, json.JSONDecodeError):
+    if not_started and day == 0 and not summary_path.exists():
         return {
             "label": label,
             "model_id": label,
-            "status": "INVALID",
+            "status": "NOT_STARTED",
             "checkpoint": True,
             "summary": {},
             "daily": daily,
             "daily_positive_cycles": _daily_series(daily, "DAILY_NET_POSITIVE_CYCLES"),
             "daily_equity": _daily_series(daily, "TOTAL_EQUITY_FINAL"),
             "daily_reserve": _daily_series(daily, "RESERVE_FINAL"),
-            "debt_states": "DEFERRED_UNAVAILABLE",
+            "debt_states": "NOT_STARTED",
             "recovery_sensitivity": {},
-            "error": "SUMMARY_INVALID",
+            "error": "ARTIFACT_NOT_STARTED",
         }
+    state = _load_checkpoint_state(root, day)
+    cutoff_us = _checkpoint_cutoff(root, day)
+    if scope_paused:
+        # The global summary may include post-gate days; the bounded prefix is authoritative.
+        summary = {}
+    else:
+        try:
+            summary = json.loads(summary_path.read_bytes()) if summary_path.exists() else {}
+        except (OSError, json.JSONDecodeError):
+            return {
+                "label": label,
+                "model_id": label,
+                "status": "INVALID",
+                "checkpoint": True,
+                "summary": {},
+                "daily": daily,
+                "daily_positive_cycles": _daily_series(daily, "DAILY_NET_POSITIVE_CYCLES"),
+                "daily_equity": _daily_series(daily, "TOTAL_EQUITY_FINAL"),
+                "daily_reserve": _daily_series(daily, "RESERVE_FINAL"),
+                "debt_states": "DEFERRED_UNAVAILABLE",
+                "recovery_sensitivity": {},
+                "error": "SUMMARY_INVALID",
+            }
     if not isinstance(summary, dict):
         summary = {}
-    if not summary_path.exists():
+    if not scope_paused and not summary_path.exists():
         summary = _prefix_summary(summary, daily, state, day, cutoff_us)
     model_id = str(summary.get("MODEL_ID", summary.get("model_id", label)))
     status = str(summary.get("RUN_STATUS", "PENDING"))
+    if scope_paused:
+        status = "M017_OWNER_PAUSED_AFTER_SCOPE"
     base: dict[str, Any] = {
         "label": label,
         "model_id": model_id,
@@ -479,7 +578,7 @@ def _checkpoint_run(root: Path, label: str) -> dict[str, Any]:
                 base["debt_states"] = "AVAILABLE_PREFIX_ACCOUNTING_NO_SETTLEMENTS_POLICY_DEFERRED"
             elif cutoff_us is None:
                 base["debt_states"] = "POLICY_DEFERRED_MISSING_CUTOFF"
-                base["status"] = "CHECKPOINT_PARTIAL"
+                base["status"] = "M017_OWNER_PAUSED_AFTER_SCOPE" if scope_paused else "CHECKPOINT_PARTIAL"
                 base["checkpoint"] = True
                 base["error"] = "RUN_MANIFEST_CUTOFF_UNAVAILABLE"
                 return base
@@ -491,15 +590,16 @@ def _checkpoint_run(root: Path, label: str) -> dict[str, Any]:
                 base["debt_states"] = "AVAILABLE_PREFIX_ACCOUNTING_POLICY_DEFERRED"
         else:
             base["debt_states"] = "POLICY_DEFERRED_NO_CHECKPOINT_STATE"
-        base["status"] = "CHECKPOINT_PARTIAL"
+        base["status"] = "M017_OWNER_PAUSED_AFTER_SCOPE" if scope_paused else "CHECKPOINT_PARTIAL"
         base["checkpoint"] = True
-        base["error"] = "RUN_NOT_COMPLETE"
+        base["error"] = "OWNER_SCOPE_LIMIT" if scope_paused else "RUN_NOT_COMPLETE"
         return base
     try:
         complete = inspect_run(root)
     except (OSError, KeyError, ValueError, json.JSONDecodeError) as exc:
-        base["status"] = "INVALID"
+        base["status"] = "NO_COMPLETE_BOUND_STATE" if status == "COMPLETE" else "INVALID"
         base["checkpoint"] = True
+        base["debt_states"] = base["status"]
         base["error"] = str(exc)
         return base
     base.update(complete)
@@ -518,7 +618,7 @@ def _checkpoint_run(root: Path, label: str) -> dict[str, Any]:
 
 
 def _prefix_view(run: dict[str, Any], root: Path, day: int) -> dict[str, Any]:
-    if day <= 0 or run.get("status") == UNAVAILABLE:
+    if day <= 0 or run.get("status") in {UNAVAILABLE, "NOT_STARTED", "NO_COMPLETE_BOUND_STATE"}:
         return run
     if day >= 12 and run.get("status") == "COMPLETE":
         return run
@@ -612,18 +712,27 @@ def _augment_metrics(run: dict[str, Any]) -> dict[str, Any]:
         summary["PNL_PER_CYCLE_DISTRIBUTION"] = UNAVAILABLE
         for key in ("PNL_PER_CYCLE_MIN", "PNL_PER_CYCLE_MEDIAN", "PNL_PER_CYCLE_P90", "PNL_PER_CYCLE_MAX"):
             summary[key] = UNAVAILABLE
-    summary.setdefault("INITIAL_CAPITAL", summary.get("OPERATING_START", "100"))
-    summary.setdefault("INITIAL_BANK", summary.get("OPERATING_START", "100"))
-    summary.setdefault("INITIAL_RESERVE", summary.get("RESERVE_START", "10"))
-    summary["REAL_FUNDING_RATE"] = "0.10"
+    has_evidence = run.get("status") not in {UNAVAILABLE, "NOT_STARTED", "NO_COMPLETE_BOUND_STATE"}
+    initial_default = "100" if has_evidence else UNAVAILABLE
+    reserve_default = "10" if has_evidence else UNAVAILABLE
+    funding_default = "0.10" if has_evidence else UNAVAILABLE
+    summary.setdefault("INITIAL_CAPITAL", summary.get("OPERATING_START", initial_default))
+    summary.setdefault("INITIAL_BANK", summary.get("OPERATING_START", initial_default))
+    summary.setdefault("INITIAL_RESERVE", summary.get("RESERVE_START", reserve_default))
+    summary["REAL_FUNDING_RATE"] = summary.get("REAL_FUNDING_RATE", funding_default)
     summary["NOTIONAL_CAP"] = summary.get("NOTIONAL_CAP", UNAVAILABLE)
-    summary["INITIAL_EQUITY"] = str(D(str(summary["INITIAL_CAPITAL"])) + D(str(summary["INITIAL_RESERVE"])))
+    if summary["INITIAL_CAPITAL"] != UNAVAILABLE and summary["INITIAL_RESERVE"] != UNAVAILABLE:
+        summary["INITIAL_EQUITY"] = str(
+            D(str(summary["INITIAL_CAPITAL"])) + D(str(summary["INITIAL_RESERVE"]))
+        )
+    else:
+        summary["INITIAL_EQUITY"] = UNAVAILABLE
     summary["FINAL_BANK"] = summary.get("OPERATING_FINAL", summary.get("OPERATING_BANK", UNAVAILABLE))
     summary["FINAL_CAPITAL"] = summary.get("TOTAL_EQUITY_FINAL", summary.get("TOTAL_EQUITY", UNAVAILABLE))
     summary["REALIZED_FEES_QUOTE"] = summary.get("REALIZED_FEES_QUOTE", summary.get("FEES", UNAVAILABLE))
     summary["UNREALIZED_PNL"] = summary.get("UNREALIZED_PNL", UNAVAILABLE)
     summary["RESERVE_FLOOR"] = summary.get("RESERVE_FLOOR", UNAVAILABLE)
-    summary["CAPITAL_MODE"] = summary.get("CAPITAL_MODE", "COMPOUNDING")
+    summary["CAPITAL_MODE"] = summary.get("CAPITAL_MODE", "COMPOUNDING" if has_evidence else UNAVAILABLE)
     positions = run.get("positions", [])
     holds = [D(str(row["hold_hours"])) for row in positions if row.get("hold_hours") is not None]
     open_hold = run.get("open_hold")
@@ -648,6 +757,7 @@ def _augment_metrics(run: dict[str, Any]) -> dict[str, Any]:
         completed = [tranche for tranche in recovery.get("tranches", []) if tranche.get("recovery_cycles") is not None]
         summary["RECOVERY_CENSORED_COUNT"] = recovery.get("censored_count", UNAVAILABLE)
         summary["DEBT_FINAL"] = recovery.get("outstanding_debt", UNAVAILABLE)
+        summary["RESERVE_SURPLUS_CONTRIBUTION"] = recovery.get("surplus_contributions", UNAVAILABLE)
         summary["RECOVERY_OVERLAP_COUNT"] = sum(int(tranche.get("new_release_while_pending_count", 0)) for tranche in recovery.get("tranches", []))
         if completed:
             cycle_values = [D(str(tranche["recovery_cycles"])) for tranche in completed]
@@ -662,7 +772,7 @@ def _augment_metrics(run: dict[str, Any]) -> dict[str, Any]:
             for key in ("RECOVERY_P90_CYCLES", "RECOVERY_P90_HOURS", "RECOVERY_MAX_CYCLES", "RECOVERY_MAX_HOURS", "RECOVERY_MEDIAN_CYCLES", "RECOVERY_MEDIAN_HOURS"):
                 summary[key] = UNAVAILABLE
     else:
-        for key in ("RECOVERY_CENSORED_COUNT", "DEBT_FINAL", "RECOVERY_OVERLAP_COUNT", "RECOVERY_P90_CYCLES", "RECOVERY_P90_HOURS", "RECOVERY_MAX_CYCLES", "RECOVERY_MAX_HOURS", "RECOVERY_MEDIAN_CYCLES", "RECOVERY_MEDIAN_HOURS"):
+        for key in ("RECOVERY_CENSORED_COUNT", "DEBT_FINAL", "RESERVE_SURPLUS_CONTRIBUTION", "RECOVERY_OVERLAP_COUNT", "RECOVERY_P90_CYCLES", "RECOVERY_P90_HOURS", "RECOVERY_MAX_CYCLES", "RECOVERY_MAX_HOURS", "RECOVERY_MEDIAN_CYCLES", "RECOVERY_MEDIAN_HOURS"):
             summary[key] = UNAVAILABLE
     run["summary"] = summary
     return run
@@ -671,20 +781,36 @@ def _augment_metrics(run: dict[str, Any]) -> dict[str, Any]:
 def build_model_comparison(
     m015_root: Path = M015_ROOT,
     m016_root: Path = M016_ROOT,
+    m017_root: Path = M017_ROOT,
 ) -> dict[str, Any]:
-    """Build a reporting-only M015/M016 comparison.
+    """Build a reporting-only M015/M016/M017 comparison.
 
     This compares artifacts and checkpoints; it never invokes a runner or treats
     fixed-funding sensitivity as a new replay.
     """
-    m015_full = _checkpoint_run(m015_root, "M015_PRICE_PRIORITY")
-    m016_full = _checkpoint_run(m016_root, "M016_PRICE_PRIORITY")
-    closed_days = [int(run.get("closed_day", 0)) for run in (m015_full, m016_full) if int(run.get("closed_day", 0)) > 0]
-    comparison_day = min(closed_days) if len(closed_days) == 2 else 0
-    m015 = _prefix_view(m015_full, m015_root, comparison_day)
-    m016 = _prefix_view(m016_full, m016_root, comparison_day)
-    m015 = _augment_metrics(m015)
-    m016 = _augment_metrics(m016)
+    roots = {"M015": m015_root, "M016": m016_root, "M017": m017_root}
+    full_models = {
+        model_id: _checkpoint_run(
+            root,
+            f"{model_id}_PRICE_PRIORITY",
+            max_day=CURRENT_APPROVED_DAYS if model_id == "M017" else 12,
+        )
+        for model_id, root in roots.items()
+    }
+    comparable = all(
+        full_models[model_id].get("status") not in {UNAVAILABLE, "NOT_STARTED"}
+        and int(full_models[model_id].get("closed_day", 0)) > 0
+        for model_id in MODEL_IDS
+    )
+    comparison_day = (
+        min(int(full_models[model_id]["closed_day"]) for model_id in MODEL_IDS)
+        if comparable
+        else 0
+    )
+    models = {
+        model_id: _augment_metrics(_prefix_view(full_models[model_id], roots[model_id], comparison_day))
+        for model_id in MODEL_IDS
+    }
     metric_keys = (
         "REAL_FUNDING_RATE",
         "RELEASE_LOSS_MEAN",
@@ -700,6 +826,7 @@ def build_model_comparison(
         "MIN_RESERVE",
         "RESERVE_FUNDING",
         "RESERVE_CONSUMPTION",
+        "RESERVE_SURPLUS_CONTRIBUTION",
         "OPERATING_FINAL",
         "OPERATING_BANK",
         "OPERATING_CASH",
@@ -752,26 +879,36 @@ def build_model_comparison(
     metrics: dict[str, dict[str, Any]] = {}
     for key in metric_keys:
         metrics[key] = {
-            "M015": m015["summary"].get(key, UNAVAILABLE),
-            "M016": m016["summary"].get(key, UNAVAILABLE),
+            model_id: models[model_id]["summary"].get(key, UNAVAILABLE) for model_id in MODEL_IDS
         }
     for key in ("QUEUE_POSITION", "PROSPECTIVE_VALIDATION"):
-        metrics[key] = {"M015": NOT_IMPLEMENTED, "M016": NOT_IMPLEMENTED}
+        metrics[key] = {model_id: NOT_IMPLEMENTED for model_id in MODEL_IDS}
+    m017_status = full_models["M017"].get("status")
+    if comparison_day:
+        comparison_period = f"mesmo prefixo lógico, dias 1–{comparison_day}"
+        historical_control_period = (
+            "M015/M016 12D completos preservados como controles históricos"
+            if comparison_day < 12
+            else "M015/M016 12D completos"
+        )
+    elif m017_status in {UNAVAILABLE, "NOT_STARTED"}:
+        comparison_period = "M017 NOT_STARTED; M015/M016 12D permanecem controles históricos"
+        historical_control_period = "M015/M016 12D completos preservados como controles históricos"
+    else:
+        comparison_period = "NO_COMMON_CLOSED_PREFIX"
+        historical_control_period = UNAVAILABLE
     return {
-        "classification": "REPORTING_COMPARISON_OF_TWO_REAL_REPLAYS",
-        "scenario_kind": "TWO_REAL_REPLAYS_FUNDING_REAL_10_PERCENT_SENSITIVITY_DIAGNOSTIC_ONLY",
-        "comparison_period": (
-            f"mesmo prefixo lógico, dias 1–{comparison_day}"
-            if comparison_day
-            else "NO_COMMON_CLOSED_PREFIX"
-        ),
-        "models": {"M015": m015, "M016": m016},
-        "full_models": {"M015": m015_full, "M016": m016_full},
+        "classification": "REPORTING_COMPARISON_OF_THREE_REAL_REPLAYS",
+        "scenario_kind": "THREE_REAL_REPLAYS_FUNDING_REAL_10_PERCENT_SENSITIVITY_DIAGNOSTIC_ONLY",
+        "approved_window_days": CURRENT_APPROVED_DAYS,
+        "comparison_period": comparison_period,
+        "historical_control_period": historical_control_period,
+        "model_ids": MODEL_IDS,
+        "models": models,
+        "full_models": full_models,
+        "configuration": {"M017": _validated_m017_configuration(m017_root)},
         "metrics": metrics,
-        "debt_states": {
-            "M015": m015["debt_states"],
-            "M016": m016["debt_states"],
-        },
+        "debt_states": {model_id: models[model_id]["debt_states"] for model_id in MODEL_IDS},
     }
 
 
@@ -950,6 +1087,7 @@ _COUNT_METRIC_KEYS = {
     "TRADES",
     "L2_ROWS",
     "HARD_LOCK_VIOLATIONS",
+    "executable_loss_cap_bps",
 }
 _MONEY_METRIC_KEYS = {
     "NET_PNL",
@@ -957,6 +1095,7 @@ _MONEY_METRIC_KEYS = {
     "RESERVE_FINAL",
     "RESERVE_FUNDING",
     "RESERVE_CONSUMPTION",
+    "RESERVE_SURPLUS_CONTRIBUTION",
     "OPERATING_FINAL",
     "OPERATING_BANK",
     "OPERATING_CASH",
@@ -1005,6 +1144,7 @@ _METRIC_LABELS = {
     "MIN_RESERVE": "reserva mínima",
     "RESERVE_FUNDING": "aporte de reserva",
     "RESERVE_CONSUMPTION": "consumo de reserva",
+    "RESERVE_SURPLUS_CONTRIBUTION": "aporte excedente (não quita dívida futura)",
     "OPERATING_FINAL": "banca operacional final",
     "OPERATING_BANK": "banca operacional (cash+cost+dust)",
     "OPERATING_CASH": "caixa operacional",
@@ -1060,9 +1200,20 @@ _METRIC_LABELS = {
 }
 
 
-def _owner_m016_summary(comparison: dict[str, Any]) -> str:
-    """Build the owner-facing M016 headline from the already-derived metrics."""
-    model = comparison["models"].get("M016", {})
+def _owner_summary(comparison: dict[str, Any]) -> str:
+    """Build the owner-facing headline from the newest available run prefix."""
+    model_ids = comparison.get("model_ids", MODEL_IDS)
+    selected = next(
+        (
+            model_id
+            for model_id in reversed(model_ids)
+            if model_id in comparison["models"]
+            and comparison["models"][model_id].get("status")
+            not in {UNAVAILABLE, "NOT_STARTED", "NO_COMPLETE_BOUND_STATE"}
+        ),
+        "M016",
+    )
+    model = comparison["models"].get(selected, {})
     summary = model.get("summary", {})
     recovery = model.get("recovery_sensitivity", {}).get("0.10")
 
@@ -1097,8 +1248,17 @@ def _owner_m016_summary(comparison: dict[str, Any]) -> str:
         recovery_note = "N/T não estimáveis" if recovery.get("recovered_count", 0) == 0 else "coorte recuperada"
     daily_min = summary.get("DAILY_CYCLES_MIN", UNAVAILABLE)
     daily_max = summary.get("DAILY_CYCLES_MAX", UNAVAILABLE)
+    status = model.get("status", UNAVAILABLE)
+    if status == "CHECKPOINT_PARTIAL":
+        status_label = "checkpoint parcial; veredito PENDING"
+    elif status == "M017_OWNER_PAUSED_AFTER_SCOPE":
+        status_label = "OWNER_PAUSED_AFTER_SCOPE; veredito PENDING"
+    elif status in {"COMPLETE", "COMPLETE_PREFIX"}:
+        status_label = f"runtime {status}; não é STRATEGY_PASS"
+    else:
+        status_label = str(status)
     return (
-        "<strong>OWNER: M016 já executado</strong> — "
+        f"<strong>OWNER: {escape(selected)} {escape(status_label)}</strong> — "
         f"funding {funding_label}; perda média por release {money(summary.get('RELEASE_LOSS_MEAN'))} USDT; "
         f"{recovery_label}, {recovery_note}; "
         f"{count(summary.get('NET_POSITIVE_CYCLES'))} ciclos positivos "
@@ -1110,21 +1270,31 @@ def _owner_m016_summary(comparison: dict[str, Any]) -> str:
     )
 
 
+def _owner_m016_summary(comparison: dict[str, Any]) -> str:
+    """Backward-compatible test helper for the generic owner headline."""
+    return _owner_summary(comparison)
+
+
 def render_model_comparison(comparison: dict[str, Any]) -> str:
     """Render the M015/M016 artifact comparison as an additive HTML section."""
     models = comparison["models"]
+    model_ids = tuple(comparison.get("model_ids", tuple(models)))
+    model_title = " × ".join(f"{model_id} PRICE_PRIORITY" for model_id in model_ids)
     classification = str(comparison["classification"]).replace("REAL_REPLAYS", "SIMULATED_REPLAYS")
     scenario_kind = str(comparison["scenario_kind"]).replace("REAL_REPLAYS", "SIMULATED_REPLAYS")
     out = [
         '<section id="m015-m016-comparacao">',
-        '<div class="eyebrow muted">OWNER / M015 × M016 · comparação de artifacts</div>',
-        "<h2>M015 PRICE_PRIORITY versus M016 PRICE_PRIORITY</h2>",
-        f'<p class="owner-summary">{_owner_m016_summary(comparison)}</p>',
-        '<p class="note">São dois replays simulados, ambos com funding real de 10%. '
-        'A sensibilidade de funding abaixo é somente diagnóstico dos mesmos settlements; não é um terceiro replay.</p>',
+        f'<div class="eyebrow muted">OWNER / {escape(" × ".join(model_ids))} · comparação de artifacts</div>',
+        f"<h2>{escape(model_title)}</h2>",
+        f'<p class="owner-summary">{_owner_summary(comparison)}</p>',
+        f'<p class="note">São {len(model_ids)} replays simulados, todos com funding real de 10%. '
+        'A sensibilidade de funding abaixo é somente diagnóstico dos mesmos settlements; não é um novo replay.</p>',
         f'<p class="note">Classificação: <code>{escape(classification)}</code>. '
         f'Cenário: <code>{escape(scenario_kind)}</code>. '
-        f'Período comparável: <code>{escape(comparison["comparison_period"])}</code>.</p>',
+        f'Período comparável: <code>{escape(comparison["comparison_period"])}</code>. '
+        f'Histórico: <code>{escape(comparison.get("historical_control_period", UNAVAILABLE))}</code>. '
+        f'Janela OWNER aprovada: <code>1–{comparison.get("approved_window_days", UNAVAILABLE)} dias</code>; '
+        'qualquer resultado M017 além dela está fora do escopo desta entrega.</p>',
         '<p class="note">Recuperar em quatro ciclos só ajuda se esses quatro ciclos realmente ocorrerem logo; '
         'enquanto a posição está travada, a fila serial não produz os próximos ciclos. Maior funding não acelera '
         'esse relógio. Os limites de 2h aparecem como excesso em horas e segundos; hard-lock de 24h é uma régua legada distinta.</p>',
@@ -1136,58 +1306,104 @@ def render_model_comparison(comparison: dict[str, Any]) -> str:
     out.append(
         _chart_svg(
             "Ciclos positivos por dia lógico",
-            {name: run["daily_positive_cycles"] for name, run in models.items()},
-            {"M015": "#175cd3", "M016": "#c2410c"},
+            {name: models[name]["daily_positive_cycles"] for name in model_ids},
+            {name: MODEL_COLORS.get(name, "#475569") for name in model_ids},
         )
     )
     out.append(
         _chart_svg(
             "Patrimônio final diário",
-            {name: run["daily_equity"] for name, run in models.items()},
-            {"M015": "#175cd3", "M016": "#c2410c"},
+            {name: models[name]["daily_equity"] for name in model_ids},
+            {name: MODEL_COLORS.get(name, "#475569") for name in model_ids},
         )
     )
     out.append(
         _chart_svg(
             "Reserva final diária",
-            {name: run["daily_reserve"] for name, run in models.items()},
-            {"M015": "#175cd3", "M016": "#c2410c"},
+            {name: models[name]["daily_reserve"] for name in model_ids},
+            {name: MODEL_COLORS.get(name, "#475569") for name in model_ids},
         )
     )
     out.append("</div>")
     out.append(
         '<details><summary>Placar completo e definições</summary>'
-        f'<div class="table-wrap"><table><thead><tr><th>Métrica</th><th>M015 · {escape(str(models["M015"].get("period_label", "UNAVAILABLE")))}</th>'
-        f'<th>M016 · {escape(str(models["M016"].get("period_label", "UNAVAILABLE")))}</th></tr></thead><tbody>'
+        '<div class="table-wrap"><table><thead><tr><th>Métrica</th>'
+        + "".join(
+            f'<th>{escape(model_id)} · {escape(str(models[model_id].get("period_label", "UNAVAILABLE")))}</th>'
+            for model_id in model_ids
+        )
+        + "</tr></thead><tbody>"
     )
     for key, values in comparison["metrics"].items():
         out.append(
-            f"<tr><td>{escape(_METRIC_LABELS.get(key, key))}</td><td>{_display_metric(values['M015'], key)}</td>"
-            f"<td>{_display_metric(values['M016'], key)}</td></tr>"
+            f"<tr><td>{escape(_METRIC_LABELS.get(key, key))}</td>"
+            + "".join(f"<td>{_display_metric(values[model_id], key)}</td>" for model_id in model_ids)
+            + "</tr>"
         )
     out.append("</tbody></table></div>")
     out.append(
-        '<div class="table-wrap"><table><thead><tr><th>Estado</th><th>M015</th><th>M016</th></tr></thead><tbody>'
-        f"<tr><td>artifact</td><td>{_display_metric(models['M015']['status'])}</td>"
-        f"<td>{_display_metric(models['M016']['status'])}</td></tr>"
-        f"<tr><td>estado de dívida/política</td><td>{_display_metric(comparison['debt_states']['M015'])}</td>"
-        f"<td>{_display_metric(comparison['debt_states']['M016'])}</td></tr>"
-        "</tbody></table></div>"
+        '<div class="table-wrap"><table><thead><tr><th>Estado</th>'
+        + "".join(f"<th>{escape(model_id)}</th>" for model_id in model_ids)
+        + "</tr></thead><tbody>"
+        + "<tr><td>artifact</td>"
+        + "".join(f"<td>{_display_metric(models[model_id]['status'])}</td>" for model_id in model_ids)
+        + "</tr><tr><td>estado de dívida/política</td>"
+        + "".join(
+            f"<td>{_display_metric(comparison['debt_states'][model_id])}</td>" for model_id in model_ids
+        )
+        + "</tr></tbody></table></div>"
     )
+    configuration = comparison.get("configuration", {})
+    config_rows = (
+        ("policy", "policy"),
+        ("capital inicial", "initial_capital"),
+        ("reserva inicial", "initial_reserve"),
+        ("piso absoluto", "reserve_floor"),
+        ("funding de lucro", "profit_funding"),
+        ("cap protegido (bps)", "executable_loss_cap_bps"),
+        ("vínculo spec/registry", "status"),
+        ("vínculo run-manifest", "run_binding"),
+        ("aplicado ao resultado", "applied_to_result"),
+    )
+    out.append(
+        '<div class="table-wrap"><table><thead><tr><th>Configuração validada</th>'
+        + "".join(f"<th>{escape(model_id)}</th>" for model_id in model_ids)
+        + "</tr></thead><tbody>"
+    )
+    for label, key in config_rows:
+        values = []
+        for model_id in model_ids:
+            config = configuration.get(model_id, {})
+            if key == "applied_to_result":
+                value = "YES" if config.get("run_binding") == "VALIDATED_RUN_MANIFEST" else "NO"
+            else:
+                value = config.get(key, UNAVAILABLE)
+            display_key = "REAL_FUNDING_RATE" if key == "profit_funding" else key
+            values.append(_display_metric(value, display_key))
+        out.append(
+            f"<tr><td>{escape(label)}</td>"
+            + "".join(f"<td>{value}</td>" for value in values)
+            + "</tr>"
+        )
+    out.append("</tbody></table></div>")
     out.append(
         '<h3>Recuperação FIFO</h3><p class="note">Médias/medianas de recuperação só aparecem '
         'quando há releases quitados. Sem quitados: UNAVAILABLE; estados NORMAL/RECUPERAÇÃO/PROTEÇÃO '
-        'ainda não implementados; deadline M016 executado e violações medidas, enquanto a contabilidade '
-        'de settlements do prefixo pode estar disponível.</p>'
-        '<div class="table-wrap"><table><thead><tr><th>Funding</th><th>M015 perdas recuperadas / com dívida</th>'
-        '<th>M016 perdas recuperadas / com dívida</th><th>M015 releases sem perda</th><th>M016 releases sem perda</th>'
-        '<th>M015 mediana ciclos / h</th><th>M016 mediana ciclos / h</th>'
-        '<th>M015 P90/max ciclos</th><th>M016 P90/max ciclos</th><th>M015 censurados</th>'
-        '<th>M016 censurados</th><th>M015 dívida aberta</th><th>M016 dívida aberta</th></tr></thead><tbody>'
+        'ainda não implementados; deadlines executados são medidos por runtime, enquanto a contabilidade '
+        'de settlements do prefixo pode estar disponível. Dívida aberta é o ledger FIFO, não '
+        '10 menos a reserva final; o aporte excedente pré-perda aparece separado e não quita dívida futura.</p>'
+        '<div class="table-wrap"><table><thead><tr><th>Funding</th>'
+        + "".join(f"<th>{model_id} perdas recuperadas / com dívida</th>" for model_id in model_ids)
+        + "".join(f"<th>{model_id} releases sem perda</th>" for model_id in model_ids)
+        + "".join(f"<th>{model_id} mediana ciclos / h</th>" for model_id in model_ids)
+        + "".join(f"<th>{model_id} P90/max ciclos</th>" for model_id in model_ids)
+        + "".join(f"<th>{model_id} censurados</th>" for model_id in model_ids)
+        + "".join(f"<th>{model_id} dívida aberta</th>" for model_id in model_ids)
+        + "</tr></thead><tbody>"
     )
     for funding in FUNDING:
         cells: list[str] = [f"<td>{D(funding) * 100:.0f}%</td>"]
-        for name in ("M015", "M016"):
+        for name in model_ids:
             run = models[name]
             recovery = run.get("recovery_sensitivity", {}).get(funding)
             if recovery is None:
@@ -1195,7 +1411,7 @@ def render_model_comparison(comparison: dict[str, Any]) -> str:
                 continue
             debt_tranches = len(recovery.get("tranches", []))
             cells.append(f"<td>{recovery.get('recovered_count', UNAVAILABLE)} / {debt_tranches}</td>")
-        for name in ("M015", "M016"):
+        for name in model_ids:
             run = models[name]
             recovery = run.get("recovery_sensitivity", {}).get(funding)
             if recovery is None:
@@ -1208,7 +1424,7 @@ def render_model_comparison(comparison: dict[str, Any]) -> str:
             else:
                 no_loss_releases = UNAVAILABLE
             cells.append(f"<td>{no_loss_releases}</td>")
-        for name in ("M015", "M016"):
+        for name in model_ids:
             recovery = models[name].get("recovery_sensitivity", {}).get(funding)
             if not recovery or recovery.get("recovered_count", 0) == 0:
                 cells.append(f"<td>{UNAVAILABLE}</td>")
@@ -1217,7 +1433,7 @@ def render_model_comparison(comparison: dict[str, Any]) -> str:
                     f"<td>{_display_metric(recovery.get('median_recovery_cycles'), 'RECOVERY_MEDIAN_CYCLES')} / "
                     f"{_display_metric(recovery.get('median_recovery_hours'), 'RECOVERY_MEDIAN_HOURS')}</td>"
                 )
-        for name in ("M015", "M016"):
+        for name in model_ids:
             recovery = models[name].get("recovery_sensitivity", {}).get(funding)
             if not recovery or recovery.get("recovered_count", 0) == 0:
                 cells.append(f"<td>{UNAVAILABLE}</td>")
@@ -1227,12 +1443,12 @@ def render_model_comparison(comparison: dict[str, Any]) -> str:
                     f"<td>{_display_metric(recovery.get('p90_recovery_cycles'), 'RECOVERY_P90_CYCLES')} / "
                     f"{_display_metric(max(cycles) if cycles else None, 'RECOVERY_MAX_CYCLES')}</td>"
                 )
-        for name in ("M015", "M016"):
+        for name in model_ids:
             recovery = models[name].get("recovery_sensitivity", {}).get(funding)
             cells.append(
                 f"<td>{_display_metric(recovery.get('censored_count'), 'RECOVERY_CENSORED_COUNT') if recovery else UNAVAILABLE}</td>"
             )
-        for name in ("M015", "M016"):
+        for name in model_ids:
             recovery = models[name].get("recovery_sensitivity", {}).get(funding)
             cells.append(
                 f"<td>{_display_metric(recovery.get('outstanding_debt')) if recovery else UNAVAILABLE}</td>"

@@ -486,3 +486,57 @@ The bounded-hold objective improved in this prefix, but profits are less than
 release losses even before splitting funding/reinvestment. This is observed
 sequence evidence, not proof about every possible funding replay or later days.
 Model, parameters and execution source unchanged. RUNNING; VERDICT=PENDING.
+
+## 2026-09-08 — OWNER reduces scope12→3→2→1day; process stopped
+
+OWNER requested extension only after explicit approval, then corrected the
+requested window to2days and finally1day. “Aprove” was a correction to “caso eu
+aprove”, not approval already granted. New authority:OWNER_GATED_REPLAY_WINDOW.md.
+The verified M017 process652 was stopped; session74960 exited1 because of the
+OWNER interruption. No matching replay process remained at16:02:32UTC verification.
+Five closed days plus a partial sixth had already been processed under earlier
+authority. Existing files and published checkpoints remain preserved, outside the
+new comparison window. They cannot be relabeled as unseen/locked validation data.
+
+Registry RUNNING→INCONCLUSIVE records the initial3day scope change; subsequent
+corrections to2and1day are recorded here, without rewriting the event. The
+original12day run is incomplete, not economically failed or technically invalidated.
+No forced liquidation, capital reset or new replay occurred. Current comparison
+uses day1 only in M015/M016/M017; audit and HTML are being aligned with that limit.
+The old M017 policy remains2h. Clarification was requested for “1hora de espera”:
+simulated position age versus delivery time. Do not silently change or relabel
+the registered policy. No extension or successor is currently authorized to run.
+
+## 2026-09-08 — latest OWNER progression and M018 preparation
+
+The later OWNER directive authorizes conditional day1→2→3, requiring1000 audited
+positive complete ordinary cycles EACH day with unchanged strategy/full state and
+economic sustainability. Current gate remains one day; M017 has12, not1000.
+After three qualifying days, a new2000/day hypothesis returns to day1 and100+10.
+OWNER canceled charts/HTML and requested only cycles, operating,reserve,total.
+"Continue, use support strategies" authorizes a small preregistered successor.
+
+M017 first-day physical audit PASS_PREFIX_EVIDENCE_NOT_STRATEGY_PASS; reporter
+bounded-read fix independently reviewed,24report/debt fixtures passed. Daily1
+operating100.10692,reserve9.99208,equity110.099,12cycles,one release0.0198,
+debt0.01188,strict2h violation47.867ms. No later day enters current comparison.
+No HTML was generated. Stop-time statements above remain chronological evidence.
+
+M018 preparation: ADAPT passive placement support, P=min(selectedLOW,ask−tick
+rounded down), preserve original HIGH and all queue/cost/funding/deadline controls.
+First-fill partial entry anchors the admitted limit. No active-order repricing.
+Day1's2546 post-only BUY rejections motivate this single change; fewer rejections
+would not prove more profitable cycles. M015 scientific parent; M017 technical
+control. One-day input guard and conditional three-date universe are separate.
+The ambiguous1h request remains disclosed; this isolated case uses2h control.
+GPT-6 Astra implemented/reviews scientific changes; GPT-5.6 Luna handled bounded
+reporter mechanics. No replay has run for M018; source-bound independent review
+and publication remain mandatory before execution.
+
+M018 registered CREATED, model hash
+68e9b01e0f4646319364199fe17970c5c1ec9b22e46c6a498df131ac2f0f43e5.
+Registry enforced the exact M015 ancestry; M017 is separately referenced as
+technical control. An initial registration attempt with a noncanonical ancestry
+was rejected before append; corrected using the actual parent's recorded chain.
+Software validation144 fixtures passed;13 admission fixtures rerun after adding
+an explicit adjustment reason. These are software facts, not economic results.

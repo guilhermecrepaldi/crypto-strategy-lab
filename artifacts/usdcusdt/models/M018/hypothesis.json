@@ -1,0 +1,7 @@
+{
+  "change": "Cap new BUY at min(original LOW, floor_to_tick(ask-tick)); preserve original HIGH and partial entry anchor.",
+  "expected_effect": "Fewer post-only rejects; cycle/equity improvement uncertain, lower entry may increase hold.",
+  "hypothesis": "Causal passive BUY admission may reduce rejects and improve positive cycle productivity without execution relaxation.",
+  "observation": "M017 day1:12 positive cycles and2546 post-only BUY rejections; equity110.099.",
+  "reason_for_new_model": "Material strategic order-admission change; M015/M017 evidence preserved."
+}

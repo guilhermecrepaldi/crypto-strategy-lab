@@ -15,7 +15,7 @@ from bisect import bisect_right
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
-from decimal import Decimal, localcontext
+from decimal import ROUND_FLOOR, Decimal, localcontext
 from typing import Any, Literal, overload
 
 from crypto_strategy_lab.domain import canonical_hash
@@ -23,6 +23,7 @@ from crypto_strategy_lab.domain import canonical_hash
 from .b10_reality import BookEnvelope, ExecutionProfile, Order, SymbolRules, Trade, _encode
 from .high_uptime_recovery import (
     DEADLINE_POLICY_HASHES,
+    M018_ENTRY_ADMISSION_POLICY_HASH,
     B10ReserveReplay,
     HighUptimeExecution,
 )
@@ -81,6 +82,7 @@ class ObservedL2Execution(HighUptimeExecution):
         on_transition: Callable[[dict[str, Any]], None],
         clock_mode: Literal["EXCHANGE_STRICT", "CAPTURE_ARRIVAL"] = "EXCHANGE_STRICT",
         deadline_policy_hash: str | None = None,
+        entry_admission_policy_hash: str | None = None,
     ) -> None:
         if envelope not in ("CONSERVATIVE_QUEUE", "PRICE_PRIORITY"):
             raise ValueError("UNREGISTERED_EXECUTION_ENVELOPE")
@@ -95,6 +97,14 @@ class ObservedL2Execution(HighUptimeExecution):
             priority_trade_through=envelope == "PRICE_PRIORITY",
             deadline_policy_hash=deadline_policy_hash,
         )
+        if entry_admission_policy_hash is not None:
+            if (
+                entry_admission_policy_hash != M018_ENTRY_ADMISSION_POLICY_HASH
+                or deadline_policy_hash != DEADLINE_POLICY_HASHES["M018"]
+            ):
+                raise ValueError("M018_ENTRY_ADMISSION_POLICY_IDENTITY_REQUIRED")
+            self.entry_admission_policy_hash = entry_admission_policy_hash
+            self.passive_entry_price: Decimal | None = None
         self.envelope = envelope
         self.clock_mode = clock_mode
         self.on_transition = on_transition
@@ -506,7 +516,10 @@ class ObservedL2Execution(HighUptimeExecution):
         source_id: int | None,
     ) -> None:
         budget_before = next((q for p, q in self.bids if p == price), ZERO)
+        first_entry = order.side == "BUY" and self.entry_us is None
         super()._fill(order, quantity, price, time_us, source, source_id)
+        if first_entry and hasattr(self, "entry_admission_policy_hash") and self.inventory > ZERO:
+            self.passive_entry_price = order.price
         if source == "BOOK":
             with localcontext() as context:
                 context.prec = 128
@@ -543,6 +556,10 @@ class ObservedL2Execution(HighUptimeExecution):
         return {"state": state, "sha256": canonical_hash(state)}
 
     def restore(self, checkpoint: dict[str, Any]) -> None:
+        if checkpoint["state"].get("entry_admission_policy_hash") != getattr(
+            self, "entry_admission_policy_hash", None
+        ):
+            raise ValueError("ENTRY_ADMISSION_CHECKPOINT_POLICY_MISMATCH")
         if checkpoint["state"].get("envelope") != self.envelope:
             raise ValueError("OBSERVED_ENVELOPE_MISMATCH")
         if checkpoint["state"].get("clock_mode") != self.clock_mode:
@@ -688,6 +705,7 @@ class ObservedL2Replay(B10ReserveReplay):
             on_transition=self._execution_transition,
             clock_mode="CAPTURE_ARRIVAL",
             deadline_policy_hash=identity.get("deadline_policy_hash"),
+            entry_admission_policy_hash=identity.get("entry_admission_policy_hash"),
         )
         self.last_capture_us = start_us
         self.last_capture_order = -1
@@ -705,6 +723,8 @@ class ObservedL2Replay(B10ReserveReplay):
             self.decisions.state.candidate_tick_size = self.position_candidate_tick
             self.next_release = engine.entry_us + 3_600_000_000
         if old_entry is not None and engine.entry_us is None:
+            if hasattr(engine, "entry_admission_policy_hash"):
+                engine.passive_entry_price = None
             self.holds_us.append(timestamp - int(old_entry))
             self.next_release = None
             self.decisions.state.entry_event = None
@@ -824,6 +844,18 @@ class ObservedL2Replay(B10ReserveReplay):
                 )
 
     def _submit_next(self, timestamp: int) -> None:
+        if self.identity.get("model_id") == "M018" and not self.engine.releasing:
+            engine = self.engine
+            if engine.order is not None or not engine.book_valid:
+                return
+            if engine.inventory > ZERO and not engine.buy_complete:
+                if engine.passive_entry_price is None:
+                    raise ValueError("M018_PARTIAL_ENTRY_ANCHOR_REQUIRED")
+                engine.submit("BUY", engine.passive_entry_price, timestamp, continuation=True)
+                return
+            if engine.inventory == ZERO:
+                self._submit_passive_entry(timestamp)
+                return
         if self.deadline_enabled and self.engine.releasing and self.engine.order is None:
             engine = self.engine
             # Only cache blocked predicates; fresh eligible book epochs still retry.
@@ -857,6 +889,45 @@ class ObservedL2Replay(B10ReserveReplay):
                 self.engine._record("PROTECTED_EXIT_UNBLOCKED", time_us=timestamp)
                 self.deadline_block_reason = None
         super()._submit_next(timestamp)
+
+    def _submit_passive_entry(self, timestamp: int) -> None:
+        engine = self.engine
+        candidate = self.decisions.state.candidate
+        if candidate is None or engine.ask is None or engine.last_book_us > timestamp:
+            return
+        with localcontext() as context:
+            context.prec = 128
+            tick = engine.rules.tick_size
+            tape_tick = self.decisions.runtime.tape.tick_size
+            selected_low = Decimal(candidate[0]) * tape_tick
+            passive_ceiling = ((engine.ask - tick) / tick).to_integral_value(
+                rounding=ROUND_FLOOR
+            ) * tick
+            price = min(selected_low, passive_ceiling)
+            if price <= ZERO or price < engine.known_bid_floor:
+                return
+            order = engine.submit("BUY", price, timestamp)
+            if order is None:
+                return
+            self.order_candidate = candidate
+            self.order_candidate_tick = self.decisions.state.candidate_tick_size
+            if price != selected_low:
+                engine.counts["PASSIVE_ENTRY_ADJUSTED"] += 1
+                engine._record(
+                    "PASSIVE_ENTRY_ADMISSION",
+                    reason="SELECTED_LOW_NOT_PASSIVE_AT_SUBMISSION",
+                    time_us=timestamp,
+                    order_id=order.order_id,
+                    selected_low=str(selected_low),
+                    selected_high=str(Decimal(sum(candidate)) * tape_tick),
+                    admitted_price=str(price),
+                    observed_ask=str(engine.ask),
+                    tick=str(tick),
+                    book_capture_order=engine.observed_capture[1],
+                    book_capture_time_us=engine.observed_capture[0],
+                    native_update_id=engine.observed_native_update_id,
+                    policy_hash=engine.entry_admission_policy_hash,
+                )
 
     def _after_capture(self, timestamp: int, order: int) -> None:
         self._submit_next(timestamp)

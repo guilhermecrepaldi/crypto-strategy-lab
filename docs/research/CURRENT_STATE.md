@@ -1,14 +1,17 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=USDCUSDT_L2_MONTHLY_SAMPLES
-CAMPAIGN_STATUS=M017_RUNNING; M016_COMPLETE_AUDITED_REJECTED
+CAMPAIGN_STATUS=M017_OWNER_SCOPE_CHANGE_PAUSED; APPROVED_COMPARISON_ONE_DAY
 CAMPAIGN_EXECUTION_SOURCE_SHA=b5379f6fee40e33334e3d3cc32f14f42d5c0cf85
-CAMPAIGN_ACTIVE_ENVELOPE=PRICE_PRIORITY
+CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
-CAMPAIGN_VERDICT=PENDING
+CAMPAIGN_VERDICT=INCONCLUSIVE_ORIGINAL_12D_RUN; ONE_DAY_PREFIX_AUDIT_PASS_NOT_STRATEGY_PASS
 CAMPAIGN_PROGRESS_FILE=artifacts/usdcusdt/l2-monthly-samples/M017/SYNTHETIC_CONSECUTIVE_12D/PRICE_PRIORITY/progress.json
 CAMPAIGN_JOURNAL=docs/research/L2_MONTHLY_SAMPLE_JOURNAL.md
-CAMPAIGN_SCOREBOARD=reports/usdcusdt/L2-monthly-sample-scoreboard.json
+CAMPAIGN_SCOREBOARD=reports/usdcusdt/reserve-rotation-analysis.json
+CURRENT_OWNER_WINDOW=docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md
+APPROVED_COMPARISON_DAYS=1
+EXTENSION_AUTHORIZED=false
 CURRENT_ACTIVE_RESEARCH_MODEL=M017
 MONTHLY_REPLAY_MODE=SYNTHETIC_CONSECUTIVE_12D
 MONTHLY_CANDIDATES=21
@@ -21,11 +24,36 @@ MONTHLY_CONTINUOUS_WEEK_2_AUTHORIZED=false
 
 OWNER_NEXT_RESEARCH=RESERVE_RECOVERY_ROTATION_BALANCE
 OWNER_DIRECTIVE=docs/microstructure/RESERVE_ROTATION_OWNER_DIRECTIVE.md
-NEXT_CAMPAIGN_STATUS=M017_BUDGET20_RUNNING; NO_THIRD_CASE_SELECTED
-NEXT_CAMPAIGN_MODEL_HASH=b82a5ef829ca396db0f80885807aa4895ec359db3f10d7e917d6e8be0db65af8
+NEXT_CAMPAIGN_STATUS=M018_PREPARATION; ONE_DAY_ONLY_AFTER_REVIEW_AND_PUBLICATION
+NEXT_CAMPAIGN_MODEL_HASH=68e9b01e0f4646319364199fe17970c5c1ec9b22e46c6a498df131ac2f0f43e5
 NEXT_CAMPAIGN_HOLD_OBJECTIVE_HOURS=2
 NEXT_CAMPAIGN_FUNDING=10_PERCENT_UNCHANGED_CONTROLLED_COMPARISON; OPTIMAL_NOT_SELECTED
 NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=110_USDT
+
+## Latest OWNER correction — one day only
+
+Latest continuation authorizes support mechanisms and conditional1→2→3 progression
+at1000 audited positive ordinary cycles in EACH day, with sustainable economics
+and unchanged full strategy/state. Current authorized input remains day1 only.
+After three qualifying days,2000/day is a new hypothesis restarting from day1.
+OWNER canceled graphs/HTML; deliver cycles, operating,reserve,total. M018 changes
+only passive BUY admission; preserves M0172h control while1h wording is unresolved.
+M017 day1 independent physical audit and bounded reporter review passed; strategy
+frequency target did not. Statements below describe the earlier stop-time authority.
+
+The OWNER reduced12→3→2→1day and requires approval before any extension. The
+M017 process was stopped; its original12-day run is INCONCLUSIVE because of
+OWNER_SCOPE_CHANGE, not a technical invalidation or full-run economic failure.
+Use only closed day1 for the current comparison, same prefix in both controls.
+Physical evidence beyond day1 was produced under previous authority and remains
+preserved/previously observed, not unused validation data. Do not resume it.
+See owner-scope-stop.json in the M017 run directory. Engine checkpoint01 preserves
+capital and orders, but whole-runner resume equivalence has not been demonstrated.
+One-day M017:12 positive cycles, operating100.10692,reserve9.99208,
+equity110.09900, net+0.09900; final prefix audit/report in preparation.
+The executed deadline was2h. OWNER clarification is pending whether the new1h
+means maximum simulated holding or delivery waiting time; neither interpretation
+authorizes relabeling M017 as having already run a1h strategy.
 
 ## Closed synthetic results reconciled2026-09-08
 

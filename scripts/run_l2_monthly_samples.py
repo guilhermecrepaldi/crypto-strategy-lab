@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 from collections import Counter
 from dataclasses import replace
@@ -102,9 +103,45 @@ DEADLINE_SPEC = Path("docs/microstructure/M016_MODEL_SPEC.json")
 DEADLINE_PROTOCOL = Path("docs/microstructure/M016_DEADLINE_PREREGISTRATION.md")
 DEADLINE_REVIEW = Path("reports/usdcusdt/M016-preflight-independent-review.md")
 DEADLINE_MODELS = tuple(DEADLINE_POLICY_HASHES)
+OWNER_WINDOW_AUTHORITY = Path("docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md")
+
+
+def require_owner_replay_approval(root=ROOT, model_id="M015") -> tuple[str, ...]:
+    """Fail closed against the single OWNER authority before reading replay inputs."""
+    try:
+        authority = (root / OWNER_WINDOW_AUTHORITY).read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise ValueError("OWNER_APPROVAL_REQUIRED: AUTHORITY_UNAVAILABLE") from exc
+    fields = {}
+    for key, pattern in (
+        ("APPROVED_COMPARISON_DAYS", r"[1-9][0-9]*"),
+        ("EXTENSION_AUTHORIZED", r"true|false"),
+        ("NEW_REPLAY_AUTHORIZED_NOW", r"true|false"),
+    ):
+        values = re.findall(rf"^{key}=(.*)$", authority, flags=re.MULTILINE)
+        if len(values) != 1 or re.fullmatch(pattern, values[0]) is None:
+            raise ValueError("OWNER_APPROVAL_REQUIRED: INVALID_AUTHORITY_CONTRACT")
+        fields[key] = values[0]
+    if fields["NEW_REPLAY_AUTHORIZED_NOW"] != "true":
+        raise ValueError("OWNER_APPROVAL_REQUIRED")
+    # Legacy campaigns cannot be silently shortened or resumed by this authority.
+    if model_id != "M018" and len(STITCHED_DATES) > int(fields["APPROVED_COMPARISON_DAYS"]):
+        raise ValueError("OWNER_WINDOW_EXCEEDED")
+    permitted = re.findall(r"^AUTHORIZED_MODEL=(.*)$", authority, flags=re.MULTILINE)
+    if permitted != [model_id] or model_id != "M018":
+        raise ValueError("OWNER_APPROVAL_REQUIRED")
+    if int(fields["APPROVED_COMPARISON_DAYS"]) != 1 or fields["EXTENSION_AUTHORIZED"] != "false":
+        raise ValueError("OWNER_EXTENSION_REQUIRES_AUDITED_STATE_CONTINUATION")
+    return STITCHED_DATES[:1]
 
 
 def campaign_design_paths(model_id: str) -> tuple[Path, Path, Path]:
+    if model_id == "M018":
+        return (
+            Path("docs/microstructure/M018_MODEL_SPEC.json"),
+            Path("docs/microstructure/M018_PASSIVE_ADMISSION_PREREGISTRATION.md"),
+            Path("reports/usdcusdt/M018-preflight-independent-review.md"),
+        )
     if model_id in DEADLINE_MODELS:
         return (
             Path(f"docs/microstructure/{model_id}_MODEL_SPEC.json"),
@@ -778,6 +815,7 @@ def execute_verified_experiment(replay, canonical, events, validation, identity,
 
 
 def campaign_preflight(root=ROOT, model_id="M015"):
+    selected_dates = require_owner_replay_approval(root, model_id)
     if Path.cwd().resolve() != root.resolve():
         raise ValueError("CANONICAL_REPOSITORY_CWD_REQUIRED")
     sha = published_sha()
@@ -796,7 +834,8 @@ def campaign_preflight(root=ROOT, model_id="M015"):
         if model_id in DEADLINE_MODELS
         else SOURCE_PATHS
     )
-    for path in (*sources, spec, protocol, review, MANIFEST, VALIDATION_REPORT):
+    for path in (*sources, spec, protocol, review, MANIFEST, VALIDATION_REPORT,
+                 OWNER_WINDOW_AUTHORITY):
         published_bytes(path, sha)
     validate_review(review, sources)
     model = ModelRegistry().get(model_id)
@@ -804,6 +843,12 @@ def campaign_preflight(root=ROOT, model_id="M015"):
         validate_registered_design(model, spec, protocol)
         if model.model["model_id"] != model_id:
             raise ValueError("DEADLINE_MODEL_ID_MISMATCH")
+        if model_id == "M018" and (
+            tuple(model.model["source_dates"][:len(selected_dates)]) != selected_dates
+            or model.model["initial_stage_days"] != 1
+            or model.model["max_stage_days"] != 3
+        ):
+            raise ValueError("REGISTERED_STAGE_WINDOW_MISMATCH")
     else:
         validate_registered_design(model)
     if model_id == "M015" and model.model_hash != MODEL_HASH:
@@ -1049,6 +1094,7 @@ def stitched_events(entries, mapping):
 
 
 def run(model_id="M015"):
+    selected_dates = require_owner_replay_approval(model_id=model_id)
     sha, manifest, validation = campaign_preflight(model_id=model_id)
     if "SYNTHETIC_CONSECUTIVE_12D" not in PROTOCOL.read_text():
         raise ValueError("STITCHED_PROTOCOL_NOT_PUBLISHED")
@@ -1061,9 +1107,10 @@ def run(model_id="M015"):
     days = {item["date"]: item for item in validation["days"]}
     verified = [
         verify_published_day_evidence(entries[day], days[day], trade_manifest)
-        for day in STITCHED_DATES
+        for day in selected_dates
     ]
-    mapping = stitched_mapping()
+    mapping = stitched_mapping(selected_dates)
+    window_name = "OWNER_GATED_DAY1" if model_id == "M018" else "SYNTHETIC_CONSECUTIVE_12D"
     with campaign_writer_lock():
         runtime, profile, envelope, rules_at, canonical = build_stitched_inputs(
             history, config, mapping
@@ -1072,7 +1119,7 @@ def run(model_id="M015"):
         model = ModelRegistry().get(model_id)
         for name in names:
             identity = {
-                "date": "SYNTHETIC_CONSECUTIVE_12D",
+                "date": window_name,
                 "model_id": model_id,
                 "model_hash": model.model_hash,
                 "capital_mode": "COMPOUNDING",
@@ -1091,6 +1138,7 @@ def run(model_id="M015"):
                 "WARMUP_AVAILABLE_US": 0,
                 "COLD_START": True,
                 "CLOCK_MAPPING": "SOURCE_DAY_OFFSET_TO_CONSECUTIVE_LOGICAL_DAY",
+                "owner_window_sha256_lf": lf_sha(OWNER_WINDOW_AUTHORITY),
             }
             if model_id in DEADLINE_MODELS:
                 identity["deadline_policy_hash"] = model.model["deadline_policy_hash"]
@@ -1098,6 +1146,8 @@ def run(model_id="M015"):
                     "src/crypto_strategy_lab/microstructure/reserve_recovery_diagnostics.py"
                 )
                 identity["source_sha256_lf"][str(debt_path)] = lf_sha(debt_path)
+            if model_id == "M018":
+                identity["entry_admission_policy_hash"] = model.model["entry_admission_policy_hash"]
             identity["run_hash"] = json_hash(identity)
             bound = {
                 "input_sha256": json_hash([item["input_sha256"] for item in verified]),
@@ -1120,7 +1170,7 @@ def run(model_id="M015"):
                 bound,
                 identity,
                 (OUTPUT / model_id if model_id in DEADLINE_MODELS else OUTPUT)
-                / "SYNTHETIC_CONSECUTIVE_12D"
+                / window_name
                 / name,
             )
 
