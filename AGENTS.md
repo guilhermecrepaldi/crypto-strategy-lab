@@ -6,9 +6,11 @@ OWNER propôs novo modelo com três faixas de100USDT, sem reserva, comprar baixo
 e vender alto, faixas separadas e foco em medir inoperatividade/ciclos. Proposta
 registrada em OWNER_GATED_REPLAY_WINDOW.md; não é edição ou retomada de B10/M018.
 O capital proposto é300, não110; não apresentar aumento de capital como edge.
-Primeiro dia permanece o limite. Preparação autorizada; novo replay pendente da
-decisão sobre saída de posição sem lucro após1h, protocolo, identidade, testes,
-revisão e publicação. Não inferir autorização para perda ou espera ilimitada.
+OWNER esclareceu: somente1dia e vender em alta somente. Sem saída forçada com
+perda;1h é alerta/métrica, não liquidação. Posições abertas permanecem marcadas.
+Preparação autorizada; novo replay exige protocolo, identidade, testes, revisão
+e publicação. Pergunta sobre90%de cobertura é diagnóstico, não aumento autorizado
+do número de lanes, capital ou período; separar price-path de execução L2.
 Sem transferência entre faixas ou duplicação de liquidez. Atividade contínua é
 hipótese a medir, não garantia. As seções anteriores ficam como proveniência.
 

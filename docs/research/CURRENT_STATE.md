@@ -24,18 +24,19 @@ MONTHLY_CONTINUOUS_WEEK_2_AUTHORIZED=false
 
 OWNER_NEXT_RESEARCH=THREE_DISJOINT_RANGES_NO_RESERVE
 OWNER_DIRECTIVE=docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md
-NEXT_CAMPAIGN_STATUS=PROPOSED; AWAITING_OWNER_EXIT_RULE; NO_NEXT_MODEL_REGISTERED
+NEXT_CAMPAIGN_STATUS=EXIT_RULE_CONFIRMED; PREPARATION; NO_NEXT_MODEL_REGISTERED
 NEXT_CAMPAIGN_MODEL_HASH=NONE
-NEXT_CAMPAIGN_HOLD_OBJECTIVE_HOURS=1; EXIT_WITH_LOSS_OR_WAIT_DECISION_PENDING
+NEXT_CAMPAIGN_HOLD_OBJECTIVE_HOURS=1_ALERT_ONLY; OWNER_SELL_HIGH_ONLY
 NEXT_CAMPAIGN_FUNDING=0; NO_RESERVE_PROPOSED
 NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=300_USDT; THREE_SEGREGATED_100_ALLOCATIONS
 
 Latest proposal changes the next research direction, not the completed M018
 campaign above. Three separate buy-low/sell-high ranges, no reserve, measuring
-inactivity and cycles. First day only; no replay has started. Before freezing a
-model, OWNER must choose whether a lane without a profitable exit after1h waits
-for HIGH or may realize a loss from its own allocation. No such loss budget has
-been authorized. Existing multi-queue code has pooled capital/reserve semantics
+inactivity and cycles. First day only; no replay has started. OWNER confirmed
+selling at HIGH only: no forced-loss exit,1h measured as alert rather than hard
+liquidation. No loss budget has been authorized. The latest question asks how
+many ranges cover90%of cycles; this is separate descriptive coverage research,
+not permission to increase lanes, capital or days. Existing multi-queue code has pooled capital/reserve semantics
 and is not a ready implementation of three independent native-L2 lanes.
 
 ## Latest OWNER correction — one day only

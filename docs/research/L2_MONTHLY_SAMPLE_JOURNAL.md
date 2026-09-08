@@ -731,3 +731,57 @@ profitably after1h, must it wait for HIGH or may its own capital absorb a loss?
 The proposal does not authorize forced losses, unlimited waiting or another lane
 paying the loss. No new run until this choice and normal experimental gates.
 First-day scope and no account/Testnet/live access remain unchanged.
+
+OWNER then resolved the decision: "Fazer1dia somente" and "Vender em alta
+somente". Thus the proposed three-lane case has no forced-loss exit;1h becomes
+a reported hold alert and open inventory remains marked/censored at cutoff.
+No more human clarification on this exit policy is required. Implementation,
+registration, software validation, independent review and publication gates
+remain before any new replay. Latest question asks the range count needed for
+90%cycle coverage. Analyze the same day descriptively with explicit denominator;
+do not use retrospective optimal ranges as causal decisions or equate coverage
+with executable fills. Three100 allocations and one day are not expanded by
+that question.
+
+### First-day90%range coverage diagnostic — not an economic replay
+
+Independent GPT-6 Astra read only the closed M018 day1 ledger, SHA256:
+4bc2f823be46436581869d390f98d78401f19ee6172d329d36825de3ae57a793.
+254205 canonical trades,2025-01-01 only. Source operator/serial lineage checked.
+Method: M007 one-tick(.0001) CandidateTimeline LOW-to-HIGH cycles; denominator is
+the union of canonical HIGH completion events across the ten eligible ranges.
+No event duplicated between ranges in this one-tick universe:29182 opportunities.
+These are price-path events, not100USDT orders, L2 fills or profitable live cycles.
+
+| LOW | HIGH | Price-path completions |
+| --- | --- | ---: |
+|1.00170|1.00180|55|
+|1.00180|1.00190|1558|
+|1.00190|1.00200|11194|
+|1.00200|1.00210|8755|
+|1.00210|1.00220|4057|
+|1.00220|1.00230|2964|
+|1.00230|1.00240|520|
+|1.00240|1.00250|77|
+|1.00250|1.00260|1|
+|1.00260|1.00270|1|
+
+Allowing adjacent ranges to share endpoints, sorted cumulative coverage is:
+1range11194(38.3593%);2ranges19949(68.3606%);3ranges24006(82.2630%);
+4ranges26970(92.4200%). Thus four is the retrospectively minimal count for90%
+under this stated universe/definition. Main independently checked arithmetic
+with Python Decimal. At100 per lane the hypothetical capital would be400,
+not the currently approved300; no fourth lane was funded or executed.
+
+If closed intervals must be strictly disjoint (even shared endpoints forbidden),
+interval scheduling gives optimal1/2/3/4/5 coverage11194/15251/15771/15826/15827.
+Maximum54.2355%, so90%of the29182 denominator is unattainable under that EXTRA
+geometric restriction. This is not a claim of physical market impossibility.
+Financial segregation does not require forbidding shared boundaries. Adjacent
+BUY/SELL endpoints need self-cross prevention and shared-volume execution tests.
+
+CLASSIFICATION=RETROSPECTIVE_DIAGNOSTIC_ONLY. Ranges selected after observing the
+day are not the causal M019 selector. No profile/queue relaxation, new replay,
+day2 access or model promotion. This answers coverage only, not achieved uptime,
+net returns or actual four-lane capacity. Three-lane implementation remains in
+preparation and unexecuted; OWNER has not authorized increasing to four lanes.
