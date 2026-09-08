@@ -281,3 +281,52 @@ zero scripts and no page overflow; console0 errors/0 warnings. Existing economic
 reference remains the closed FIRST synthetic day, explicitly not a live scoreboard.
 This milestone changes only the report and append-only journal. Frozen execution,
 profiles, parameters, financial state, existing artifacts and active runner untouched.
+
+## 2026-09-08 — Reserve/rotation autopsy and M016 pre-execution milestone
+
+New OWNER authority: docs/microstructure/RESERVE_ROTATION_OWNER_DIRECTIVE.md.
+Reconciled BOTH physical COMPLETE summaries, all-fill audits and terminal state
+hashes. Prior progress.json files remain stale PENDING and are not terminal truth.
+No historical ledger or published result was changed. Twelve synthetic days only.
+
+M015 CONSERVATIVE_QUEUE:17 positive ordinary cycles; equity109.9764;
+operating cost bank100.13608, marked operating100.21108; reserve9.76532;
+five releases consuming0.2498; funding0.01512; maximum hold27.1199001464h;
+eleven positions above2h including censored exposure. PRICE_PRIORITY:16 cycles;
+equity109.8843; operating100.11862; reserve9.76568; five releases consuming0.2475;
+funding0.01318; maximum hold132.0009854975h; six positions above2h.
+Fees zero are a frozen profile assumption, not a current exchange fee claim.
+
+Root cause evidence: H1 was hourly eligibility, not a holding timeout. The longest
+hold had reserve above the floor but daily marked loss above the10bps signal cap.
+Only five release signals were emitted, followed by settlement about3.5–3.7s later.
+Old per-hour veto reasons are unavailable; no fabricated retrospective attribution.
+Low cycles additionally involve admission, buy/sell waiting and execution assumptions.
+
+New reserve_recovery_diagnostics is postprocessing only: exact Decimal FIFO debt,
+actual contribution sequence, no double payment, retained surplus and censored debt.
+At hypothetical80% on the SAME PRICE_PRIORITY fills only1/5 releases repays;
+first repayment takes3 cycles and3.835781964h; final debt0.2173.
+Changing accounting does not change109.8843 total equity or demonstrate a new
+compounding strategy. Even100% allocation cannot finance all losses on that path.
+HTML and JSON show all funding sensitivities as FROZEN_FILL_ACCOUNTING_ONLY.
+
+M016 registered CREATED, not executed at this milestone:
+MODEL_HASH=4f582f23ea4f6e09eefbeceaa70a60f5a5013129a57e6628a6a7916f112bdaed.
+Same100+10,10% funding and PRICE_PRIORITY. New isolated protected deadline removes
+opportunity veto in emergency and binds actual whole-lot loss to10bps and floor2.5.
+Time violations remain violations if budget/liquidity cannot close exposure.
+Debt trading states and funding optimization are deferred, not silently implemented.
+At most three sequential registered cases; no new dates or live access.
+
+Scientific implementation: GPT-6 Astra; pure debt diagnostic: GPT-5.6 Luna.
+Separate GPT-6 Astra reviewer found a stale liquidity-veto cache in the NEW M016
+path: zero-budget best bid hid replenishment below. Corrected before any economic
+run, with regression; this does not invalidate old M015 evidence by itself.
+Source-bound independent preflight review is a mandatory separate artifact.
+Software validation never means strategy approval. M016 economic verdict PENDING.
+
+Existing canonical HTML now includes twelve-day autopsy, daily cycle bars,
+funding/recovery tables and unrecovered cases. Browser visual checks desktop1440x1000
+and mobile390x844; no external chart dependency. Full comparison remains pending
+the actual successor replay. No optimal funding percentage has been selected.

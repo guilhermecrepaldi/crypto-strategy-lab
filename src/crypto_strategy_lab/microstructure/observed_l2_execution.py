@@ -21,7 +21,11 @@ from typing import Any, Literal, overload
 from crypto_strategy_lab.domain import canonical_hash
 
 from .b10_reality import BookEnvelope, ExecutionProfile, Order, SymbolRules, Trade, _encode
-from .high_uptime_recovery import B10ReserveReplay, HighUptimeExecution
+from .high_uptime_recovery import (
+    M016_DEADLINE_POLICY_HASH,
+    B10ReserveReplay,
+    HighUptimeExecution,
+)
 from .serial_replay import EVENT_ORDER_SCALE, _switch
 
 ZERO = Decimal(0)
@@ -76,6 +80,7 @@ class ObservedL2Execution(HighUptimeExecution):
         envelope: Envelope,
         on_transition: Callable[[dict[str, Any]], None],
         clock_mode: Literal["EXCHANGE_STRICT", "CAPTURE_ARRIVAL"] = "EXCHANGE_STRICT",
+        deadline_policy_hash: str | None = None,
     ) -> None:
         if envelope not in ("CONSERVATIVE_QUEUE", "PRICE_PRIORITY"):
             raise ValueError("UNREGISTERED_EXECUTION_ENVELOPE")
@@ -88,6 +93,7 @@ class ObservedL2Execution(HighUptimeExecution):
             rules,
             b10_owner_reserve=True,
             priority_trade_through=envelope == "PRICE_PRIORITY",
+            deadline_policy_hash=deadline_policy_hash,
         )
         self.envelope = envelope
         self.clock_mode = clock_mode
@@ -608,6 +614,8 @@ class ObservedL2Replay(B10ReserveReplay):
     quotes do not feed execution. A runner must verify full input coverage first.
     """
 
+    supports_protected_deadline = True
+
     def __init__(
         self,
         runtime: Any,
@@ -621,8 +629,24 @@ class ObservedL2Replay(B10ReserveReplay):
         envelope: Envelope,
     ) -> None:
         duration = end_us - start_us
-        if identity.get("model_id") != "M015" or duration <= 0 or duration % (24 * 3_600_000_000):
+        if (
+            identity.get("model_id") not in ("M015", "M016")
+            or duration <= 0
+            or duration % (24 * 3_600_000_000)
+        ):
             raise ValueError("M015_INDEPENDENT_DAY_REQUIRED")
+        self.deadline_enabled = identity.get("model_id") == "M016"
+        if self.deadline_enabled and envelope != "PRICE_PRIORITY":
+            raise ValueError("M016_FIXED_PRICE_PRIORITY_ENVELOPE_REQUIRED")
+        self.deadline_started_entry: int | None = None
+        self.deadline_violated_entry: int | None = None
+        self.deadline_block_reason: str | None = None
+        self.deadline_block_key: tuple[Any, ...] | None = None
+        if (
+            self.deadline_enabled
+            and identity.get("deadline_policy_hash") != M016_DEADLINE_POLICY_HASH
+        ):
+            raise ValueError("M016_DEADLINE_POLICY_IDENTITY_REQUIRED")
         self.available_canonical_event = start_us * EVENT_ORDER_SCALE - 1
         self._source_tape = runtime.tape
 
@@ -662,6 +686,7 @@ class ObservedL2Replay(B10ReserveReplay):
             envelope=envelope,
             on_transition=self._execution_transition,
             clock_mode="CAPTURE_ARRIVAL",
+            deadline_policy_hash=identity.get("deadline_policy_hash"),
         )
         self.last_capture_us = start_us
         self.last_capture_order = -1
@@ -683,7 +708,10 @@ class ObservedL2Replay(B10ReserveReplay):
             self.next_release = None
             self.decisions.state.entry_event = None
             self.decisions.state.flat_since = timestamp * EVENT_ORDER_SCALE
-            if engine.counts["RELEASE_FILLED"] > before["releases"]:
+            if self.deadline_enabled and self.deadline_started_entry == old_entry:
+                self.decisions.after_ordinary_exit(timestamp * EVENT_ORDER_SCALE)
+                engine.needs_reselection = False
+            elif engine.counts["RELEASE_FILLED"] > before["releases"]:
                 _switch(
                     self.decisions.state,
                     self.release_destination,
@@ -694,6 +722,10 @@ class ObservedL2Replay(B10ReserveReplay):
                 self.decisions.after_ordinary_exit(timestamp * EVENT_ORDER_SCALE)
             self.release_destination = self.release_destination_tick = None
             self.position_candidate = self.position_candidate_tick = None
+            if self.deadline_enabled:
+                self.deadline_started_entry = self.deadline_violated_entry = None
+                self.deadline_block_reason = None
+                self.deadline_block_key = None
         if engine.counts["FULLY_FILLED_CYCLES"] > before["ordinary_cycles"]:
             day = datetime.fromtimestamp(timestamp / 1_000_000, UTC).date().isoformat()
             self.full_days[day] += 1
@@ -711,6 +743,119 @@ class ObservedL2Replay(B10ReserveReplay):
             self._clock(self._next_clock())
         self._integrate(timestamp)
         self.engine.rules = self.rules_at(timestamp)
+
+    def _deadline_prepare_us(self, entry: int) -> int:
+        lead = self.engine.profile.cancel_latency_us + 2 * self.engine.profile.latency_us + 2
+        if lead >= 7_200_000_000:
+            raise ValueError("DEADLINE_LATENCY_EXCEEDS_TWO_HOURS")
+        return entry + 7_200_000_000 - lead
+
+    def _next_clock(self) -> int:
+        clock = super()._next_clock()
+        entry = self.engine.entry_us
+        if not self.deadline_enabled or entry is None:
+            return clock
+        candidates = [clock]
+        if self.deadline_started_entry != entry and not self.engine.releasing:
+            candidates.append(self._deadline_prepare_us(entry))
+        if self.deadline_violated_entry != entry:
+            candidates.append(entry + 7_200_000_000 + 1)
+        return min(value for value in candidates if value > self.last_clock_us)
+
+    def _clock(self, timestamp: int) -> None:
+        engine = self.engine
+        entry = engine.entry_us
+        evaluations_before = (
+            self.decisions.release_evaluations.copy()
+            if self.deadline_enabled
+            and entry is not None
+            and not engine.releasing
+            and self.next_release is not None
+            and timestamp >= self.next_release
+            else None
+        )
+        if self.deadline_enabled and entry is not None:
+            self._integrate(timestamp)
+            if self.deadline_violated_entry != entry and timestamp > entry + 7_200_000_000:
+                self.deadline_violated_entry = entry
+                engine.counts["HOLD_OVER_2H"] += 1
+                engine._record(
+                    "DEADLINE_VIOLATION",
+                    time_us=timestamp,
+                    entry_us=entry,
+                    deadline_us=entry + 7_200_000_000,
+                    inventory=str(engine.inventory),
+                )
+            if (
+                self.deadline_started_entry != entry
+                and not engine.releasing
+                and timestamp >= self._deadline_prepare_us(entry)
+            ):
+                self.deadline_started_entry = entry
+                self.next_release = None
+                self.release_destination = self.position_candidate
+                self.release_destination_tick = self.position_candidate_tick
+                engine.release_signal_bank = engine.operating_bank
+                engine.releasing = True
+                engine.counts["DEADLINE_EXIT_SIGNALS"] += 1
+                engine._record(
+                    "DEADLINE_EXIT_SIGNAL",
+                    time_us=timestamp,
+                    entry_us=entry,
+                    deadline_us=entry + 7_200_000_000,
+                    policy_hash=M016_DEADLINE_POLICY_HASH,
+                )
+                engine.cancel(timestamp)
+        super()._clock(timestamp)
+        if evaluations_before is not None:
+            delta = self.decisions.release_evaluations - evaluations_before
+            if delta:
+                engine._record(
+                    "RELEASE_PREDICATE_EVALUATION",
+                    time_us=timestamp,
+                    entry_us=entry,
+                    evaluations=dict(delta),
+                    reserve=str(engine.reserve),
+                    operating_bank=str(engine.operating_bank),
+                    inventory_cost=str(engine.cost),
+                    loss_cap_bps="10",
+                    last_observed_bid=str(engine.bids[0][0]) if engine.bids else None,
+                )
+
+    def _submit_next(self, timestamp: int) -> None:
+        if self.deadline_enabled and self.engine.releasing and self.engine.order is None:
+            engine = self.engine
+            # Only cache blocked predicates; fresh eligible book epochs still retry.
+            # These are exactly the mutable inputs consumed by protected_exit.
+            key = (
+                engine.book_valid,
+                next((tuple(level) for level in engine.bids if level[1] > ZERO), ()),
+                engine.reserve,
+                engine.inventory,
+                engine.cost,
+                engine.sold_cost,
+                engine.sell_net,
+                engine.cash,
+                engine.dust_cost,
+                engine.rules,
+                engine.profile.taker_fee,
+            )
+            if key == self.deadline_block_key:
+                return
+            protected = self.engine.protected_exit()
+            if not protected["eligible"]:
+                self.deadline_block_key = key
+                reason = str(protected["reason"])
+                self.engine.counts["PROTECTED_EXIT_BLOCKED:" + reason] += 1
+                if reason != self.deadline_block_reason:
+                    self.engine._record("PROTECTED_EXIT_BLOCKED", time_us=timestamp, **protected)
+                    self.deadline_block_reason = reason
+                return
+            self.deadline_block_key = None
+            if self.deadline_block_reason is not None:
+                self.engine._record("PROTECTED_EXIT_UNBLOCKED", time_us=timestamp)
+                self.deadline_block_reason = None
+        super()._submit_next(timestamp)
 
     def _after_capture(self, timestamp: int, order: int) -> None:
         self._submit_next(timestamp)

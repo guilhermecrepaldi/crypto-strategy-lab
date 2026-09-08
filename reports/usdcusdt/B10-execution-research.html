@@ -17,10 +17,94 @@
 <div class="eyebrow">Crypto Strategy Lab · Research brief / 08 set 2026</div>
 <h1>Mais ciclos começam por uma simulação de execução mais bem fundamentada.</h1>
 <p class="intro">O que fazemos no B10 melhorado, como projetos abertos enfrentam o mesmo problema e o que conseguimos adaptar. Pesquisa ampliada: Coinbase, Kraken, Bybit, OKX e três novos repositórios.</p>
-<p class="meta">Objeto: M015 · USDCUSDT · US$100 operacionais + US$10 de reserva · compounding<br>Relatório estático de pesquisa, não placar ao vivo. Referência econômica: primeiro dia encerrado do cenário conservador.</p>
+<p class="meta">Objeto: M015 · USDCUSDT · US$100 operacionais + US$10 de reserva · compounding<br>Relatório estático, não placar ao vivo. A autópsia de reserva abrange os 12 dias sintéticos concluídos; a pesquisa histórica abaixo preserva a análise do primeiro dia.</p>
 </header>
-<nav class="nav" aria-label="Seções do relatório"><a href="#conclusao">Conclusão</a><a href="#evidencia">Nosso dia 1</a><a href="#comparacao">Comparação</a><a href="#exchanges">Outras exchanges</a><a href="#adaptacao">Adaptação</a><a href="#plano">Próximos passos</a><a href="#fontes">Fontes e Git</a></nav>
+<nav class="nav" aria-label="Seções do relatório"><a href="#reserva-equilibrio">Reserva e recuperação</a><a href="#conclusao">Conclusão histórica</a><a href="#evidencia">Nosso dia 1</a><a href="#comparacao">Comparação</a><a href="#exchanges">Outras exchanges</a><a href="#adaptacao">Adaptação</a><a href="#plano">Próximos passos</a><a href="#fontes">Fontes e Git</a></nav>
 
+<!-- RESERVE_ROTATION_START -->
+<section id="reserva-equilibrio"><div class="eyebrow muted">OWNER / Reserva, recuperação e rotação</div>
+<h2>Quanto reservar não pode ser separado de quanto o motor perde.</h2>
+<p>Autópsia dos 12 dias encerrados. A sensibilidade abaixo redistribui lucros dos MESMOS fills: <strong>não é novo replay composto, não altera ciclos e não escolhe funding ótimo.</strong></p>
+<div class="callout amber"><p>Próxima etapa: contrato de saída protegida em duas horas, sem veto de oportunidade futura na emergência. Funding e reserva ficam inicialmente em 10% e 10 USDT para isolar o efeito. M015 permanece preservado. Execução nova somente após pré-registro, testes e revisão.</p></div>
+<h3>CONSERVATIVE_QUEUE</h3>
+<p>Com 10% para reserva: 17 ciclos positivos em 12 dias; perda média por release 0.04996 USDT; reserva 10 → 9.76532; patrimônio 110 → 109.97640; <strong>11 posições excederam duas horas</strong> (incluindo aberta censurada, quando houver).</p>
+<p class="note">O modelo histórico não possuía deadline de 2h. Estas violações são avaliação descritiva pelo novo objetivo, não invalidação técnica retroativa. Taxas zero no profile.</p>
+<p>Lucros positivos: 0.15120 USDT. Releases: 0.24980 USDT. Mesmo destinar 100% destes lucros não reporia todo o consumo. A razão consumo/lucros foi 1.65.</p>
+<div class="table-wrap"><table><thead><tr><th>Funding</th><th>Aporte total</th><th>Reserva final · mesmos fills</th><th>Parte retida operacional</th></tr></thead><tbody>
+<tr><td>10%</td><td>0.01512</td><td>9.76532</td><td>0.13608</td></tr>
+<tr><td>25%</td><td>0.03780</td><td>9.78800</td><td>0.11340</td></tr>
+<tr><td>50%</td><td>0.07560</td><td>9.82580</td><td>0.07560</td></tr>
+<tr><td>70%</td><td>0.10584</td><td>9.85604</td><td>0.04536</td></tr>
+<tr><td>80%</td><td>0.12096</td><td>9.87116</td><td>0.03024</td></tr>
+<tr><td>100%</td><td>0.15120</td><td>9.90140</td><td>0.00000</td></tr>
+</tbody></table></div><div class="table-wrap"><table><thead><tr><th>Funding</th><th>Releases recuperados / total</th><th>Ciclos mediana / P90</th><th>Tempo mediano h</th><th>Dívida aberta USDT</th></tr></thead><tbody>
+<tr><td>10%</td><td>0 / 5</td><td>— / —</td><td>—</td><td>0.23765</td></tr>
+<tr><td>25%</td><td>1 / 5</td><td>8 / 8</td><td>40.506</td><td>0.22200</td></tr>
+<tr><td>50%</td><td>1 / 5</td><td>4 / 4</td><td>9.630</td><td>0.21400</td></tr>
+<tr><td>70%</td><td>2 / 5</td><td>3 / 3</td><td>71.931</td><td>0.20760</td></tr>
+<tr><td>80%</td><td>2 / 5</td><td>3 / 3</td><td>71.931</td><td>0.20440</td></tr>
+<tr><td>100%</td><td>2 / 5</td><td>2 / 2</td><td>18.330</td><td>0.19800</td></tr>
+</tbody></table></div><p class="note">Medianas/P90 são somente dos releases quitados; os restantes continuam abertos. Reposição FIFO: cada aporte paga a dívida mais antiga; não reutilizamos o mesmo lucro em vários releases. Excedentes anteriores permanecem no saldo, mas não apagam a obrigação de recuperação de uma perda futura.</p><h3>Ciclos positivos por dia lógico</h3>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 1</span><div style="flex:1;background:#eef3f8"><div style="width:100.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">8</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 2</span><div style="flex:1;background:#eef3f8"><div style="width:25.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">2</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 3</span><div style="flex:1;background:#eef3f8"><div style="width:25.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">2</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 4</span><div style="flex:1;background:#eef3f8"><div style="width:12.50%;height:16px;background:#175cd3"></div></div><strong style="width:25px">1</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 5</span><div style="flex:1;background:#eef3f8"><div style="width:12.50%;height:16px;background:#175cd3"></div></div><strong style="width:25px">1</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 6</span><div style="flex:1;background:#eef3f8"><div style="width:0.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">0</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 7</span><div style="flex:1;background:#eef3f8"><div style="width:0.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">0</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 8</span><div style="flex:1;background:#eef3f8"><div style="width:0.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">0</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 9</span><div style="flex:1;background:#eef3f8"><div style="width:12.50%;height:16px;background:#175cd3"></div></div><strong style="width:25px">1</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 10</span><div style="flex:1;background:#eef3f8"><div style="width:0.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">0</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 11</span><div style="flex:1;background:#eef3f8"><div style="width:25.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">2</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 12</span><div style="flex:1;background:#eef3f8"><div style="width:0.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">0</strong></div>
+<div class="table-wrap"><table><thead><tr><th>Release</th><th>Perda USDT</th><th>Posição aberta h</th><th>Sinal → encerramento s</th></tr></thead><tbody>
+<tr><td>Posição 4</td><td>0.01980</td><td>3.0010</td><td>3.647892</td></tr>
+<tr><td>Posição 14</td><td>0.02000</td><td>9.0010</td><td>3.558146</td></tr>
+<tr><td>Posição 16</td><td>0.07000</td><td>21.0010</td><td>3.542241</td></tr>
+<tr><td>Posição 18</td><td>0.05000</td><td>12.0010</td><td>3.578015</td></tr>
+<tr><td>Posição 19</td><td>0.09000</td><td>11.0010</td><td>3.540442</td></tr>
+</tbody></table></div>
+<h3>PRICE_PRIORITY</h3>
+<p>Com 10% para reserva: 16 ciclos positivos em 12 dias; perda média por release 0.04950 USDT; reserva 10 → 9.76568; patrimônio 110 → 109.88430; <strong>6 posições excederam duas horas</strong> (incluindo aberta censurada, quando houver).</p>
+<p class="note">O modelo histórico não possuía deadline de 2h. Estas violações são avaliação descritiva pelo novo objetivo, não invalidação técnica retroativa. Taxas zero no profile.</p>
+<p>Lucros positivos: 0.13180 USDT. Releases: 0.24750 USDT. Mesmo destinar 100% destes lucros não reporia todo o consumo. A razão consumo/lucros foi 1.88.</p>
+<div class="table-wrap"><table><thead><tr><th>Funding</th><th>Aporte total</th><th>Reserva final · mesmos fills</th><th>Parte retida operacional</th></tr></thead><tbody>
+<tr><td>10%</td><td>0.01318</td><td>9.76568</td><td>0.11862</td></tr>
+<tr><td>25%</td><td>0.03295</td><td>9.78545</td><td>0.09885</td></tr>
+<tr><td>50%</td><td>0.06590</td><td>9.81840</td><td>0.06590</td></tr>
+<tr><td>70%</td><td>0.09226</td><td>9.84476</td><td>0.03954</td></tr>
+<tr><td>80%</td><td>0.10544</td><td>9.85794</td><td>0.02636</td></tr>
+<tr><td>100%</td><td>0.13180</td><td>9.88430</td><td>0.00000</td></tr>
+</tbody></table></div><div class="table-wrap"><table><thead><tr><th>Funding</th><th>Releases recuperados / total</th><th>Ciclos mediana / P90</th><th>Tempo mediano h</th><th>Dívida aberta USDT</th></tr></thead><tbody>
+<tr><td>10%</td><td>0 / 5</td><td>— / —</td><td>—</td><td>0.23828</td></tr>
+<tr><td>25%</td><td>1 / 5</td><td>8 / 8</td><td>10.736</td><td>0.22445</td></tr>
+<tr><td>50%</td><td>1 / 5</td><td>4 / 4</td><td>5.179</td><td>0.22120</td></tr>
+<tr><td>70%</td><td>1 / 5</td><td>3 / 3</td><td>3.836</td><td>0.21860</td></tr>
+<tr><td>80%</td><td>1 / 5</td><td>3 / 3</td><td>3.836</td><td>0.21730</td></tr>
+<tr><td>100%</td><td>1 / 5</td><td>2 / 2</td><td>2.537</td><td>0.21470</td></tr>
+</tbody></table></div><p class="note">Medianas/P90 são somente dos releases quitados; os restantes continuam abertos. Reposição FIFO: cada aporte paga a dívida mais antiga; não reutilizamos o mesmo lucro em vários releases. Excedentes anteriores permanecem no saldo, mas não apagam a obrigação de recuperação de uma perda futura.</p><h3>Ciclos positivos por dia lógico</h3>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 1</span><div style="flex:1;background:#eef3f8"><div style="width:100.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">12</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 2</span><div style="flex:1;background:#eef3f8"><div style="width:0.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">0</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 3</span><div style="flex:1;background:#eef3f8"><div style="width:0.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">0</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 4</span><div style="flex:1;background:#eef3f8"><div style="width:0.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">0</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 5</span><div style="flex:1;background:#eef3f8"><div style="width:0.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">0</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 6</span><div style="flex:1;background:#eef3f8"><div style="width:0.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">0</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 7</span><div style="flex:1;background:#eef3f8"><div style="width:0.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">0</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 8</span><div style="flex:1;background:#eef3f8"><div style="width:0.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">0</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 9</span><div style="flex:1;background:#eef3f8"><div style="width:8.33%;height:16px;background:#175cd3"></div></div><strong style="width:25px">1</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 10</span><div style="flex:1;background:#eef3f8"><div style="width:0.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">0</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 11</span><div style="flex:1;background:#eef3f8"><div style="width:0.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">0</strong></div>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:55px">Dia 12</span><div style="flex:1;background:#eef3f8"><div style="width:25.00%;height:16px;background:#175cd3"></div></div><strong style="width:25px">3</strong></div>
+<div class="table-wrap"><table><thead><tr><th>Release</th><th>Perda USDT</th><th>Posição aberta h</th><th>Sinal → encerramento s</th></tr></thead><tbody>
+<tr><td>Posição 5</td><td>0.01980</td><td>3.0010</td><td>3.647892</td></tr>
+<tr><td>Posição 14</td><td>0.06930</td><td>132.0010</td><td>3.547791</td></tr>
+<tr><td>Posição 15</td><td>0.05940</td><td>31.0010</td><td>3.565001</td></tr>
+<tr><td>Posição 16</td><td>0.09000</td><td>11.0010</td><td>3.575373</td></tr>
+<tr><td>Posição 18</td><td>0.00900</td><td>24.0010</td><td>3.556212</td></tr>
+</tbody></table></div>
+<p><strong>Causa identificada:</strong> H1 significava revisão horária, não timeout. A regra exigia perda dentro de 10 bps e destino causal com ciclos suficientes. No hold de 132h, havia reserva acima do piso, mas perdas marcadas nos fechamentos dos dias 2–6 excediam 10 bps. Não há registro de todos os motivos dos vetos horários antigos.</p>
+<p><a href="reserve-rotation-analysis.json">Dados completos: recuperação FIFO, casos censurados, aportes, dívida e proveniência</a>. Valores em USDT; nenhum retorno em dólar é garantido.</p></section>
+<!-- RESERVE_ROTATION_END -->
 <section id="conclusao">
 <div class="eyebrow muted">01 / Decisão principal</div>
 <h2>Não confundir uma fila pessimista com uma fila real.</h2>

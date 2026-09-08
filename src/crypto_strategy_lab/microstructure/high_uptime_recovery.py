@@ -49,6 +49,22 @@ B10_OWNER_POLICY = {
     "decisions": "B10_H1_B10_F2.5",
     "forced_timeout": False,
 }
+M016_DEADLINE_POLICY = {
+    "model_id": "M016",
+    "parent": "M015",
+    "initial_operating": "100",
+    "initial_reserve": "10",
+    "profit_funding": "0.10",
+    "reserve_floor": "2.5",
+    "executable_loss_cap_bps": "10",
+    "deadline_us": 7_200_000_000,
+    "preparation_lead": "CANCEL_LATENCY_PLUS_TWO_ORDER_LATENCIES_PLUS_2US",
+    "precedence": "LOSS_CAP_AND_RESERVE_FLOOR_BEFORE_DEADLINE",
+    "deadline_action": "LATCH_PROTECTED_EXIT_WITHOUT_OPPORTUNITY_VETO",
+    "violation": "INVENTORY_REMAINS_STRICTLY_AFTER_DEADLINE_NO_GRACE",
+    "debt_mode": "REPORT_ONLY_NO_FUNDING_STATE_CHANGE",
+}
+M016_DEADLINE_POLICY_HASH = canonical_hash(M016_DEADLINE_POLICY)
 
 
 class HighUptimeExecution(B10Execution):
@@ -59,12 +75,19 @@ class HighUptimeExecution(B10Execution):
         *,
         b10_owner_reserve: bool = False,
         priority_trade_through: bool = False,
+        deadline_policy_hash: str | None = None,
     ) -> None:
+        if deadline_policy_hash is not None and (
+            deadline_policy_hash != M016_DEADLINE_POLICY_HASH or not b10_owner_reserve
+        ):
+            raise ValueError("M016_DEADLINE_POLICY_IDENTITY_REQUIRED")
         if priority_trade_through and not b10_owner_reserve:
             raise ValueError("PRIORITY_INFERENCE_REQUIRES_OWNER_RESERVE_POLICY")
         super().__init__(profile, rules)
         self.b10_owner_reserve = b10_owner_reserve
         self.priority_trade_through = priority_trade_through
+        if deadline_policy_hash is not None:
+            self.deadline_policy_hash = deadline_policy_hash
         self.activation_evaluated_us: dict[str, int] = {}
         if b10_owner_reserve:
             self.reserve = self.reserve_min = D(10)
@@ -81,6 +104,8 @@ class HighUptimeExecution(B10Execution):
                     "execution_hypothesis": "PRIORITY_TRADE_THROUGH_CONDITIONAL",
                 }
             )
+        if deadline_policy_hash is not None:
+            self.policy_hash = deadline_policy_hash
 
     @property
     def operating_bank(self) -> Decimal:
@@ -115,6 +140,15 @@ class HighUptimeExecution(B10Execution):
             if self.b10_owner_reserve:
                 guard = D("2.5")
             budget = max(ZERO, self.reserve - guard)
+            deadline_budget_details: dict[str, Any] = {}
+            if getattr(self, "deadline_policy_hash", None) is not None:
+                loss_budget = restored_bank * D(".001")
+                deadline_budget_details = {
+                    "loss_cap_budget": str(loss_budget),
+                    "reserve_budget": str(budget),
+                    "binding_constraint": "LOSS_CAP" if loss_budget <= budget else "RESERVE_FLOOR",
+                }
+                budget = min(budget, loss_budget)
             cost = self.sold_cost + self.cost * quantity / self.inventory
             minimum = max(
                 self.rules.min_price,
@@ -135,9 +169,19 @@ class HighUptimeExecution(B10Execution):
             if self.bids[0][0] < price:
                 return {
                     "eligible": False,
-                    "reason": "RELEASE_BLOCKED_BY_RESERVE",
+                    "reason": (
+                        "RELEASE_BLOCKED_BY_LOSS_CAP_OR_FLOOR"
+                        if getattr(self, "deadline_policy_hash", None) is not None
+                        else "RELEASE_BLOCKED_BY_RESERVE"
+                    ),
                     "protected_price": str(price),
                     "floor_guard": str(guard),
+                    **deadline_budget_details,
+                    **(
+                        {"available_budget": str(budget)}
+                        if getattr(self, "deadline_policy_hash", None) is not None
+                        else {}
+                    ),
                 }
             return {
                 "eligible": True,
@@ -387,11 +431,22 @@ class B10ReserveReplay(B10RealityReplay):
         gaps: tuple[tuple[int, int], ...] = (),
     ) -> None:
         if (
-            identity.get("model_id") not in ("M014", "M015")
+            identity.get("model_id") not in ("M014", "M015", "M016")
             or identity.get("capital_mode") != "COMPOUNDING"
         ):
             raise ValueError("M014_COMPOUNDING_IDENTITY_REQUIRED")
-        priority = identity.get("model_id") == "M015"
+        if (
+            identity.get("model_id") == "M016"
+            and identity.get("deadline_policy_hash") != M016_DEADLINE_POLICY_HASH
+        ):
+            raise ValueError("M016_DEADLINE_POLICY_IDENTITY_REQUIRED")
+        if identity.get("model_id") == "M016" and not getattr(
+            self, "supports_protected_deadline", False
+        ):
+            raise ValueError("M016_REQUIRES_OBSERVED_DEADLINE_DRIVER")
+        if identity.get("model_id") != "M016" and identity.get("deadline_policy_hash") is not None:
+            raise ValueError("DEADLINE_POLICY_REQUIRES_M016")
+        priority = identity.get("model_id") in ("M015", "M016")
         if identity.get("priority_trade_through", False) is not priority:
             raise ValueError("M015_EXPLICIT_PRIORITY_HYPOTHESIS_REQUIRED")
         super().__init__(
@@ -406,7 +461,11 @@ class B10ReserveReplay(B10RealityReplay):
             decision_reserve_floor=D("2.5"),
         )
         self.execution = HighUptimeExecution(
-            profile, rules_at(start_us), b10_owner_reserve=True, priority_trade_through=priority
+            profile,
+            rules_at(start_us),
+            b10_owner_reserve=True,
+            priority_trade_through=priority,
+            deadline_policy_hash=identity.get("deadline_policy_hash"),
         )
         self.execution.supported_best_level = envelope.release_depth
         self.peak_equity = D(110)

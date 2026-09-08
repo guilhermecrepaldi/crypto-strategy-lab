@@ -97,6 +97,9 @@ STITCHED_DATES = (
 )
 PROTOCOL = Path("docs/microstructure/L2_MONTHLY_SAMPLE_PROTOCOL.md")
 REVIEW = Path("reports/usdcusdt/L2-monthly-sample-preflight-review.md")
+DEADLINE_SPEC = Path("docs/microstructure/M016_MODEL_SPEC.json")
+DEADLINE_PROTOCOL = Path("docs/microstructure/M016_DEADLINE_PREREGISTRATION.md")
+DEADLINE_REVIEW = Path("reports/usdcusdt/M016-preflight-independent-review.md")
 OUTPUT = Path("artifacts/usdcusdt/l2-monthly-samples")
 SOURCE_PATHS = tuple(
     Path(item)
@@ -415,8 +418,8 @@ def summary(replay: MeasuredReplay, validation, audit, identity):
         **identity,
         "DATE": identity["date"],
         "ENVELOPE": replay.execution_envelope,
-        "STRATEGY_MODEL_USED": "M015",
-        "MODEL_HASH": MODEL_HASH,
+        "STRATEGY_MODEL_USED": identity["model_id"],
+        "MODEL_HASH": identity.get("model_hash", MODEL_HASH),
         "VALIDATION_INPUT_SHA256": validation["input_sha256"],
         "L2_VALID": True,
         "L2_ROWS": validation["CSV_ROWS"],
@@ -726,6 +729,20 @@ def execute_verified_experiment(replay, canonical, events, validation, identity,
             for key, value in market_stats.items()
         }
         result["AUDIT_SHA256"] = file_sha(output / "all-fill-audit.json")
+        if identity["model_id"] == "M016":
+            from crypto_strategy_lab.microstructure.reserve_recovery_diagnostics import (
+                analyze_recovery,
+            )
+
+            result["RECOVERY_ACCOUNTING"] = analyze_recovery(
+                replay.engine.settlements, D("0.10"), replay.end_us
+            )
+            age = (
+                replay.end_us - replay.engine.entry_us if replay.engine.entry_us is not None else 0
+            )
+            result["HOLDS_OVER_2H"] = sum(value > 7_200_000_000 for value in replay.holds_us) + int(
+                age > 7_200_000_000
+            )
         write_json(output / "summary.json", result)
         write_json(output / "terminal-engine-state.json", replay.engine.checkpoint())
         return result
@@ -746,7 +763,7 @@ def execute_verified_experiment(replay, canonical, events, validation, identity,
         journal.close()
 
 
-def campaign_preflight(root=ROOT):
+def campaign_preflight(root=ROOT, model_id="M015"):
     if Path.cwd().resolve() != root.resolve():
         raise ValueError("CANONICAL_REPOSITORY_CWD_REQUIRED")
     sha = published_sha()
@@ -754,12 +771,32 @@ def campaign_preflight(root=ROOT):
         raise ValueError("CANONICAL_MAIN_REQUIRED")
     if subprocess.check_output(["git", "status", "--porcelain"], text=True).strip():
         raise ValueError("PRE_EXECUTION_WORKTREE_NOT_CLEAN")
-    for path in (*SOURCE_PATHS, SPEC, PROTOCOL, REVIEW, MANIFEST, VALIDATION_REPORT):
+    if model_id not in ("M015", "M016"):
+        raise ValueError("UNREGISTERED_CAMPAIGN_MODEL")
+    spec, protocol, review = (
+        (DEADLINE_SPEC, DEADLINE_PROTOCOL, DEADLINE_REVIEW)
+        if model_id == "M016"
+        else (SPEC, PROTOCOL, REVIEW)
+    )
+    sources = (
+        (
+            *SOURCE_PATHS,
+            Path("src/crypto_strategy_lab/microstructure/reserve_recovery_diagnostics.py"),
+        )
+        if model_id == "M016"
+        else SOURCE_PATHS
+    )
+    for path in (*sources, spec, protocol, review, MANIFEST, VALIDATION_REPORT):
         published_bytes(path, sha)
-    validate_review(REVIEW, SOURCE_PATHS)
-    model = ModelRegistry().get("M015")
-    validate_registered_design(model)
-    if model.model_hash != MODEL_HASH:
+    validate_review(review, sources)
+    model = ModelRegistry().get(model_id)
+    if model_id == "M016":
+        validate_registered_design(model, spec, protocol)
+        if model.model["model_id"] != model_id:
+            raise ValueError("DEADLINE_MODEL_ID_MISMATCH")
+    else:
+        validate_registered_design(model)
+    if model_id == "M015" and model.model_hash != MODEL_HASH:
         raise ValueError("CURRENT_MODEL_HASH_CHANGED")
     if file_sha(PROFILE_CONFIG) != PROFILE_CONFIG_SHA:
         raise ValueError("FROZEN_PROFILE_CHANGED")
@@ -1001,8 +1038,8 @@ def stitched_events(entries, mapping):
     }
 
 
-def run():
-    sha, manifest, validation = campaign_preflight()
+def run(model_id="M015"):
+    sha, manifest, validation = campaign_preflight(model_id=model_id)
     if "SYNTHETIC_CONSECUTIVE_12D" not in PROTOCOL.read_text():
         raise ValueError("STITCHED_PROTOCOL_NOT_PUBLISHED")
     config = json.loads(PROFILE_CONFIG.read_bytes())
@@ -1021,17 +1058,21 @@ def run():
         runtime, profile, envelope, rules_at, canonical = build_stitched_inputs(
             history, config, mapping
         )
-        for name in ENVELOPES:
+        names = ("PRICE_PRIORITY",) if model_id == "M016" else ENVELOPES
+        model = ModelRegistry().get(model_id)
+        for name in names:
             identity = {
                 "date": "SYNTHETIC_CONSECUTIVE_12D",
-                "model_id": "M015",
-                "model_hash": MODEL_HASH,
+                "model_id": model_id,
+                "model_hash": model.model_hash,
                 "capital_mode": "COMPOUNDING",
                 "priority_trade_through": True,
                 "published_config_sha": sha,
                 "expected_trade_count": len(canonical),
-                "protocol_sha256": file_sha(PROTOCOL),
-                "preflight_review_sha256": file_sha(REVIEW),
+                "protocol_sha256": file_sha(DEADLINE_PROTOCOL if model_id == "M016" else PROTOCOL),
+                "preflight_review_sha256": file_sha(
+                    DEADLINE_REVIEW if model_id == "M016" else REVIEW
+                ),
                 "data_manifest_sha256": file_sha(MANIFEST),
                 "validation_source_commit": VALIDATOR_SOURCE_COMMIT,
                 "source_sha256_lf": {str(path): lf_sha(path) for path in SOURCE_PATHS},
@@ -1041,6 +1082,12 @@ def run():
                 "COLD_START": True,
                 "CLOCK_MAPPING": "SOURCE_DAY_OFFSET_TO_CONSECUTIVE_LOGICAL_DAY",
             }
+            if model_id == "M016":
+                identity["deadline_policy_hash"] = model.model["deadline_policy_hash"]
+                debt_path = Path(
+                    "src/crypto_strategy_lab/microstructure/reserve_recovery_diagnostics.py"
+                )
+                identity["source_sha256_lf"][str(debt_path)] = lf_sha(debt_path)
             identity["run_hash"] = json_hash(identity)
             bound = {
                 "input_sha256": json_hash([item["input_sha256"] for item in verified]),
@@ -1062,10 +1109,13 @@ def run():
                 stitched_events(entries, mapping),
                 bound,
                 identity,
-                OUTPUT / "SYNTHETIC_CONSECUTIVE_12D" / name,
+                (OUTPUT / "M016" if model_id == "M016" else OUTPUT)
+                / "SYNTHETIC_CONSECUTIVE_12D"
+                / name,
             )
 
 
 if __name__ == "__main__":
-    argparse.ArgumentParser(description=__doc__).parse_args()
-    run()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--model", choices=("M015", "M016"), default="M015")
+    run(parser.parse_args().model)

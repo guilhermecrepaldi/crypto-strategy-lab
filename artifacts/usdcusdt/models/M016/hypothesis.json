@@ -1,0 +1,7 @@
+{
+  "change": "Protected deadline contract2h, actual aggregate10bps cap, preserved100+10/funding10 and PRICE_PRIORITY.",
+  "expected_effect": "Reduce presignal waiting; measure late exits and economic cost without fabricated fills.",
+  "hypothesis": "An explicit protected deadline without opportunity veto can improve continuity while exposing financial/liquidity violations.",
+  "observation": "M015 PRICE_PRIORITY 132h hold before release signal; reserve remained above floor; H1 is evaluation not timeout.",
+  "reason_for_new_model": "New OWNER-authorized material deadline and protected release contract; old M015 immutable."
+}

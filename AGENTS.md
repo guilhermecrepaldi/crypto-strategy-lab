@@ -1,5 +1,18 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER vigente — equilíbrio reserva/recuperação/rotação,2026-09-08
+
+Seguir `docs/microstructure/RESERVE_ROTATION_OWNER_DIRECTIVE.md`. OWNER autorizou
+autópsia e campanha pequena pré-registrada para funding, divisão da banca110,
+orçamento de release e dívida de recuperação, com objetivo de exposição<=2h.
+Não presumir80% ótimo. Preservar B10/M014/M015, profiles e resultados publicados;
+novas políticas materiais exigem identidade, testes/revisão/publicação antes do run.
+Somente os12 dias sintéticos já aprovados; mesmas restrições de conta/dados/live.
+Prazo de saída tem prioridade sobre bloqueio discricionário; conflitos com piso e
+liquidez devem ser explícitos, não fills inventados. Diagnóstico sobre fills fixos
+não é replay composto. Esta seção supera congelamento de pesquisa de sucessores,
+não autoriza modificar os modelos históricos ou ampliar dados.
+
 ## Autoridade OWNER vigente — 12 dias L2 consecutivos sintéticos
 
 OWNER substituiu os resets independentes por sequência artificial com estratégia

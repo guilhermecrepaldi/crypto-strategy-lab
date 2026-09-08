@@ -1,0 +1,17 @@
+{
+  "ancestor_chain": [
+    "M005",
+    "M006",
+    "M007",
+    "M014",
+    "M015"
+  ],
+  "change_category": "OWNER_PROTECTED_DEADLINE",
+  "change_summary": "First isolated deadline experiment in reserve recovery rotation research",
+  "parent_model_id": "M015",
+  "parent_run_hash": null,
+  "references": {
+    "control": "M015_PRICE_PRIORITY_SYNTHETIC_CONSECUTIVE_12D",
+    "preregistration": "docs\\microstructure\\M016_DEADLINE_PREREGISTRATION.md"
+  }
+}

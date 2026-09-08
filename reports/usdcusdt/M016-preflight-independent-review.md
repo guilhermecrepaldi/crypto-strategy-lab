@@ -1,0 +1,38 @@
+# M016 — independent source-bound preflight review
+
+STATUS=PASS_CONDITIONAL_PRE_RUN
+REVIEWER=GPT-6 Astra; independent task m016_preflight_audit
+DATE=2026-09-08
+MODEL_HASH=4f582f23ea4f6e09eefbeceaa70a60f5a5013129a57e6628a6a7916f112bdaed
+
+Independent retest94 passed; main integrated suite100 passed; Ruff passed.
+Scope: changed paths and relevant consumers; unchanged sources are bound dependencies.
+The sole material blocker, stale protected-exit veto cache ignoring replenishment
+below a depleted best bid, was fixed before any economic replay and regression-tested.
+
+Verified identity gate, unchanged M015 default, PRICE_PRIORITY, original first-fill
+clock through partial buys/cancellation/seams, actual aggregate10bps cap and floor2.5,
+causal cancel/response/activation latency, unique consumption by existing liquidity
+authority, explicit late exposure violations,100+10/funding10%, frozen profile and
+exact12 source dates. No fictitious fill at deadline. Debt diagnostics are fixed-fill
+accounting; HTML is M015 autopsy, not an executed funding comparison.
+
+Remaining gates: publish these exact sources/review/spec/preregistration normally;
+clean published preflight; revalidate bound input evidence. No economic approval,
+no guaranteed2h exit, no live access. TEST_SUITE_PASS != STRATEGY_PASS.
+
+REVIEWED_SOURCE_SHA256_LF[scripts/run_l2_monthly_samples.py]=1efc9abcc54bae71459eda43f32b2a9e40d529ba022745d0aa77d1b7fae0fdba
+REVIEWED_SOURCE_SHA256_LF[scripts/validate_tardis_l2_samples.py]=6e6d2c799293da4fc6ef5debbf890236fbaa62f7420a047d71f11c532b037f99
+REVIEWED_SOURCE_SHA256_LF[scripts/run_high_uptime_recovery.py]=4ce00d03fd86d1c4c09db523e6b1c6fd4b6f01edd72899585151a0b8aa2e8186
+REVIEWED_SOURCE_SHA256_LF[scripts/run_b10_reality.py]=90f6852a773ca678570c2347a95e6caa348f11b30811066155e1b18b96a33ff7
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/observed_l2_execution.py]=9f054c4b2c9503814bb118d718e8e84177aad3f0cdd50fda5463230750e50864
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/tardis_l2.py]=1899a0b0d968296b2b9d9a6bba8a1f1602e0b34162b4ca4b7ecfdbe665f9490d
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/high_uptime_recovery.py]=798ea83decf3cbd3ddd9052b88f19d9a0da85f1d67fc43008f654454c403c594
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/b10_reality.py]=4345ef764299d5414c29a9411fe00e613e02dac542f147e29064cf48b31bd4cb
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/serial_replay.py]=8515862b88842565cfb99295da651521a27eef28290f0e2b0ca742851b924ab0
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/recovery_reserve.py]=0882b2d465ed0fc7c163e00046a5ac5b7127b57f586082d222ac05f9b57c9dd5
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/data.py]=b7b19926c7bbcfb91f377228447a2b750c05150de4f2c514b60b6b2d5be4b080
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/tape_cache.py]=7640e20446eb02fb9296ba801605318c11993899e47cbdef38540b08a8d732fb
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/operator.py]=07458aea39284982ed7fe1e08e5527de4ac7dc1acc7d87c2a0bcace1a44d628d
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/reserve_recovery_diagnostics.py]=19f69ad5a8267d874c5a9368954a01137c641bba2c2a0fa7cb8aeb7ab3ed67a8
+REVIEWED_TEST_SHA256_LF[tests/test_m016_protected_deadline.py]=d0665fe17d65880cc01fc9d133cef5a20b82267186b70e31732d919b9b5fe934
