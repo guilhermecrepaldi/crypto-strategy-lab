@@ -9,7 +9,36 @@ INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampl
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
 NEW_REPLAY_AUTHORIZED_NOW=false
-AUTHORIZED_MODEL=M018
+AUTHORIZED_MODEL=NONE_PENDING_THREE_RANGE_PROTOCOL
+
+## Latest proposal — three independent ranges, no reserve
+
+OWNER_PROPOSED_STRATEGY=THREE_DISJOINT_RANGES_NO_RESERVE
+PROPOSAL_STATUS=AWAITING_OWNER_EXIT_RULE; NOT_REGISTERED_OR_EXECUTED
+PROPOSED_INITIAL_CAPITAL=300_USDT; THREE_ALLOCATIONS_OF_100
+PROPOSED_INITIAL_RESERVE=0
+OWNER_EXIT_QUESTION=After1h without a profitable SELL, hold for HIGH or allow a loss?
+
+The new OWNER proposal supersedes reserve-based strategy design for the next
+case, not immutable historical runs. Preserve the first-day data gate. No new
+replay is authorized before the exit rule, preregistration, identity, tests,
+independent review and publication. No loss budget is approved by this proposal.
+Capital/inventory/order ownership remains separate per range; all lanes share
+realistic market-liquidity consumption. Proposed interpretation: price intervals
+do not overlap and each lane compounds its own gains, with no cash transfers.
+These details must be explicit in the eventual frozen protocol.
+
+Measure completed positive cycles per lane and total, final marked equity,
+unrealized losses, BUY/SELL waiting, longest interval without a completed cycle,
+and time with zero/one/two/three eligible working lanes. A working order is not
+evidence of realized economic productivity. Never infer fills from chart touches
+or choose historical ranges using future highs/lows. If fewer than three causal
+ranges qualify, record unavailable lanes rather than manufacture opportunities.
+Any paired strategy comparison must account for the new300 initial capital;
+the historical100+10 control is not a capital-matched experiment. No promise of
+continuous operation,1000 cycles/day or forced profitable exit within1h.
+
+## Preserved M018 execution authority and earlier progression
 
 CURRENT_CASE_STATUS=M018_COMPLETE_9_POSITIVE_CYCLES; EXTENSION_GATE_FAILED
 M018 já completou o primeiro dia. Não repetir o run nem iniciar dia2:9<1000.

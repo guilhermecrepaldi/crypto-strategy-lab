@@ -1,5 +1,17 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER mais recente — três faixas sem reserva,2026-09-08
+
+OWNER propôs novo modelo com três faixas de100USDT, sem reserva, comprar baixo
+e vender alto, faixas separadas e foco em medir inoperatividade/ciclos. Proposta
+registrada em OWNER_GATED_REPLAY_WINDOW.md; não é edição ou retomada de B10/M018.
+O capital proposto é300, não110; não apresentar aumento de capital como edge.
+Primeiro dia permanece o limite. Preparação autorizada; novo replay pendente da
+decisão sobre saída de posição sem lucro após1h, protocolo, identidade, testes,
+revisão e publicação. Não inferir autorização para perda ou espera ilimitada.
+Sem transferência entre faixas ou duplicação de liquidez. Atividade contínua é
+hipótese a medir, não garantia. As seções anteriores ficam como proveniência.
+
 ## Autoridade OWNER mais recente — progressão1→2→3 e suporte,2026-09-08
 
 Seguir OWNER_GATED_REPLAY_WINDOW.md: primeiro dia somente; ao demonstrar1000

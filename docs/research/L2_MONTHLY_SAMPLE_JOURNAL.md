@@ -706,3 +706,28 @@ under the frozen profile. A queue estimate staying above displayed depth is a
 separate confirmed modeling difference; its historical economic effect remains
 unmeasured. No evidence yet demonstrates that original B10 returns are achievable
 live, or that current low rotation is a definitive live upper bound.
+
+## 2026-09-08 — OWNER proposes three100USDT ranges without reserve
+
+New direction: three separate buy-low/sell-high ranges,100USDT each, reserve0,
+focus on inactivity and completed cycles. Preparation only; no new model was
+registered or executed, and no historical model/ledger changed. Independent
+GPT-6 Astra reviewed scope, accounting and the remaining OWNER decision.
+
+Read-only inspection found reusable disjoint-range/shared-liquidity concepts in
+continuous_multi_queue.py, but its historical implementation pools operating
+cash and manages a reserve/fourth lane; it is not this proposed model or a native
+L2 three-lane implementation. Do not resume M013 or transplant its semantics.
+
+Working interpretation is300 total, segregated per-lane compounding, no transfers,
+non-overlapping price ranges selected causally, and one shared liquidity budget.
+No guaranteed three eligible ranges or continuous productive operation. Measure
+per-lane cycles/equity and waiting, aggregate no-completion intervals, idle cash,
+inventory waiting for SELL, and eligible-order activity separately. Comparison
+with old110-capital outcomes is not capital-matched evidence.
+
+Blocking OWNER decision before exit policy is frozen: if a position cannot sell
+profitably after1h, must it wait for HIGH or may its own capital absorb a loss?
+The proposal does not authorize forced losses, unlimited waiting or another lane
+paying the loss. No new run until this choice and normal experimental gates.
+First-day scope and no account/Testnet/live access remain unchanged.
