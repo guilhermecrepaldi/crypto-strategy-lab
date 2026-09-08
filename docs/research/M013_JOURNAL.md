@@ -157,3 +157,44 @@ SOURCE_SCOREBOARD_SHA256=b8a0146c93d4664a7abee2349d11135679d658ca32a163cd56a946d
 Ciclos do mês = ciclos ordinários completos operacionais + Q4, sem somar releases. Saldos de fechamento, sem reset; mês ainda aberto não é projetado. Valores visuais arredondados; JSON preserva precisão integral.
 
 VERDICT=PENDING
+
+## M013 checkpoint
+
+TYPE=TWO_STAGE
+SOURCE_SCOREBOARD_SHA256=818e82872448d147c616b6b40f9773f5138961e46125ee231642888a12049120
+| Métrica atual | Valor |
+|---|---|
+| OPERATING_CAPITAL | 100.00891 |
+| RECOVERY_RESERVE | 10.00099 |
+| RESERVE_RATIO | 0.100001 |
+| CORE_RESERVE | 10.00099 |
+| ACTIVE_RESERVE_CAPITAL | 0 |
+| TOTAL_EQUITY | 110.0099 |
+| TOTAL_PROFIT | 0.0099 |
+| OPERATING_QUEUES_ACTIVE | 0 |
+| RESERVE_QUEUE_ACTIVE | False |
+| CYCLES | 1 |
+| NET_POSITIVE_CYCLES | 1 |
+| MOTOR_UPTIME | 0.030578 |
+| CAPITAL_WEIGHTED_UPTIME | 0.027796 |
+| FULL_STOP_HOURS | 69.830263 |
+| ZERO_CYCLE_DAYS | 2 |
+| MAX_HOLD | 0.385392 |
+| LOCK_HOURS_GT24 | 0 |
+| HARD_LOCK_VIOLATIONS | 0 |
+| RELEASE_COUNT | 0 |
+| TOTAL_RELEASE_LOSS | 0 |
+| RESERVE_CONTRIBUTIONS | 0.00099 |
+| ACTIVE_RESERVE_PROFIT | 0 |
+| RESERVE_CONSUMPTION | 0 |
+| RESERVE_SELF_SUSTAINABILITY_RATIO | UNAVAILABLE |
+| CAPACITY_PRESSURE_EVENTS | 0 |
+| VERDICT | PENDING |
+
+| Mês fechado | Banca operacional USDT | Reserva USDT | Patrimônio USDT | Ciclos do mês | Releases |
+|---|---:|---:|---:|---:|---:|
+| Nenhum mês concluído | — | — | — | — | — |
+
+Ciclos do mês = ciclos ordinários completos operacionais + Q4, sem somar releases. Saldos de fechamento, sem reset; mês ainda aberto não é projetado. Valores visuais arredondados; JSON preserva precisão integral.
+
+VERDICT=PENDING
