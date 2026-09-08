@@ -351,20 +351,32 @@ def publish(folder, tests_passed=None, tests_failed=None):
         current = (
             "# CURRENT STATE\n\nRESEARCH_PROTOCOL=WEEKLY_OWNER_GATED\n"
             f"ACTIVE_RESEARCH_MODEL={model_id}\nCAPITAL_MODE=COMPOUNDING\n"
-            "INITIAL_OPERATING=100\nINITIAL_RESERVE=10\nRESERVE_FUNDING=10%\n"
-            "DAILY_TARGET=2000\nNEXT_WEEK_AUTHORIZED=false\nAUTOMATIC_EXTENSION_ALLOWED=false\n"
+            "INITIAL_OPERATING=100\nINITIAL_RESERVE=10\nRESERVE_FUNDING_RATE=10%\n"
+            "DAILY_TARGET=2000\n"
+            f"NEXT_WEEK_AUTHORIZED={str(bool(score.get('GATE_TO_WEEK_2'))).lower()}\n"
+            "AUTOMATIC_EXTENSION_ALLOWED=false\n"
         )
     current += "\n".join(
-        f"{key}={display(score.get(key))}" for key in ("RUN_ID", "RUN_STATUS", *fields, "VERDICT")
+        f"{key}={display(score.get(key))}"
+        for key in dict.fromkeys(("RUN_ID", "RUN_STATUS", *fields, "VERDICT"))
     )
     current += (
         "\nNEXT_ACTION="
         + (
+            (
+                "Gate atingido; validar e publicar continuação preservando estado "
+                "e fonte econômica."
+                if score.get("GATE_TO_WEEK_2") else
+                "Consultar autópsia e diagnóstico de capacidade no diário; semana 2 bloqueada "
+                "pelo mínimo/auditoria."
+            )
+            if model_id == "M015" and score.get("RUN_STATUS") == "COMPLETE" else
             "Semana encerrada; consultar auditoria e aguardar aprovação OWNER para extensão."
             if model_id in ("M014", "M015") and score.get("RUN_STATUS") == "COMPLETE"
             else "Continuar somente intervalo autorizado; publicar marcos e auditar."
         )
         + "\nFIXED_100_RESULT_NOT_OWNER_STRATEGY_RETURN=YES\n"
+        + f"RESEARCH_JOURNAL=docs/research/{model_id}_JOURNAL.md\n"
     )
     if model_id in ("M014", "M015"):
         current += (
@@ -377,7 +389,7 @@ def publish(folder, tests_passed=None, tests_failed=None):
     if model_id == "M015":
         current += (
             f"MINIMUM_DAILY_TARGET=500\nGATE_TO_WEEK_2={score['GATE_TO_WEEK_2']}\n"
-            "OBJECTIVE_COMPLETE=false\nNEXT_ACTION_CURRENT=Autopsy; no week2 before500/day.\n"
+            "OBJECTIVE_COMPLETE=false\n"
         )
     Path("docs/research/CURRENT_STATE.md").write_text(current, encoding="utf-8")
     journal = Path(f"docs/research/{model_id}_JOURNAL.md")

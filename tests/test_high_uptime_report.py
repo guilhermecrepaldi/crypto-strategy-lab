@@ -155,3 +155,8 @@ def test_m015_week_gate_requires_all_seven_days_and_audit(tmp_path, monkeypatch)
     assert result["GATE_TO_WEEK_2"] is True
     assert result["VERDICT"] == "PASS_CONDITIONAL_WEEK_2_GATE"
     assert (report.ROOT / "M015-reality-report.md").exists()
+    current = (tmp_path / "docs/research/CURRENT_STATE.md").read_text(encoding="utf-8")
+    assert "NEXT_WEEK_AUTHORIZED=true" in current
+    assert "aguardar aprovação OWNER" not in current
+    assert current.count("RUN_STATUS=") == 1
+    assert "RESERVE_FUNDING_RATE=10%" in current

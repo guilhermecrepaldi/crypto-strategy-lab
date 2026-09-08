@@ -87,3 +87,41 @@ CHECKPOINT_SHA256=cec57c12ea7c78fece5970f48aea2b706ddfff643c1aba4d829695491d3a3b
 AUDIT_SHA256=e398030a75ba07afe1a43c67f7322078500d442b9a225d3201cc396eaa631cc3
 AUDIT_BYTES=60191149
 NEXT_RESEARCH=Diagnóstico de fluxo bidirecional/capacidade antes de novo modelo.
+
+## 2026-09-08 — capacidade comprovada e bloqueio de evidência
+
+REPLAY_PROGRESS=COMPLETE_7_OF_7_DAYS
+DAILY_NET_POSITIVE_CYCLES=3,2,13,14,19,15,7
+OPERATING_BANK=100.65655
+RESERVE=9.95405
+TOTAL_EQUITY=110.61060
+NET_PNL=0.61060
+FULL_FILL_CYCLES=73
+RELEASE_FILLED=3
+ECONOMIC_RESULT_UNCHANGED=true
+MINIMUM_500_ATTAINED=false
+WEEK_2_GATE=false
+OBJECTIVE_COMPLETE=false
+
+Novo diagnóstico, não replay: limites otimistas M015 por dia
+179,402,105,109,447,366,302; mesmo um relaxamento híbrido maker/taker positivo
+produz212,435,107,111,470,382,321. Todos abaixo de500. Prova, premissas, comando
+e fontes em reports/usdcusdt/B10-week1-capacity-review.md; valores/hashes em
+M015-week1-priority-capacity.json. Reserva não vinculante; não ajustar fila ou
+contar releases/parciais para alcançar número. Não promover o proxy a fato real.
+
+SOFTWARE_VALIDATION: delta34passed/0failed, RuffPASS. Revisão científica Astra,
+coleta/implementação delimitada Luna, cálculos Python. TEST_SUITE_PASS != STRATEGY_PASS.
+Pequena correção de handoff: remove RUN_STATUS duplicado, distingue taxa de funding
+do valor acumulado e respeita autorização condicional da semana2. Não altera economia.
+
+Consulta pública encontrou L2 USDCUSDT no catálogo Tardis; GET de cabeçalhos Jan1
+200/amostra livre, Jan2 401/acesso exigido. Nenhum mercado baixado ou custo assumido.
+Os arquivos locais não têm L2 de janeiro; captura de setembro não o substitui.
+
+RESEARCH_STATUS=BLOCKED_REQUIRED_HISTORICAL_EXECUTION_EVIDENCE
+NEXT_REQUIRED_OWNER_ACTION=Disponibilizar snapshots/deltas históricos de1–7janeiro,
+com proveniência, ou acesso autorizado ao provedor. Não solicitar chaves Binance.
+M016_REGISTERED=false
+WEEK_2_DATA_READ=false
+PUBLICATION=Containing normal origin/main milestone commit.

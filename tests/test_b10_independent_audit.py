@@ -27,6 +27,88 @@ def test_passive_bound_rejects_invalid_queue():
         AUDITOR["passive_cycle_upper_bound"]("100", "100", "0")
 
 
+@pytest.mark.parametrize(
+    "buy,sell,queue,bid_down,ask_up,expected",
+    [("0", "0", "100", 0, 0, 1),
+     ("1000", "199", "100", 1, 0, 2),
+     ("334635375", "380627166", "2330544", 35, 33, 179)],
+)
+def test_priority_capacity_bound_counts_asymmetric_quote_movements(
+    buy, sell, queue, bid_down, ask_up, expected
+):
+    assert AUDITOR["priority_capacity_upper_bound"](
+        buy, sell, queue, bid_down, ask_up
+    ) == expected
+
+
+def test_priority_capacity_boundary_carry_is_one_relaxation():
+    assert AUDITOR["priority_capacity_upper_bound"]("100", "100", "100", 1, 0) == 2
+    assert AUDITOR["hybrid_priority_capacity_upper_bound"]("100", "100", "100", 1, 0) == 3
+
+
+def test_priority_capacity_hybrid_bound_adds_disjoint_quote_moves():
+    assert AUDITOR["hybrid_priority_capacity_upper_bound"](
+        "334635375", "380627166", "2330544", 35, 33
+    ) == 212
+
+
+@pytest.mark.parametrize(
+    "args,error",
+    [(('NaN', '1', '1', 0, 0), "INVALID_PRIORITY_CAPACITY_INPUT"),
+     (('1', '1', '0', 0, 0), "INVALID_PRIORITY_CAPACITY_INPUT"),
+     (('1', '1', '1', -1, 0), "INVALID_PRIORITY_CAPACITY_MOVEMENT_COUNT"),
+     (('1', '1', '1', 0, True), "INVALID_PRIORITY_CAPACITY_MOVEMENT_COUNT")],
+)
+def test_priority_capacity_rejects_invalid_inputs(args, error):
+    with pytest.raises(ValueError, match=error):
+        AUDITOR["priority_capacity_upper_bound"](*args)
+
+
+def test_priority_quote_reconstructs_one_tick_spread():
+    quote = AUDITOR["_priority_book_quote"](
+        D("1.00015"), D("0.0001"), False, D("0.000005")
+    )
+    assert quote == (D("1.0001"), D("1.0002"))
+    assert (quote[1] - quote[0]) / D("0.0001") == 1
+
+
+@pytest.mark.parametrize("fault,expected", [
+    ("spread", "SPREAD_NOT_ONE_TICK"),
+    ("grid", "RAW_PRICE_OFF_GRID"),
+    ("time", "TIME_REGRESSION"),
+    ("rebate", "NONNEGATIVE_FEES_REQUIRED"),
+    ("symbol", "USDCUSDT_TRADES_REQUIRED"),
+])
+def test_priority_diagnostic_fails_closed_when_bound_premises_break(tmp_path, fault, expected):
+    start = 1767225600000000
+    archives = []
+    for day in range(1, 8):
+        path = tmp_path / f"day-{day}.zip"
+        price = "1.00015" if fault == "grid" else "1.0001"
+        stamp = start if fault == "time" else start + 2
+        payload = f"1,{price},100,100,{start + 1},true,true\n"
+        payload += f"2,1.0001,100,100,{stamp},true,true\n"
+        with zipfile.ZipFile(path, "w") as archive:
+            archive.writestr("trades.csv", payload if day == 1 else "")
+        archives.append({"utc_date": f"2026-01-{day:02}", "local_path": str(path),
+                         "sha256": AUDITOR["digest"](path)})
+    history = tmp_path / "history.json"
+    history.write_text(json.dumps({"symbol": "WRONG" if fault == "symbol" else "USDCUSDT",
+                                   "kind": "trades", "archives": archives}))
+    config = tmp_path / "config.json"
+    config.write_text(json.dumps({
+        "history_manifest": str(history), "history_manifest_sha256": AUDITOR["digest"](history),
+        "profiles": [{"profile": {"name": "B_REALISTIC_CONSERVATIVE", "queue_ahead": "100",
+                                  "maker_fee": "-0.001" if fault == "rebate" else "0",
+                                  "taker_fee": "0"},
+                      "envelope": {"half_spread": "0.0001" if fault == "spread" else "0.000005"}}],
+        "rules": [{"start_us": start, "end_us": start + 7 * 86400000000,
+                   "rule": {"tick_size": "0.0001"}}],
+    }))
+    with pytest.raises(ValueError, match=expected):
+        AUDITOR["audit_priority_capacity_week1"](config)
+
+
 def test_priority_independent_audit_partial_then_equal_and_own_limit(tmp_path):
     from test_priority_trade_through import engine
 

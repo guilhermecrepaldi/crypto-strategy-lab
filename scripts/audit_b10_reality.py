@@ -13,7 +13,7 @@ import json
 import zipfile
 from collections import defaultdict
 from datetime import UTC, datetime
-from decimal import ROUND_FLOOR, Decimal, localcontext
+from decimal import ROUND_CEILING, ROUND_FLOOR, Decimal, localcontext
 from pathlib import Path
 
 D = Decimal
@@ -757,6 +757,197 @@ def passive_cycle_upper_bound(buy_flow, sell_flow, queue):
         return 1 + int(min(buy_flow, sell_flow) // queue)
 
 
+def _validate_priority_capacity_inputs(buy_volume, sell_volume, queue,
+                                       bid_down, ask_up):
+    values = (buy_volume, sell_volume, queue)
+    if any(not isinstance(value, Decimal) for value in values):
+        values = tuple(D(value) for value in values)
+        buy_volume, sell_volume, queue = values
+    if any(not value.is_finite() for value in values) or queue <= 0:
+        raise ValueError("INVALID_PRIORITY_CAPACITY_INPUT")
+    if buy_volume < 0 or sell_volume < 0:
+        raise ValueError("INVALID_PRIORITY_CAPACITY_INPUT")
+    if (not isinstance(bid_down, int) or isinstance(bid_down, bool)
+            or not isinstance(ask_up, int) or isinstance(ask_up, bool)
+            or bid_down < 0 or ask_up < 0):
+        raise ValueError("INVALID_PRIORITY_CAPACITY_MOVEMENT_COUNT")
+    return buy_volume, sell_volume, queue
+
+
+def priority_capacity_upper_bound(buy_volume, sell_volume, queue, bid_down, ask_up):
+    """Necessary volume/movement relaxation for the priority-capacity diagnostic."""
+    buy_volume, sell_volume, queue = _validate_priority_capacity_inputs(
+        buy_volume, sell_volume, queue, bid_down, ask_up
+    )
+    return 1 + min(int(buy_volume // queue) + bid_down,
+                   int(sell_volume // queue) + ask_up)
+
+
+def hybrid_priority_capacity_upper_bound(buy_volume, sell_volume, queue, bid_down,
+                                         ask_up):
+    """Positive serial hybrid cycles: passive queues or a distinct quote change."""
+    buy_volume, sell_volume, queue = _validate_priority_capacity_inputs(
+        buy_volume, sell_volume, queue, bid_down, ask_up
+    )
+    return 1 + int(min(buy_volume, sell_volume) // queue) + bid_down + ask_up
+
+
+def _priority_book_quote(mark, tick, buyer_maker, half_spread):
+    """Reproduce the frozen BookEnvelope quote without importing replay code."""
+    bid = mark - (D(0) if buyer_maker else half_spread * 2)
+    ask = mark + (half_spread * 2 if buyer_maker else D(0))
+    return ((bid / tick).to_integral_value(rounding=ROUND_FLOOR) * tick,
+            (ask / tick).to_integral_value(rounding=ROUND_CEILING) * tick)
+
+
+def audit_priority_capacity_week1(config_path):
+    """Bound inferred priority capacity from the seven frozen raw archives only."""
+    config = json.loads(config_path.read_bytes())
+    history_path = Path(config["history_manifest"])
+    if digest(history_path) != config["history_manifest_sha256"]:
+        raise ValueError("PRIORITY_CAPACITY_HISTORY_HASH_MISMATCH")
+    history = json.loads(history_path.read_bytes())
+    if history["symbol"] != "USDCUSDT" or history["kind"] != "trades":
+        raise ValueError("PRIORITY_CAPACITY_USDCUSDT_TRADES_REQUIRED")
+    profile = next(item for item in config["profiles"]
+                   if item["profile"]["name"] == "B_REALISTIC_CONSERVATIVE")
+    envelope = profile["envelope"]
+    half_spread = D(envelope["half_spread"])
+    queue = D(profile["profile"]["queue_ahead"])
+    _validate_priority_capacity_inputs(D(0), D(0), queue, 0, 0)
+    for fee_name in ("maker_fee", "taker_fee"):
+        fee = D(profile["profile"][fee_name])
+        if not fee.is_finite() or fee < 0:
+            raise ValueError("PRIORITY_CAPACITY_NONNEGATIVE_FEES_REQUIRED")
+    if not half_spread.is_finite() or half_spread <= 0:
+        raise ValueError("INVALID_PRIORITY_CAPACITY_ENVELOPE")
+    archives = sorted((item for item in history["archives"]
+                       if "2026-01-01" <= item["utc_date"] < "2026-01-08"),
+                      key=lambda item: item["utc_date"])
+    expected_days = [f"2026-01-{day:02}" for day in range(1, 8)]
+    if [item["utc_date"] for item in archives] != expected_days:
+        raise ValueError("PRIORITY_CAPACITY_EXACT_SEVEN_DAYS_REQUIRED")
+    days = {day: {"trades": 0, "buy_volume": D(0), "sell_volume": D(0),
+                  "bid_down": 0, "ask_up": 0, "spread_violations": 0,
+                  "min_grid_tick": None, "max_grid_tick": None}
+            for day in expected_days}
+    previous_quote = None
+    previous_id = None
+    previous_stamp = None
+    frozen_tick = None
+    total = 0
+    with localcontext() as context:
+        context.prec = 128
+        for item in archives:
+            path = Path(item["local_path"])
+            if digest(path) != item["sha256"]:
+                raise ValueError("PRIORITY_CAPACITY_ZIP_HASH_MISMATCH")
+            first = int(datetime.fromisoformat(item["utc_date"]).replace(
+                tzinfo=UTC).timestamp()) * 1_000_000
+            day = days[item["utc_date"]]
+            with zipfile.ZipFile(path) as archive:
+                members = [name for name in archive.namelist() if name.endswith(".csv")]
+                if len(members) != 1:
+                    raise ValueError("PRIORITY_CAPACITY_ONE_CSV_REQUIRED")
+                with archive.open(members[0]) as source:
+                    for line in source:
+                        fields = line.strip().split(b",")
+                        if not fields or not fields[0].isdigit():
+                            continue
+                        trade_id, stamp = int(fields[0]), int(fields[4])
+                        if not first <= stamp < first + 86_400_000_000:
+                            raise ValueError("PRIORITY_CAPACITY_TRADE_OUTSIDE_DAY")
+                        if previous_id is not None and trade_id != previous_id + 1:
+                            raise ValueError("PRIORITY_CAPACITY_RAW_ID_DISCONTINUITY")
+                        previous_id = trade_id
+                        if previous_stamp is not None and stamp < previous_stamp:
+                            raise ValueError("PRIORITY_CAPACITY_TIME_REGRESSION")
+                        previous_stamp = stamp
+                        price = D(fields[1].decode())
+                        quantity = D(fields[2].decode())
+                        maker = fields[5].lower()
+                        if (not price.is_finite() or not quantity.is_finite()
+                                or price <= 0 or quantity <= 0
+                                or maker not in (b"true", b"false")):
+                            raise ValueError("PRIORITY_CAPACITY_INVALID_TRADE")
+                        if maker == b"true":
+                            day["buy_volume"] += quantity
+                        else:
+                            day["sell_volume"] += quantity
+                        day["trades"] += 1
+                        total += 1
+                        rule = next((row["rule"] for row in config["rules"]
+                                     if row["start_us"] <= stamp < row["end_us"]), None)
+                        if rule is None:
+                            raise ValueError("PRIORITY_CAPACITY_MISSING_RULE")
+                        tick = D(rule["tick_size"])
+                        if not tick.is_finite() or tick <= 0:
+                            raise ValueError("PRIORITY_CAPACITY_INVALID_TICK")
+                        if frozen_tick is not None and tick != frozen_tick:
+                            raise ValueError("PRIORITY_CAPACITY_CONSTANT_TICK_REQUIRED")
+                        frozen_tick = tick
+                        if price % tick:
+                            raise ValueError("PRIORITY_CAPACITY_RAW_PRICE_OFF_GRID")
+                        bid, ask = _priority_book_quote(price, tick, maker == b"true",
+                                                        half_spread)
+                        if bid <= 0 or ask <= 0 or bid % tick or ask % tick:
+                            raise ValueError("PRIORITY_CAPACITY_INVALID_GRID")
+                        spread = (ask - bid) / tick
+                        if spread != 1:
+                            day["spread_violations"] += 1
+                            raise ValueError("PRIORITY_CAPACITY_SPREAD_NOT_ONE_TICK")
+                        bid_grid, ask_grid = int(bid / tick), int(ask / tick)
+                        lo, hi = min(bid_grid, ask_grid), max(bid_grid, ask_grid)
+                        day["min_grid_tick"] = lo if day["min_grid_tick"] is None else min(
+                            day["min_grid_tick"], lo)
+                        day["max_grid_tick"] = hi if day["max_grid_tick"] is None else max(
+                            day["max_grid_tick"], hi)
+                        if previous_quote is not None:
+                            day["bid_down"] += bid < previous_quote[0]
+                            day["ask_up"] += ask > previous_quote[1]
+                        previous_quote = (bid, ask)
+    if total != 2_489_204:
+        raise ValueError("PRIORITY_CAPACITY_WEEK_1_COUNT_MISMATCH")
+    rows = []
+    for day_name in expected_days:
+        row = days[day_name]
+        bound = priority_capacity_upper_bound(row["buy_volume"], row["sell_volume"],
+                                              queue, row["bid_down"], row["ask_up"])
+        archive = next(x for x in archives if x["utc_date"] == day_name)
+        rows.append({"day": day_name, "trades": row["trades"],
+                     "buy_compatible_volume": str(row["buy_volume"]),
+                     "sell_compatible_volume": str(row["sell_volume"]),
+                     "bid_down": row["bid_down"], "ask_up": row["ask_up"],
+                     "spread_violations": row["spread_violations"],
+                     "min_quote_grid_tick": row["min_grid_tick"],
+                     "max_quote_grid_tick": row["max_grid_tick"],
+                     "optimistic_priority_cycle_upper_bound": bound,
+                     "optimistic_hybrid_cycle_upper_bound":
+                         hybrid_priority_capacity_upper_bound(
+                             row["buy_volume"], row["sell_volume"], queue,
+                             row["bid_down"], row["ask_up"]),
+                     "archive": archive["local_path"],
+                     "archive_sha256": archive["sha256"]})
+    return {"schema": "priority-trade-through-capacity-bound-v1",
+            "status": "VERIFIED_NECESSARY_BOUND", "profile": profile["profile"]["name"],
+            "profile_config_sha256": digest(config_path),
+            "history_manifest_sha256": digest(history_path),
+            "queue_per_new_order": str(queue), "days": rows,
+            "formula": "1 + min(floor(buy/Q)+bid_down, floor(sell/Q)+ask_up)",
+            "hybrid_formula": "1 + floor(min(buy,sell)/Q) + bid_down + ask_up",
+            "assumptions": ["Inferred BookEnvelope quote movements; not observed historical BBO",
+                            "Constant tick, one-tick spread; limits on the same grid",
+                            "One serial lot; up to one free carry-in cycle each day",
+                            "Quote changes include the previous day's last quote",
+                            "Fresh Q for every new passive order; no cross-cycle priority reuse",
+                            "No raw-flow reuse; releases and partials are not full cycles",
+                            "Hybrid bound requires strictly positive cycles and nonnegative fees",
+                            "Ignore own quantity, latency, slippage and magnitude of costs"],
+            "minimum_500_possible_in_all_days": all(
+                row["optimistic_hybrid_cycle_upper_bound"] >= 500 for row in rows),
+            "scope": "FROZEN_PROFILE_PRIORITY_CAPACITY_DIAGNOSTIC_ONLY"}
+
+
 def audit_week1_passive_capacity(config_path):
     """Read only the seven authorized raw ZIPs, preserving the frozen profile."""
     config = json.loads(config_path.read_bytes())
@@ -838,10 +1029,13 @@ if __name__ == "__main__":
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--profile-dir", type=Path)
     parser.add_argument("--capacity-week1", action="store_true")
+    parser.add_argument("--priority-capacity-week1", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     try:
-        if args.capacity_week1:
+        if args.priority_capacity_week1:
+            result = audit_priority_capacity_week1(args.config)
+        elif args.capacity_week1:
             result = audit_week1_passive_capacity(args.config)
         elif args.profile_dir is not None:
             result = audit(args.config, args.profile_dir)

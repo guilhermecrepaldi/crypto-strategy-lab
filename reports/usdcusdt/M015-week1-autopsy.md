@@ -34,3 +34,15 @@ Diretório: `artifacts/usdcusdt/models/M015/reality-primary`.
 - Checkpoint SHA256 verificado: `cec57c12ea7c78fece5970f48aea2b706ddfff643c1aba4d829695491d3a3b48`.
 
 **Semana 2 permanece bloqueada pelo mínimo diário não atingido.** Artifacts e fronteira semanal preservados.
+
+## Atualização posterior — diagnóstico de capacidade concluído
+
+A proposta candidata de seletor acima era condicional ao diagnóstico. O resultado
+posterior, em `B10-week1-capacity-review.md` e `M015-week1-priority-capacity.json`,
+agora descarta500/dia sob o mesmo kernel/perfil mesmo com seleção perfeita:
+limites M015179,402,105,109,447,366,302. Um limite ainda mais amplo para ciclos
+positivos híbridos maker/taker resulta212,435,107,111,470,382,321. Todos<500.
+Não registrar M016 nem executar o seletor proposto com essa meta e ambiente.
+Falta evidência histórica bid+ask/fila dos sete dias para fundamentar outro
+ambiente; não é impossibilidade universal no mercado. Valores econômicos M015,
+auditoria, artifacts e fonte permanecem inalterados.
