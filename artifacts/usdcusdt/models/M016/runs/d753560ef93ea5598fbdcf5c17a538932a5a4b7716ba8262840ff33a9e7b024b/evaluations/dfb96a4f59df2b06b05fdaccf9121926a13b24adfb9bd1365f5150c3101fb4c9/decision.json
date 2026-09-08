@@ -1,0 +1,20 @@
+{
+  "DECISION": "REJECTED_FOR_OWNER_OBJECTIVES",
+  "FINAL_RESULT": "19positive cycles; equity109.902; reserve9.78068; maxhold119.997830754h",
+  "REASON": "Negative total PnL, reserve erosion, all12days below500 and8holds beyond2h; integrity audit passed conditionally",
+  "campaign_snapshot_id": "0b4f726bfa4724009a9d37c07c078976a77179dd82cb09ae98871254307fad5a",
+  "comparison": {
+    "control": "M015_PRICE_PRIORITY_SYNTHETIC_CONSECUTIVE_12D",
+    "initial_total_equity": "110",
+    "same_source_dates": true
+  },
+  "criteria": {
+    "hold_objective_hours": 2,
+    "minimum_daily_positive_cycles": 500,
+    "positive_total_equity_growth": true,
+    "reserve_sustainable": true,
+    "target_daily_positive_cycles": 2000
+  },
+  "run_hash": "d753560ef93ea5598fbdcf5c17a538932a5a4b7716ba8262840ff33a9e7b024b",
+  "scenario_hash": "927f037f83e1915f0a605f7a7cfe0721c66566460c5bb73bdcd99b39384da476"
+}

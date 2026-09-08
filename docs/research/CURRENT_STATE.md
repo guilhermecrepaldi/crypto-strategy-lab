@@ -1,11 +1,11 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=USDCUSDT_L2_MONTHLY_SAMPLES
-CAMPAIGN_STATUS=M016_PROTECTED_DEADLINE_RUNNING
+CAMPAIGN_STATUS=M016_COMPLETE_AUDITED; REJECTED_FOR_OWNER_OBJECTIVES
 CAMPAIGN_EXECUTION_SOURCE_SHA=44d75f9183aa052be20734fac0f244bc4ba238bd
-CAMPAIGN_ACTIVE_ENVELOPE=PRICE_PRIORITY
+CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
-CAMPAIGN_VERDICT=PENDING
+CAMPAIGN_VERDICT=M016_NEGATIVE_NET_ECONOMICS_AND_HOLD_FREQUENCY_FAILURE
 CAMPAIGN_PROGRESS_FILE=artifacts/usdcusdt/l2-monthly-samples/M016/SYNTHETIC_CONSECUTIVE_12D/PRICE_PRIORITY/progress.json
 CAMPAIGN_JOURNAL=docs/research/L2_MONTHLY_SAMPLE_JOURNAL.md
 CAMPAIGN_SCOREBOARD=reports/usdcusdt/L2-monthly-sample-scoreboard.json
@@ -21,9 +21,10 @@ MONTHLY_CONTINUOUS_WEEK_2_AUTHORIZED=false
 
 OWNER_NEXT_RESEARCH=RESERVE_RECOVERY_ROTATION_BALANCE
 OWNER_DIRECTIVE=docs/microstructure/RESERVE_ROTATION_OWNER_DIRECTIVE.md
-NEXT_CAMPAIGN_STATUS=M016_RUNNING; LATER_CONFIGURATIONS_NOT_SELECTED
+NEXT_CAMPAIGN_STATUS=M017_BUDGET20_CREATED_REVIEWED; PUBLICATION_AND_DATA_PREFLIGHT_PENDING; NOT_EXECUTED
+NEXT_CAMPAIGN_MODEL_HASH=b82a5ef829ca396db0f80885807aa4895ec359db3f10d7e917d6e8be0db65af8
 NEXT_CAMPAIGN_HOLD_OBJECTIVE_HOURS=2
-NEXT_CAMPAIGN_FUNDING=M016_10_PERCENT_CONTROLLED_COMPARISON; OPTIMAL_NOT_SELECTED
+NEXT_CAMPAIGN_FUNDING=10_PERCENT_UNCHANGED_CONTROLLED_COMPARISON; OPTIMAL_NOT_SELECTED
 NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=110_USDT
 
 ## Closed synthetic results reconciled2026-09-08
@@ -35,8 +36,19 @@ equity109.9764,reserve9.76532,5 releases,5 zero days,maxhold27.1199001464h.
 Price priority:16 positive cycles,equity109.8843,reserve9.76568,5 releases,
 9 zero days,maxhold132.0009854975h. Initial100+10,compounding,fees0 assumption.
 Neither demonstrates target frequency or reserve sustainability. Synthetic holds
-and returns are not continuous historical/live observations. M016 successor now
-running under the source SHA above; these closed M015 results remain immutable.
+and returns are not continuous historical/live observations. These closed M015
+results remain immutable.
+
+## M016 closed2026-09-08; source44d75f9
+
+12/12 days;19 positive cycles;8 releases(7loss/1zero); operating100.12132;
+reserve9.78068(min9.78028); equity109.902; net−0.098; terminalFLAT.
+Funding0.01348; consumption0.2328; FIFO debt0.22328;0/7 losses recovered.
+Eight holds>2h; max119.997830754h; all12days below500/1000/2000.
+Independent integrity review passed; strategy objectives failed. RegistryREJECTED.
+See reports/usdcusdt/M016-completed-independent-audit.md. One20bps executable-cap
+case is justified by the deadlineD2 autopsy; source/spec/review/publication gates
+remain mandatory. No later case or optimal funding has been selected.
 
 ## Last preserved weekly result — not a monthly L2 replay
 

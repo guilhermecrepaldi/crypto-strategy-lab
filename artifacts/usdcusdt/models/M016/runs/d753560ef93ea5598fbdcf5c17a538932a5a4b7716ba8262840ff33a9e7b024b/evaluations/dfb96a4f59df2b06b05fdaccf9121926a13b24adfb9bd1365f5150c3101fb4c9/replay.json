@@ -1,0 +1,5 @@
+{
+  "independent_audit": "reports/usdcusdt/M016-completed-independent-audit.md",
+  "physical_manifest": "artifacts\\usdcusdt\\l2-monthly-samples\\M016\\SYNTHETIC_CONSECUTIVE_12D\\PRICE_PRIORITY\\run-manifest.json",
+  "physical_run_hash": "0b4f726bfa4724009a9d37c07c078976a77179dd82cb09ae98871254307fad5a"
+}

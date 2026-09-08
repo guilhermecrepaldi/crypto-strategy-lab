@@ -377,3 +377,63 @@ equity109.9307/109.9406/109.901; reserve9.99208 unchanged. At day4 close open
 position age71.997125h. M016 exposes the incompatible cap/time objectives but does
 not yet meet the2h objective. Funding or extra reserve alone cannot remove this
 specific cap veto. No parameter changed during the run; successor not selected.
+
+## 2026-09-08 — M016 full12D closed and independently audited
+
+Source44d75f9, physicalrun0b4f726b unchanged; writerEXIT0. No economic early stop.
+Independent audit: reports/usdcusdt/M016-completed-independent-audit.md.
+78fills/27settlements=19positive ordinary cycles+8releases(7loss/1zero).
+Daily cycles[12,0,0,0,0,0,0,0,0,1,3,3]; min0/median0/max12;8zero days;
+all12 below500/1000/2000. Operating100→100.12132, reserve10→9.78068,
+equity110→109.902; netrealized−0.098, unrealized0, fees0assumption, terminalFLAT.
+Funding0.01348, consumption0.2328, mean release cost0.0291 acrossALL8releases.
+Independent FIFO debt0.22328,0/7loss tranches recovered; no invented recovery
+median/time. Minimum reserve9.78028. Eight holds>2h, max119.997830754h.
+All release deficits within actual10bps cap and floor2.5. Fullledger hash and
+14 publishedsource hashes verified independently. TEST_SUITE_PASS != STRATEGY_PASS.
+
+Versus M015 same PRICE_PRIORITY12D:19vs16cycles, equity109.902vs109.8843,
+consumption0.2328vs0.2475; maxhold119.9978vs132.001h, but2hviolations8vs6.
+Modest improvements do not establish sustainability, high frequency or bounded
+holding.145.005973h FLAT and170,975 BUY orders withzero fill reveal an additional
+admission/execution bottleneck; zero-fill orders are not all presumed rejections.
+
+Model registry EVALUATED thenREJECTED for OWNER objectives, evidence preserved.
+Evaluation hashdfb96a4f59df2b06b05fdaccf9121926a13b24adfb9bd1365f5150c3101fb4c9.
+Scientific recommendation: ONE registered20bps executable-cap test next, because
+the reconstructed D2 deadline cost16.812bps exceeded10 while liquidity/floor did
+not bind. Keep H1theoretical10, funding10%,100+10 and all execution/data unchanged.
+M015 is scientific parent; M016 is paired control/technical ancestor, not champion.
+M017 preparation is not an execution approval before source-bound review/publication.
+
+## 2026-09-08 — M017 registered and independently reviewed; not yet run
+
+MODEL_HASH=b82a5ef829ca396db0f80885807aa4895ec359db3f10d7e917d6e8be0db65af8.
+Canonical registry CREATED binds spec d9afab40660e73c56f68601d4617dd76f7d5abb5dd5d2de94e447e387f977e20
+and preregistration467cc497c78986780c23e427d2ef04ec522bba8cc5f79071f0448b8ee48b3d20.
+Independent GPT-6 Astra review PASS_CONDITIONAL_PRE_RUN binds14 sources;102
+focused tests passed. This is software/design validation, not economic success.
+Only executable protected cap10→20bps changes; unchanged H1 theoretical10,
+funding10%,100+10, floor2.5, serial compounding, PRICE_PRIORITY and same12days.
+Publication and exact-data/clean-source preflight remain required before replay.
+This is second case of maximum-three tranche; no third case selected or executed.
+
+## 2026-09-08 — entry autopsy and comparative report reconciled
+
+M016-entry-autopsy.md independently reproduced:170975 zero-fill BUYs comprise
+170964 LIMIT_MAKER_WOULD_TAKE rejections,10 cancellations and1 terminal active BUY.
+Largest unchanged-price rejection sequence43849 attempts over14.366954h.
+This is demonstrated selector/admission/retry incompatibility, not proof of an
+invalid replay or of the fills another entry policy would produce. Terminal FLAT
+means inventory zero, not absence of a working BUY. Existing results stay intact.
+
+Canonical B10-execution-research.html now compares completed M015/M016 with
+daily cycles/equity/reserve SVG charts, owner headline and expandable full metrics.
+Financial reporter independently reviewed at17225a...; subsequent presentation-only
+delta reviewed by main,18 reporting/debt tests PASS. Final reporter LF SHA
+a7bfc9d396554583c949e8c0c7968d33454509203a8b3dff380a687d2e8d12ae.
+Browser QA via Playwright at1440x1000 and390x844:3 comparison charts,0 broken
+local anchors, no document horizontal overflow,0 console errors/warnings.
+HTTP local preview verified; tool blocks file-protocol navigation, so no claim
+of direct-file browser QA. HTML embeds its charts without script/CDN dependency.
+Funding sensitivity remains frozen-fill diagnostics, not extra economic replays.

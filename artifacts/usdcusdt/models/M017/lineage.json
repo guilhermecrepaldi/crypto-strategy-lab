@@ -1,0 +1,21 @@
+{
+  "ancestor_chain": [
+    "M005",
+    "M006",
+    "M007",
+    "M014",
+    "M015"
+  ],
+  "change_category": "ISOLATED_PROTECTED_EXECUTABLE_BUDGET",
+  "change_summary": "Second case of max-three sequential tranche;20bps actual cap only.",
+  "parent_model_id": "M015",
+  "parent_run_hash": null,
+  "references": {
+    "completed_control_review": "reports/usdcusdt/M016-completed-independent-audit.md",
+    "control_run_hash": "0b4f726bfa4724009a9d37c07c078976a77179dd82cb09ae98871254307fad5a",
+    "deadline_autopsy": "reports/usdcusdt/M016-deadline-autopsy.md",
+    "experimental_control": "M016",
+    "preregistration": "docs\\microstructure\\M017_DEADLINE_PREREGISTRATION.md",
+    "technical_ancestor": "M016"
+  }
+}

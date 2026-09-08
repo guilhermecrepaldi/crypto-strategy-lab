@@ -1,0 +1,7 @@
+{
+  "change": "Actual aggregate protected release budget20bps; normal theoretical H1 cap10 remains unchanged.",
+  "expected_effect": "Measure holding/cycle gains and actual incremental losses under same12 synthetic days,100+10,funding10 andPRICE_PRIORITY.",
+  "hypothesis": "Changing only executable protected cap10 to20bps may reduce cap-blocked exposure but can increase reserve erosion.",
+  "observation": "Completed M016 failed sustainability and holding goals; independently reconstructed D2 deadline costs16.812bps while10bps cap bound, reserve and displayed-budget liquidity sufficient at that event.",
+  "reason_for_new_model": "Material loss-budget change with new preregistration; M015/M016 immutable."
+}

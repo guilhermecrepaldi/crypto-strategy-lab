@@ -22,7 +22,7 @@ from crypto_strategy_lab.domain import canonical_hash
 
 from .b10_reality import BookEnvelope, ExecutionProfile, Order, SymbolRules, Trade, _encode
 from .high_uptime_recovery import (
-    M016_DEADLINE_POLICY_HASH,
+    DEADLINE_POLICY_HASHES,
     B10ReserveReplay,
     HighUptimeExecution,
 )
@@ -630,12 +630,12 @@ class ObservedL2Replay(B10ReserveReplay):
     ) -> None:
         duration = end_us - start_us
         if (
-            identity.get("model_id") not in ("M015", "M016")
+            identity.get("model_id") not in ("M015", *DEADLINE_POLICY_HASHES)
             or duration <= 0
             or duration % (24 * 3_600_000_000)
         ):
             raise ValueError("M015_INDEPENDENT_DAY_REQUIRED")
-        self.deadline_enabled = identity.get("model_id") == "M016"
+        self.deadline_enabled = identity.get("model_id") in DEADLINE_POLICY_HASHES
         if self.deadline_enabled and envelope != "PRICE_PRIORITY":
             raise ValueError("M016_FIXED_PRICE_PRIORITY_ENVELOPE_REQUIRED")
         self.deadline_started_entry: int | None = None
@@ -644,7 +644,8 @@ class ObservedL2Replay(B10ReserveReplay):
         self.deadline_block_key: tuple[Any, ...] | None = None
         if (
             self.deadline_enabled
-            and identity.get("deadline_policy_hash") != M016_DEADLINE_POLICY_HASH
+            and identity.get("deadline_policy_hash")
+            != DEADLINE_POLICY_HASHES[identity["model_id"]]
         ):
             raise ValueError("M016_DEADLINE_POLICY_IDENTITY_REQUIRED")
         self.available_canonical_event = start_us * EVENT_ORDER_SCALE - 1
@@ -803,7 +804,7 @@ class ObservedL2Replay(B10ReserveReplay):
                     time_us=timestamp,
                     entry_us=entry,
                     deadline_us=entry + 7_200_000_000,
-                    policy_hash=M016_DEADLINE_POLICY_HASH,
+                    policy_hash=self.engine.deadline_policy_hash,
                 )
                 engine.cancel(timestamp)
         super()._clock(timestamp)

@@ -65,6 +65,20 @@ M016_DEADLINE_POLICY = {
     "debt_mode": "REPORT_ONLY_NO_FUNDING_STATE_CHANGE",
 }
 M016_DEADLINE_POLICY_HASH = canonical_hash(M016_DEADLINE_POLICY)
+M017_DEADLINE_POLICY = {
+    **M016_DEADLINE_POLICY,
+    "model_id": "M017",
+    "executable_loss_cap_bps": "20",
+}
+M017_DEADLINE_POLICY_HASH = canonical_hash(M017_DEADLINE_POLICY)
+DEADLINE_POLICY_HASHES = {
+    "M016": M016_DEADLINE_POLICY_HASH,
+    "M017": M017_DEADLINE_POLICY_HASH,
+}
+DEADLINE_POLICIES = {
+    M016_DEADLINE_POLICY_HASH: M016_DEADLINE_POLICY,
+    M017_DEADLINE_POLICY_HASH: M017_DEADLINE_POLICY,
+}
 
 
 class HighUptimeExecution(B10Execution):
@@ -78,7 +92,7 @@ class HighUptimeExecution(B10Execution):
         deadline_policy_hash: str | None = None,
     ) -> None:
         if deadline_policy_hash is not None and (
-            deadline_policy_hash != M016_DEADLINE_POLICY_HASH or not b10_owner_reserve
+            deadline_policy_hash not in DEADLINE_POLICIES or not b10_owner_reserve
         ):
             raise ValueError("M016_DEADLINE_POLICY_IDENTITY_REQUIRED")
         if priority_trade_through and not b10_owner_reserve:
@@ -142,7 +156,8 @@ class HighUptimeExecution(B10Execution):
             budget = max(ZERO, self.reserve - guard)
             deadline_budget_details: dict[str, Any] = {}
             if getattr(self, "deadline_policy_hash", None) is not None:
-                loss_budget = restored_bank * D(".001")
+                policy = DEADLINE_POLICIES[self.deadline_policy_hash]
+                loss_budget = restored_bank * (D(policy["executable_loss_cap_bps"]) / D(10_000))
                 deadline_budget_details = {
                     "loss_cap_budget": str(loss_budget),
                     "reserve_budget": str(budget),
@@ -431,22 +446,26 @@ class B10ReserveReplay(B10RealityReplay):
         gaps: tuple[tuple[int, int], ...] = (),
     ) -> None:
         if (
-            identity.get("model_id") not in ("M014", "M015", "M016")
+            identity.get("model_id") not in ("M014", "M015", *DEADLINE_POLICY_HASHES)
             or identity.get("capital_mode") != "COMPOUNDING"
         ):
             raise ValueError("M014_COMPOUNDING_IDENTITY_REQUIRED")
         if (
-            identity.get("model_id") == "M016"
-            and identity.get("deadline_policy_hash") != M016_DEADLINE_POLICY_HASH
+            identity.get("model_id") in DEADLINE_POLICY_HASHES
+            and identity.get("deadline_policy_hash")
+            != DEADLINE_POLICY_HASHES[identity["model_id"]]
         ):
             raise ValueError("M016_DEADLINE_POLICY_IDENTITY_REQUIRED")
-        if identity.get("model_id") == "M016" and not getattr(
+        if identity.get("model_id") in DEADLINE_POLICY_HASHES and not getattr(
             self, "supports_protected_deadline", False
         ):
             raise ValueError("M016_REQUIRES_OBSERVED_DEADLINE_DRIVER")
-        if identity.get("model_id") != "M016" and identity.get("deadline_policy_hash") is not None:
+        if (
+            identity.get("model_id") not in DEADLINE_POLICY_HASHES
+            and identity.get("deadline_policy_hash") is not None
+        ):
             raise ValueError("DEADLINE_POLICY_REQUIRES_M016")
-        priority = identity.get("model_id") in ("M015", "M016")
+        priority = identity.get("model_id") in ("M015", *DEADLINE_POLICY_HASHES)
         if identity.get("priority_trade_through", False) is not priority:
             raise ValueError("M015_EXPLICIT_PRIORITY_HYPOTHESIS_REQUIRED")
         super().__init__(

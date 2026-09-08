@@ -24,6 +24,7 @@ from crypto_strategy_lab.microstructure.data import (
     iter_history,
     select_history_archives,
 )
+from crypto_strategy_lab.microstructure.high_uptime_recovery import DEADLINE_POLICY_HASHES
 from crypto_strategy_lab.microstructure.observed_l2_execution import (
     ObservedBookBatch,
     ObservedL2Replay,
@@ -100,6 +101,19 @@ REVIEW = Path("reports/usdcusdt/L2-monthly-sample-preflight-review.md")
 DEADLINE_SPEC = Path("docs/microstructure/M016_MODEL_SPEC.json")
 DEADLINE_PROTOCOL = Path("docs/microstructure/M016_DEADLINE_PREREGISTRATION.md")
 DEADLINE_REVIEW = Path("reports/usdcusdt/M016-preflight-independent-review.md")
+DEADLINE_MODELS = tuple(DEADLINE_POLICY_HASHES)
+
+
+def campaign_design_paths(model_id: str) -> tuple[Path, Path, Path]:
+    if model_id in DEADLINE_MODELS:
+        return (
+            Path(f"docs/microstructure/{model_id}_MODEL_SPEC.json"),
+            Path(f"docs/microstructure/{model_id}_DEADLINE_PREREGISTRATION.md"),
+            Path(f"reports/usdcusdt/{model_id}-preflight-independent-review.md"),
+        )
+    if model_id == "M015":
+        return SPEC, PROTOCOL, REVIEW
+    raise ValueError("UNREGISTERED_CAMPAIGN_MODEL")
 OUTPUT = Path("artifacts/usdcusdt/l2-monthly-samples")
 SOURCE_PATHS = tuple(
     Path(item)
@@ -729,7 +743,7 @@ def execute_verified_experiment(replay, canonical, events, validation, identity,
             for key, value in market_stats.items()
         }
         result["AUDIT_SHA256"] = file_sha(output / "all-fill-audit.json")
-        if identity["model_id"] == "M016":
+        if identity["model_id"] in DEADLINE_MODELS:
             from crypto_strategy_lab.microstructure.reserve_recovery_diagnostics import (
                 analyze_recovery,
             )
@@ -771,26 +785,22 @@ def campaign_preflight(root=ROOT, model_id="M015"):
         raise ValueError("CANONICAL_MAIN_REQUIRED")
     if subprocess.check_output(["git", "status", "--porcelain"], text=True).strip():
         raise ValueError("PRE_EXECUTION_WORKTREE_NOT_CLEAN")
-    if model_id not in ("M015", "M016"):
+    if model_id not in ("M015", *DEADLINE_MODELS):
         raise ValueError("UNREGISTERED_CAMPAIGN_MODEL")
-    spec, protocol, review = (
-        (DEADLINE_SPEC, DEADLINE_PROTOCOL, DEADLINE_REVIEW)
-        if model_id == "M016"
-        else (SPEC, PROTOCOL, REVIEW)
-    )
+    spec, protocol, review = campaign_design_paths(model_id)
     sources = (
         (
             *SOURCE_PATHS,
             Path("src/crypto_strategy_lab/microstructure/reserve_recovery_diagnostics.py"),
         )
-        if model_id == "M016"
+        if model_id in DEADLINE_MODELS
         else SOURCE_PATHS
     )
     for path in (*sources, spec, protocol, review, MANIFEST, VALIDATION_REPORT):
         published_bytes(path, sha)
     validate_review(review, sources)
     model = ModelRegistry().get(model_id)
-    if model_id == "M016":
+    if model_id in DEADLINE_MODELS:
         validate_registered_design(model, spec, protocol)
         if model.model["model_id"] != model_id:
             raise ValueError("DEADLINE_MODEL_ID_MISMATCH")
@@ -1058,7 +1068,7 @@ def run(model_id="M015"):
         runtime, profile, envelope, rules_at, canonical = build_stitched_inputs(
             history, config, mapping
         )
-        names = ("PRICE_PRIORITY",) if model_id == "M016" else ENVELOPES
+        names = ("PRICE_PRIORITY",) if model_id in DEADLINE_MODELS else ENVELOPES
         model = ModelRegistry().get(model_id)
         for name in names:
             identity = {
@@ -1069,9 +1079,9 @@ def run(model_id="M015"):
                 "priority_trade_through": True,
                 "published_config_sha": sha,
                 "expected_trade_count": len(canonical),
-                "protocol_sha256": file_sha(DEADLINE_PROTOCOL if model_id == "M016" else PROTOCOL),
+                "protocol_sha256": file_sha(campaign_design_paths(model_id)[1]),
                 "preflight_review_sha256": file_sha(
-                    DEADLINE_REVIEW if model_id == "M016" else REVIEW
+                    campaign_design_paths(model_id)[2]
                 ),
                 "data_manifest_sha256": file_sha(MANIFEST),
                 "validation_source_commit": VALIDATOR_SOURCE_COMMIT,
@@ -1082,7 +1092,7 @@ def run(model_id="M015"):
                 "COLD_START": True,
                 "CLOCK_MAPPING": "SOURCE_DAY_OFFSET_TO_CONSECUTIVE_LOGICAL_DAY",
             }
-            if model_id == "M016":
+            if model_id in DEADLINE_MODELS:
                 identity["deadline_policy_hash"] = model.model["deadline_policy_hash"]
                 debt_path = Path(
                     "src/crypto_strategy_lab/microstructure/reserve_recovery_diagnostics.py"
@@ -1109,7 +1119,7 @@ def run(model_id="M015"):
                 stitched_events(entries, mapping),
                 bound,
                 identity,
-                (OUTPUT / "M016" if model_id == "M016" else OUTPUT)
+                (OUTPUT / model_id if model_id in DEADLINE_MODELS else OUTPUT)
                 / "SYNTHETIC_CONSECUTIVE_12D"
                 / name,
             )
@@ -1117,5 +1127,5 @@ def run(model_id="M015"):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model", choices=("M015", "M016"), default="M015")
+    parser.add_argument("--model", choices=("M015", *DEADLINE_MODELS), default="M015")
     run(parser.parse_args().model)
