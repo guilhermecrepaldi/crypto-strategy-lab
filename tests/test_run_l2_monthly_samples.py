@@ -48,12 +48,19 @@ def test_m018_owner_window_is_one_day_and_extensions_fail_closed(tmp_path):
             runner.require_owner_replay_approval(tmp_path, "M018")
 
 
-def test_m018_run_verifies_and_builds_only_first_day(monkeypatch):
+def test_m018_run_verifies_and_builds_only_first_day(monkeypatch, tmp_path):
     from contextlib import nullcontext
     from types import SimpleNamespace
 
     from scripts import run_l2_monthly_samples as runner
 
+    authority = tmp_path / "owner.md"
+    authority.write_text(
+        "APPROVED_COMPARISON_DAYS=1\nEXTENSION_AUTHORIZED=false\n"
+        "NEW_REPLAY_AUTHORIZED_NOW=true\nAUTHORIZED_MODEL=M018\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(runner, "OWNER_WINDOW_AUTHORITY", authority)
     first = "2025-01-01"
     manifest = {"canonical_trade_manifest_sha256": "sha",
                 "dates": [{"date": first}, {"date": "2025-02-01", "poison": True}]}

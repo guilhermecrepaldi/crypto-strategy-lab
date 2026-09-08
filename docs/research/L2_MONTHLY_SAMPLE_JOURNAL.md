@@ -540,3 +540,62 @@ technical control. An initial registration attempt with a noncanonical ancestry
 was rejected before append; corrected using the actual parent's recorded chain.
 Software validation144 fixtures passed;13 admission fixtures rerun after adding
 an explicit adjustment reason. These are software facts, not economic results.
+
+## 2026-09-08 — M018 full first day completed; no extension
+
+Preflight independent159tests/source bindings passed. Configuration published at
+65b7fe6aebb91d6c01ee6ef92d90b7c26f84a83c, HEAD==origin/main and clean before
+`.venv/Scripts/python.exe -m scripts.run_l2_monthly_samples --model M018`.
+Session9736 exited0; no replay writer remained. Actual source2025-01-01 only,
+24logical hours,254205 canonical trades; no day2payload accessed.
+Physical run219acf9d02fbf954fa4c85342583c047749a87244172a63310441aa2e8279b48;
+registry run653012a073793292d9d21685fbda4193fe7e9af69759ebd55d3657bcbfda4703;
+scenario5c31dcd93eee744fd9033fcd115f6170cb47a745e1dd377211453cd34e7f76d1.
+
+ECONOMY:9positive complete ordinary cycles; operating100.08910,
+reserve9.96040,total110.04950,net realized+0.04950,unrealized0,fees0 under the
+frozen profile. Control M017same-day12cycles,operating100.10692,reserve9.99208,
+total110.09900. Thus cycles−25% and net profit−50%, not improvement.
+Positive ordinary gains0.099;3releases(2loss/1zero) consumed0.0495; funding
+0.0099; neither loss recovered, debt0.0396; reserve minimum9.95347,no depletion.
+Two strict2h violations,max2h+47.867ms. WorkingBUY remains at cutoff with zero
+inventory, no forced closure. The1h holding policy was not tested.
+
+DIAGNOSIS:four adjusted admissions; BUYpost-only rejections2546→0, yet fills
+were12vs13 and ordinary positive cycles9vs12. M018 spent14.907792h flat,
+9.092208h holding; working-order uptime99.922% is NOT productive profit uptime.
+Removing admission rejects is insufficient; existing selector/target/fill waiting
+and release economics still govern serial rotation. Increased reserve funding
+cannot create missing fills or restore losses without actual positive profit.
+Automated26fill/12settlement auditPASS; post-run independent audit pending.
+No next model or day2 run initiated. No HTML/graphs generated.
+
+Post-run independent review identified a TRACE_ONLY bug: one adjusted admission
+used the latest trade capture cursor in fields named book_capture. The native
+book update, decision price and causal execution remain valid; this does not
+invalidate the economic loss or explain away the9cycles. The original ledger
+and source65b7fe6 are immutable. The subsequent source fix records engine.book_id
+and last_book_us, tested with book→trade→admission and distinct exchange/capture
+times. No replay under that trace-only revision;121 regression fixtures and Ruff
+passed. Runtime economic policy/spec/hash remain unchanged. Current OWNER gate
+was closed after completion to prevent accidental repeat/extension.
+
+Observed timeline explains the trade-off: an earlier adjusted BUY at1.0022 led
+to the additionalH1 loss0.0297; another BUY1.0019 waited hours and canceled;
+another kept originalHIGH1.0022 and ended with a zero-profit release near2h.
+Positive ordinary gains declined0.1188→0.099 while losses rose0.0198→0.0495,
+exactly explaining the0.0495 lower equity. Removing rejects alone is rejected
+as the proposed route to1000cycles/day on this sample, not proof against every
+book-aware strategy. Next justified research is causal fill-time/range selection
+with expected net edge; it is not implemented or executed by this milestone.
+
+FINAL AUDIT:PASS_WITH_TRACE_CAVEAT;26fills and12settlements reconciled, four
+adjusted admissions causally checked. No financial execution bug established.
+Report reports/usdcusdt/M018-one-day-independent-audit.md, SHA256 LF
+8610ac66f66d10d8b5ebcb06d2eef6771ff6d3a35cd34cdb28059a048ba04f53.
+Trace-only post-run fix independently reviewed with64regression fixtures; not
+executed as a new replay. Registry RUNNING→EVALUATED→REJECTED; evaluation
+669b02e4e3c0e9277918899522bdde0563bf6cbe791cd5dce3a553e5b0064dd2.
+REJECT refers to this configuration/day and OWNER gates, not impossible future
+strategy performance. Every financial total above remains conditional on the
+frozen fee-zero/PRICE_PRIORITY execution assumptions. No day2 was opened.

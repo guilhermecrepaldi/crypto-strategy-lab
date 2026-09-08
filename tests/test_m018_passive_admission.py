@@ -92,6 +92,25 @@ def test_already_passive_low_unchanged():
     assert value.engine.counts["PASSIVE_ENTRY_ADJUSTED"] == 0
 
 
+def test_trade_triggered_admission_keeps_effective_book_provenance():
+    value, trades = admission_replay()
+    candidate = value.decisions.state.candidate
+    value.decisions.state.candidate = None
+    observed_book = replace(book(value), exchange_time_us=value.start_us + 90)
+    value.receive_book(observed_book)
+    assert value.engine.order is None
+    value.decisions.state.candidate = candidate
+    value.receive_trade(trades[0], capture_time_us=value.start_us + 300, capture_order=2)
+    row = next(r for r in value.engine.audit if r["kind"] == "PASSIVE_ENTRY_ADMISSION")
+    assert value.engine.observed_capture == (value.start_us + 300, 2)
+    assert row["time_us"] == value.start_us + 300
+    assert row["book_capture_order"] == observed_book.capture_order == 1
+    assert row["book_capture_time_us"] == observed_book.capture_time_us == value.start_us + 100
+    assert row["native_update_id"] == observed_book.native_update_id
+    assert value.engine.order.price == D(".9998")
+    assert value.engine.order.status == "PENDING" and value.engine.inventory == 0
+
+
 @pytest.mark.parametrize(
     "tick,ask,expected", [(".0001", ".9999", ".9998"), (".00001", ".99999", ".99998")]
 )

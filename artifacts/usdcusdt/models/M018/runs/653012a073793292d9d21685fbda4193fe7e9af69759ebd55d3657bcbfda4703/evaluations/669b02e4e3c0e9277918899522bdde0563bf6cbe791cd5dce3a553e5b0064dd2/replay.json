@@ -1,0 +1,10 @@
+{
+  "independent_audit": "reports/usdcusdt/M018-one-day-independent-audit.md",
+  "independent_audit_sha256_lf": "8610ac66f66d10d8b5ebcb06d2eef6771ff6d3a35cd34cdb28059a048ba04f53",
+  "ledger_sha256": "4bc2f823be46436581869d390f98d78401f19ee6172d329d36825de3ae57a793",
+  "physical_run_hash": "219acf9d02fbf954fa4c85342583c047749a87244172a63310441aa2e8279b48",
+  "source_sha": "65b7fe6aebb91d6c01ee6ef92d90b7c26f84a83c",
+  "summary_path": "artifacts/usdcusdt/l2-monthly-samples/M018/OWNER_GATED_DAY1/PRICE_PRIORITY/summary.json",
+  "summary_sha256": "70c36a2c02980b6ec4d14052b07a18257e78b12f583ea740ab723f34518a2a48",
+  "validation_input_sha256": "e248a5c22a76ca6ba6c7cb5a10ecb6f559f369214b40404e932aa56c2b4f41ef"
+}

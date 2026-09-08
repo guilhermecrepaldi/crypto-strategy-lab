@@ -8,8 +8,14 @@ ONE_HOUR_MEANING=AWAITING_OWNER_CLARIFICATION_POSITION_HOLD_OR_DELIVERY_TIME
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=true
+NEW_REPLAY_AUTHORIZED_NOW=false
 AUTHORIZED_MODEL=M018
+
+CURRENT_CASE_STATUS=M018_COMPLETE_9_POSITIVE_CYCLES; EXTENSION_GATE_FAILED
+M018 já completou o primeiro dia. Não repetir o run nem iniciar dia2:9<1000.
+A autorização true foi publicada antes do run em65b7fe6; esta atualização é
+pós-execução, não altera o vínculo histórico. Nova hipótese precisa dos próprios
+registro, revisão e publicação; a pesquisa de suporte continua autorizada.
 
 LATEST_CONTINUATION=Continue, use as estratégias de suporte para novas elaborações.
 CONDITIONAL_MAX_STAGE_DAYS=3

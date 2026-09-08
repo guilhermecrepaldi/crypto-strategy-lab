@@ -1,0 +1,23 @@
+{
+  "campaign_snapshot_id": "b24e7f742163cbce9c9fb7318ba094a74df9572944032a91a7c1aec19b7d68b5",
+  "comparison": {
+    "control": "M017_DAY1",
+    "control_cycles": 12,
+    "control_equity": "110.099",
+    "control_operating": "100.10692",
+    "control_reserve": "9.99208",
+    "same_source_date": "2025-01-01"
+  },
+  "criteria": {
+    "economic_sustainability_required": true,
+    "hold_control_hours": 2,
+    "no_extension_on_failure": true,
+    "one_hour_not_tested": true,
+    "positive_cycles_each_day": 1000
+  },
+  "decision": "REJECT",
+  "extension_allowed": false,
+  "reason": "9vs12 cycles; lower equity and worse reserve recovery. Admission rejection removal did not achieve target; no day2. Trace-only caveat does not invalidate economics.",
+  "run_hash": "653012a073793292d9d21685fbda4193fe7e9af69759ebd55d3657bcbfda4703",
+  "scenario_hash": "5c31dcd93eee744fd9033fcd115f6170cb47a745e1dd377211453cd34e7f76d1"
+}

@@ -4524,7 +4524,7 @@ M017,INCONCLUSIVE,100,USDT,COMPOUNDING,RUN_MANIFEST,b82a5ef829ca396db0f80885807a
   ""test_plan"": ""SYNTHETIC_CONSECUTIVE_12D"",
   ""trading_enabled"": false
 }",,,Material loss-budget change with new preregistration; M015/M016 immutable.,,,,,,,,,
-M018,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,68e9b01e0f4646319364199fe17970c5c1ec9b22e46c6a498df131ac2f0f43e5,M015,2026-09-08T16:40:45.771701Z,Causal passive BUY admission may reduce rejects and improve positive cycle productivity without execution relaxation.,M017 day1:12 positive cycles and2546 post-only BUY rejections; equity110.099.,"Cap new BUY at min(original LOW, floor_to_tick(ask-tick)); preserve original HIGH and partial entry anchor.","Fewer post-only rejects; cycle/equity improvement uncertain, lower entry may increase hold.","{
+M018,REJECTED,100,USDT,COMPOUNDING,RUN_MANIFEST,68e9b01e0f4646319364199fe17970c5c1ec9b22e46c6a498df131ac2f0f43e5,M015,2026-09-08T16:40:45.771701Z,Causal passive BUY admission may reduce rejects and improve positive cycle productivity without execution relaxation.,M017 day1:12 positive cycles and2546 post-only BUY rejections; equity110.099.,"Cap new BUY at min(original LOW, floor_to_tick(ask-tick)); preserve original HIGH and partial entry anchor.","Fewer post-only rejects; cycle/equity improvement uncertain, lower entry may increase hold.","{
   ""active_reserve_queues"": 0,
   ""calendar_days"": 3,
   ""capital_mode"": ""COMPOUNDING"",
@@ -4581,4 +4581,48 @@ M018,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,68e9b01e0f464631936
   ""technical_ancestor"": ""M017"",
   ""test_plan"": ""OWNER_GATED_DAY1"",
   ""trading_enabled"": false
-}",,,Material strategic order-admission change; M015/M017 evidence preserved.,,,,,,,,,
+}","{
+  ""DAILY_1000_GATE"": false,
+  ""DURATION_HOURS"": ""24"",
+  ""HOLDS_OVER_2H"": 2,
+  ""INDEPENDENT_AUDIT"": ""PASS_WITH_TRACE_CAVEAT"",
+  ""LOSS_COHORTS_RECOVERED"": 0,
+  ""LOSS_COHORTS_UNRECOVERED"": 2,
+  ""MAX_HOLD"": ""2.0000132963888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888889"",
+  ""MIN_RESERVE"": ""9.9534700000000000"",
+  ""NET_PNL"": ""0.0495000000000000"",
+  ""NET_POSITIVE_CYCLES"": 9,
+  ""OPERATING_FINAL"": ""100.0891000000000000"",
+  ""OUTSTANDING_DEBT"": ""0.0396000000000000"",
+  ""RELEASES"": 3,
+  ""RESERVE_CONSUMPTION"": ""0.0495000000000000"",
+  ""RESERVE_FINAL"": ""9.9604000000000000"",
+  ""RESERVE_FUNDING"": ""0.009900000000000"",
+  ""STRATEGY_PASS"": false,
+  ""TOTAL_EQUITY_FINAL"": ""110.0495000000000000"",
+  ""TOTAL_FEES_QUOTE"": ""0E-16"",
+  ""TRADES"": 254205,
+  ""UNREALIZED_PNL"": ""0E-16""
+}","{
+  ""campaign_snapshot_id"": ""b24e7f742163cbce9c9fb7318ba094a74df9572944032a91a7c1aec19b7d68b5"",
+  ""comparison"": {
+    ""control"": ""M017_DAY1"",
+    ""control_cycles"": 12,
+    ""control_equity"": ""110.099"",
+    ""control_operating"": ""100.10692"",
+    ""control_reserve"": ""9.99208"",
+    ""same_source_date"": ""2025-01-01""
+  },
+  ""criteria"": {
+    ""economic_sustainability_required"": true,
+    ""hold_control_hours"": 2,
+    ""no_extension_on_failure"": true,
+    ""one_hour_not_tested"": true,
+    ""positive_cycles_each_day"": 1000
+  },
+  ""decision"": ""REJECT"",
+  ""extension_allowed"": false,
+  ""reason"": ""9vs12 cycles; lower equity and worse reserve recovery. Admission rejection removal did not achieve target; no day2. Trace-only caveat does not invalidate economics."",
+  ""run_hash"": ""653012a073793292d9d21685fbda4193fe7e9af69759ebd55d3657bcbfda4703"",
+  ""scenario_hash"": ""5c31dcd93eee744fd9033fcd115f6170cb47a745e1dd377211453cd34e7f76d1""
+}",Material strategic order-admission change; M015/M017 evidence preserved.,,,,,,,,,

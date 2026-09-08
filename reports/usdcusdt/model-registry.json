@@ -8806,6 +8806,182 @@
         "schema_version": "usdcusdt-model-registry-v2",
         "status": "CREATED"
       }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-08T16:44:28.767381+00:00",
+      "payload": {
+        "SCENARIO_HASH": "5c31dcd93eee744fd9033fcd115f6170cb47a745e1dd377211453cd34e7f76d1",
+        "label": null,
+        "model_id": "M018",
+        "scenario": {
+          "capital_mode": "COMPOUNDING",
+          "deadline_policy_hash": "88b14751e15093cadc6abbaa9f3e1a70e875ff4e884b1cd911cf7146af494224",
+          "entry_admission_policy_hash": "3fbb1dd25550f017bafe811a6b6e2a92f33af1df94d9835f8e525aa56aec778a",
+          "initial_operating": "100",
+          "initial_reserve": "10",
+          "mapping": [
+            {
+              "day_index": 0,
+              "logical_start_us": 1735689600000000,
+              "source_date": "2025-01-01",
+              "source_start_us": 1735689600000000
+            }
+          ],
+          "name": "OWNER_GATED_DAY1_PRICE_PRIORITY",
+          "profile_config_sha256": "a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-08T16:44:28.988224+00:00",
+      "payload": {
+        "MODEL_HASH": "68e9b01e0f4646319364199fe17970c5c1ec9b22e46c6a498df131ac2f0f43e5",
+        "RUN_HASH": "653012a073793292d9d21685fbda4193fe7e9af69759ebd55d3657bcbfda4703",
+        "SCENARIO_HASH": "5c31dcd93eee744fd9033fcd115f6170cb47a745e1dd377211453cd34e7f76d1",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M018\\runs\\653012a073793292d9d21685fbda4193fe7e9af69759ebd55d3657bcbfda4703",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "b24e7f742163cbce9c9fb7318ba094a74df9572944032a91a7c1aec19b7d68b5",
+        "capital_mode": "COMPOUNDING",
+        "code_commit": "65b7fe6aebb91d6c01ee6ef92d90b7c26f84a83c",
+        "currency": "USDT",
+        "dataset_hash": "1c564f88935a7c694d2f15cd4c9a8710013a19095f4eaece32529b22e7ba7fa2",
+        "initial_capital": "100",
+        "interval": {
+          "end_exclusive": "2025-01-02T00:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M018",
+        "run": {
+          "dataset_hash_semantics": "PUBLISHED_DATA_CATALOG; ACTUAL_INPUTS_BOUND_BY_ONE_DAY_MAPPING_AND_VALIDATION",
+          "output": "artifacts/usdcusdt/l2-monthly-samples/M018/OWNER_GATED_DAY1/PRICE_PRIORITY",
+          "physical_manifest": "artifacts/usdcusdt/l2-monthly-samples/M018/OWNER_GATED_DAY1/PRICE_PRIORITY/run-manifest.json",
+          "physical_run_hash": "219acf9d02fbf954fa4c85342583c047749a87244172a63310441aa2e8279b48",
+          "source_day_mapping": [
+            {
+              "day_index": 0,
+              "logical_start_us": 1735689600000000,
+              "source_date": "2025-01-01",
+              "source_start_us": 1735689600000000
+            }
+          ]
+        },
+        "technical_revision": "M018_PASSIVE_BUY_ADMISSION_ONE_DAY"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-08T16:44:29.202258+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M018",
+        "reason": "Canonical preflight passed at published65b7fe6; one-day physical run started, no extension.",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-08T16:53:20.107840+00:00",
+      "payload": {
+        "EVALUATION_HASH": "669b02e4e3c0e9277918899522bdde0563bf6cbe791cd5dce3a553e5b0064dd2",
+        "EVIDENCE_HASH": "628d288d054607477b9263205fcb64eda12c95425d5ca0f7a713487c44227b16",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M018\\runs\\653012a073793292d9d21685fbda4193fe7e9af69759ebd55d3657bcbfda4703\\evaluations\\669b02e4e3c0e9277918899522bdde0563bf6cbe791cd5dce3a553e5b0064dd2",
+        "campaign_snapshot_id": "b24e7f742163cbce9c9fb7318ba094a74df9572944032a91a7c1aec19b7d68b5",
+        "comparison": {
+          "control": "M017_DAY1",
+          "control_cycles": 12,
+          "control_equity": "110.099",
+          "control_operating": "100.10692",
+          "control_reserve": "9.99208",
+          "same_source_date": "2025-01-01"
+        },
+        "criteria": {
+          "economic_sustainability_required": true,
+          "hold_control_hours": 2,
+          "no_extension_on_failure": true,
+          "one_hour_not_tested": true,
+          "positive_cycles_each_day": 1000
+        },
+        "decision": {
+          "campaign_snapshot_id": "b24e7f742163cbce9c9fb7318ba094a74df9572944032a91a7c1aec19b7d68b5",
+          "comparison": {
+            "control": "M017_DAY1",
+            "control_cycles": 12,
+            "control_equity": "110.099",
+            "control_operating": "100.10692",
+            "control_reserve": "9.99208",
+            "same_source_date": "2025-01-01"
+          },
+          "criteria": {
+            "economic_sustainability_required": true,
+            "hold_control_hours": 2,
+            "no_extension_on_failure": true,
+            "one_hour_not_tested": true,
+            "positive_cycles_each_day": 1000
+          },
+          "decision": "REJECT",
+          "extension_allowed": false,
+          "reason": "9vs12 cycles; lower equity and worse reserve recovery. Admission rejection removal did not achieve target; no day2. Trace-only caveat does not invalidate economics.",
+          "run_hash": "653012a073793292d9d21685fbda4193fe7e9af69759ebd55d3657bcbfda4703",
+          "scenario_hash": "5c31dcd93eee744fd9033fcd115f6170cb47a745e1dd377211453cd34e7f76d1"
+        },
+        "metrics": {
+          "DAILY_1000_GATE": false,
+          "DURATION_HOURS": "24",
+          "HOLDS_OVER_2H": 2,
+          "INDEPENDENT_AUDIT": "PASS_WITH_TRACE_CAVEAT",
+          "LOSS_COHORTS_RECOVERED": 0,
+          "LOSS_COHORTS_UNRECOVERED": 2,
+          "MAX_HOLD": "2.0000132963888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888889",
+          "MIN_RESERVE": "9.9534700000000000",
+          "NET_PNL": "0.0495000000000000",
+          "NET_POSITIVE_CYCLES": 9,
+          "OPERATING_FINAL": "100.0891000000000000",
+          "OUTSTANDING_DEBT": "0.0396000000000000",
+          "RELEASES": 3,
+          "RESERVE_CONSUMPTION": "0.0495000000000000",
+          "RESERVE_FINAL": "9.9604000000000000",
+          "RESERVE_FUNDING": "0.009900000000000",
+          "STRATEGY_PASS": false,
+          "TOTAL_EQUITY_FINAL": "110.0495000000000000",
+          "TOTAL_FEES_QUOTE": "0E-16",
+          "TRADES": 254205,
+          "UNREALIZED_PNL": "0E-16"
+        },
+        "model_id": "M018",
+        "run_hash": "653012a073793292d9d21685fbda4193fe7e9af69759ebd55d3657bcbfda4703",
+        "scenario_hash": "5c31dcd93eee744fd9033fcd115f6170cb47a745e1dd377211453cd34e7f76d1"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-08T16:53:20.332042+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M018",
+        "reason": "Full authorized24h completed;26fills reconciled; independent PASS_WITH_TRACE_CAVEAT.",
+        "to": "EVALUATED"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-08T16:53:20.534855+00:00",
+      "payload": {
+        "from": "EVALUATED",
+        "model_id": "M018",
+        "reason": "One-day challenger failed1000cycle gate and regressed12to9; profit halved, reserve debt increased; no extension/promotion.",
+        "to": "REJECTED"
+      }
     }
   ],
   "models": [
@@ -10480,7 +10656,7 @@
         "monthly": null,
         "run_manifest": null
       },
-      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
+      "capital_evidence": "RUN_MANIFEST",
       "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-08T16:40:45.771701Z",
       "currency": "USDT",
@@ -10573,7 +10749,7 @@
       "model_id": "M018",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "REJECTED"
     }
   ],
   "pair": "USDCUSDT",

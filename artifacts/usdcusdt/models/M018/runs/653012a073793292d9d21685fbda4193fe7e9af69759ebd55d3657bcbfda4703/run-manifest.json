@@ -1,0 +1,42 @@
+{
+  "MODEL_HASH": "68e9b01e0f4646319364199fe17970c5c1ec9b22e46c6a498df131ac2f0f43e5",
+  "RUN_HASH": "653012a073793292d9d21685fbda4193fe7e9af69759ebd55d3657bcbfda4703",
+  "SCENARIO_HASH": "5c31dcd93eee744fd9033fcd115f6170cb47a745e1dd377211453cd34e7f76d1",
+  "artifact_directory": "artifacts\\usdcusdt\\models\\M018\\runs\\653012a073793292d9d21685fbda4193fe7e9af69759ebd55d3657bcbfda4703",
+  "backend": {
+    "backend": "CPU",
+    "batch_size": null,
+    "benchmark_hash": null,
+    "device": null,
+    "driver": null,
+    "library": null,
+    "library_version": null,
+    "runtime": null
+  },
+  "campaign_snapshot_id": "b24e7f742163cbce9c9fb7318ba094a74df9572944032a91a7c1aec19b7d68b5",
+  "capital_mode": "COMPOUNDING",
+  "code_commit": "65b7fe6aebb91d6c01ee6ef92d90b7c26f84a83c",
+  "currency": "USDT",
+  "dataset_hash": "1c564f88935a7c694d2f15cd4c9a8710013a19095f4eaece32529b22e7ba7fa2",
+  "initial_capital": "100",
+  "interval": {
+    "end_exclusive": "2025-01-02T00:00:00Z",
+    "start": "2025-01-01T00:00:00Z"
+  },
+  "model_id": "M018",
+  "run": {
+    "dataset_hash_semantics": "PUBLISHED_DATA_CATALOG; ACTUAL_INPUTS_BOUND_BY_ONE_DAY_MAPPING_AND_VALIDATION",
+    "output": "artifacts/usdcusdt/l2-monthly-samples/M018/OWNER_GATED_DAY1/PRICE_PRIORITY",
+    "physical_manifest": "artifacts/usdcusdt/l2-monthly-samples/M018/OWNER_GATED_DAY1/PRICE_PRIORITY/run-manifest.json",
+    "physical_run_hash": "219acf9d02fbf954fa4c85342583c047749a87244172a63310441aa2e8279b48",
+    "source_day_mapping": [
+      {
+        "day_index": 0,
+        "logical_start_us": 1735689600000000,
+        "source_date": "2025-01-01",
+        "source_start_us": 1735689600000000
+      }
+    ]
+  },
+  "technical_revision": "M018_PASSIVE_BUY_ADMISSION_ONE_DAY"
+}

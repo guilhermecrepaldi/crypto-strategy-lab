@@ -923,8 +923,10 @@ class ObservedL2Replay(B10ReserveReplay):
                     admitted_price=str(price),
                     observed_ask=str(engine.ask),
                     tick=str(tick),
-                    book_capture_order=engine.observed_capture[1],
-                    book_capture_time_us=engine.observed_capture[0],
+                    # Replay uses CAPTURE_ARRIVAL: these retain the actual book,
+                    # while observed_capture may already identify a later trade.
+                    book_capture_order=engine.book_id,
+                    book_capture_time_us=engine.last_book_us,
                     native_update_id=engine.observed_native_update_id,
                     policy_hash=engine.entry_admission_policy_hash,
                 )
