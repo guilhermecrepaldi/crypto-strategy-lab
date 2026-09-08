@@ -24,7 +24,7 @@ MONTHLY_CONTINUOUS_WEEK_2_AUTHORIZED=false
 
 OWNER_NEXT_RESEARCH=ADAPTIVE_STABLECOIN_LADDER_V1
 OWNER_DIRECTIVE=docs/microstructure/ADAPTIVE_STABLECOIN_LADDER_OWNER_DIRECTIVE.md
-NEXT_CAMPAIGN_STATUS=M019_REGISTERED_AND_REVIEWED; PRE_RUN_PUBLICATION_PENDING; NOT_EXECUTED
+NEXT_CAMPAIGN_STATUS=M019_D1_COMPLETE; FAIL_1000; EVIDENCE_PASS_CONDITIONAL; DAY2_CLOSED
 NEXT_CAMPAIGN_MODEL_HASH=24e5a43a63bc501b4d7fb13931c0fcc39219dedd9cc274e925d9055c33f6d347
 NEXT_CAMPAIGN_HOLD_OBJECTIVE_HOURS=1_2_6_24_ALERTS_ONLY; PROFIT_ONLY_EXIT
 NEXT_CAMPAIGN_FUNDING=0; NO_RESERVE_PROPOSED
@@ -35,8 +35,10 @@ new12-slot(6BUY+6SELL) observed-L2 inventory ladder with shared capital/liquidit
 traceable lots, no reserve release and no realized loss. V1 freezes mid center,
 one-tick offsets, small safe notional,60s/2tick free-quote refresh and90% projected
 USDC cap. First run only2025-01-01; day2 remains closed. Preparation is underway;
-registry identity and independent review now exist; pre-run publication and the
-economic result are still pending.
+registry identity, published preregistration and D1 result now exist. D1 produced
+10 positive cycles and100.0252 marked final equity. Main observed bottleneck was
+INVENTORY_LOCK coupled to exit queue:84USDC remained after an18.503h cycle
+plateau. No successor is authorized and day2 remains closed.
 
 Superseded unexecuted proposal changed the earlier research direction, not the completed M018
 campaign above. It described three separate buy-low/sell-high ranges, no reserve, measuring

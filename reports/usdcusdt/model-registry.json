@@ -9092,6 +9092,144 @@
         "schema_version": "usdcusdt-model-registry-v2",
         "status": "CREATED"
       }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-08T20:26:07.505646+00:00",
+      "payload": {
+        "SCENARIO_HASH": "59e9782ad5b4143803518027e46c0cb1bba45fdbd4beabc86ebf63886a53a3ce",
+        "label": "OWNER_GATED_DAY1",
+        "model_id": "M019",
+        "scenario": {
+          "audit_sha256": "1a29d1b9e02e17b516dbd810af3d780ddc5040cf965046eb54e96e5cf65b5818",
+          "buy_slots": 6,
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "execution_run_hash": "fd22b5e6fc14486f6e05fdec37c3c067cc6b876af2db0ecff1dd5875defa9486",
+          "name": "M019_ADAPTIVE_LADDER_D1",
+          "negative_exit_allowed": false,
+          "sell_slots": 6,
+          "source_day": "2025-01-01"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-08T20:26:07.739382+00:00",
+      "payload": {
+        "MODEL_HASH": "24e5a43a63bc501b4d7fb13931c0fcc39219dedd9cc274e925d9055c33f6d347",
+        "RUN_HASH": "c7da5f0949b7c4361b78f149654d535f92ba6210c9fe9bdf4836d1b7824f6cd2",
+        "SCENARIO_HASH": "59e9782ad5b4143803518027e46c0cb1bba45fdbd4beabc86ebf63886a53a3ce",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M019\\runs\\c7da5f0949b7c4361b78f149654d535f92ba6210c9fe9bdf4836d1b7824f6cd2",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "e248a5c22a76ca6ba6c7cb5a10ecb6f559f369214b40404e932aa56c2b4f41ef",
+        "capital_mode": "COMPOUNDING",
+        "code_commit": "342b46db4d31b80d1de5d03f4ce66a63a31a040e",
+        "currency": "USDT",
+        "dataset_hash": "8cb436b68d6953573d8e7e5dc89eaf53e344e46bde18ce749b440abdd757dd91",
+        "initial_capital": "100",
+        "interval": {
+          "end_exclusive": "2025-01-02T00:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M019",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M019\\OWNER_GATED_DAY1\\PRICE_PRIORITY",
+          "execution_run_hash": "fd22b5e6fc14486f6e05fdec37c3c067cc6b876af2db0ecff1dd5875defa9486",
+          "ledger_sha256": "1a29d1b9e02e17b516dbd810af3d780ddc5040cf965046eb54e96e5cf65b5818",
+          "summary_sha256": "9f857e4cce72fa2408628b38b29c71e2cadf46c0ac53e6dd5e09b05386b8bb39"
+        },
+        "technical_revision": "ADAPTIVE_STABLECOIN_LADDER_V1"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-08T20:26:07.973330+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M019",
+        "reason": "Reconciled status for completed OWNER-authorized D1 historical L2 run",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-08T20:26:08.203410+00:00",
+      "payload": {
+        "EVALUATION_HASH": "e87e725a86a86be9d2f6cb7aaff7d0c83a1d2d12866916fc5c00e2c4b15c775e",
+        "EVIDENCE_HASH": "bf74a2497f99c0a63beb777927a37a07af6937eb2ca92b25e8091e1c0ee3f036",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M019\\runs\\c7da5f0949b7c4361b78f149654d535f92ba6210c9fe9bdf4836d1b7824f6cd2\\evaluations\\e87e725a86a86be9d2f6cb7aaff7d0c83a1d2d12866916fc5c00e2c4b15c775e",
+        "campaign_snapshot_id": "e248a5c22a76ca6ba6c7cb5a10ecb6f559f369214b40404e932aa56c2b4f41ef",
+        "comparison": {
+          "primary": "OWNER_GATE_1000",
+          "serial_reference": "M018_NOT_CAPITAL_MATCHED"
+        },
+        "criteria": {
+          "cycles_min": 1000,
+          "negative_exit_allowed": false,
+          "total_final_equity_gte": "100"
+        },
+        "decision": {
+          "campaign_snapshot_id": "e248a5c22a76ca6ba6c7cb5a10ecb6f559f369214b40404e932aa56c2b4f41ef",
+          "comparison": {
+            "primary": "OWNER_GATE_1000",
+            "serial_reference": "M018_NOT_CAPITAL_MATCHED"
+          },
+          "criteria": {
+            "cycles_min": 1000,
+            "negative_exit_allowed": false,
+            "total_final_equity_gte": "100"
+          },
+          "next_hypothesis_authorized": false,
+          "reason": "10 positive cycles; inventory lock and exit queue; day2 closed",
+          "run_hash": "c7da5f0949b7c4361b78f149654d535f92ba6210c9fe9bdf4836d1b7824f6cd2",
+          "scenario_hash": "59e9782ad5b4143803518027e46c0cb1bba45fdbd4beabc86ebf63886a53a3ce",
+          "status": "FAIL_1000"
+        },
+        "metrics": {
+          "CYCLES_POSITIVE": 10,
+          "MAIN_BOTTLENECK": "INVENTORY_LOCK",
+          "PASS_1000": false,
+          "REALIZED_NET_PNL": "0.0336000000000000",
+          "TOTAL_FINAL_EQUITY": "100.0252000000000000",
+          "UNREALIZED_PNL": "-0.0084000000000000",
+          "USDC_FINAL": "84.00000000",
+          "USDC_MARKED_VALUE": "84.1680000000000000",
+          "USDT_FINAL": "15.8572000000000000"
+        },
+        "model_id": "M019",
+        "run_hash": "c7da5f0949b7c4361b78f149654d535f92ba6210c9fe9bdf4836d1b7824f6cd2",
+        "scenario_hash": "59e9782ad5b4143803518027e46c0cb1bba45fdbd4beabc86ebf63886a53a3ce"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-08T20:26:08.438814+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M019",
+        "reason": "D1 complete; evidence passed independent audit and economic target failed",
+        "to": "EVALUATED"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-08T20:26:08.685107+00:00",
+      "payload": {
+        "from": "EVALUATED",
+        "model_id": "M019",
+        "reason": "OWNER D1 gate failed: 10 of required 1000 positive cycles; day2 closed",
+        "to": "REJECTED"
+      }
     }
   ],
   "models": [
@@ -10883,7 +11021,7 @@
         "monthly": null,
         "run_manifest": null
       },
-      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
+      "capital_evidence": "RUN_MANIFEST",
       "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-08T20:08:32.055989Z",
       "currency": "USDT",
@@ -10977,7 +11115,7 @@
       "model_id": "M019",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "REJECTED"
     }
   ],
   "pair": "USDCUSDT",

@@ -8,8 +8,8 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=true
-AUTHORIZED_MODEL=M019
+NEW_REPLAY_AUTHORIZED_NOW=false
+AUTHORIZED_MODEL=NONE_M019_D1_COMPLETE_DAY2_CLOSED
 
 ## Latest authority — adaptive stablecoin ladder V1
 
@@ -30,6 +30,12 @@ identity and pre-run commit are published. At that point the two machine fields
 may be switched to authorize M019 before the one-day run.
 No day2 payload may be opened. A day1 pass does not itself rewrite this file or
 authorize extension; the result and audit must first be published and reconciled.
+
+POST_RUN_STATUS=M019_D1_COMPLETE_FAIL_1000
+POST_RUN_EVIDENCE=PASS_CONDITIONAL
+DAY2_AUTHORIZED=false
+The execution gate is closed again after D1. Any successor or extension requires
+a new explicit OWNER decision and a new preregistered identity where material.
 
 ## Superseded preparation — three ranges
 
