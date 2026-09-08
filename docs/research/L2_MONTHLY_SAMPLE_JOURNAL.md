@@ -171,3 +171,15 @@ The published preflight binds the exact12 source days, M015, both independent
 execution envelopes, carried100+10 initial capital and all reviewed source hashes.
 Next action: publish this milestone, verify HEAD equals origin/main, then execute
 the canonical runner. No parameter changes or automatic thirteenth source day.
+
+## 2026-09-08 — Preparation boundary failure, no economic replay
+
+Published source f2490e3b5a474f568909e16b0f7c24d65366fd6b passed campaign
+preflight/data bindings but stopped in archive selection before creating any
+economic output. Root cause: source midnight preceded the manifest's first actual
+trade at2025-01-01T00:00:00.006766Z; the shared validated-history reader correctly
+rejected that coverage request. This is a loader boundary bug, not strategy loss.
+Read start now clamps to the first actual validated event, leaving logical midnight,
+source offsets, day end, cold start, capital, strategy and profiles unchanged.
+Regression covers both exact-midnight and6766us first prints;21 runner tests and
+Ruff pass. Independent Astra delta review and refreshed source binding precede retry.

@@ -21,7 +21,14 @@ produce fills. No account access, keys, orders, deployment or real-week extensio
 Queue/FIFO inference and frozen zero-fee/filter assumptions remain conditional.
 Data audits retain old source provenance; execution uses these reviewed bytes.
 
-REVIEWED_SOURCE_SHA256_LF[scripts/run_l2_monthly_samples.py]=214821e53af9d676d21b734a554177885173c411efa8acfeba8dd5a9244ab34e
+Preparation-only coverage correction independently reviewed by GPT-6 Astra:
+archive reading starts at max(source midnight, manifest first actual print).
+Logical midnight, source offsets, full-day denominators, cold start and all
+observed trades remain unchanged.21 runner tests pass, including0/6766us first
+print fixtures. No economic output existed before this correction; no scientific
+policy or frozen M015 source changed.
+
+REVIEWED_SOURCE_SHA256_LF[scripts/run_l2_monthly_samples.py]=8933bf36141c5c050aa5fce3ee74c11c7238d110ecf9280119467df27952491a
 REVIEWED_SOURCE_SHA256_LF[scripts/validate_tardis_l2_samples.py]=6e6d2c799293da4fc6ef5debbf890236fbaa62f7420a047d71f11c532b037f99
 REVIEWED_SOURCE_SHA256_LF[scripts/run_high_uptime_recovery.py]=4ce00d03fd86d1c4c09db523e6b1c6fd4b6f01edd72899585151a0b8aa2e8186
 REVIEWED_SOURCE_SHA256_LF[scripts/run_b10_reality.py]=90f6852a773ca678570c2347a95e6caa348f11b30811066155e1b18b96a33ff7

@@ -137,8 +137,11 @@ def test_fixed_twelve_day_mapping_preserves_source_grid_and_compresses_gaps():
         assert item["logical_start_us"] - mapping[0]["logical_start_us"] == index * 86_400_000_000
 
 
-def test_stitched_builder_reads_only_selected_days_and_keeps_frozen_model_identity(monkeypatch):
-    from datetime import timedelta
+@pytest.mark.parametrize("first_print_offset_us", [0, 6766])
+def test_stitched_builder_reads_only_selected_days_and_keeps_frozen_model_identity(
+    monkeypatch, first_print_offset_us
+):
+    from datetime import UTC, datetime, timedelta
     from types import SimpleNamespace
 
     import scripts.run_l2_monthly_samples as runner
@@ -147,8 +150,13 @@ def test_stitched_builder_reads_only_selected_days_and_keeps_frozen_model_identi
     base, _ = replay_fixture()
     mapping = stitched_mapping(("2025-01-01", "2026-02-01"))
     calls = []
+    history = SimpleNamespace(
+        first_timestamp=datetime(2025, 1, 1, tzinfo=UTC)
+        + timedelta(microseconds=first_print_offset_us)
+    )
 
     def archives(history, *, start, end_exclusive):
+        assert start >= history.first_timestamp
         calls.append((start, end_exclusive))
         return [SimpleNamespace(cadence="daily", local_path="synthetic.zip", sha256="bound")]
 
@@ -181,11 +189,16 @@ def test_stitched_builder_reads_only_selected_days_and_keeps_frozen_model_identi
         ],
     }
     runtime, profile, envelope, rules_at, canonical = runner.build_stitched_inputs(
-        None, config, mapping
+        history, config, mapping
     )
     assert len(canonical) == 6 and len(runtime.tape.events) == 6
     assert [start.date().isoformat() for start, end in calls] == ["2025-01-01", "2026-02-01"]
-    assert all(end - start == timedelta(days=1) for start, end in calls)
+    assert calls[0][0] == history.first_timestamp
+    assert calls[0][1] == datetime(2025, 1, 2, tzinfo=UTC)
+    assert calls[1][1] - calls[1][0] == timedelta(days=1)
+    assert runtime.tape.events[0] // EVENT_ORDER_SCALE == (
+        mapping[0]["logical_start_us"] + first_print_offset_us + 120
+    )
     assert runtime.tape.events[3] // EVENT_ORDER_SCALE == mapping[1]["logical_start_us"] + 120
     for name in runner.ENVELOPES:
         replay = runner.MeasuredReplay(

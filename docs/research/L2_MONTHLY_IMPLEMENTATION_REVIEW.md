@@ -186,3 +186,23 @@ src/crypto_strategy_lab/microstructure/tape_cache.py 7640e20446eb02fb9296ba80160
 src/crypto_strategy_lab/microstructure/operator.py 07458aea39284982ed7fe1e08e5527de4ac7dc1acc7d87c2a0bcace1a44d628d
 docs/microstructure/L2_MONTHLY_SAMPLE_PROTOCOL.md 59bef2a834afcc334a3e1bc88d6070c2edefda6105cb5fa6020ba35594dd5090
 ```
+
+### Preparation coverage delta — independent review PASS_CONDITIONAL
+
+GPT-6 Astra independently inspected the runner-only correction after preparation
+stopped before economics: shared archive selection requires its lower bound at
+or after the manifest's first actual trade (2025-01-01T00:00:00.006766Z).
+The runner now clamps only selection/iteration to max(source midnight, that
+manifest bound). Logical day origins, exact source offsets, midnight day ends,
+full24h denominators, cold initialization and unavailable initial book interval
+remain unchanged. No observed trade is removed and no earlier data is introduced.
+This is a data-reader boundary correction, not a scientific/strategy change.
+
+Independent verification:21 runner tests PASS, including parameterized0/6766us
+first-print regression, exact logical timestamp and second-day boundary checks.
+No economic artifacts existed before the fix. Prior hashes above remain evidence
+of the earlier review; the following runner hash supersedes only its source line:
+
+```
+scripts/run_l2_monthly_samples.py 8933bf36141c5c050aa5fce3ee74c11c7238d110ecf9280119467df27952491a
+```

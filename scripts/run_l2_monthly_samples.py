@@ -899,13 +899,16 @@ def build_stitched_inputs(history, config, mapping):
     for item in mapping:
         first = datetime.fromisoformat(item["source_date"]).replace(tzinfo=UTC)
         end = first + timedelta(days=1)
-        selected = select_history_archives(history, start=first, end_exclusive=end)
+        # Manifest coverage begins at the first actual print, not midnight.
+        # Clamp only archive reading; the logical day and source offset stay fixed.
+        read_start = max(first, history.first_timestamp)
+        selected = select_history_archives(history, start=read_start, end_exclusive=end)
         if len(selected) != 1 or selected[0].cadence != "daily":
             raise ValueError("EXACT_SOURCE_DAY_ARCHIVE_REQUIRED")
         if file_sha(Path(selected[0].local_path)) != selected[0].sha256:
             raise ValueError("CANONICAL_ARCHIVE_CHANGED")
         offset = item["logical_start_us"] - item["source_start_us"]
-        for event in iter_history(history, start=first, end_exclusive=end):
+        for event in iter_history(history, start=read_start, end_exclusive=end):
             rows.append((_datetime_to_micros(event.timestamp) + offset, event))
     tape = SerialTape.from_events(
         (
