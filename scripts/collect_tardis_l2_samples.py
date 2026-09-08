@@ -315,7 +315,8 @@ def _retry_delay(response: object, attempt: int) -> float:
 
 
 def _raw_slice(day: date, offset: int, root: Path, timeout: float,
-               prior: dict[str, object] | None = None) -> dict[str, object]:
+               prior: dict[str, object] | None = None,
+               revalidate_orphans: bool = False) -> dict[str, object]:
     if not START <= day <= END or day.day != 1:
         raise ValueError("ONLY_AUTHORIZED_MONTHLY_CANDIDATES_ALLOWED")
     if offset < 0 or offset >= 1440 or offset % 10:
@@ -329,8 +330,70 @@ def _raw_slice(day: date, offset: int, root: Path, timeout: float,
     if existing is not None:
         with existing.open("rb") as stream:
             digest = hashlib.file_digest(stream, "sha256").hexdigest()
-        if (not prior or digest != prior.get("sha256")
-                or prior.get("status") not in {"AVAILABLE", "ORIGINAL_PRESENT"}):
+        sidecar = existing.with_name(existing.name + ".meta.json")
+        metadata = json.loads(sidecar.read_text(encoding="utf-8")) if sidecar.exists() else {}
+        trusted = next((record for record in (prior, metadata) if record
+                        and record.get("sha256") == digest
+                        and record.get("status") in {"AVAILABLE", "ORIGINAL_PRESENT"}
+                        and record.get("source_url") == url
+                        and record.get("offset") == offset
+                        and record.get("http_status") == 200
+                        and str({str(k).lower(): v for k, v in
+                                 record.get("response_headers", {}).items()}.get(
+                                     "x-slice-size")) == "10"), None)
+        if trusted is None:
+            if revalidate_orphans:
+                request = Request(url, headers={"Accept-Encoding": "gzip",
+                                                  "User-Agent": "crypto-strategy-lab/tardis-l2"})
+                try:
+                    with urlopen(request, timeout=timeout) as response:
+                        remote = response.read()
+                        headers = {str(k).lower(): v for k, v in response.headers.items()}
+                        valid_headers = (
+                            response.status == 200
+                            and str(headers.get("x-slice-size")) == "10"
+                            and (headers.get("content-length") in {None, str(len(remote))})
+                        )
+                        verified = valid_headers and hashlib.sha256(remote).hexdigest() == digest
+                        verification_path = existing.with_name(
+                            existing.name + ".verification." + hashlib.sha256(remote).hexdigest()
+                        )
+                        if not verified and not verification_path.exists():
+                            with verification_path.open("xb") as evidence:
+                                evidence.write(remote)
+                        result = {
+                            "offset": offset,
+                            "source_url": url,
+                            "status": "AVAILABLE" if verified else "INVALID",
+                            "local_path": existing.as_posix(),
+                            "bytes": existing.stat().st_size,
+                            "sha256": digest,
+                            "recovered_original": verified,
+                            "download_timestamp": None,
+                            "original_download_timestamp_status": "UNKNOWN_AFTER_MANIFEST_FAILURE",
+                            "coverage": f"slice_offset_{offset}_10_minutes",
+                            "verification_timestamp": datetime.now(UTC).isoformat().replace(
+                                "+00:00", "Z"
+                            ),
+                            "http_status": response.status,
+                            "response_headers": dict(response.headers.items()),
+                            "verification_path": (
+                                verification_path.as_posix() if not verified else None
+                            ),
+                        }
+                        if not verified:
+                            result["error"] = "ORPHAN_PUBLIC_BYTES_MISMATCH"
+                        else:
+                            if existing.suffix == ".gz":
+                                with gzip.open(existing, "rb") as stream:
+                                    while stream.read(1024 * 1024):
+                                        pass
+                                result["gzip_integrity"] = "PASS"
+                            _write_raw_sidecar(existing, result)
+                        return result
+                except (HTTPError, URLError, OSError, TimeoutError, EOFError) as exc:
+                    return {"offset": offset, "source_url": url, "status": "INVALID",
+                            "error": str(exc), "local_path": existing.as_posix(), "sha256": digest}
             return {"offset": offset, "source_url": url, "status": "INVALID",
                     "error": "ORPHAN_OR_HASH_MISMATCH", "local_path": existing.as_posix(),
                     "bytes": existing.stat().st_size, "sha256": digest}
@@ -340,8 +403,8 @@ def _raw_slice(day: date, offset: int, root: Path, timeout: float,
                     while stream.read(1024 * 1024):
                         pass
             except (OSError, EOFError, gzip.BadGzipFile) as exc:
-                return {**prior, "status": "INVALID", "error": str(exc)}
-        return {**prior, "status": "ORIGINAL_PRESENT", "local_path": existing.as_posix(),
+                return {**trusted, "status": "INVALID", "error": str(exc)}
+        return {**trusted, "status": "ORIGINAL_PRESENT", "local_path": existing.as_posix(),
                 "bytes": existing.stat().st_size, "sha256": digest}
     part = directory / f"{offset:04d}.{os.getpid()}.{next(tempfile._get_candidate_names())}.part"
     item: dict[str, object] = {"offset": offset, "source_url": url,
@@ -410,6 +473,7 @@ def _raw_slice(day: date, offset: int, root: Path, timeout: float,
         item.update(status=item.get("status") if item.get("status") == "INVALID" else "AVAILABLE",
                     local_path=destination.as_posix(),
                     coverage=f"slice_offset_{offset}_10_minutes")
+        _write_raw_sidecar(destination, item)
     except (URLError, TimeoutError, OSError, EOFError, gzip.BadGzipFile) as exc:
         item.update(status="INVALID", error=str(exc))
     finally:
@@ -418,9 +482,16 @@ def _raw_slice(day: date, offset: int, root: Path, timeout: float,
     return item
 
 
+def _write_raw_sidecar(original: Path, item: dict[str, object]) -> None:
+    sidecar = original.with_name(original.name + ".meta.json")
+    temporary = sidecar.with_suffix(sidecar.suffix + ".tmp")
+    temporary.write_text(json.dumps(item, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary.replace(sidecar)
+
+
 def collect_raw(*, dates: Iterable[date] | None = None, root: Path = ROOT,
                 manifest_path: Path = MANIFEST, timeout: float = 60.0,
-                concurrency: int = 6) -> dict[str, object]:
+                concurrency: int = 6, revalidate_orphans: bool = False) -> dict[str, object]:
     authorized = candidate_dates()
     days = list(authorized if dates is None else dates)
     if not days or len(set(days)) != len(days) or any(day not in authorized for day in days):
@@ -440,9 +511,12 @@ def collect_raw(*, dates: Iterable[date] | None = None, root: Path = ROOT,
         for day, entry in entries.items()
     }
     jobs = [(day, offset) for day in days for offset in range(0, 1440, 10)]
-    with ThreadPoolExecutor(max_workers=concurrency) as pool:
+    pool = ThreadPoolExecutor(max_workers=concurrency)
+    futures = {}
+    try:
         futures = {pool.submit(_raw_slice, day, offset, root, timeout,
-                                prior_offsets.get(day.isoformat(), {}).get(offset)): (day, offset)
+                                prior_offsets.get(day.isoformat(), {}).get(offset),
+                                revalidate_orphans): (day, offset)
                    for day, offset in jobs}
         for future in as_completed(futures):
             day, offset = futures[future]
@@ -453,7 +527,14 @@ def collect_raw(*, dates: Iterable[date] | None = None, root: Path = ROOT,
                 "error": str(future.exception())}
             slices[int(item["offset"])] = item
             entry["raw_slices"] = sorted(slices.values(), key=lambda value: value["offset"])
-            _write_raw_manifest(manifest_path, payload, entries)
+            _persist_raw_manifest(manifest_path, payload, entries)
+    except Exception:
+        for future in futures:
+            future.cancel()
+        pool.shutdown(wait=False, cancel_futures=True)
+        raise
+    else:
+        pool.shutdown(wait=True)
     for entry in entries.values():
         key = str(entry["date"])
         if prior_offsets.get(key) or "raw_slices" in entry:
@@ -463,7 +544,7 @@ def collect_raw(*, dates: Iterable[date] | None = None, root: Path = ROOT,
     payload.update({"schema_version": payload.get("schema_version", "tardis-free-l2-v1"),
                     "symbol": "USDCUSDT", "source": "Tardis", "dates":
                     [entries[day.isoformat()] for day in days]})
-    _write_raw_manifest(manifest_path, payload, entries)
+    _persist_raw_manifest(manifest_path, payload, entries)
     return payload
 
 
@@ -479,6 +560,19 @@ def _write_raw_manifest(path: Path, payload: dict[str, object],
     temporary.replace(path)
 
 
+def _persist_raw_manifest(path: Path, payload: dict[str, object],
+                          entries: dict[str, dict[str, object]]) -> None:
+    deadline = time.monotonic() + 2.0
+    while True:
+        try:
+            _write_raw_manifest(path, payload, entries)
+            return
+        except PermissionError:
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(0.1)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--offline", action="store_true", help="validate existing originals only")
@@ -489,12 +583,14 @@ def main() -> None:
     parser.add_argument("--raw", action="store_true", help="collect native raw 10-minute sidecars")
     parser.add_argument("--dates", nargs="*", type=date.fromisoformat,
                         help="authorized first-of-month dates (raw probe/resume)")
+    parser.add_argument("--revalidate-orphans", action="store_true",
+                        help="verify unknown originals against a fresh public response")
     args = parser.parse_args()
     if args.raw:
         if args.offline:
             parser.error("--offline cannot be combined with --raw")
         result = collect_raw(dates=args.dates, root=args.root, manifest_path=args.manifest,
-                             timeout=args.timeout)
+                             timeout=args.timeout, revalidate_orphans=args.revalidate_orphans)
     elif args.offline:
         result = collect(
             dates=args.dates or candidate_dates(),

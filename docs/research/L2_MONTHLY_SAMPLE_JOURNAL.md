@@ -63,3 +63,43 @@ valid bridging snapshot, never an invented opening book. Raw native probe200 for
 Jan2026 confirms free ten-minute depth/snapshot/trade slices with U/u. Acquire all
 144 slices perday to validate native continuity and capture ordering independently.
 Native and CSV data retain separate provenance; this is not yet economic approval.
+
+## Arrival ordering and acquisition persistence review
+
+Before any economic outcome, scientific review froze CAPTURE_ARRIVAL_CLOCK for
+timers and prefix-limited selector history. Native millisecond/microsecond precision
+is preserved separately. This prevents an earlier-exchange print arriving later
+from borrowing a future book or being rejected merely because streams interleave.
+Full details remain in the single protocol authority.
+
+Native files progressed beyond the incremental manifest (481 recorded slices at
+the observed checkpoint). Investigating a persistence exception while executor
+workers continue. Original files are preserved; unrecorded originals will require
+source/hash verification, not provenance inferred from filenames. Repair must
+include durable per-slice metadata and bounded Windows atomic-replace retries.
+This is a DATA_PIPELINE issue, not a strategy loss or failed economic experiment.
+
+Reported cycles and PNL remain null until a valid, bound replay exists. The new
+scoreboard/report exposes all21 dates and both envelopes, split2025/2026, without
+counting unexecuted days as zero-cycle failures or concatenating capital.
+
+## Confirmed persistence fault and recovery preregistration
+
+Old native collector ended exit1 with PermissionError/WinError5 on atomic manifest
+replacement. All3024 original slice files exist, but only481 records were persisted.
+The executor had drained pending downloads before reporting its main-thread error.
+No market original was deleted or changed; no economic replay started.
+
+Repair adds bounded atomic-write retries, pending-future cancellation, per-slice
+metadata and explicit orphan verification. Existing hash/provenance-bound records
+reuse original bytes. Unknown originals require a fresh public response with equal
+SHA/bytes and verified HTTP slice headers; original download time remains UNKNOWN.
+Mismatch is INVALID and preserves both payloads. Fourteen acquisition tests pass,
+including writer failure, HTTP/hash recovery and sidecar-only recovery.
+
+Read-only full January2025 diagnostic independently reconciled all828955 CSV rows
+and254205 canonical trades; native sequence had zero gaps/crossings/disconnects.
+This is a data diagnostic, not strategy performance. Before economics, review also
+identified an IOC replenishment implementation defect; repair/testing required.
+2025 calibration uses explicitly conditional transfer of frozen profile rules,
+with the canonical historical tick catalog; no assertion of historical account fees.

@@ -100,6 +100,20 @@ Record the merge mapping and gate rejected/ambiguous events; do not silently reo
 late prints or drop them while claiming full coverage. An unresolved causal mapping
 blocks that day's economic replay pending a reviewed correction.
 
+Arrival-clock clarification, reviewed before economics: engine activation, cancel
+and holding timers use CAPTURE_ARRIVAL_CLOCK. Preserve each native exchange timestamp
+and precision separately. Depth/trade exchange timestamps can legitimately interleave;
+do not reorder capture or declare a gap solely for that interleaving. Every selector
+and recovery history query is capped by prefix-limited tape/timeline views at the
+last actually received contiguous canonical event, excluding the incoming message
+during its lifecycle reconciliation. No precomputed future event becomes visible
+merely because the capture clock has advanced. A trade whose native event precedes
+activation cannot fill that order; a newer-exchange book cannot support an older
+trade fill. Consume no trade quantity when these execution-availability gates fail,
+but retain the event and its later prefix availability in the audit. Native historical
+millisecond timestamps match the canonical microsecond timestamp at native precision,
+not by inventing submillisecond equality; IDs/prices/quantities/sides must match exactly.
+
 ## Two execution envelopes
 
 CONSERVATIVE_QUEUE is the primary displayed-depth envelope. At actual activation,
@@ -134,6 +148,19 @@ consumed quantity. A conservative consumption debt persists per price; only an
 observed positive quantity change provides new available budget. Record update/source
 IDs and pre/post budgets for every IOC. No order or retry consumes the same budget
 twice. M015's existing reserve floor and exact deficit coverage remain authoritative.
+
+Pre-execution clarification: for an existing level with prior displayed D, available
+A and new displayed D', a decrease yields A'=min(A,D'); an increase yields
+A'=min(D', A+(D'-D)). Unchanged depth never replenishes; deletion clears availability.
+Thus observed deletion followed by reappearance can provide fresh depth, without
+resetting an unchanged snapshot. This applies only to hypothetical IOC liquidity,
+not cancellation credit for the ordinary resting-order queue.
+
+For 2025 CALIBRATION only, the frozen profile has no dated rules period. Apply
+CONDITIONAL_TRANSFER_OF_FROZEN_RULES: the earliest frozen lot/notional/fee/latency
+assumptions, with the existing canonical 2025 tick catalog. Disclose this explicitly
+in every 2025 manifest/result; these are not independently observed 2025 account fees
+or historical filters. Do not mutate the frozen profile or infer guaranteed returns.
 
 ## Metrics and interpretation
 
