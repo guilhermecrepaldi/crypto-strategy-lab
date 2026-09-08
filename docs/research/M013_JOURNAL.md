@@ -58,3 +58,18 @@ GPT-5.6 Luna em código de relatório e fixtures mecânicas, sujeitos à revisã
 
 Autoridades: M013_MODEL_SPEC.json, M013_CONTINUOUS_MULTI_QUEUE_PREREGISTRATION.md,
 CONTINUOUS_MULTI_QUEUE_OWNER_DIRECTIVE.md e TWO_STAGE_REPLAY_OWNER_DIRECTIVE.md.
+
+## Runner de duas etapas — preparação apenas
+
+TYPE=SOFTWARE_AND_DATA_PREPARATION
+RUNNER_REPORT_TESTS_PASSED=7
+RUNNER_REPORT_TESTS_FAILED=0
+SOFTWARE_VALIDATION_SCOPE=stage gates, raw ordinal, seven exact boundaries, sealed archive rejection, durable report binding
+KERNEL_IMPLEMENTATION_REVIEW=PENDING
+ECONOMIC_REPLAY_STARTED=NO
+
+Publicado comando --prepare-only, que valida apenas dados do prefixo Dec31 warmup
+até maio, sem criar run ou executar estratégia. Junho-setembro não é atravessado.
+O primeiro replay permanece fail-closed até revisão independente do código concluída.
+Correções pré-run em andamento: cancel/ACK da reserva e contabilização de parciais.
+Não são resultados econômicos; nenhum parâmetro foi alterado por resultado.
