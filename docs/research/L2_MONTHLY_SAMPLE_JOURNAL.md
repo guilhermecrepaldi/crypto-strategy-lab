@@ -454,3 +454,21 @@ Funding0.01188, debt payments0.00792, surplus0.00396, remaining debt0.01188.
 One >2h hold:2.000013296389h (47.867ms excess); no grace applied.
 Same-prefix M016 has the same day1 economics. No full-history comparison or
 strategy approval. RUN_STATUS=RUNNING; VERDICT=PENDING. Final all-fill audit pending.
+
+## 2026-09-08 — M017 day2: long control hold avoided, economics still negative
+
+Same-prefix two closed days, source b5379f6 unchanged. Positive cycles[12,3],
+cumulative15; operating100.13392, reserve9.80678, marked equity109.94070,
+realized/net−0.05930, flat inventory at closed prefix.18 settlements include3
+loss releases totaling0.20810 (mean0.0693666667). Contributions0.01488;
+FIFO debt0.19718;0/3 losses recovered. Three strict2h violations, maximum hold
+2.000024801111h (89.284ms excess). Fees0 remains frozen profile assumption.
+
+The D2 control position actually released at loss0.1683 in M017, within cap20;
+the earlier observed-cost diagnostic did not itself count as this fill. M016 at
+the same D2 cutoff had12 positive cycles, an open position, marked equity109.93070
+and reserve9.99208. M017 has3 additional positive cycles and+0.01000 marked equity
+relative to that prefix, but a lower reserve after realizing losses. This is not
+a comparison of realized-only PnL across different inventory states. Both total
+equities remain below110. No optimal funding or final strategy approval follows.
+RUNNING/PENDING; full-period automated fill audit and independent final audit pending.
