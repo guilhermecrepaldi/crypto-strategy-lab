@@ -472,3 +472,17 @@ relative to that prefix, but a lower reserve after realizing losses. This is not
 a comparison of realized-only PnL across different inventory states. Both total
 equities remain below110. No optimal funding or final strategy approval follows.
 RUNNING/PENDING; full-period automated fill audit and independent final audit pending.
+
+## 2026-09-08 — M017 four closed days, deadline improvement is not reserve recovery
+
+Closed prefix4/12: daily positive cycles[12,3,2,1], total18, min1/median2.5/max12.
+All4days below500/1000/2000. Operating100.16092, reserve9.77978, marked equity
+109.94070, net−0.05930. Six releases include5losses and1zero; total consumption
+0.23810, mean over ALL6 releases0.0396833333. Positive ordinary profits0.17880,
+contributions0.01788;0/5 loss cohorts repaid, debt0.22418. Surplus contributions
+before debt0.00396 remains separate, not discarded or credited twice.
+Six strict2h violations; maximum hold2.000024801111h, still89.284ms over deadline.
+The bounded-hold objective improved in this prefix, but profits are less than
+release losses even before splitting funding/reinvestment. This is observed
+sequence evidence, not proof about every possible funding replay or later days.
+Model, parameters and execution source unchanged. RUNNING; VERDICT=PENDING.
