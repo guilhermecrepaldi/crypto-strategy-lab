@@ -14,6 +14,9 @@ from decimal import Decimal, localcontext
 from pathlib import Path
 from typing import Any
 
+from crypto_strategy_lab.microstructure.adaptive_stablecoin_ladder import (
+    AdaptiveStablecoinLadder,
+)
 from crypto_strategy_lab.microstructure.b10_reality import (
     BookEnvelope,
     ExecutionProfile,
@@ -50,7 +53,7 @@ from crypto_strategy_lab.microstructure.serial_replay import (
     _datetime_to_micros,
 )
 from crypto_strategy_lab.microstructure.tardis_l2 import iter_native_events
-from crypto_strategy_lab.ml.model_registry import ModelRegistry
+from crypto_strategy_lab.ml.model_registry import ModelRegistry, compute_model_hash
 from scripts.run_b10_reality import AuditJournal, typed
 from scripts.run_high_uptime_recovery import (
     PROFILE,
@@ -78,6 +81,9 @@ from scripts.validate_tardis_l2_samples import (
 )
 
 D = Decimal
+DEFAULT_AUDIT_INITIAL_RESERVE = D("10")
+DEFAULT_AUDIT_FUNDING = D(".10")
+DEFAULT_AUDIT_FLOOR = D("2.5")
 DAY_US = 86_400_000_000
 ROOT = Path(__file__).resolve().parents[1]
 ENVELOPES = ("CONSERVATIVE_QUEUE", "PRICE_PRIORITY")
@@ -104,6 +110,14 @@ DEADLINE_PROTOCOL = Path("docs/microstructure/M016_DEADLINE_PREREGISTRATION.md")
 DEADLINE_REVIEW = Path("reports/usdcusdt/M016-preflight-independent-review.md")
 DEADLINE_MODELS = tuple(DEADLINE_POLICY_HASHES)
 OWNER_WINDOW_AUTHORITY = Path("docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md")
+M019_MODEL_SPEC = Path("docs/microstructure/M019_MODEL_SPEC.json")
+M019_PREREGISTRATION = Path("docs/microstructure/M019_ADAPTIVE_LADDER_PREREGISTRATION.md")
+M019_REVIEW = Path("reports/usdcusdt/M019-preflight-independent-review.md")
+M019_MODEL_ID = "M019"
+M019_CORE = Path("src/crypto_strategy_lab/microstructure/adaptive_stablecoin_ladder.py")
+M019_OWNER_DIRECTIVE = Path(
+    "docs/microstructure/ADAPTIVE_STABLECOIN_LADDER_OWNER_DIRECTIVE.md"
+)
 
 
 def require_owner_replay_approval(root=ROOT, model_id="M015") -> tuple[str, ...]:
@@ -124,14 +138,14 @@ def require_owner_replay_approval(root=ROOT, model_id="M015") -> tuple[str, ...]
         fields[key] = values[0]
     if fields["NEW_REPLAY_AUTHORIZED_NOW"] != "true":
         raise ValueError("OWNER_APPROVAL_REQUIRED")
-    # Legacy campaigns cannot be silently shortened or resumed by this authority.
-    if model_id != "M018" and len(STITCHED_DATES) > int(fields["APPROVED_COMPARISON_DAYS"]):
+    approved_days = int(fields["APPROVED_COMPARISON_DAYS"])
+    if approved_days != 1 or fields["EXTENSION_AUTHORIZED"] != "false":
+        if model_id in {"M018", M019_MODEL_ID}:
+            raise ValueError("OWNER_EXTENSION_REQUIRES_AUDITED_STATE_CONTINUATION")
         raise ValueError("OWNER_WINDOW_EXCEEDED")
     permitted = re.findall(r"^AUTHORIZED_MODEL=(.*)$", authority, flags=re.MULTILINE)
-    if permitted != [model_id] or model_id != "M018":
+    if permitted != [model_id] or model_id not in {"M018", M019_MODEL_ID}:
         raise ValueError("OWNER_APPROVAL_REQUIRED")
-    if int(fields["APPROVED_COMPARISON_DAYS"]) != 1 or fields["EXTENSION_AUTHORIZED"] != "false":
-        raise ValueError("OWNER_EXTENSION_REQUIRES_AUDITED_STATE_CONTINUATION")
     return STITCHED_DATES[:1]
 
 
@@ -148,6 +162,8 @@ def campaign_design_paths(model_id: str) -> tuple[Path, Path, Path]:
             Path(f"docs/microstructure/{model_id}_DEADLINE_PREREGISTRATION.md"),
             Path(f"reports/usdcusdt/{model_id}-preflight-independent-review.md"),
         )
+    if model_id == M019_MODEL_ID:
+        return M019_MODEL_SPEC, M019_PREREGISTRATION, M019_REVIEW
     if model_id == "M015":
         return SPEC, PROTOCOL, REVIEW
     raise ValueError("UNREGISTERED_CAMPAIGN_MODEL")
@@ -169,6 +185,16 @@ SOURCE_PATHS = tuple(
         "src/crypto_strategy_lab/microstructure/tape_cache.py",
         "src/crypto_strategy_lab/microstructure/operator.py",
     )
+)
+M019_REVIEW_SOURCES = (
+    *SOURCE_PATHS,
+    M019_CORE,
+    Path("scripts/register_adaptive_stablecoin_ladder.py"),
+    Path("src/crypto_strategy_lab/domain.py"),
+    Path("src/crypto_strategy_lab/ml/model_registry.py"),
+    Path("src/crypto_strategy_lab/microstructure/recovery_reserve_study.py"),
+    Path("tests/test_adaptive_stablecoin_ladder.py"),
+    Path("tests/test_run_l2_monthly_samples.py"),
 )
 
 
@@ -242,8 +268,19 @@ class MeasuredReplay(ObservedL2Replay):
         super()._integrate(timestamp)
 
 
-def audit_all_fills(path: Path, profile: ExecutionProfile) -> dict[str, Any]:
-    """Independently check every fill's quantity, price, fees and IOC budget trace."""
+def audit_all_fills(
+    path: Path,
+    profile: ExecutionProfile,
+    *,
+    initial_reserve: D = DEFAULT_AUDIT_INITIAL_RESERVE,
+    funding: D = DEFAULT_AUDIT_FUNDING,
+    floor: D = DEFAULT_AUDIT_FLOOR,
+    profit_only: bool = False,
+) -> dict[str, Any]:
+    """Independently check fills and settlements under the caller's frozen ledger contract."""
+    initial_reserve, funding, floor = D(initial_reserve), D(funding), D(floor)
+    if min(initial_reserve, funding, floor) < 0 or funding > 1:
+        raise ValueError("AUDIT_INVALID_RESERVE_CONFIGURATION")
     orders, trades, used, queue_used, active, budgets = {}, {}, Counter(), Counter(), {}, {}
     pending_book_fills = []
     fills = releases = settlements = 0
@@ -251,8 +288,16 @@ def audit_all_fills(path: Path, profile: ExecutionProfile) -> dict[str, Any]:
     latencies = []
     book_upper, book_source, ineligible_trade = None, None, None
     cancellations, terminal_orders = {}, set()
-    cash, reserve, inventory, cost, dust, dust_cost = D(100), D(10), D(0), D(0), D(0), D(0)
+    cash, reserve, inventory, cost, dust, dust_cost = (
+        D(100),
+        initial_reserve,
+        D(0),
+        D(0),
+        D(0),
+        D(0),
+    )
     sold_cost = sell_net = buy_fee_basis = realized_fees = total_fees = D(0)
+    sell_quantity = D(0)
     with path.open(encoding="utf-8") as stream, localcontext() as context:
         context.prec = 128
         for line in stream:
@@ -348,6 +393,7 @@ def audit_all_fills(path: Path, profile: ExecutionProfile) -> dict[str, Any]:
                     inventory -= quantity
                     cash += gross - fee_quote
                     sell_net += gross - fee_quote
+                    sell_quantity += quantity
                 if row["source"] == "BOOK":
                     if row["source_id"] != book_source:
                         raise ValueError("AUDIT_WRONG_BOOK_SOURCE")
@@ -402,21 +448,27 @@ def audit_all_fills(path: Path, profile: ExecutionProfile) -> dict[str, Any]:
             elif kind == "SETTLEMENT":
                 settlements += 1
                 releases += int(row["release"])
-                if D(row["reserve"]) < D("2.5"):
+                if D(row["reserve"]) < floor:
                     raise ValueError("AUDIT_RESERVE_FLOOR")
                 net = D(row["net_profit"])
+                if profit_only and row["release"]:
+                    raise ValueError("AUDIT_PROFIT_ONLY_RELEASE")
+                if profit_only and (
+                    sell_quantity <= 0 or (sell_net - sold_cost) / sell_quantity <= 0
+                ):
+                    raise ValueError("AUDIT_PROFIT_ONLY_NONPOSITIVE_SELL_NET_PER_UNIT")
                 if net != sell_net - sold_cost:
                     raise ValueError("AUDIT_REALIZED_PROFIT_RECONCILIATION")
                 if D(row["realized_fees_quote"]) != realized_fees:
                     raise ValueError("AUDIT_REALIZED_FEES_RECONCILIATION")
-                if D(row["reserve_contribution"]) != max(D(0), net) * D(".10"):
+                if D(row["reserve_contribution"]) != max(D(0), net) * funding:
                     raise ValueError("AUDIT_RESERVE_FUNDING")
                 if D(row["reserve_consumption"]) != (max(D(0), -net) if row["release"] else D(0)):
                     raise ValueError("AUDIT_RESERVE_DEFICIT")
-                funding = max(D(0), net) * D(".10")
+                reserve_funding = max(D(0), net) * funding
                 deficit = max(D(0), -net) if row["release"] else D(0)
-                cash += deficit - funding
-                reserve += funding - deficit
+                cash += deficit - reserve_funding
+                reserve += reserve_funding - deficit
                 dust += inventory
                 dust_cost += cost
                 inventory = cost = D(0)
@@ -428,7 +480,7 @@ def audit_all_fills(path: Path, profile: ExecutionProfile) -> dict[str, Any]:
                 ):
                     if D(row[name]) != value:
                         raise ValueError("AUDIT_SETTLEMENT_LEDGER_RECONCILIATION:" + name)
-                sold_cost = sell_net = buy_fee_basis = realized_fees = D(0)
+                sold_cost = sell_net = buy_fee_basis = realized_fees = sell_quantity = D(0)
     if pending_book_fills:
         raise ValueError("AUDIT_MISSING_DEPTH_CONSUMPTION")
     return {
@@ -448,9 +500,100 @@ def audit_all_fills(path: Path, profile: ExecutionProfile) -> dict[str, Any]:
         "fills_checked": fills,
         "settlements_checked": settlements,
         "releases_checked": releases,
+        "initial_reserve": str(initial_reserve),
+        "funding": str(funding),
+        "reserve_floor": str(floor),
+        "profit_only": profit_only,
         "audit_sha256": file_sha(path),
         "independent_review": "SEPARATE_GATE",
         "median_fill_latency_seconds": str(percentile(latencies, 50)) if latencies else None,
+    }
+
+
+def audit_shared_trade_budget(
+    lane_paths: tuple[Path, ...] | list[Path],
+    canonical: dict[Any, Trade],
+    coordinator_audit: list[dict[str, Any]] | dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Reconcile original trade quantity against every lane's independent consumption."""
+    if not lane_paths or not canonical:
+        raise ValueError("SHARED_TRADE_CANONICAL_REQUIRED")
+    original = {str(trade_id): D(trade.quantity) for trade_id, trade in canonical.items()}
+    consumed: Counter[str] = Counter()
+    lane_usage: dict[str, Counter[str]] = {}
+    for lane_index, path in enumerate(lane_paths):
+        usage: Counter[str] = Counter()
+        with path.open(encoding="utf-8") as stream:
+            for line in stream:
+                row = json.loads(line)
+                kind = row.get("kind")
+                if kind == "QUEUE_FLOW":
+                    trade_id = str(row["trade_id"])
+                    quantity = D(row["queue_before"]) - D(row["queue_after"])
+                elif kind == "FILL" and row.get("source") in ("TRADE", "TRADE_THROUGH"):
+                    trade_id = str(row["source_id"])
+                    quantity = D(row["quantity"])
+                else:
+                    continue
+                if quantity < 0:
+                    raise ValueError("SHARED_TRADE_NEGATIVE_CONSUMPTION")
+                usage[trade_id] += quantity
+                consumed[trade_id] += quantity
+        lane_usage[str(lane_index)] = usage
+    unknown = sorted(set(consumed) - set(original))
+    if unknown:
+        raise ValueError("SHARED_TRADE_UNKNOWN_ID:" + unknown[0])
+    over = next(
+        (trade_id for trade_id, quantity in consumed.items() if quantity > original[trade_id]),
+        None,
+    )
+    if over is not None:
+        raise ValueError("SHARED_TRADE_BUDGET_EXCEEDED:" + over)
+
+    allocation_rows: list[dict[str, Any]] = []
+    if isinstance(coordinator_audit, dict):
+        candidate = coordinator_audit.get("SHARED_TRADE_ALLOCATION", [])
+        allocation_rows = candidate if isinstance(candidate, list) else []
+    elif coordinator_audit is not None:
+        allocation_rows = [
+            row
+            for row in coordinator_audit
+            if row.get("kind") == "SHARED_TRADE_ALLOCATION"
+            or "SHARED_TRADE_ALLOCATION" in row
+        ]
+    for row in allocation_rows:
+        payload = row.get("SHARED_TRADE_ALLOCATION", row)
+        trade_id = str(payload.get("trade_id", payload.get("source_id")))
+        if trade_id not in original:
+            raise ValueError("SHARED_TRADE_UNKNOWN_ID:" + trade_id)
+        declared_original = payload.get("original_quantity", payload.get("original_qty"))
+        declared_consumed = payload.get("consumed_quantity", payload.get("consumed_qty"))
+        if declared_original is not None and D(str(declared_original)) != original[trade_id]:
+            raise ValueError("SHARED_TRADE_ORIGINAL_MISMATCH:" + trade_id)
+        if declared_consumed is not None and D(str(declared_consumed)) != consumed.get(
+            trade_id, D(0)
+        ):
+            raise ValueError("SHARED_TRADE_CONSUMED_MISMATCH:" + trade_id)
+        declared_lanes = payload.get("lane_usage", payload.get("lanes"))
+        if isinstance(declared_lanes, dict):
+            actual_lanes = {
+                lane: str(usage.get(trade_id, D(0))) for lane, usage in lane_usage.items()
+            }
+            if {
+                str(lane): str(D(str(value))) for lane, value in declared_lanes.items()
+            } != actual_lanes:
+                raise ValueError("SHARED_TRADE_LANE_USAGE_MISMATCH:" + trade_id)
+    return {
+        "status": "PASS_INDEPENDENT_GLOBAL_TRADE_BUDGET",
+        "trades_checked": len(original),
+        "trades_consumed": sum(quantity > 0 for quantity in consumed.values()),
+        "original_volume": str(sum(original.values(), D(0))),
+        "consumed_volume": str(sum(consumed.values(), D(0))),
+        "remaining_volume": str(sum(original.values(), D(0)) - sum(consumed.values(), D(0))),
+        "lane_usage": {
+            lane: {trade_id: str(quantity) for trade_id, quantity in usage.items()}
+            for lane, usage in lane_usage.items()
+        },
     }
 
 
@@ -814,6 +957,806 @@ def execute_verified_experiment(replay, canonical, events, validation, identity,
         journal.close()
 
 
+def audit_m019_journal(
+    path: Path, canonical: dict[Any, Trade], engine: AdaptiveStablecoinLadder
+) -> dict[str, Any]:
+    """Rebuild M019 ownership and execution from the append-only audit journal."""
+    seen_trades: set[int] = set()
+    consumed_by_trade: Counter[int] = Counter()
+    fills_by_trade: Counter[int] = Counter()
+    queues_by_trade: Counter[int] = Counter()
+    event_counts: Counter[str] = Counter()
+    orders: dict[int, dict[str, Any]] = {}
+    order_state: dict[int, dict[str, Any]] = {}
+    lot_created: dict[str, dict[str, Any]] = {}
+    lot_sold: Counter[str] = Counter()
+    lot_profit: Counter[str] = Counter()
+    lot_reserved: Counter[str] = Counter()
+    buy_fill_quantity: Counter[int] = Counter()
+    sell_fill_quantity: Counter[int] = Counter()
+    buy_lot_quantity: Counter[int] = Counter()
+    sell_lot_quantity: Counter[int] = Counter()
+    cycles: set[int] = set()
+    independent_cash = D(100)
+    independent_fees = D(0)
+    endowment_seen = False
+    endowment_quantity = D(0)
+
+    def _release(order_id: int, row: dict[str, Any]) -> None:
+        nonlocal independent_cash
+        state = order_state[order_id]
+        released_quote = D(row.get("released_quote", "0"))
+        released_base = D(row.get("released_base", "0"))
+        if released_quote != state["reserved_quote"]:
+            raise ValueError("M019_RELEASED_QUOTE_MISMATCH")
+        expected_base = sum((amount for _, amount in state["reserved_lots"]), D(0))
+        if released_base != expected_base:
+            raise ValueError("M019_RELEASED_BASE_MISMATCH")
+        independent_cash += released_quote
+        state["reserved_quote"] = D(0)
+        for lot_id, amount in state["reserved_lots"]:
+            lot_reserved[lot_id] -= amount
+            if lot_reserved[lot_id] < 0:
+                raise ValueError("M019_NEGATIVE_LOT_RESERVATION")
+        state["reserved_lots"] = []
+
+    with path.open(encoding="utf-8") as stream:
+        for line in stream:
+            row = json.loads(line)
+            event = str(row.get("event", ""))
+            event_counts[event] += 1
+            if event == "SUBMIT":
+                order_id = int(row["order_id"])
+                if order_id in orders:
+                    raise ValueError("M019_DUPLICATE_ORDER_ID")
+                side = str(row["side"])
+                price, quantity = D(row["price"]), D(row["quantity"])
+                if side not in {"BUY", "SELL"} or price <= 0 or quantity <= 0:
+                    raise ValueError("M019_INVALID_ORDER")
+                orders[order_id] = row
+                reservations = [
+                    (str(lot_id), D(amount))
+                    for lot_id, amount in row.get("reserved_lots", [])
+                ]
+                reserved_quote = D(row.get("reserved_quote", "0"))
+                expected_quote = (
+                    quantity * price * (D(1) + D(engine.profile.maker_fee))
+                    if side == "BUY"
+                    else D(0)
+                )
+                if reserved_quote != expected_quote:
+                    raise ValueError("M019_ORDER_QUOTE_RESERVATION_MISMATCH")
+                if side == "BUY" and reservations:
+                    raise ValueError("M019_BUY_RESERVED_BASE")
+                if side == "SELL":
+                    if reserved_quote != 0 or sum(
+                        (amount for _, amount in reservations), D(0)
+                    ) != quantity:
+                        raise ValueError("M019_SELL_RESERVATION_MISMATCH")
+                    for lot_id, amount in reservations:
+                        if lot_id not in lot_created or amount <= 0:
+                            raise ValueError("M019_SELL_RESERVED_UNKNOWN_LOT")
+                        available = D(lot_created[lot_id]["quantity"]) - lot_sold[lot_id]
+                        if lot_reserved[lot_id] + amount > available:
+                            raise ValueError("M019_DUPLICATE_INVENTORY_RESERVATION")
+                        lot_reserved[lot_id] += amount
+                independent_cash -= reserved_quote
+                if independent_cash < 0:
+                    raise ValueError("M019_UNBACKED_BUY")
+                order_state[order_id] = {
+                    "status": "PENDING",
+                    "remaining": quantity,
+                    "reserved_quote": reserved_quote,
+                    "reserved_lots": reservations,
+                    "activation_us": None,
+                    "queue": D(row.get("queue", "0")),
+                }
+            elif event == "CANCEL":
+                order_id = int(row["order_id"])
+                if order_id not in order_state or order_state[order_id]["status"] not in {
+                    "PENDING",
+                    "ACTIVE",
+                }:
+                    raise ValueError("M019_INVALID_CANCEL")
+                order_state[order_id]["status"] = "CANCEL_PENDING"
+            elif event == "ACTIVATED":
+                order_id = int(row["order_id"])
+                if order_id not in orders or int(row["time_us"]) < int(
+                    orders[order_id]["active_us"]
+                ):
+                    raise ValueError("M019_INVALID_ACTIVATION")
+                state = order_state[order_id]
+                if state["status"] not in {"PENDING", "CANCEL_PENDING"}:
+                    raise ValueError("M019_DUPLICATE_OR_TERMINAL_ACTIVATION")
+                if str(row["side"]) != str(orders[order_id]["side"]) or D(
+                    row["price"]
+                ) != D(orders[order_id]["price"]):
+                    raise ValueError("M019_ACTIVATION_ORDER_MISMATCH")
+                side, price = str(row["side"]), D(row["price"])
+                bid = None if row.get("best_bid") is None else D(row["best_bid"])
+                ask = None if row.get("best_ask") is None else D(row["best_ask"])
+                floor, ceiling = D(row["known_bid_floor"]), D(row["known_ask_ceiling"])
+                if (side == "BUY" and (ask is None or price >= ask or price < floor)) or (
+                    side == "SELL" and (bid is None or price <= bid or price > ceiling)
+                ):
+                    raise ValueError("M019_INVALID_ACTIVATION_CONTEXT")
+                for other_id, other in order_state.items():
+                    if other_id == order_id or other["status"] in {
+                        "FILLED",
+                        "CANCELED",
+                        "REJECTED",
+                    }:
+                        continue
+                    other_order = orders[other_id]
+                    if other_order["side"] == side:
+                        continue
+                    other_price = D(other_order["price"])
+                    if (side == "BUY" and price >= other_price) or (
+                        side == "SELL" and price <= other_price
+                    ):
+                        raise ValueError("M019_ACTIVATED_SELF_CROSS")
+                state["activation_us"] = int(row["time_us"])
+                state["queue"] = D(row["queue"])
+                state["status"] = (
+                    "CANCEL_PENDING" if state["status"] == "CANCEL_PENDING" else "ACTIVE"
+                )
+            elif event in {
+                "POST_ONLY_REJECTED",
+                "SELF_CROSS_REJECTED",
+                "UNKNOWN_COVERAGE_REJECTED",
+            }:
+                order_id = int(row["order_id"])
+                if order_id not in order_state or order_state[order_id]["status"] not in {
+                    "PENDING",
+                    "CANCEL_PENDING",
+                }:
+                    raise ValueError("M019_INVALID_REJECTION")
+                if str(row["side"]) != str(orders[order_id]["side"]) or D(
+                    row["price"]
+                ) != D(orders[order_id]["price"]):
+                    raise ValueError("M019_REJECTION_ORDER_MISMATCH")
+                bid = None if row.get("best_bid") is None else D(row["best_bid"])
+                ask = None if row.get("best_ask") is None else D(row["best_ask"])
+                price, side = D(row["price"]), str(row["side"])
+                floor = (
+                    None
+                    if row.get("known_bid_floor") is None
+                    else D(row["known_bid_floor"])
+                )
+                ceiling = (
+                    None
+                    if row.get("known_ask_ceiling") is None
+                    else D(row["known_ask_ceiling"])
+                )
+                public_cross = (side == "BUY" and ask is not None and price >= ask) or (
+                    side == "SELL" and bid is not None and price <= bid
+                )
+                coverage_unknown = floor is None or ceiling is None or (
+                    price < floor if side == "BUY" else price > ceiling
+                )
+                if event == "POST_ONLY_REJECTED" and not public_cross:
+                    raise ValueError("M019_FALSE_POST_ONLY_REJECTION")
+                if event == "UNKNOWN_COVERAGE_REJECTED" and not coverage_unknown:
+                    raise ValueError("M019_FALSE_COVERAGE_REJECTION")
+                if event == "SELF_CROSS_REJECTED":
+                    self_cross = any(
+                        other_id != order_id
+                        and other["status"]
+                        not in {"FILLED", "CANCELED", "REJECTED"}
+                        and orders[other_id]["side"] != side
+                        and (
+                            (side == "BUY" and price >= D(orders[other_id]["price"]))
+                            or (
+                                side == "SELL"
+                                and price <= D(orders[other_id]["price"])
+                            )
+                        )
+                        for other_id, other in order_state.items()
+                    )
+                    if not self_cross:
+                        raise ValueError("M019_FALSE_SELF_CROSS_REJECTION")
+                _release(order_id, row)
+                order_state[order_id]["status"] = "REJECTED"
+            elif event == "CANCEL_ACK":
+                order_id = int(row["order_id"])
+                if order_id not in order_state or order_state[order_id]["status"] != (
+                    "CANCEL_PENDING"
+                ):
+                    raise ValueError("M019_INVALID_CANCEL_ACK")
+                _release(order_id, row)
+                order_state[order_id]["status"] = "CANCELED"
+            if event in {"TRADE", "TRADE_BLOCKED_FUTURE_BOOK"}:
+                trade_id = int(row["trade_id"])
+                if trade_id in seen_trades or trade_id not in canonical:
+                    raise ValueError("M019_DUPLICATE_OR_UNKNOWN_TRADE")
+                seen_trades.add(trade_id)
+                original = D(row["original_quantity"])
+                consumed = D(row["consumed_quantity"])
+                remaining = D(row["remaining_quantity"])
+                if original != canonical[trade_id].quantity or min(consumed, remaining) < 0:
+                    raise ValueError("M019_TRADE_QUANTITY_MISMATCH")
+                if consumed + remaining != original:
+                    raise ValueError("M019_SHARED_TRADE_BUDGET_MISMATCH")
+                if event == "TRADE":
+                    queue_consumed = D(row["queue_consumed_quantity"])
+                    fill_consumed = D(row["fill_consumed_quantity"])
+                    if queue_consumed + fill_consumed != consumed:
+                        raise ValueError("M019_TRADE_CONSUMPTION_COMPONENT_MISMATCH")
+                elif consumed != 0 or remaining != original:
+                    raise ValueError("M019_BLOCKED_TRADE_CONSUMED_LIQUIDITY")
+                consumed_by_trade[trade_id] += consumed
+            elif event == "FILL":
+                trade_id = int(row["source_id"])
+                if trade_id not in canonical:
+                    raise ValueError("M019_FILL_UNKNOWN_TRADE")
+                order_id = int(row["order_id"])
+                if order_id not in orders or order_state[order_id]["activation_us"] is None:
+                    raise ValueError("M019_FILL_WITHOUT_ACTIVATION")
+                state = order_state[order_id]
+                if state["status"] not in {"ACTIVE", "CANCEL_PENDING"}:
+                    raise ValueError("M019_FILL_AFTER_TERMINAL_STATE")
+                trade = canonical[trade_id]
+                if trade.time_us <= int(state["activation_us"]):
+                    raise ValueError("M019_NATIVE_PRINT_NOT_AFTER_ACTIVATION")
+                side = str(orders[order_id]["side"])
+                order_price = D(orders[order_id]["price"])
+                if str(row.get("side")) != side or D(row.get("price", "0")) != order_price:
+                    raise ValueError("M019_FILL_ORDER_FIELDS_MISMATCH")
+                source = str(row.get("source"))
+                if source not in {"TRADE", "TRADE_THROUGH"}:
+                    raise ValueError("M019_UNSUPPORTED_FILL_SOURCE")
+                quantity = D(row["quantity"])
+                if quantity <= 0 or quantity > state["remaining"]:
+                    raise ValueError("M019_INVALID_FILL_QUANTITY")
+                if trade.buyer_maker != (side == "BUY"):
+                    raise ValueError("M019_AGGRESSOR_SIDE_MISMATCH")
+                exact = trade.price == order_price
+                through = (side == "BUY" and trade.price < order_price) or (
+                    side == "SELL" and trade.price > order_price
+                )
+                if (source == "TRADE" and not exact) or (
+                    source == "TRADE_THROUGH" and not through
+                ):
+                    raise ValueError("M019_FILL_PRICE_SOURCE_MISMATCH")
+                if source == "TRADE" and state["queue"] != 0:
+                    raise ValueError("M019_FILL_BEFORE_QUEUE_DEPLETION")
+                state["remaining"] -= quantity
+                expected_status = "FILLED" if state["remaining"] == 0 else state["status"]
+                if D(row["remaining_after"]) != state["remaining"] or str(
+                    row["status_after"]
+                ) != expected_status:
+                    raise ValueError("M019_FILL_TERMINAL_STATE_MISMATCH")
+                if side == "BUY":
+                    debit = quantity * order_price * (
+                        D(1) + D(engine.profile.maker_fee)
+                    )
+                    if debit > state["reserved_quote"]:
+                        raise ValueError("M019_BUY_FILL_EXCEEDS_RESERVATION")
+                    state["reserved_quote"] -= debit
+                    independent_fees += quantity * order_price * D(
+                        engine.profile.maker_fee
+                    )
+                    buy_fill_quantity[order_id] += quantity
+                else:
+                    sell_fill_quantity[order_id] += quantity
+                if state["remaining"] == 0:
+                    if side == "BUY":
+                        independent_cash += state["reserved_quote"]
+                        state["reserved_quote"] = D(0)
+                    state["status"] = "FILLED"
+                fills_by_trade[trade_id] += quantity
+            elif event == "QUEUE_FLOW":
+                trade_id = int(row["trade_id"])
+                order_id = int(row["order_id"])
+                if trade_id not in canonical or order_id not in orders:
+                    raise ValueError("M019_QUEUE_UNKNOWN_SOURCE")
+                state = order_state[order_id]
+                if state["status"] not in {"ACTIVE", "CANCEL_PENDING"} or state[
+                    "activation_us"
+                ] is None:
+                    raise ValueError("M019_QUEUE_WITHOUT_ACTIVE_ORDER")
+                trade = canonical[trade_id]
+                side, price = str(orders[order_id]["side"]), D(orders[order_id]["price"])
+                if (
+                    trade.time_us <= int(state["activation_us"])
+                    or trade.price != price
+                    or trade.buyer_maker != (side == "BUY")
+                ):
+                    raise ValueError("M019_QUEUE_SOURCE_MISMATCH")
+                before, after = D(row["queue_before"]), D(row["queue_after"])
+                if (
+                    before != state["queue"]
+                    or before - after != D(row["quantity"])
+                    or after < 0
+                ):
+                    raise ValueError("M019_QUEUE_RECONCILIATION")
+                state["queue"] = after
+                queues_by_trade[trade_id] += D(row["quantity"])
+            elif event == "LOT_CREATED":
+                lot_id = str(row["lot_id"])
+                if lot_id in lot_created:
+                    raise ValueError("M019_DUPLICATE_LOT")
+                quantity, unit_cost = D(row["quantity"]), D(row["unit_cost"])
+                if quantity <= 0 or unit_cost <= 0:
+                    raise ValueError("M019_INVALID_LOT")
+                lot_created[lot_id] = row
+                source_order_id = row.get("source_order_id")
+                if source_order_id is not None:
+                    buy_lot_quantity[int(source_order_id)] += quantity
+            elif event == "ENDOWMENT":
+                if endowment_seen:
+                    raise ValueError("M019_DUPLICATE_ENDOWMENT")
+                endowment_seen = True
+                bid, quantity = D(row["bid"]), D(row["quantity"])
+                independent_cash -= bid * quantity
+                endowment_quantity = quantity
+                if independent_cash != D(row["cash"]):
+                    raise ValueError("M019_ENDOWMENT_CASH_RECONCILIATION")
+            elif event == "LOT_SOLD":
+                lot_id = str(row["lot_id"])
+                if lot_id not in lot_created:
+                    raise ValueError("M019_SALE_WITHOUT_LOT")
+                quantity = D(row["quantity"])
+                profit = D(row["profit"])
+                if quantity <= 0 or profit <= 0:
+                    raise ValueError("M019_NONPOSITIVE_REALIZED_EXIT")
+                if D(row["gross"]) - D(row["fee"]) - D(row["cost"]) != profit:
+                    raise ValueError("M019_SALE_PNL_RECONCILIATION")
+                if D(row["cost"]) != quantity * D(lot_created[lot_id]["unit_cost"]):
+                    raise ValueError("M019_SALE_LOT_COST_RECONCILIATION")
+                sell_order_id = int(row["sell_order_id"])
+                if sell_order_id not in orders or orders[sell_order_id]["side"] != "SELL":
+                    raise ValueError("M019_SALE_WITHOUT_ORDER")
+                if order_state[sell_order_id]["status"] not in {
+                    "ACTIVE",
+                    "CANCEL_PENDING",
+                }:
+                    raise ValueError("M019_SALE_WITHOUT_ACTIVE_ORDER")
+                gross = D(row["gross"])
+                if gross != quantity * D(orders[sell_order_id]["price"]):
+                    raise ValueError("M019_SALE_PRICE_RECONCILIATION")
+                if D(row["fee"]) != gross * D(engine.profile.maker_fee):
+                    raise ValueError("M019_SALE_FEE_RECONCILIATION")
+                lot_sold[lot_id] += quantity
+                lot_profit[lot_id] += profit
+                lot_reserved[lot_id] -= quantity
+                if lot_reserved[lot_id] < 0:
+                    raise ValueError("M019_SALE_EXCEEDS_RESERVED_INVENTORY")
+                state = order_state[sell_order_id]
+                remaining_allocations: list[tuple[str, D]] = []
+                to_remove = quantity
+                for reserved_lot_id, amount in state["reserved_lots"]:
+                    if reserved_lot_id == lot_id and to_remove > 0:
+                        removed = min(amount, to_remove)
+                        amount -= removed
+                        to_remove -= removed
+                    if amount > 0:
+                        remaining_allocations.append((reserved_lot_id, amount))
+                if to_remove != 0:
+                    raise ValueError("M019_SALE_ORDER_ALLOCATION_MISMATCH")
+                state["reserved_lots"] = remaining_allocations
+                independent_cash += gross - D(row["fee"])
+                independent_fees += D(row["fee"])
+                sell_lot_quantity[sell_order_id] += quantity
+                if lot_sold[lot_id] > D(lot_created[lot_id]["quantity"]):
+                    raise ValueError("M019_DUPLICATE_LOT_SALE")
+            elif event == "CYCLE_SETTLED":
+                source_order_id = int(row["source_order_id"])
+                if source_order_id in cycles:
+                    raise ValueError("M019_DUPLICATE_CYCLE")
+                cycles.add(source_order_id)
+                linked = [
+                    lot
+                    for lot in lot_created.values()
+                    if lot.get("source_order_id") == source_order_id
+                ]
+                if not linked or any(
+                    lot_sold[str(lot["lot_id"])] != D(lot["quantity"]) for lot in linked
+                ):
+                    raise ValueError("M019_CYCLE_WITH_OPEN_ENTRY_QUANTITY")
+                if source_order_id not in order_state or order_state[source_order_id][
+                    "status"
+                ] not in {"FILLED", "CANCELED"}:
+                    raise ValueError("M019_CYCLE_BEFORE_TERMINAL_BUY")
+                expected_profit = sum(
+                    (lot_profit[str(lot["lot_id"])] for lot in linked), D(0)
+                )
+                if expected_profit <= 0 or D(row["net_profit"]) != expected_profit:
+                    raise ValueError("M019_CYCLE_PNL_RECONCILIATION")
+    if seen_trades != set(canonical):
+        raise ValueError("M019_CANONICAL_TRADE_COVERAGE_MISMATCH")
+    for trade_id, filled in fills_by_trade.items():
+        if filled > consumed_by_trade[trade_id] or consumed_by_trade[trade_id] > canonical[
+            trade_id
+        ].quantity:
+            raise ValueError("M019_DUPLICATE_LIQUIDITY")
+    for trade_id, consumed in consumed_by_trade.items():
+        if fills_by_trade[trade_id] + queues_by_trade[trade_id] != consumed:
+            raise ValueError("M019_INDEPENDENT_TRADE_CONSUMPTION_MISMATCH")
+    if len(cycles) != engine.cycle_count:
+        raise ValueError("M019_CYCLE_COUNT_RECONCILIATION")
+    if sum(lot_profit.values(), D(0)) != engine.realized_profit:
+        raise ValueError("M019_REALIZED_PNL_RECONCILIATION")
+    if independent_cash != engine.cash:
+        raise ValueError("M019_INDEPENDENT_CASH_RECONCILIATION")
+    if independent_fees != engine.fees:
+        raise ValueError("M019_INDEPENDENT_FEE_RECONCILIATION")
+    if sum(
+        (
+            state["reserved_quote"]
+            for state in order_state.values()
+            if state["status"] in {"PENDING", "ACTIVE", "CANCEL_PENDING"}
+        ),
+        D(0),
+    ) != engine.active_buy_notional:
+        raise ValueError("M019_INDEPENDENT_BUY_RESERVATION_RECONCILIATION")
+    engine_reserved = Counter(
+        {lot.lot_id: lot.reserved for lot in engine.lots if lot.reserved != 0}
+    )
+    if Counter({key: value for key, value in lot_reserved.items() if value != 0}) != (
+        engine_reserved
+    ):
+        raise ValueError("M019_INDEPENDENT_SELL_RESERVATION_RECONCILIATION")
+    for order_id, quantity in buy_fill_quantity.items():
+        if buy_lot_quantity[order_id] != quantity:
+            raise ValueError("M019_BUY_FILL_LOT_LINK_MISMATCH")
+    if set(buy_lot_quantity) - set(buy_fill_quantity):
+        raise ValueError("M019_LOT_WITHOUT_BUY_FILL")
+    for order_id, quantity in sell_fill_quantity.items():
+        if sell_lot_quantity[order_id] != quantity:
+            raise ValueError("M019_SELL_FILL_LOT_LINK_MISMATCH")
+    if set(sell_lot_quantity) - set(sell_fill_quantity):
+        raise ValueError("M019_LOT_SALE_WITHOUT_SELL_FILL")
+    terminal_lots = {lot.lot_id: lot for lot in engine.lots}
+    if set(terminal_lots) != set(lot_created):
+        raise ValueError("M019_LOT_LINEAGE_INCOMPLETE")
+    for lot_id, row in lot_created.items():
+        source_order_id = row.get("source_order_id")
+        if source_order_id is not None:
+            source_order = orders.get(int(source_order_id))
+            if source_order is None or source_order["side"] != "BUY":
+                raise ValueError("M019_LOT_WITHOUT_BUY")
+            expected_unit_cost = D(source_order["price"]) * (
+                D(1) + D(engine.profile.maker_fee)
+            )
+            if D(row["unit_cost"]) != expected_unit_cost:
+                raise ValueError("M019_BUY_COST_BASIS_RECONCILIATION")
+            if bool(row.get("initial_endowment")):
+                raise ValueError("M019_EXECUTED_LOT_MARKED_ENDOWMENT")
+        elif not bool(row.get("initial_endowment")):
+            raise ValueError("M019_UNBACKED_ENDOWMENT_LOT")
+        if D(row["quantity"]) - lot_sold[lot_id] != terminal_lots[lot_id].remaining:
+            raise ValueError("M019_TERMINAL_LOT_RECONCILIATION")
+    if not endowment_seen or sum(
+        (
+            D(row["quantity"])
+            for row in lot_created.values()
+            if row.get("source_order_id") is None
+        ),
+        D(0),
+    ) != endowment_quantity:
+        raise ValueError("M019_ENDOWMENT_LOT_RECONCILIATION")
+    remaining_cost = sum(
+        (lot.remaining * lot.unit_cost for lot in terminal_lots.values()), D(0)
+    )
+    if remaining_cost != engine.inventory_cost:
+        raise ValueError("M019_INDEPENDENT_INVENTORY_COST_MISMATCH")
+    if engine.cash + engine.active_buy_notional + remaining_cost != (
+        D(100) + sum(lot_profit.values(), D(0))
+    ):
+        raise ValueError("M019_INDEPENDENT_CAPITAL_CONSERVATION")
+    engine.validate_invariants()
+    return {
+        "status": "PASS_M019_LEDGER_EXECUTION_AND_LIQUIDITY",
+        "trades_checked": len(seen_trades),
+        "fills_checked": event_counts["FILL"],
+        "post_only_rejections": event_counts["POST_ONLY_REJECTED"],
+        "future_book_trade_blocks": event_counts["TRADE_BLOCKED_FUTURE_BOOK"],
+        "lots_checked": len(lot_created),
+        "cycles_checked": len(cycles),
+        "event_counts": dict(event_counts),
+        "audit_sha256": file_sha(path),
+    }
+
+
+def m019_slot_scoreboard(
+    engine: AdaptiveStablecoinLadder, path: Path, mark: D
+) -> dict[str, dict[str, Any]]:
+    orders = {order.order_id: order for order in engine.orders}
+    fills: Counter[tuple[str, int]] = Counter()
+    cancels: Counter[tuple[str, int]] = Counter()
+    reprices: Counter[tuple[str, int]] = Counter()
+    fill_latencies: dict[tuple[str, int], list[int]] = {}
+    with path.open(encoding="utf-8") as stream:
+        for line in stream:
+            row = json.loads(line)
+            if row.get("event") == "FILL":
+                order = orders[int(row["order_id"])]
+                key = order.side, order.slot
+                fills[key] += 1
+                fill_latencies.setdefault(key, []).append(int(row["time_us"]) - order.active_us)
+            elif row.get("event") == "CANCEL":
+                order = orders[int(row["order_id"])]
+                key = order.side, order.slot
+                cancels[key] += 1
+                if row.get("reason") == "REPRICE_TWO_TICKS":
+                    reprices[key] += 1
+    cycles = Counter(int(row["source_slot"]) for row in engine.settlements)
+    output: dict[str, dict[str, Any]] = {}
+    for side in ("BUY", "SELL"):
+        for slot in range(6):
+            key = side, slot
+            lots = [lot for lot in engine.lots if lot.band_id == slot]
+            latencies = fill_latencies.get(key, [])
+            output[f"{side}_SLOT_{slot + 1}"] = {
+                "BAND_SHARED_METRICS_DO_NOT_SUM_WITH_OPPOSITE_SLOT": True,
+                "ORDERS_SUBMITTED": sum(
+                    order.side == side and order.slot == slot for order in engine.orders
+                ),
+                "FILLS": fills[key],
+                "CYCLES": cycles[slot],
+                "REALIZED_PNL": str(sum((lot.realized_profit for lot in lots), D(0))),
+                "CURRENT_INVENTORY": str(sum((lot.remaining for lot in lots), D(0))),
+                "UNREALIZED_PNL": str(
+                    sum((lot.remaining * (mark - lot.unit_cost) for lot in lots), D(0))
+                ),
+                "CANCELS": cancels[key],
+                "REPRICES": reprices[key],
+                "AVG_FILL_TIME_SECONDS": (
+                    None
+                    if not latencies
+                    else str(D(sum(latencies)) / D(len(latencies)) / D(1_000_000))
+                ),
+            }
+    return output
+
+
+def execute_m019_experiment(engine, canonical, events, validation, identity, output):
+    """Run the single authorized M019 day without entering the serial M015 engine."""
+    if output.exists() and any(output.iterdir()):
+        raise ValueError("EXISTING_EXPERIMENT_PRESERVED")
+    output.mkdir(parents=True, exist_ok=True)
+    write_json(output / "run-manifest.json", identity)
+    journal = AuditJournal(output / "execution-audit.jsonl")
+    seen: set[int] = set()
+    event_count = 0
+    end_us = identity["source_day_mapping"][0]["logical_start_us"] + DAY_US
+    try:
+        for event_count, event in enumerate(events, 1):
+            if event["kind"] == "SEAM":
+                engine.begin_sample_seam(event["local_us"], event["source_date"])
+                journal.drain(engine)
+                continue
+            if event["kind"] == "BOOK":
+                if event["sequence_validated"]:
+                    engine.receive_book(
+                        ObservedBookBatch(
+                            event["exchange_us"],
+                            event["local_us"],
+                            event["capture_order"],
+                            event["native_update_id"],
+                            event["bids"],
+                            event["asks"],
+                            event["known_bid_floor"],
+                            event["known_ask_ceiling"],
+                            True,
+                            event["is_snapshot"],
+                            event.get("changes"),
+                            event.get("exchange_upper_us"),
+                            event["exchange_precision"],
+                        )
+                    )
+            else:
+                native = event["data"]
+                trade = canonical.get(native["t"])
+                if trade is None:
+                    if identity["source_day_mapping"][0]["logical_start_us"] <= event[
+                        "exchange_us"
+                    ] < end_us:
+                        raise ValueError("UNBOUND_INTERIOR_NATIVE_TRADE")
+                    continue
+                if trade.trade_id in seen or not trade_timestamp_matches(
+                    trade.time_us - event.get("clock_offset_us", 0), native["T"]
+                ):
+                    raise ValueError("CANONICAL_TRADE_BINDING_CHANGED")
+                if (trade.price, trade.quantity, trade.buyer_maker) != (
+                    D(native["p"]),
+                    D(native["q"]),
+                    native["m"],
+                ):
+                    raise ValueError("CANONICAL_TRADE_FIELDS_CHANGED")
+                consumed = engine.receive_trade(
+                    trade,
+                    capture_time_us=event["local_us"],
+                    capture_order=event["capture_order"],
+                )
+                if consumed < 0 or consumed > trade.quantity:
+                    raise ValueError("M019_SHARED_TRADE_BUDGET_EXCEEDED")
+                seen.add(trade.trade_id)
+            journal.drain(engine)
+            if event_count % 50_000 == 0:
+                engine.validate_invariants()
+                journal.durable()
+                progress = engine.metrics()
+                write_json(
+                    output / "progress.json",
+                    {
+                        "RUN_STATUS": "RUNNING",
+                        "VERDICT": "PENDING",
+                        "DAY": "2025-01-01",
+                        "MODEL": M019_MODEL_ID,
+                        "CAPTURED_EVENTS": event_count,
+                        "CYCLES_POSITIVE": progress["cycle_count"],
+                        "TOTAL_MARKED_EQUITY": progress["equity"],
+                    },
+                )
+                print(
+                    json.dumps(
+                        {
+                            "model": M019_MODEL_ID,
+                            "events": event_count,
+                            "trades": len(seen),
+                            "cycles": progress["cycle_count"],
+                            "equity": progress["equity"],
+                        }
+                    ),
+                    flush=True,
+                )
+        if seen != set(canonical):
+            raise ValueError("CANONICAL_DAY_NOT_FULLY_DELIVERED")
+        engine.finish(end_us)
+        engine.validate_invariants()
+        journal.drain(engine)
+        journal_binding = journal.durable()
+        audit = audit_m019_journal(output / "execution-audit.jsonl", canonical, engine)
+        audit["journal"] = journal_binding
+        audit["capital_invariants"] = "PASS"
+        write_json(output / "all-fill-audit.json", audit)
+
+        metrics = engine.metrics()
+        mark = engine.current_bids[0][0] if engine.current_bids else None
+        if mark is None:
+            raise ValueError("M019_TERMINAL_MARK_UNAVAILABLE")
+        usdt_final = engine.cash + engine.active_buy_notional
+        usdc_marked = engine.inventory * mark
+        equity = usdt_final + usdc_marked
+        initial_usdt = D(100) - engine.endowment_quantity * D(engine.first_bid)
+        open_lots = [lot for lot in engine.lots if lot.remaining > 0]
+        hold_hours = [
+            D((lot.closed_us if lot.closed_us is not None else end_us) - lot.entry_us)
+            / D(3_600_000_000)
+            for lot in engine.lots
+        ]
+        cycles_by_slot = Counter(int(row["source_slot"]) for row in engine.settlements)
+        slot_scoreboard = m019_slot_scoreboard(
+            engine, output / "execution-audit.jsonl", mark
+        )
+        reprices = sum(row["REPRICES"] for row in slot_scoreboard.values())
+        capital_locked = sum((lot.remaining * lot.unit_cost for lot in open_lots), D(0))
+        underwater_locked = sum(
+            (
+                lot.remaining * lot.unit_cost
+                for lot in open_lots
+                if mark < lot.unit_cost
+            ),
+            D(0),
+        )
+        profitable_exit_inventory = sum(
+            (
+                lot.remaining * lot.unit_cost
+                for lot in open_lots
+                if lot.reserved > 0
+            ),
+            D(0),
+        )
+        underwater_inventory = sum(
+            (
+                lot.remaining * lot.unit_cost
+                for lot in open_lots
+                if lot.reserved == 0
+                and mark * (D(1) - D(engine.profile.maker_fee)) <= lot.unit_cost
+            ),
+            D(0),
+        )
+        dormant_inventory = capital_locked - (
+            profitable_exit_inventory + underwater_inventory
+        )
+        top_slots = sorted(
+            (
+                (name, row["CYCLES"])
+                for name, row in slot_scoreboard.items()
+                if name.startswith("BUY_")
+            ),
+            key=lambda item: (-item[1], item[0]),
+        )[:3]
+        if audit["event_counts"].get("QUEUE_FLOW", 0) > audit["fills_checked"]:
+            bottleneck_hint = "QUEUE"
+        elif underwater_locked > D(".5") * equity:
+            bottleneck_hint = "INVENTORY_LOCK"
+        elif audit["post_only_rejections"]:
+            bottleneck_hint = "POST_ONLY_REJECTION"
+        elif engine.cash < engine.safe_min_notional:
+            bottleneck_hint = "CAPITAL_SHORTAGE"
+        else:
+            bottleneck_hint = "UNDETERMINED"
+        result = {
+            **identity,
+            "RUN_STATUS": "COMPLETE",
+            "VERDICT": (
+                "TARGET_ATTAINED"
+                if engine.cycle_count >= 1000 and equity >= D(100)
+                else "TARGET_NOT_ATTAINED"
+            ),
+            "DAY": "2025-01-01",
+            "MODEL": M019_MODEL_ID,
+            "CYCLES_POSITIVE": engine.cycle_count,
+            "USDT_FINAL": str(usdt_final),
+            "USDT_FREE": str(engine.cash),
+            "USDT_RESERVED_FOR_BUYS": str(engine.active_buy_notional),
+            "USDC_FINAL": str(engine.inventory),
+            "USDC_MARKED_VALUE": str(usdc_marked),
+            "TOTAL_FINAL_EQUITY": str(equity),
+            "REALIZED_NET_PNL": str(engine.realized_profit),
+            "UNREALIZED_PNL": str(engine.inventory * mark - engine.inventory_cost),
+            "PASS_1000": engine.cycle_count >= 1000 and equity >= D(100),
+            "PASS_2000": engine.cycle_count >= 2000 and equity >= D(100),
+            "INITIAL_USDT": str(initial_usdt),
+            "INITIAL_USDC": str(engine.endowment_quantity),
+            "INITIAL_MARK": str(engine.first_bid),
+            "SAFE_MIN_NOTIONAL": str(engine.safe_min_notional),
+            "LOTS_OPEN": len(open_lots),
+            "LOTS_OVER_1H": sum(value > 1 for value in hold_hours),
+            "LOTS_OVER_2H": sum(value > 2 for value in hold_hours),
+            "LOTS_OVER_6H": sum(value > 6 for value in hold_hours),
+            "LOTS_OVER_24H": sum(value > 24 for value in hold_hours),
+            "MAX_HOLD": str(max(hold_hours, default=D(0))),
+            "ORDERS_REPOSITIONED": reprices,
+            "ORDERS_SUBMITTED": len(engine.orders),
+            "ACTIVE_SLOTS_AT_CUTOFF": len(engine.active_orders),
+            "FEES": str(engine.fees),
+            "ENDOWMENT_SALES_PNL_INCLUDED_IN_REALIZED": True,
+            "CYCLES_BY_SLOT": {str(key): value for key, value in sorted(cycles_by_slot.items())},
+            "SLOT_SCOREBOARD": slot_scoreboard,
+            "TOP_3_SLOTS_BY_CYCLES": [
+                {"slot": name, "cycles": cycles} for name, cycles in top_slots
+            ],
+            "CAPITAL_LOCKED": str(capital_locked),
+            "UNDERWATER_CAPITAL_LOCKED": str(underwater_locked),
+            "CAPITAL_BUCKETS_USDT_COST": {
+                "FREE_CAPITAL": str(engine.cash),
+                "WORKING_FREE_QUOTES": str(engine.active_buy_notional),
+                "PROFITABLE_EXIT_INVENTORY": str(profitable_exit_inventory),
+                "UNDERWATER_INVENTORY": str(underwater_inventory),
+                "DORMANT_INVENTORY": str(dormant_inventory),
+            },
+            "MAIN_BOTTLENECK": "UNDETERMINED_PENDING_POST_RUN_AUTOPSY",
+            "HEURISTIC_BOTTLENECK_HINT": bottleneck_hint,
+            "DATA_INTEGRITY": validation,
+            "AUDIT": audit,
+            "ENGINE_METRICS": metrics,
+            "AUDIT_SHA256": file_sha(output / "all-fill-audit.json"),
+        }
+        write_json(output / "summary.json", result)
+        write_json(output / "terminal-engine-state.json", engine.checkpoint())
+        return result
+    except Exception as exc:
+        journal.drain(engine)
+        binding = journal.durable()
+        write_json(
+            output / "failure.json",
+            {
+                "status": "TECHNICAL_FAILURE",
+                "error": str(exc),
+                "identity": identity,
+                "audit_prefix": binding,
+                "captured_events": event_count,
+            },
+        )
+        raise
+    finally:
+        journal.close()
+
+
 def campaign_preflight(root=ROOT, model_id="M015"):
     selected_dates = require_owner_replay_approval(root, model_id)
     if Path.cwd().resolve() != root.resolve():
@@ -823,7 +1766,7 @@ def campaign_preflight(root=ROOT, model_id="M015"):
         raise ValueError("CANONICAL_MAIN_REQUIRED")
     if subprocess.check_output(["git", "status", "--porcelain"], text=True).strip():
         raise ValueError("PRE_EXECUTION_WORKTREE_NOT_CLEAN")
-    if model_id not in ("M015", *DEADLINE_MODELS):
+    if model_id not in ("M015", *DEADLINE_MODELS, M019_MODEL_ID):
         raise ValueError("UNREGISTERED_CAMPAIGN_MODEL")
     spec, protocol, review = campaign_design_paths(model_id)
     sources = (
@@ -832,14 +1775,43 @@ def campaign_preflight(root=ROOT, model_id="M015"):
             Path("src/crypto_strategy_lab/microstructure/reserve_recovery_diagnostics.py"),
         )
         if model_id in DEADLINE_MODELS
+        else M019_REVIEW_SOURCES
+        if model_id == M019_MODEL_ID
         else SOURCE_PATHS
     )
-    for path in (*sources, spec, protocol, review, MANIFEST, VALIDATION_REPORT,
-                 OWNER_WINDOW_AUTHORITY):
+    design_authorities = (M019_OWNER_DIRECTIVE,) if model_id == M019_MODEL_ID else ()
+    for path in (
+        *sources,
+        spec,
+        protocol,
+        review,
+        *design_authorities,
+        MANIFEST,
+        VALIDATION_REPORT,
+        OWNER_WINDOW_AUTHORITY,
+    ):
         published_bytes(path, sha)
     validate_review(review, sources)
     model = ModelRegistry().get(model_id)
-    if model_id in DEADLINE_MODELS:
+    if model_id == M019_MODEL_ID:
+        design = json.loads((root / spec).read_bytes())
+        expected = {
+            **design,
+            "spec_sha256_lf": lf_sha(spec),
+            "preregistration_sha256_lf": lf_sha(protocol),
+            "owner_directive_sha256_lf": lf_sha(M019_OWNER_DIRECTIVE),
+        }
+        if dict(model.model) != expected or model.model_hash != compute_model_hash(expected):
+            raise ValueError("M019_REGISTERED_DESIGN_MISMATCH")
+        if (
+            design.get("initial_total_equity") != "100"
+            or design.get("buy_slots") != 6
+            or design.get("sell_slots") != 6
+            or design.get("negative_exit_allowed") is not False
+            or design.get("source_dates") != ["2025-01-01"]
+        ):
+            raise ValueError("M019_OWNER_INVARIANT_MISMATCH")
+    elif model_id in DEADLINE_MODELS:
         validate_registered_design(model, spec, protocol)
         if model.model["model_id"] != model_id:
             raise ValueError("DEADLINE_MODEL_ID_MISMATCH")
@@ -1096,7 +2068,7 @@ def stitched_events(entries, mapping):
 def run(model_id="M015"):
     selected_dates = require_owner_replay_approval(model_id=model_id)
     sha, manifest, validation = campaign_preflight(model_id=model_id)
-    if "SYNTHETIC_CONSECUTIVE_12D" not in PROTOCOL.read_text():
+    if model_id != M019_MODEL_ID and "SYNTHETIC_CONSECUTIVE_12D" not in PROTOCOL.read_text():
         raise ValueError("STITCHED_PROTOCOL_NOT_PUBLISHED")
     config = json.loads(PROFILE_CONFIG.read_bytes())
     if file_sha(TRADE_MANIFEST) != manifest["canonical_trade_manifest_sha256"]:
@@ -1110,12 +2082,20 @@ def run(model_id="M015"):
         for day in selected_dates
     ]
     mapping = stitched_mapping(selected_dates)
-    window_name = "OWNER_GATED_DAY1" if model_id == "M018" else "SYNTHETIC_CONSECUTIVE_12D"
+    window_name = (
+        "OWNER_GATED_DAY1"
+        if model_id in {"M018", M019_MODEL_ID}
+        else "SYNTHETIC_CONSECUTIVE_12D"
+    )
     with campaign_writer_lock():
         runtime, profile, envelope, rules_at, canonical = build_stitched_inputs(
             history, config, mapping
         )
-        names = ("PRICE_PRIORITY",) if model_id in DEADLINE_MODELS else ENVELOPES
+        names = (
+            ("PRICE_PRIORITY",)
+            if model_id in (*DEADLINE_MODELS, M019_MODEL_ID)
+            else ENVELOPES
+        )
         model = ModelRegistry().get(model_id)
         for name in names:
             identity = {
@@ -1132,7 +2112,14 @@ def run(model_id="M015"):
                 ),
                 "data_manifest_sha256": file_sha(MANIFEST),
                 "validation_source_commit": VALIDATOR_SOURCE_COMMIT,
-                "source_sha256_lf": {str(path): lf_sha(path) for path in SOURCE_PATHS},
+                "source_sha256_lf": {
+                    str(path): lf_sha(path)
+                    for path in (
+                        M019_REVIEW_SOURCES
+                        if model_id == M019_MODEL_ID
+                        else SOURCE_PATHS
+                    )
+                },
                 "execution_envelope": name,
                 "source_day_mapping": mapping,
                 "WARMUP_AVAILABLE_US": 0,
@@ -1148,34 +2135,64 @@ def run(model_id="M015"):
                 identity["source_sha256_lf"][str(debt_path)] = lf_sha(debt_path)
             if model_id == "M018":
                 identity["entry_admission_policy_hash"] = model.model["entry_admission_policy_hash"]
+            if model_id == M019_MODEL_ID:
+                identity.update(
+                    initial_total_equity="100",
+                    initial_split_rule=model.model["initial_split_rule"],
+                    buy_slots=6,
+                    sell_slots=6,
+                    negative_exit_allowed=False,
+                    liquidity_consumption="GLOBAL_ONCE_ACROSS_ALL_SLOTS",
+                )
             identity["run_hash"] = json_hash(identity)
             bound = {
                 "input_sha256": json_hash([item["input_sha256"] for item in verified]),
                 "CSV_ROWS": sum(item.get("CSV_ROWS", 0) for item in verified),
             }
-            replay = MeasuredReplay(
-                runtime,
-                profile,
-                rules_at,
-                envelope,
-                start_us=mapping[0]["logical_start_us"],
-                end_us=mapping[-1]["logical_start_us"] + DAY_US,
-                identity=identity,
-                envelope=name,
-            )
-            execute_verified_experiment(
-                replay,
-                canonical,
-                stitched_events(entries, mapping),
-                bound,
-                identity,
-                (OUTPUT / model_id if model_id in DEADLINE_MODELS else OUTPUT)
+            output = (
+                (OUTPUT / model_id if model_id in (*DEADLINE_MODELS, M019_MODEL_ID) else OUTPUT)
                 / window_name
-                / name,
+                / name
             )
+            if model_id == M019_MODEL_ID:
+                engine = AdaptiveStablecoinLadder(
+                    profile,
+                    rules_at(mapping[0]["logical_start_us"]),
+                    lane_id="M019-6x6",
+                    candidate=M019_MODEL_ID,
+                )
+                execute_m019_experiment(
+                    engine,
+                    canonical,
+                    stitched_events(entries, mapping),
+                    bound,
+                    identity,
+                    output,
+                )
+            else:
+                replay = MeasuredReplay(
+                    runtime,
+                    profile,
+                    rules_at,
+                    envelope,
+                    start_us=mapping[0]["logical_start_us"],
+                    end_us=mapping[-1]["logical_start_us"] + DAY_US,
+                    identity=identity,
+                    envelope=name,
+                )
+                execute_verified_experiment(
+                    replay,
+                    canonical,
+                    stitched_events(entries, mapping),
+                    bound,
+                    identity,
+                    output,
+                )
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model", choices=("M015", *DEADLINE_MODELS), default="M015")
+    parser.add_argument(
+        "--model", choices=("M015", *DEADLINE_MODELS, M019_MODEL_ID), default="M015"
+    )
     run(parser.parse_args().model)

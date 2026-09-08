@@ -33,6 +33,308 @@ def test_current_owner_pause_blocks_run_before_preflight_or_inputs(monkeypatch, 
         runner.run(model)
 
 
+def test_m019_candidate_is_fail_closed_when_owner_gate_is_not_authorized(tmp_path):
+    from scripts import run_l2_monthly_samples as runner
+
+    authority = tmp_path / runner.OWNER_WINDOW_AUTHORITY
+    authority.parent.mkdir(parents=True)
+    authority.write_text(
+        "APPROVED_COMPARISON_DAYS=1\nEXTENSION_AUTHORIZED=false\n"
+        "NEW_REPLAY_AUTHORIZED_NOW=false\nAUTHORIZED_MODEL=M019\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="OWNER_APPROVAL_REQUIRED"):
+        runner.require_owner_replay_approval(tmp_path, model_id="M019")
+    assert runner.campaign_design_paths("M019") == (
+        runner.M019_MODEL_SPEC,
+        runner.M019_PREREGISTRATION,
+        runner.M019_REVIEW,
+    )
+
+
+def test_m019_executor_writes_complete_audited_day_without_serial_engine(tmp_path):
+    from crypto_strategy_lab.microstructure.adaptive_stablecoin_ladder import (
+        AdaptiveStablecoinLadder,
+    )
+    from crypto_strategy_lab.microstructure.b10_reality import ExecutionProfile, SymbolRules, Trade
+    from scripts import run_l2_monthly_samples as runner
+
+    profile = ExecutionProfile("M019-test", "a" * 64, 10, 10, D(".001"), D("0"), D("0"))
+    rules = SymbolRules(
+        D(".0001"), D(".01"), D(".01"), D("10000"), D("5"), D("100000"),
+        D(".01"), D("100"), "b" * 64, orders_per_window=1000, window_us=1_000_000,
+    )
+    engine = AdaptiveStablecoinLadder(profile, rules, lane_id="fixture")
+    trade = Trade(1_000_000, 1, D(".90"), D(".05"), True)
+    mapping = [{"logical_start_us": 0, "source_date": "2025-01-01"}]
+    events = [
+        {"kind": "SEAM", "local_us": 0, "source_date": "2025-01-01"},
+        {
+            "kind": "BOOK", "exchange_us": 0, "local_us": 100, "capture_order": 1,
+            "native_update_id": 1, "bids": ((D("1"), D("100")),),
+            "asks": ((D("1.01"), D("100")),), "known_bid_floor": D(".9"),
+            "known_ask_ceiling": D("1.1"), "sequence_validated": True,
+            "is_snapshot": True, "changes": None, "exchange_upper_us": 0,
+            "exchange_precision": "EXACT_MICROSECONDS",
+        },
+        {
+            "kind": "BOOK", "exchange_us": 500, "local_us": 600, "capture_order": 2,
+            "native_update_id": 2, "bids": ((D("1"), D("100")),),
+            "asks": ((D("1.01"), D("100")),), "known_bid_floor": D(".9"),
+            "known_ask_ceiling": D("1.1"), "sequence_validated": True,
+            "is_snapshot": False, "changes": None, "exchange_upper_us": 500,
+            "exchange_precision": "EXACT_MICROSECONDS",
+        },
+        {
+            "kind": "TRADE", "exchange_us": 1_000_000, "local_us": 1_000_100,
+            "capture_order": 3, "clock_offset_us": 0,
+            "data": {"t": 1, "T": 1000, "p": ".90", "q": ".05", "m": True},
+        },
+        {"kind": "SEAM", "local_us": runner.DAY_US, "source_date": "END"},
+    ]
+    identity = {"source_day_mapping": mapping, "model_id": "M019", "date": "OWNER_GATED_DAY1"}
+
+    result = runner.execute_m019_experiment(
+        engine, {1: trade}, iter(events), {"L2_DAY_VALID": True}, identity, tmp_path / "run"
+    )
+
+    assert result["RUN_STATUS"] == "COMPLETE"
+    assert result["CYCLES_POSITIVE"] == 0
+    assert result["AUDIT"]["status"] == "PASS_M019_LEDGER_EXECUTION_AND_LIQUIDITY"
+    assert D(result["TOTAL_FINAL_EQUITY"]) <= D("100")
+    assert (tmp_path / "run" / "terminal-engine-state.json").exists()
+
+    audit_path = tmp_path / "run" / "execution-audit.jsonl"
+    rows = [json.loads(line) for line in audit_path.read_text(encoding="utf-8").splitlines()]
+    fill = next(row for row in rows if row.get("event") == "FILL")
+    fill["source"] = "TRADE"
+    tampered = tmp_path / "tampered.jsonl"
+    tampered.write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="M019_FILL_PRICE_SOURCE_MISMATCH"):
+        runner.audit_m019_journal(tampered, {1: trade}, engine)
+
+    cases = {
+        "unsupported-source": (
+            lambda data: next(row for row in data if row.get("event") == "FILL").update(
+                source="UNSUPPORTED"
+            ),
+            "M019_UNSUPPORTED_FILL_SOURCE",
+        ),
+        "fill-side": (
+            lambda data: next(row for row in data if row.get("event") == "FILL").update(
+                side="SELL"
+            ),
+            "M019_FILL_ORDER_FIELDS_MISMATCH",
+        ),
+        "fill-price": (
+            lambda data: next(row for row in data if row.get("event") == "FILL").update(
+                price="999"
+            ),
+            "M019_FILL_ORDER_FIELDS_MISMATCH",
+        ),
+        "fill-quantity": (
+            lambda data: next(row for row in data if row.get("event") == "FILL").update(
+                quantity="0"
+            ),
+            "M019_INVALID_FILL_QUANTITY",
+        ),
+        "fill-remainder": (
+            lambda data: next(row for row in data if row.get("event") == "FILL").update(
+                remaining_after="999"
+            ),
+            "M019_FILL_TERMINAL_STATE_MISMATCH",
+        ),
+        "buy-reservation": (
+            lambda data: next(
+                row
+                for row in data
+                if row.get("event") == "SUBMIT" and row.get("side") == "BUY"
+            ).update(reserved_quote="999"),
+            "M019_ORDER_QUOTE_RESERVATION_MISMATCH",
+        ),
+        "lot-quantity": (
+            lambda data: next(
+                row
+                for row in data
+                if row.get("event") == "LOT_CREATED"
+                and row.get("source_order_id") is not None
+            ).update(quantity="999"),
+            "M019_BUY_FILL_LOT_LINK_MISMATCH|M019_TERMINAL_LOT_RECONCILIATION",
+        ),
+        "endowment-cash": (
+            lambda data: next(
+                row for row in data if row.get("event") == "ENDOWMENT"
+            ).update(cash="999"),
+            "M019_ENDOWMENT_CASH_RECONCILIATION",
+        ),
+        "activation-bbo": (
+            lambda data: next(
+                row
+                for row in data
+                if row.get("event") == "ACTIVATED" and row.get("side") == "BUY"
+            ).update(best_ask="0"),
+            "M019_INVALID_ACTIVATION_CONTEXT",
+        ),
+        "blocked-trade-consumption": (
+            lambda data: next(
+                row for row in data if row.get("event") == "TRADE"
+            ).update(event="TRADE_BLOCKED_FUTURE_BOOK"),
+            "M019_BLOCKED_TRADE_CONSUMED_LIQUIDITY",
+        ),
+    }
+    pristine = [json.loads(line) for line in audit_path.read_text(encoding="utf-8").splitlines()]
+    for label, (mutate, expected) in cases.items():
+        altered = copy.deepcopy(pristine)
+        mutate(altered)
+        altered_path = tmp_path / f"tampered-{label}.jsonl"
+        altered_path.write_text(
+            "\n".join(json.dumps(row, sort_keys=True) for row in altered) + "\n",
+            encoding="utf-8",
+        )
+        with pytest.raises(ValueError, match=expected):
+            runner.audit_m019_journal(altered_path, {1: trade}, engine)
+
+
+def test_m019_independent_auditor_reconstructs_a_complete_positive_cycle(tmp_path):
+    from crypto_strategy_lab.microstructure.adaptive_stablecoin_ladder import (
+        AdaptiveStablecoinLadder,
+    )
+    from crypto_strategy_lab.microstructure.b10_reality import ExecutionProfile, SymbolRules, Trade
+    from crypto_strategy_lab.microstructure.observed_l2_execution import ObservedBookBatch
+    from scripts import run_l2_monthly_samples as runner
+
+    profile = ExecutionProfile("audit-cycle", "a" * 64, 10, 10, D(".001"), D(".001"), D(".001"))
+    rules = SymbolRules(
+        D(".0001"), D(".01"), D(".01"), D("10000"), D("5"), D("100000"),
+        D(".01"), D("100"), "b" * 64, orders_per_window=1000, window_us=1_000_000,
+    )
+
+    def book(exchange_us, capture_us, update_id):
+        return ObservedBookBatch(
+            exchange_us, capture_us, update_id, update_id,
+            ((D("1"), D("100")),), ((D("1.01"), D("100")),),
+            D(".9"), D("1.1"), True, exchange_upper_us=exchange_us,
+        )
+
+    engine = AdaptiveStablecoinLadder(profile, rules, endowment_notional=D("0"))
+    engine.receive_book(book(0, 100, 1))
+    engine.receive_book(book(200, 200, 2))
+    buy = next(order for order in engine.active_orders if order.side == "BUY")
+    buy_trade = Trade(300, 1, buy.price, buy.quantity, True)
+    engine.receive_trade(buy_trade, capture_time_us=300)
+    engine.receive_book(book(60_000_400, 60_000_400, 3))
+    engine.receive_book(book(60_000_500, 60_000_500, 4))
+    sell = next(order for order in engine.active_orders if order.side == "SELL")
+    sell_trade = Trade(60_000_600, 2, sell.price, sell.quantity, False)
+    engine.receive_trade(sell_trade, capture_time_us=60_000_600)
+    engine.finish(100_000_000)
+    assert engine.cycle_count == 1
+
+    audit_path = tmp_path / "cycle-audit.jsonl"
+    audit_path.write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in engine.audit) + "\n",
+        encoding="utf-8",
+    )
+    result = runner.audit_m019_journal(
+        audit_path, {1: buy_trade, 2: sell_trade}, engine
+    )
+    assert result["cycles_checked"] == 1
+    assert result["status"] == "PASS_M019_LEDGER_EXECUTION_AND_LIQUIDITY"
+
+    rows = copy.deepcopy(engine.audit)
+    cycle = next(row for row in rows if row.get("event") == "CYCLE_SETTLED")
+    cycle["net_profit"] = "999"
+    audit_path.write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="M019_CYCLE_PNL_RECONCILIATION"):
+        runner.audit_m019_journal(audit_path, {1: buy_trade, 2: sell_trade}, engine)
+
+    rows = copy.deepcopy(engine.audit)
+    activation = next(
+        row
+        for row in rows
+        if row.get("event") == "ACTIVATED"
+        and row.get("order_id") == buy.order_id
+    )
+    activation["queue"] = "1"
+    audit_path.write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="M019_FILL_BEFORE_QUEUE_DEPLETION"):
+        runner.audit_m019_journal(audit_path, {1: buy_trade, 2: sell_trade}, engine)
+
+    rows = copy.deepcopy(engine.audit)
+    sale = next(row for row in rows if row.get("event") == "LOT_SOLD")
+    sale["cost"] = str(D(sale["cost"]) + D(sale["profit"]) / D(2))
+    sale["profit"] = str(D(sale["gross"]) - D(sale["fee"]) - D(sale["cost"]))
+    audit_path.write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="M019_SALE_LOT_COST_RECONCILIATION"):
+        runner.audit_m019_journal(audit_path, {1: buy_trade, 2: sell_trade}, engine)
+
+
+def test_m019_partial_buy_exit_then_cancel_ack_orders_cycle_after_terminal(tmp_path):
+    from crypto_strategy_lab.microstructure.adaptive_stablecoin_ladder import (
+        AdaptiveStablecoinLadder,
+    )
+    from crypto_strategy_lab.microstructure.b10_reality import ExecutionProfile, SymbolRules, Trade
+    from crypto_strategy_lab.microstructure.observed_l2_execution import ObservedBookBatch
+    from scripts import run_l2_monthly_samples as runner
+
+    profile = ExecutionProfile("partial-cycle", "a" * 64, 10, 1_000, D(".001"), D("0"), D("0"))
+    rules = SymbolRules(
+        D(".0001"), D(".01"), D(".01"), D("10000"), D("5"), D("100000"),
+        D(".01"), D("100"), "b" * 64, orders_per_window=1000, window_us=1_000_000,
+    )
+
+    def book(exchange_us, capture_us, update_id):
+        return ObservedBookBatch(
+            exchange_us, capture_us, update_id, update_id,
+            ((D("1"), D("100")),), ((D("1.01"), D("100")),),
+            D(".9"), D("1.1"), True, exchange_upper_us=exchange_us,
+        )
+
+    engine = AdaptiveStablecoinLadder(profile, rules, endowment_notional=D("0"))
+    engine.receive_book(book(0, 100, 1))
+    engine.receive_book(book(200, 200, 2))
+    buy = next(order for order in engine.active_orders if order.side == "BUY")
+    partial = buy.quantity - rules.step_size
+    buy_trade = Trade(300, 1, buy.price, partial, True)
+    engine.receive_trade(buy_trade, capture_time_us=300)
+    lot = next(lot for lot in engine.lots if lot.source_order_id == buy.order_id)
+    sell_price = engine._break_even_exit(lot)
+    engine._submit("SELL", buy.slot, sell_price, partial, 400)
+    engine.receive_book(book(500, 500, 3))
+    sell = next(order for order in engine.active_orders if order.side == "SELL")
+    engine._cancel(buy, 600, "TEST_PARTIAL_TERMINAL")
+    sell_trade = Trade(700, 2, sell.price, sell.quantity, False)
+    engine.receive_trade(sell_trade, capture_time_us=700)
+    assert engine.cycle_count == 0
+    engine.receive_book(book(2_000, 2_000, 4))
+    engine.finish(3_000)
+    assert engine.cycle_count == 1
+    events = [row["event"] for row in engine.audit]
+    assert events.index("CANCEL_ACK") < events.index("CYCLE_SETTLED")
+
+    audit_path = tmp_path / "partial-cycle-audit.jsonl"
+    audit_path.write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in engine.audit) + "\n",
+        encoding="utf-8",
+    )
+    result = runner.audit_m019_journal(
+        audit_path, {1: buy_trade, 2: sell_trade}, engine
+    )
+    assert result["cycles_checked"] == 1
+
+
 def test_m018_owner_window_is_one_day_and_extensions_fail_closed(tmp_path):
     from scripts import run_l2_monthly_samples as runner
 

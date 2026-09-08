@@ -22,16 +22,24 @@ MONTHLY_INITIALIZATION=ONCE_100_OPERATING_PLUS_10_RESERVE_PER_ENVELOPE
 MONTHLY_ECONOMIC_REPLAYS_STARTED=5
 MONTHLY_CONTINUOUS_WEEK_2_AUTHORIZED=false
 
-OWNER_NEXT_RESEARCH=THREE_DISJOINT_RANGES_NO_RESERVE
-OWNER_DIRECTIVE=docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md
-NEXT_CAMPAIGN_STATUS=EXIT_RULE_CONFIRMED; PREPARATION; NO_NEXT_MODEL_REGISTERED
-NEXT_CAMPAIGN_MODEL_HASH=NONE
-NEXT_CAMPAIGN_HOLD_OBJECTIVE_HOURS=1_ALERT_ONLY; OWNER_SELL_HIGH_ONLY
+OWNER_NEXT_RESEARCH=ADAPTIVE_STABLECOIN_LADDER_V1
+OWNER_DIRECTIVE=docs/microstructure/ADAPTIVE_STABLECOIN_LADDER_OWNER_DIRECTIVE.md
+NEXT_CAMPAIGN_STATUS=M019_REGISTERED_AND_REVIEWED; PRE_RUN_PUBLICATION_PENDING; NOT_EXECUTED
+NEXT_CAMPAIGN_MODEL_HASH=24e5a43a63bc501b4d7fb13931c0fcc39219dedd9cc274e925d9055c33f6d347
+NEXT_CAMPAIGN_HOLD_OBJECTIVE_HOURS=1_2_6_24_ALERTS_ONLY; PROFIT_ONLY_EXIT
 NEXT_CAMPAIGN_FUNDING=0; NO_RESERVE_PROPOSED
-NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=300_USDT; THREE_SEGREGATED_100_ALLOCATIONS
+NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=100_USDT_EQUIVALENT; CAUSAL_APPROX_50_50_ENDOWMENT
 
-Latest proposal changes the next research direction, not the completed M018
-campaign above. Three separate buy-low/sell-high ranges, no reserve, measuring
+Latest OWNER authority supersedes the unexecuted three-range proposal. M019 is a
+new12-slot(6BUY+6SELL) observed-L2 inventory ladder with shared capital/liquidity,
+traceable lots, no reserve release and no realized loss. V1 freezes mid center,
+one-tick offsets, small safe notional,60s/2tick free-quote refresh and90% projected
+USDC cap. First run only2025-01-01; day2 remains closed. Preparation is underway;
+registry identity and independent review now exist; pre-run publication and the
+economic result are still pending.
+
+Superseded unexecuted proposal changed the earlier research direction, not the completed M018
+campaign above. It described three separate buy-low/sell-high ranges, no reserve, measuring
 inactivity and cycles. First day only; no replay has started. OWNER confirmed
 selling at HIGH only: no forced-loss exit,1h measured as alert rather than hard
 liquidation. No loss budget has been authorized. The latest question asks how

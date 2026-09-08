@@ -1,5 +1,20 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER mais recente — adaptive stablecoin ladder,2026-09-08
+
+Seguir `docs/microstructure/ADAPTIVE_STABLECOIN_LADDER_OWNER_DIRECTIVE.md`.
+Esta é uma NOVA hipótese: M019 será ADAPTIVE_STABLECOIN_LADDER_V1, exatamente
+6BUY+6SELL logical slots sobre USDCUSDT Spot observado L2,100USDT-equivalent
+initial marked equity, small safe valid notional, true compounding, inventory
+lots/band memory, global capital and liquidity consumption, and profit-only exits.
+REALIZED_LOSS_ALLOWED=false; reserve/release/forced timeout/cutoff liquidation
+disabled. Underwater/dormant inventory remains marked and visible. First run only
+2025-01-01UTC. Day2 is closed unless D1 reaches1000 complete positive cycles with
+nondegraded equity and independent audit, then authority must be updated. No live,
+Testnet or account access. Preserve B10/M014/M015/M018 and published evidence.
+Preregister, test, Astra-review, register and publish exact source before execution.
+This section supersedes the unexecuted three-range proposal below.
+
 ## Autoridade OWNER mais recente — três faixas sem reserva,2026-09-08
 
 OWNER propôs novo modelo com três faixas de100USDT, sem reserva, comprar baixo
