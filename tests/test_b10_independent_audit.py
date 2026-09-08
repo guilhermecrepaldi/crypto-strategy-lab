@@ -62,6 +62,17 @@ def test_priority_independent_audit_partial_then_equal_and_own_limit(tmp_path):
         "activation_evaluated_us"] = 12
     with pytest.raises(ValueError, match="INVALID_PRICE_PRIORITY_ACTIVATION"):
         AUDITOR["reconstruct"](iter(bad), profile, owner_reserve=True, price_priority=True)
+    impossible = copy.deepcopy(value.audit)
+    next(row for row in impossible if row["kind"] == "ORDER_ACTIVE")["evaluated_at_us"] = -999
+    next(row for row in impossible if row["kind"] == "PRICE_THROUGH_PRIORITY_INFERENCE")[
+        "activation_evaluated_us"] = -999
+    with pytest.raises(ValueError, match="IMPOSSIBLE_ORDER_ACTIVATION_TIMESTAMP"):
+        AUDITOR["reconstruct"](iter(impossible), profile, owner_reserve=True, price_priority=True)
+    first_inference = next(i for i, row in enumerate(value.audit)
+                           if row["kind"] == "PRICE_THROUGH_PRIORITY_INFERENCE")
+    with pytest.raises(ValueError, match="ORPHAN_PRICE_PRIORITY_INFERENCE"):
+        AUDITOR["reconstruct"](iter(value.audit[:first_inference + 1]), profile,
+                               owner_reserve=True, price_priority=True)
 
 
 @pytest.mark.parametrize("fee", ["0", "0.0001", "0.001"])

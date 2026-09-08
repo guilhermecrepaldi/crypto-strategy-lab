@@ -274,8 +274,10 @@ def publish(folder, tests_passed=None, tests_failed=None):
             f"\nMeta de 2.000 ciclos positivos: {score['DAYS_MEETING_2000_TARGET']} de "
             f"{len(daily)} dias fechados. Releases não entram na meta.\n\n"
             "O resultado é condicional às hipóteses de execução; não é uma operação real. "
-            "Próxima semana NÃO autorizada, mesmo que a meta seja atingida.\n\n"
-            "[Diagnóstico dos gargalos e comparação com B10](M014-week1-autopsy.md).\n"
+            + ("Próxima semana condicionada a500/dia e auditoria; verificar gate abaixo.\n\n"
+               if model_id == "M015" else
+               "Próxima semana NÃO autorizada, mesmo que a meta seja atingida.\n\n")
+            + f"[Diagnóstico dos gargalos e comparação com B10]({model_id}-week1-autopsy.md).\n"
         )
         (ROOT / f"{model_id}-reality-scoreboard.json").write_text(
             json.dumps(score, indent=2) + "\n", encoding="utf-8"
@@ -287,7 +289,7 @@ def publish(folder, tests_passed=None, tests_failed=None):
         score["DAYS_MEETING_500_TARGET"] = sum(value >= 500 for value in daily_source.values())
         score["GATE_TO_WEEK_2"] = (
             score.get("RUN_STATUS") == "COMPLETE"
-            and len(daily_source) == 7
+            and set(daily_source) == {f"2026-01-{day:02}" for day in range(1, 8)}
             and score["DAYS_MEETING_500_TARGET"] == 7
             and score.get("INDEPENDENT_RUN_AUDIT") == "PASS_CONDITIONAL"
         )
@@ -296,12 +298,17 @@ def publish(folder, tests_passed=None, tests_failed=None):
             if score["GATE_TO_WEEK_2"]
             else "PENDING"
             if score.get("RUN_STATUS") != "COMPLETE"
+            else "MINIMUM_500_NOT_MET; WEEK_2_BLOCKED"
+            if score.get("INDEPENDENT_RUN_AUDIT") == "PASS_CONDITIONAL"
             else "PENDING_INDEPENDENT_AUDIT"
         )
+        score["NEXT_WEEK_AUTHORIZED"] = score["GATE_TO_WEEK_2"]
         report += (
             f"\nMeta mínima de 500 ciclos positivos: {score['DAYS_MEETING_500_TARGET']} de 7 dias. "
             f"Meta aspiracional: {score['DAILY_TARGET']}. "
             f"GATE_TO_WEEK_2={score['GATE_TO_WEEK_2']}.\n"
+            "\nHipótese: prioridade de preço contrafactual; clearance da fila não foi observado "
+            "em L2 histórico. Quantidades próprias continuam limitadas ao fluxo bruto.\n"
         )
         (ROOT / f"{model_id}-reality-scoreboard.json").write_text(
             json.dumps(score, indent=2) + "\n", encoding="utf-8"
@@ -361,8 +368,16 @@ def publish(folder, tests_passed=None, tests_failed=None):
     )
     if model_id in ("M014", "M015"):
         current += (
-            "\nOWNER_GATE=First week only; preserve all state and await explicit approval "
-            "before any following week.\nM013=INVALIDATED_TECHNICAL_PRESERVED\n"
+            "\nOWNER_GATE="
+            + ("Week2 preauthorized only after500 positive ordinary cycles each day plus audit."
+               if model_id == "M015" else
+               "First week only; explicit approval required before any following week.")
+            + "\nM013=INVALIDATED_TECHNICAL_PRESERVED\n"
+        )
+    if model_id == "M015":
+        current += (
+            f"MINIMUM_DAILY_TARGET=500\nGATE_TO_WEEK_2={score['GATE_TO_WEEK_2']}\n"
+            "OBJECTIVE_COMPLETE=false\nNEXT_ACTION_CURRENT=Autopsy; no week2 before500/day.\n"
         )
     Path("docs/research/CURRENT_STATE.md").write_text(current, encoding="utf-8")
     journal = Path(f"docs/research/{model_id}_JOURNAL.md")

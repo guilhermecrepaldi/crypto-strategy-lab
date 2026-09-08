@@ -2518,7 +2518,7 @@ M014,INCONCLUSIVE,100,USDT,COMPOUNDING,RUN_MANIFEST,e612c45b069fef4c5c71cf092f76
   ""trading_enabled"": false,
   ""warmup_start"": ""2025-12-31T00:00:00+00:00""
 }",,,Owner reopened B10 optimization; new treasury and weekly horizon require new immutable identity.,,,,,,,,,
-M015,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,4231670b19b1ca5c2b5032b1476b83b3182d1463750ea944da5efb867d81a8fa,M014,2026-09-08T02:49:36.279109Z,Strict trade-through of a previously active order can conditionally imply price-priority clearance.,M014 72 cycles; fixed queue upper bound below 500 in each day; synthetic queue not historical L2.,Only infer proxy queue clearance on compatible strict trade-through; cap own volume and fill at own limit.,Measure omitted conditional fills; no guarantee of 500/day and no historical L2 claim.,"{
+M015,INCONCLUSIVE,100,USDT,COMPOUNDING,RUN_MANIFEST,4231670b19b1ca5c2b5032b1476b83b3182d1463750ea944da5efb867d81a8fa,M014,2026-09-08T02:49:36.279109Z,Strict trade-through of a previously active order can conditionally imply price-priority clearance.,M014 72 cycles; fixed queue upper bound below 500 in each day; synthetic queue not historical L2.,Only infer proxy queue clearance on compatible strict trade-through; cap own volume and fill at own limit.,Measure omitted conditional fills; no guarantee of 500/day and no historical L2 claim.,"{
   ""activation_gate"": ""ACTUAL_ACTIVATION_EVALUATED_STRICTLY_BEFORE_RAW_PRINT"",
   ""active_reserve_queues"": 0,
   ""calendar_days"": 7,

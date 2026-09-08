@@ -60,6 +60,7 @@ def reconstruct(rows, profile, *, owner_reserve=False, price_priority=False):
     released = False
     inferences = []
     inference_by_fill = {}
+    inferred_fills_seen = set()
     with localcontext() as context:
         context.prec = 128
         for index, row in enumerate(rows):
@@ -73,6 +74,11 @@ def reconstruct(rows, profile, *, owner_reserve=False, price_priority=False):
             if kind == "CANCEL_REQUEST":
                 orders[row["order_id"]]["cancel_requested_effective_us"] = row["effective_us"]
             if kind == "ORDER_ACTIVE":
+                order = orders[row["order_id"]]
+                if (row["order_id"] in terminal or not (
+                        row["evaluated_at_us"] > order["active_us"] >= order["submitted_us"]
+                )):
+                    raise ValueError("IMPOSSIBLE_ORDER_ACTIVATION_TIMESTAMP")
                 orders[row["order_id"]]["activation_evaluated_us"] = row["evaluated_at_us"]
             if kind == "QUEUE_FLOW":
                 order = orders[row["order_id"]]
@@ -132,9 +138,13 @@ def reconstruct(rows, profile, *, owner_reserve=False, price_priority=False):
                                     "audit_queue": number(row["queue"])}
             elif kind == "FILL":
                 if row["source"] == "TRADE_THROUGH":
-                    inference = inference_by_fill.get((row["order_id"], row["source_id"]))
+                    inference_key = (row["order_id"], row["source_id"])
+                    inference = inference_by_fill.get(inference_key)
                     if inference is None or inference["time_us"] != row["time_us"]:
                         raise ValueError("UNBOUND_PRICE_PRIORITY_FILL")
+                    if inference_key in inferred_fills_seen:
+                        raise ValueError("DUPLICATE_INFERRED_FILL")
+                    inferred_fills_seen.add(inference_key)
                     same(row["price"], inference["order_limit"], "PRICE_PRIORITY_OWN_LIMIT_FILL")
                     same(row["quantity"], inference["own_quantity"], "PRICE_PRIORITY_FILL_QUANTITY")
                 order = orders[row["order_id"]]
@@ -237,6 +247,8 @@ def reconstruct(rows, profile, *, owner_reserve=False, price_priority=False):
                 inventory = basis = sold_basis = sale_net = D(0)
                 cycle_orders = set()
                 released = False
+    if inferred_fills_seen != set(inference_by_fill):
+        raise ValueError("ORPHAN_PRICE_PRIORITY_INFERENCE")
     return {
         "cash": cash,
         "reserve": reserve,
@@ -281,18 +293,23 @@ def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rul
             row for row in selected if row["order_id"] == order_id and row["source"] == "TRADE"
             and row["time_us"] < orders[order_id].get("priority_clear_us", row["time_us"] + 1)
         ]
-        if supporting:
+        clearance = orders[order_id].get("priority_clear_us")
+        if supporting or clearance is not None:
             order = orders[order_id]
             maker_windows.append(
                 {
                     "order_id": order_id,
                     "start": order["active_us"],
-                    "end": max(row["time_us"] for row in supporting),
+                    "end": max([row["time_us"] for row in supporting] +
+                               ([clearance] if clearance is not None else [])),
                     "price": number(order["price"]),
                     "buyer_maker": order["side"] == "BUY",
                     "queue": number(order["queue"]),
                     "volume": D(0),
                     "filled": D(0),
+                    "inference": next((row for row in priority_inferences
+                                       if row["order_id"] == order_id
+                                       and row["time_us"] == clearance), None),
                 }
             )
     windows = sorted(maker_windows, key=lambda row: row["start"])
@@ -361,6 +378,11 @@ def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rul
                         for window in active:
                             if price == window["price"] and buyer_maker == window["buyer_maker"]:
                                 window["volume"] += quantity
+                            inference = window["inference"]
+                            if inference is not None and trade_id == inference["trade_id"]:
+                                same(inference["queue_before"],
+                                     max(D(0), window["queue"] - window["volume"]),
+                                     "RAW_QUEUE_BEFORE_PRIORITY_INFERENCE")
                             for fill in fill_at[(window["order_id"], trade_id)]:
                                 window["filled"] += number(fill["quantity"])
                                 if window["volume"] + EPSILON < window["queue"] + window["filled"]:
