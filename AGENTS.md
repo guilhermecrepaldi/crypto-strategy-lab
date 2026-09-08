@@ -1,5 +1,19 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER vigente — mínimo500/dia e segunda semana condicional
+
+O OWNER autorizou estudar bugs e otimizar a estratégia até obter pelo menos500
+ciclos ordinários completos líquidos positivos em CADA dia de1–7janeiro, mantendo
+meta2.000/dia. Ao atingir o mínimo auditado, executar8–14janeiro com mesmo modelo,
+configuração e estado financeiro/ordens preservados; esta aprovação é condicional
+e vale somente para a segunda semana. Nenhum dado posterior antes desse gate.
+Hipóteses mudadas exigem novo registro; não modificar M014 já concluído. Não contar
+releases/parciais nem reduzir fila/custos ou criar liquidez para obter o número.
+O pedido de persistência não prova que o mínimo seja fisicamente alcançável.
+Journal deve registrar também falhas e restrições; publicar marcos consistentes.
+Esta seção supera proibições anteriores de estudar um sucessor e autorização
+separada da segunda semana SOMENTE quando500/dia for demonstrado e auditado.
+
 ## Autoridade OWNER vigente — resgate B10 F2.5 e meta 2.000/dia
 
 O OWNER reabriu explicitamente o estudo/otimização do RRV2_H1_B10_F2.5

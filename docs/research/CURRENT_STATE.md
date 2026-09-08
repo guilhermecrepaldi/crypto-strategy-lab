@@ -1,5 +1,24 @@
 # CURRENT STATE
 
+## Atualização OWNER e capacidade — posterior ao fechamento abaixo
+
+MINIMUM_DAILY_POSITIVE_CYCLES=500
+ASPIRATIONAL_DAILY_POSITIVE_CYCLES=2000
+SECOND_WEEK=PREAUTHORIZED_CONDITIONALLY_ON_500_EACH_DAY_PLUS_AUDIT
+CURRENT_SECOND_WEEK_GATE=NOT_SATISFIED
+NEW_RUN=NONE
+OBJECTIVE_COMPLETE=false
+RESEARCH_STATE=FROZEN_PASSIVE_PROFILE_CAPACITY_CONSTRAINT_VERIFIED
+NEXT_ACTION=Review support for a genuinely different execution hypothesis;
+do not tune the frozen queue to force the target or access Jan8+ prematurely.
+EVIDENCE=reports/usdcusdt/B10-week1-capacity-review.md
+
+O fechamento M014 abaixo é histórico e imutável. "Não autorizado" ali refere-se
+ao gate antigo; agora existe autorização condicional, mas o critério não foi
+alcançado. Não há segundo writer nem nova execução econômica.
+
+## Fechamento preservado M014
+
 RESEARCH_PROTOCOL=WEEKLY_OWNER_GATED
 ACTIVE_RESEARCH_MODEL=M014
 CAPITAL_MODE=COMPOUNDING

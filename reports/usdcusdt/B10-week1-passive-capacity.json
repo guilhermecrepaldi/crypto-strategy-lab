@@ -1,0 +1,97 @@
+{
+  "schema": "passive-serial-capacity-bound-v1",
+  "status": "VERIFIED_NECESSARY_BOUND",
+  "profile_config_sha256": "a77e0c67fdff8c618cbfc28fdd3d49d2fa831626560aed7fe1ec27007293537d",
+  "history_manifest_sha256": "553550be53b657c9523bda59d905b1b987f7f86310db838ca0e47dd625a4359d",
+  "profile": "B_REALISTIC_CONSERVATIVE",
+  "queue_per_new_order": "2330544.00000000",
+  "days": [
+    {
+      "day": "2026-01-01",
+      "trades": 305359,
+      "buy_compatible_volume": "334635375.00000000",
+      "sell_compatible_volume": "380627166.00000000",
+      "total_volume": "715262541.00000000",
+      "optimistic_cycle_upper_bound": 144,
+      "archive": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-01.zip",
+      "archive_bytes": 4161405,
+      "archive_sha256": "a7d8a5f44fffecc1e29294926a23f936e82c82b87915ad40c740504edfe391a4"
+    },
+    {
+      "day": "2026-01-02",
+      "trades": 422345,
+      "buy_compatible_volume": "1176382668.00000000",
+      "sell_compatible_volume": "874614508.00000000",
+      "total_volume": "2050997176.00000000",
+      "optimistic_cycle_upper_bound": 376,
+      "archive": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-02.zip",
+      "archive_bytes": 5775609,
+      "archive_sha256": "c0e3c17205db87315237638761f889fd7f0430460aee1f7908bc1fa3eab97b38"
+    },
+    {
+      "day": "2026-01-03",
+      "trades": 252812,
+      "buy_compatible_volume": "239063710.00000000",
+      "sell_compatible_volume": "289157032.00000000",
+      "total_volume": "528220742.00000000",
+      "optimistic_cycle_upper_bound": 103,
+      "archive": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-03.zip",
+      "archive_bytes": 3428121,
+      "archive_sha256": "1183e1cc96fd0c5825fbc7330c81ca00c61fa811eeda3bc96081fed4172cdd9e"
+    },
+    {
+      "day": "2026-01-04",
+      "trades": 285429,
+      "buy_compatible_volume": "278468556.00000000",
+      "sell_compatible_volume": "248222545.00000000",
+      "total_volume": "526691101.00000000",
+      "optimistic_cycle_upper_bound": 107,
+      "archive": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-04.zip",
+      "archive_bytes": 3879705,
+      "archive_sha256": "62ea8a6db1335175d1b06524d4fcc7d815de155b32322acc16ee34923a10b8e2"
+    },
+    {
+      "day": "2026-01-05",
+      "trades": 418179,
+      "buy_compatible_volume": "1162745925.00000000",
+      "sell_compatible_volume": "995274492.00000000",
+      "total_volume": "2158020417.00000000",
+      "optimistic_cycle_upper_bound": 428,
+      "archive": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-05.zip",
+      "archive_bytes": 5655634,
+      "archive_sha256": "b37ec1e39d6c9278c6f5fb6a98cc7d0727707ceec99a87566d0306af37d9c940"
+    },
+    {
+      "day": "2026-01-06",
+      "trades": 449280,
+      "buy_compatible_volume": "822923191.00000000",
+      "sell_compatible_volume": "1130845660.00000000",
+      "total_volume": "1953768851.00000000",
+      "optimistic_cycle_upper_bound": 354,
+      "archive": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-06.zip",
+      "archive_bytes": 6074570,
+      "archive_sha256": "b77a51c500237627c7c95c2885b029f1f0940e87136fe06bff69b92b686a5e5b"
+    },
+    {
+      "day": "2026-01-07",
+      "trades": 355800,
+      "buy_compatible_volume": "668999720.00000000",
+      "sell_compatible_volume": "938862275.00000000",
+      "total_volume": "1607861995.00000000",
+      "optimistic_cycle_upper_bound": 288,
+      "archive": "data\\raw\\binance-microstructure\\USDCUSDT\\trades\\USDCUSDT-trades-2026-01-07.zip",
+      "archive_bytes": 4884937,
+      "archive_sha256": "72a1dec48f0b73b34254a4a37605dc0125da8f320e1bf32159b6234c3517cb63"
+    }
+  ],
+  "formula": "1 + floor(min(buy_compatible_volume,sell_compatible_volume)/queue)",
+  "assumptions": [
+    "One serial lot; new queue per ordinary BUY and SELL order",
+    "Up to one carry-in cycle at each daily boundary",
+    "Ignore own quantity, price, latency, sequence, fees and net profit",
+    "Releases excluded; no trade-flow reuse or fictitious queue priority"
+  ],
+  "minimum_500_possible_in_all_days": false,
+  "scope": "FROZEN_PROFILE_MAKER_MAKER_ONLY; not a universal market impossibility",
+  "execution_semantics": "No economic replay, strategy tuning or week2 access"
+}

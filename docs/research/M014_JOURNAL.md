@@ -1,5 +1,23 @@
 # M014 JOURNAL
 
+## Continuidade OWNER — mínimo500 e gate da segunda semana
+
+TYPE=OWNER_DIRECTIVE_AND_CAPACITY_REVIEW
+MINIMUM_DAILY_POSITIVE_CYCLES=500
+ASPIRATIONAL_DAILY_POSITIVE_CYCLES=2000
+WEEK_2_AUTHORITY=PREAUTHORIZED_ONLY_AFTER_500_EACH_DAY_AND_AUDIT
+AUTHORIZED_CONDITIONAL_EXTENSION=[2026-01-08,2026-01-15)
+CURRENT_GATE=NOT_SATISFIED
+NEW_ECONOMIC_REPLAY=NONE
+OBJECTIVE_COMPLETE=false
+
+Revisão e prova de capacidade: reports/usdcusdt/B10-week1-capacity-review.md;
+volumes/hashes reproduzíveis: B10-week1-passive-capacity.json. No perfil atual,
+limites otimistas diários144,376,103,107,428,354,288 já inferiores a500. Preservar
+M014 como evidência positiva financeiramente, insuficiente em ciclos. Não houve
+mudança de parâmetro/fill ou processamento da segunda semana. Estudo de execução
+alternativa permanece separado de qualquer alegação de mínimo atingido.
+
 ## Pré-registro — reconstrução B10 e meta 2.000/dia
 
 MODEL_ID=M014

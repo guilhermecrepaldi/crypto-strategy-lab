@@ -637,14 +637,107 @@ def audit_m014(config_path, folder, *, sample=100):
     }
 
 
+def passive_cycle_upper_bound(buy_flow, sell_flow, queue):
+    """Necessary-volume relaxation, not a replay: at most one carry-in serial cycle."""
+    with localcontext() as context:
+        context.prec = 128
+        buy_flow, sell_flow, queue = D(buy_flow), D(sell_flow), D(queue)
+        if min(buy_flow, sell_flow) < 0 or queue <= 0:
+            raise ValueError("INVALID_PASSIVE_CAPACITY_INPUT")
+        # Ignore own size, prices, latency, ordering and profit: all loosen the bound.
+        return 1 + int(min(buy_flow, sell_flow) // queue)
+
+
+def audit_week1_passive_capacity(config_path):
+    """Read only the seven authorized raw ZIPs, preserving the frozen profile."""
+    config = json.loads(config_path.read_bytes())
+    history_path = Path(config["history_manifest"])
+    if digest(history_path) != config["history_manifest_sha256"]:
+        raise ValueError("CAPACITY_HISTORY_HASH_MISMATCH")
+    history = json.loads(history_path.read_bytes())
+    if history["symbol"] != "USDCUSDT" or history["kind"] != "trades":
+        raise ValueError("CAPACITY_USDCUSDT_TRADES_REQUIRED")
+    profile = next(item["profile"] for item in config["profiles"]
+                   if item["profile"]["name"] == "B_REALISTIC_CONSERVATIVE")
+    queue = D(profile["queue_ahead"])
+    archives = sorted((item for item in history["archives"]
+                       if "2026-01-01" <= item["utc_date"] < "2026-01-08"),
+                      key=lambda item: item["utc_date"])
+    if [item["utc_date"] for item in archives] != [f"2026-01-{day:02}" for day in range(1, 8)]:
+        raise ValueError("CAPACITY_EXACT_SEVEN_DAYS_REQUIRED")
+    rows = []
+    previous_id = None
+    with localcontext() as context:
+        context.prec = 128
+        for item in archives:
+            path = Path(item["local_path"])
+            if digest(path) != item["sha256"]:
+                raise ValueError("CAPACITY_ZIP_HASH_MISMATCH")
+            first = int(datetime.fromisoformat(item["utc_date"]).replace(tzinfo=UTC).timestamp())
+            first *= 1_000_000
+            buy = sell = D(0)
+            count = 0
+            with zipfile.ZipFile(path) as archive:
+                members = [name for name in archive.namelist() if name.endswith(".csv")]
+                if len(members) != 1:
+                    raise ValueError("CAPACITY_ONE_CSV_REQUIRED")
+                with archive.open(members[0]) as source:
+                    for line in source:
+                        fields = line.strip().split(b",")
+                        if not fields or not fields[0].isdigit():
+                            continue
+                        trade_id, stamp = int(fields[0]), int(fields[4])
+                        if not first <= stamp < first + 86_400_000_000:
+                            raise ValueError("CAPACITY_TRADE_OUTSIDE_AUTHORIZED_DAY")
+                        if previous_id is not None and trade_id != previous_id + 1:
+                            raise ValueError("CAPACITY_RAW_ID_DISCONTINUITY")
+                        previous_id = trade_id
+                        quantity = D(fields[2].decode())
+                        if quantity <= 0 or fields[5].lower() not in (b"true", b"false"):
+                            raise ValueError("CAPACITY_INVALID_FLOW")
+                        if fields[5].lower() == b"true":
+                            buy += quantity
+                        else:
+                            sell += quantity
+                        count += 1
+            rows.append({"day": item["utc_date"], "trades": count,
+                         "buy_compatible_volume": str(buy), "sell_compatible_volume": str(sell),
+                         "total_volume": str(buy + sell),
+                         "optimistic_cycle_upper_bound": passive_cycle_upper_bound(
+                             buy, sell, queue),
+                         "archive": str(path), "archive_bytes": path.stat().st_size,
+                         "archive_sha256": item["sha256"]})
+    if sum(row["trades"] for row in rows) != 2489204:
+        raise ValueError("CAPACITY_WEEK_1_COUNT_MISMATCH")
+    return {"schema": "passive-serial-capacity-bound-v1", "status": "VERIFIED_NECESSARY_BOUND",
+            "profile_config_sha256": digest(config_path),
+            "history_manifest_sha256": digest(history_path), "profile": profile["name"],
+            "queue_per_new_order": str(queue), "days": rows,
+            "formula": "1 + floor(min(buy_compatible_volume,sell_compatible_volume)/queue)",
+            "assumptions": ["One serial lot; new queue per ordinary BUY and SELL order",
+                            "Up to one carry-in cycle at each daily boundary",
+                            "Ignore own quantity, price, latency, sequence, fees and net profit",
+                            "Releases excluded; no trade-flow reuse or fictitious queue priority"],
+            "minimum_500_possible_in_all_days": all(
+                row["optimistic_cycle_upper_bound"] >= 500 for row in rows),
+            "scope": "FROZEN_PROFILE_MAKER_MAKER_ONLY; not a universal market impossibility",
+            "execution_semantics": "No economic replay, strategy tuning or week2 access"}
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
-    parser.add_argument("--profile-dir", type=Path, required=True)
+    parser.add_argument("--profile-dir", type=Path)
+    parser.add_argument("--capacity-week1", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     try:
-        result = audit(args.config, args.profile_dir)
+        if args.capacity_week1:
+            result = audit_week1_passive_capacity(args.config)
+        elif args.profile_dir is not None:
+            result = audit(args.config, args.profile_dir)
+        else:
+            raise ValueError("PROFILE_DIR_REQUIRED_UNLESS_CAPACITY_WEEK1")
     except Exception as exc:
         result = {
             "schema": "b10-independent-execution-audit-v1",
@@ -654,4 +747,6 @@ if __name__ == "__main__":
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(result, indent=2))
-    raise SystemExit(0 if result["status"] == "PASS_CONDITIONAL" else 1)
+    raise SystemExit(
+        0 if result["status"] in ("PASS_CONDITIONAL", "VERIFIED_NECESSARY_BOUND") else 1
+    )

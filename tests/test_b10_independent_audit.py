@@ -13,6 +13,20 @@ AUDITOR = runpy.run_path(str(Path(__file__).parents[1] / "scripts/audit_b10_real
 FIXTURE = runpy.run_path(str(Path(__file__).with_name("test_b10_reality.py")))
 
 
+@pytest.mark.parametrize("buy,sell,queue,expected", [
+    ("0", "0", "100", 1), ("1000", "199", "100", 2),
+    ("334635375", "380627166", "2330544", 144),
+    ("239063710", "289157032", "2330544", 103),
+])
+def test_passive_bound_allows_carry_in_and_ignores_own_size(buy, sell, queue, expected):
+    assert AUDITOR["passive_cycle_upper_bound"](buy, sell, queue) == expected
+
+
+def test_passive_bound_rejects_invalid_queue():
+    with pytest.raises(ValueError, match="INVALID_PASSIVE_CAPACITY_INPUT"):
+        AUDITOR["passive_cycle_upper_bound"]("100", "100", "0")
+
+
 @pytest.mark.parametrize("fee", ["0", "0.0001", "0.001"])
 def test_independent_ledger_reconstructs_actual_kernel_and_detects_money_change(fee):
     subject = FIXTURE["engine"](fee)

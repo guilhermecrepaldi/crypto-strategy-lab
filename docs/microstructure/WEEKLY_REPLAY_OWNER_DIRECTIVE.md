@@ -1,5 +1,16 @@
 # Replay semanal com aprovação humana
 
+## Atualização OWNER — mínimo500/dia, meta2.000 e extensão condicional
+
+Pedido atual: estudar bugs e adaptar até mínimo500 ciclos ordinários completos
+líquidos positivos por dia, meta2.000. Ao alcançar500 em TODOS os sete dias
+Jan1–7 e validar auditoria, Jan8–14 está previamente autorizado, preservando
+mesmo modelo/configuração, banca, reserva, inventário, ordens, filas e timers.
+Não carregar Jan8+ antes desse gate. Não há autorização para terceira semana.
+Novo challenger pode ser estudado após autópsia e pré-registro; M014 permanece
+evidência imutável. Mudanças em hipótese de execução não são correções silenciosas.
+As seções abaixo preservam autoridade histórica e são superadas neste escopo.
+
 Atualização posterior: OWNER reabriu o estudo do B10 F2.5 e elevou a meta para
 2.000 ciclos líquidos positivos por dia. A primeira semana M014 está especificada
 em M014_B10_RESERVE_PREREGISTRATION.md. Extensões continuam sem autorização.
