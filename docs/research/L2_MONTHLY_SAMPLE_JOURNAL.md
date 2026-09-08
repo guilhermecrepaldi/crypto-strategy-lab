@@ -652,3 +652,57 @@ fill-time/edge-aware selection before tuning funding. Keep paired source/costs,
 never optimize the execution model simply until1000cycles appear. Public shadow
 data could later validate signals/arrival sequencing, not actual personal fills;
 any private/live calibration requires separate OWNER authorization.
+
+## 2026-09-08 — Concrete community complaints and original B10 reconciliation
+
+OWNER requested actual user reports, maintainer conclusions and applicability,
+not a generic simulator disclaimer. Read GitHub issue bodies and comments via
+agent-reach's gh route; independent scientific reconstruction used GPT-6 Astra.
+No implementation, replay, later-day extension or account access occurred.
+
+- NautilusTrader #1537 (March2024): reporter's promising backtest diverged live.
+  Reporter traced premature fills to loading completed bars with ts_init at bar
+  open, corrected availability timestamps, then reported much closer live
+  agreement. This is a resolved data-loading problem, not proof that the engine
+  intrinsically leaks future data. Current native-L2 M018 does not use this bar
+  path; no matching local timestamp/lookahead defect was established.
+  https://github.com/nautechsystems/nautilus_trader/issues/1537#issuecomment-1993986958
+  https://github.com/nautechsystems/nautilus_trader/issues/1537#issuecomment-2002336687
+- HftBacktest #299 (December2025): maintainer acknowledged local-state handling
+  of partial fills needed investigation. CLOSED on April23,2026 by inactivity
+  automation, NOT evidence of a fix. #316 (June2026), still open when inspected,
+  supplies another reproduction alleging uncredited partial executions.
+  We do not run this engine. M018's independent audit reconciled all26 fills,
+  including the two multi-piece BUY orders; this particular accounting failure
+  was not found locally. Audit validity remains conditional on execution model.
+  https://github.com/nkaz001/hftbacktest/issues/299
+  https://github.com/nkaz001/hftbacktest/issues/316
+- Hummingbot #7286 (November2024): reporter found delayed order recognition,
+  resolved a Bybit demo-domain issue, but continued reporting paper-trade delay.
+  Contributor closed with clarification that paper connectors send no actual
+  orders; the thread does not demonstrate a complete paper-latency fix. This
+  connector-specific cause is not present in our offline execution engine.
+  https://github.com/hummingbot/hummingbot/issues/7286
+- HftBacktest discussion54 remains an unresolved live/backtest anecdote, not a
+  controlled validation or a promise that switching queue models restores edge.
+  More live fills coexisted with losses in the reporter's account; exact cause
+  was not established. Source already recorded above.
+
+Independent physical lineage check: historical097abdab / RRV2_H1_B10_F2.5
+completed artifact records3580880 cycles, COMPOUNDING100+5, funding2%, source
+2026-01-01 through2026-09-05. serial_replay.py matches LOW/HIGH price events,
+not our order's actual queue/acknowledgement/executable-volume path; historical
+recovery_reserve.py labels release THEORETICAL_RELEASE_PRICE_PATH and executable
+loss UNKNOWN. Those counts do not establish live fills or scalable compounding.
+B10 Reality additionally used a fixed100 ruler and parameterized trade-derived
+book; its name alone does not mean native historical L2 execution.
+
+M018 is a changed policy/capital allocation (100+10, funding10%, passive BUY
+admission and2h deadline) on native-L2 source2025-01-01, not the original B10 on
+its original period. Do not attribute the multi-million-to-nine comparison to a
+single change. The controlled local decline is M01712 to M0189 positive cycles
+on the same first day, already reconciled above. Neither result includes fees
+under the frozen profile. A queue estimate staying above displayed depth is a
+separate confirmed modeling difference; its historical economic effect remains
+unmeasured. No evidence yet demonstrates that original B10 returns are achievable
+live, or that current low rotation is a definitive live upper bound.
