@@ -1,5 +1,19 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER vigente — TWO_STAGE, 2026-09-07
+
+`docs/microstructure/TWO_STAGE_REPLAY_OWNER_DIRECTIVE.md` limita o primeiro replay
+multi-queue a 2026-01-01T00:00:00Z inclusive até 2026-06-01T00:00:00Z exclusive
+(151 dias). Junho ao cutoff físico de setembro são SEALED_EXTENSION_DATA.
+Não carregar/traversar esses trades nem usar suas estatísticas no Stage 1.
+Congelar modelo, políticas e gates antes do replay. Somente PASS_TO_EXTENSION
+com todos os gates e auditoria aprovada autoriza Stage 2 automaticamente.
+Extensão preserva o mesmo modelo/hash, capital composto, reserva, posições,
+ordens, dust, timers, liquidez e ledger; nenhum reset nem tuning entre etapas.
+FAIL exige autópsia, sem extensão; problema técnico/evidência insuficiente é
+INCONCLUSIVE, nunca perda econômica. Checkpoints DAY_1/7/30/60/90/120/FINAL_5_MONTH.
+Esta autoridade supera a obrigação histórica de iniciar pelo período completo.
+
 ## Autoridade OWNER vigente — M013 continuous multi-queue, 2026-09-07
 
 `docs/microstructure/CONTINUOUS_MULTI_QUEUE_OWNER_DIRECTIVE.md` supera políticas

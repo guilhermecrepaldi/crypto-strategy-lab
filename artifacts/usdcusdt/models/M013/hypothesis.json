@@ -1,0 +1,7 @@
+{
+  "change": "Owner-authorized multi-queue allocation, shared liquidity, 10 percent reserve funding, protected reserve activity and two-stage five-month-first replay.",
+  "expected_effect": "Reduce whole-engine lock while preserving exact accounting and positive reserve; test economic sustainability under conditional realistic execution.",
+  "hypothesis": "Up to three independent causal operating ranges plus protected active reserve can improve capital-weighted uptime with continuous compounding.",
+  "observation": "B10 reality exposed prolonged single-queue capital lock; M012 was superseded before economic replay.",
+  "reason_for_new_model": "Material queue, treasury, release and allocation changes require a new physical model identity; no old result is retroactively changed."
+}

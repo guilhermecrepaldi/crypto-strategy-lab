@@ -1,0 +1,15 @@
+{
+  "ancestor_chain": [
+    "M005",
+    "M006",
+    "M007"
+  ],
+  "change_category": "OWNER_CONTINUOUS_MULTI_QUEUE_COMPOUNDING",
+  "change_summary": "M007 selector ancestor, B10 execution primitives, M012 preserved and superseded without economic replay.",
+  "parent_model_id": "M007",
+  "parent_run_hash": null,
+  "references": {
+    "owner_temporal_authority": "docs/microstructure/TWO_STAGE_REPLAY_OWNER_DIRECTIVE.md",
+    "superseded_model": "M012"
+  }
+}
