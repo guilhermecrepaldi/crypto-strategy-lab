@@ -8,8 +8,8 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=false
-AUTHORIZED_MODEL=NONE_M019_D1_COMPLETE_DAY2_CLOSED
+NEW_REPLAY_AUTHORIZED_NOW=true
+AUTHORIZED_MODEL=M020
 
 ## Latest authority — adaptive stablecoin ladder V1
 
@@ -36,6 +36,25 @@ POST_RUN_EVIDENCE=PASS_CONDITIONAL
 DAY2_AUTHORIZED=false
 The execution gate is closed again after D1. Any successor or extension requires
 a new explicit OWNER decision and a new preregistered identity where material.
+
+## Active successor authority — M020 zonal ping-pong, five hours only
+
+OWNER_DIRECTIVE=STABLECOIN_ZONAL_PING_PONG_OWNER_DIRECTIVE.md
+MODEL_ID_CANDIDATE=M020
+STATUS=PREEXECUTION_AUTHORIZED_M020_ONLY
+ECONOMIC_RUN_AUTHORIZED_ONLY_AFTER_PUBLISHED_PREREG_AND_REVIEW=true
+AUTHORIZED_START=2025-01-01T00:00:00Z
+AUTHORIZED_END_EXCLUSIVE=2025-01-01T05:00:00Z
+DAY2_AUTHORIZED=false
+SAFE_MIN_NOTIONAL_REPLAY_AUTHORIZED=false
+
+The OWNER has authorized one new, non-executable normalized throughput case.
+It does not reopen, edit or invalidate M019. Full-calendar-2025 price occupancy
+may be used for retrospective DEVELOPMENT geometry, but the economic engine must
+receive no event at or after05:00UTC. The one-USDT first-leg unit is below Spot
+minimum notional and must be reported as virtual structural normalization. The
+run gate remains closed until M020 identity/specification, tests, independent
+review and the exact source/preregistration commit are published.
 
 ## Superseded preparation — three ranges
 

@@ -1,5 +1,21 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER mais recente — M020 zonal ping-pong 5h, 2026-09-08
+
+Seguir `docs/microstructure/STABLECOIN_ZONAL_PING_PONG_OWNER_DIRECTIVE.md`.
+Esta é uma hipótese nova, separada do M019: fixed immutable price bands derivados
+descritivamente da ocupação canônica de preços de2025, rolling active window com
+alvo4BUY abaixo/4SELL acima, uma sequência econômica por banda e ordens
+normalizadas de1USDT. O resultado é explicitamente
+`NON_EXECUTABLE_NORMALIZED_THROUGHPUT_DIAGNOSTIC`, pois1USDT viola o minNotional
+Spot; somente esse gate pode ser virtualizado conforme o protocolo congelado.
+Primeiro e único replay autorizado:2025-01-01T00:00Z–05:00Z exclusive. Nenhum
+evento posterior pode chegar à state machine. Capital normalizado total100,
+endowment causal aproximadamente50/50, reserva0, release desabilitado, nenhuma
+saída negativa, sem liquidação no cutoff. Preregister, testar, revisar, registrar
+e publicar o source antes do run; publicar resultado/auditoria depois. Não há
+autorização para dia2, safe-min-notional ou tuning. Preservar M019 e anteriores.
+
 ## Autoridade OWNER mais recente — adaptive stablecoin ladder,2026-09-08
 
 Seguir `docs/microstructure/ADAPTIVE_STABLECOIN_LADDER_OWNER_DIRECTIVE.md`.

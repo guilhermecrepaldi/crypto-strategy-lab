@@ -216,6 +216,11 @@ def iter_history(
     """Stream a validated consolidated interval without materializing trade objects."""
     for item in select_history_archives(manifest, start=start, end_exclusive=end_exclusive):
         for event in iter_archive(Path(item.local_path), manifest.kind):
+            # Binance public archives are sorted by event time. Stop consuming the
+            # physical member at the hard boundary so an economic replay cannot
+            # even parse rows from its sealed suffix.
+            if event.timestamp >= end_exclusive:
+                break
             if start <= event.timestamp < end_exclusive:
                 yield event
 
