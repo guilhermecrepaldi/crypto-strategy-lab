@@ -17,7 +17,7 @@ import tempfile
 import zipfile
 from collections import Counter
 from collections.abc import Iterable, Iterator
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -469,6 +469,23 @@ def validate_day(
     return result
 
 
+def validate_work(task: tuple[dict[str, Any], dict[str, Any], bool, bool]) -> dict[str, Any]:
+    """Picklable CPU worker; identical validation authority in serial and parallel."""
+    entry, trade_manifest, csv_only, use_cache = task
+    result = validate_day(entry, trade_manifest, csv_only=csv_only, use_cache=use_cache)
+    print(
+        json.dumps(
+            {
+                "date": entry["date"],
+                "status": result["status"],
+                "L2_DAY_VALID": result["L2_DAY_VALID"],
+            }
+        ),
+        flush=True,
+    )
+    return result
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--csv-only", action="store_true")
@@ -489,24 +506,12 @@ def main() -> None:
     if len(entries) != len(selected) or len({item["date"] for item in entries}) != len(selected):
         raise ValueError("manifest lacks unique authorized selected days")
 
-    def work(entry: dict[str, Any]) -> dict[str, Any]:
-        result = validate_day(
-            entry, trade_manifest, csv_only=args.csv_only, use_cache=not args.no_cache
-        )
-        print(
-            json.dumps(
-                {
-                    "date": entry["date"],
-                    "status": result["status"],
-                    "L2_DAY_VALID": result["L2_DAY_VALID"],
-                }
-            ),
-            flush=True,
-        )
-        return result
-
-    with ThreadPoolExecutor(max_workers=args.workers) as executor:
-        days = list(executor.map(work, entries))
+    tasks = [(entry, trade_manifest, args.csv_only, not args.no_cache) for entry in entries]
+    if args.workers == 1:
+        days = [validate_work(task) for task in tasks]
+    else:
+        with ProcessPoolExecutor(max_workers=args.workers) as executor:
+            days = list(executor.map(validate_work, tasks))
     output = {
         "schema": "usdcusdt-l2-monthly-validation-v1",
         "source_manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),

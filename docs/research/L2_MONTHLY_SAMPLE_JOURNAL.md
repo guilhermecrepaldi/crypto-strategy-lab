@@ -103,3 +103,26 @@ This is a data diagnostic, not strategy performance. Before economics, review al
 identified an IOC replenishment implementation defect; repair/testing required.
 2025 calibration uses explicitly conditional transfer of frozen profile rules,
 with the canonical historical tick catalog; no assertion of historical account fees.
+
+## Native recovery complete; full monthly validation
+
+Recovery finished exit0. All3024 expected native slices are provenance/hash-bound:
+481 originals reused,2543 originals matched fresh public responses byte-for-byte.
+No mismatch, no authentication bypass, no original overwritten. Native564101798bytes;
+CSV+native771835706bytes. Original download and recovery execution SHAs are explicit
+in the manifest. Every recovered original has unknown original download time and
+known verification time; no timestamp was invented.
+
+First three complete day validations (Jan/Feb/Mar2025) passed all data gates under
+published c5f57488822ab9beaaf363cfb6ef136f9ffb8955. Their source caches remain preserved.
+For the full battery, replace the CPU ThreadPool with bounded3 ProcessPool workers;
+the validator function/criteria are unchanged. Synthetic serial/process transport
+equivalence and all38 data/report tests pass. Source identity changes explicitly,
+so full campaign validation rebinds under the newly published validator rather
+than silently reusing results with an old implementation hash.
+
+Independent review tightened hypothetical IOC budget decreases before economics:
+both observed negative and positive quantity deltas affect remaining availability.
+No cancellation credit reaches the resting-order queue. Review also measured
+full-book repeated validation cost; an equivalent incremental execution path is
+being reviewed. Economic replays remain0, financial/cycle outcomes unavailable.

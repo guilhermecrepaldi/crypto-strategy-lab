@@ -149,9 +149,12 @@ observed positive quantity change provides new available budget. Record update/s
 IDs and pre/post budgets for every IOC. No order or retry consumes the same budget
 twice. M015's existing reserve floor and exact deficit coverage remain authoritative.
 
-Pre-execution clarification: for an existing level with prior displayed D, available
-A and new displayed D', a decrease yields A'=min(A,D'); an increase yields
-A'=min(D', A+(D'-D)). Unchanged depth never replenishes; deletion clears availability.
+Pre-execution clarification, tightened by independent review before any economic
+outcome: for prior displayed D, available A and new displayed D', use
+A'=max(0,min(D',A+(D'-D))). A decrease conservatively removes remaining hypothetical
+budget; do not assume it affected only already-consumed liquidity. An increase
+provides only its observed positive delta. Unchanged depth never replenishes;
+deletion clears availability.
 Thus observed deletion followed by reappearance can provide fresh depth, without
 resetting an unchanged snapshot. This applies only to hypothetical IOC liquidity,
 not cancellation credit for the ordinary resting-order queue.

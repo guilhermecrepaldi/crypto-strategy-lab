@@ -1,6 +1,6 @@
 # L2 mensal — ciclos por dia independente
 
-CSV disponíveis: 21/21. Dias com integridade completa aprovada: 0/21.
+CSV disponíveis: 21/21. Dias com integridade completa aprovada: 3/21.
 
 Cada dia/envelope começa com100 USDT +10 de reserva, FLAT. Não existe composição entre meses. — significa indisponível, não zero.
 

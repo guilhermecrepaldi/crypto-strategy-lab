@@ -120,7 +120,7 @@ def aggregate(rows):
 def build(manifest, validation=None, *, results_root):
     expected = candidates()
     entries = {item["date"]: item for item in manifest["dates"]}
-    if set(entries) != set(expected):
+    if len(manifest["dates"]) != 21 or set(entries) != set(expected):
         raise ValueError("EXACT_21_CANDIDATES_REQUIRED")
     checks = {item["date"]: item for item in (validation or {}).get("days", [])}
     rows = []

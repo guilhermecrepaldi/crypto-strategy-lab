@@ -1,6 +1,7 @@
 import gzip
 import json
 import zipfile
+from concurrent.futures import ProcessPoolExecutor
 from urllib.parse import urlencode
 
 import pytest
@@ -19,7 +20,18 @@ from scripts.validate_tardis_l2_samples import (
     trade_timestamp_matches,
     validate_day,
     validate_slice_metadata,
+    validate_work,
 )
+
+
+def test_process_and_serial_workers_preserve_result_and_order():
+    tasks = [
+        ({"date": day, "status": "UNAVAILABLE"}, {}, False, False)
+        for day in ("2025-01-01", "2025-02-01")
+    ]
+    expected = [validate_work(task) for task in tasks]
+    with ProcessPoolExecutor(max_workers=2) as executor:
+        assert list(executor.map(validate_work, tasks)) == expected
 
 
 def metadata():
