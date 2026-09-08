@@ -12,15 +12,16 @@ import gzip
 import hashlib
 import json
 import os
+import subprocess
 import tempfile
 import time
-from urllib.parse import urlencode, quote
 from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from urllib.error import HTTPError, URLError
+from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
 EXPECTED_SCHEMA = [
@@ -286,6 +287,7 @@ def _write_manifest(path: Path, results: dict[str, dict[str, object]], days: lis
         "schema_version": "tardis-free-l2-v1",
         "symbol": "USDCUSDT",
         "source": "Tardis",
+        "canonical_trade_manifest_sha256": AUDITED_SHA,
         "dates": [results[d.isoformat()] for d in days if d.isoformat() in results],
     }
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -312,9 +314,14 @@ def _retry_delay(response: object, attempt: int) -> float:
     return value if value else min(2.0**attempt, 60.0)
 
 
-def _raw_slice(day: date, offset: int, root: Path, timeout: float) -> dict[str, object]:
+def _raw_slice(day: date, offset: int, root: Path, timeout: float,
+               prior: dict[str, object] | None = None) -> dict[str, object]:
+    if not START <= day <= END or day.day != 1:
+        raise ValueError("ONLY_AUTHORIZED_MONTHLY_CANDIDATES_ALLOWED")
+    if offset < 0 or offset >= 1440 or offset % 10:
+        raise ValueError("RAW_OFFSET_MUST_BE_0_TO_1430_STEP_10")
     url = _raw_url(day, offset)
-    directory = root / day.isoformat()
+    directory = root / day.isoformat() / "raw"
     directory.mkdir(parents=True, exist_ok=True)
     stem = directory / f"{offset:04d}.ndjson"
     existing = next((candidate for candidate in (stem.with_suffix(".ndjson.gz"), stem)
@@ -322,11 +329,25 @@ def _raw_slice(day: date, offset: int, root: Path, timeout: float) -> dict[str, 
     if existing is not None:
         with existing.open("rb") as stream:
             digest = hashlib.file_digest(stream, "sha256").hexdigest()
-        return {"offset": offset, "source_url": url, "status": "ORIGINAL_PRESENT",
-                "local_path": existing.as_posix(), "bytes": existing.stat().st_size,
-                "sha256": digest}
+        if (not prior or digest != prior.get("sha256")
+                or prior.get("status") not in {"AVAILABLE", "ORIGINAL_PRESENT"}):
+            return {"offset": offset, "source_url": url, "status": "INVALID",
+                    "error": "ORPHAN_OR_HASH_MISMATCH", "local_path": existing.as_posix(),
+                    "bytes": existing.stat().st_size, "sha256": digest}
+        if existing.suffix == ".gz":
+            try:
+                with gzip.open(existing, "rb") as stream:
+                    while stream.read(1024 * 1024):
+                        pass
+            except (OSError, EOFError, gzip.BadGzipFile) as exc:
+                return {**prior, "status": "INVALID", "error": str(exc)}
+        return {**prior, "status": "ORIGINAL_PRESENT", "local_path": existing.as_posix(),
+                "bytes": existing.stat().st_size, "sha256": digest}
     part = directory / f"{offset:04d}.{os.getpid()}.{next(tempfile._get_candidate_names())}.part"
-    item: dict[str, object] = {"offset": offset, "source_url": url, "status": "UNAVAILABLE"}
+    item: dict[str, object] = {"offset": offset, "source_url": url,
+                               "download_timestamp": datetime.now(UTC).isoformat().replace(
+                                   "+00:00", "Z"),
+                               "status": "UNAVAILABLE"}
     try:
         for attempt in range(3):
             try:
@@ -339,11 +360,15 @@ def _raw_slice(day: date, offset: int, root: Path, timeout: float) -> dict[str, 
                     if status in {401, 403}:
                         item["error"] = "authentication required; no bypass"
                         return item
-                    if status == 429 or status >= 500:
+                    if status != 200 and (status == 429 or status >= 500):
                         if attempt < 2:
                             time.sleep(_retry_delay(response, attempt))
                             continue
                         item["error"] = f"retryable HTTP status {status}"
+                        return item
+                    if status != 200:
+                        item["status"] = "INVALID"
+                        item["error"] = f"unexpected HTTP status {status}"
                         return item
                     payload = response.read()
                     break
@@ -352,10 +377,9 @@ def _raw_slice(day: date, offset: int, root: Path, timeout: float) -> dict[str, 
                 if exc.code in {401, 403}:
                     item["error"] = "authentication required; no bypass"
                     return item
-                if exc.code == 429 or exc.code >= 500:
-                    if attempt < 2:
-                        time.sleep(_retry_delay(exc, attempt))
-                        continue
+                if (exc.code == 429 or exc.code >= 500) and attempt < 2:
+                    time.sleep(_retry_delay(exc, attempt))
+                    continue
                 item["error"] = str(exc)
                 return item
         else:
@@ -363,21 +387,29 @@ def _raw_slice(day: date, offset: int, root: Path, timeout: float) -> dict[str, 
         part.write_bytes(payload)
         item["bytes"] = len(payload)
         item["sha256"] = hashlib.sha256(payload).hexdigest()
+        headers = {
+            str(key).lower(): value for key, value in item.get("response_headers", {}).items()
+        }
+        if (headers.get("content-length") is not None
+                and int(headers["content-length"]) != len(payload)):
+            item.update(status="INVALID", error="HTTP_CONTENT_LENGTH_MISMATCH")
+        if str(headers.get("x-slice-size")) != "10":
+            item.update(status="INVALID", error="HTTP_X_SLICE_SIZE_MISMATCH")
         gzip_payload = payload[:2] == b"\x1f\x8b"
-        if gzip_payload:
-            with gzip.open(part, "rb") as stream:
-                while stream.read(1024 * 1024):
-                    pass
-            destination = stem.with_suffix(".ndjson.gz")
-            item["gzip_integrity"] = "PASS"
-        else:
-            destination = stem
-            item["gzip_integrity"] = "NOT_COMPRESSED"
+        destination = stem.with_suffix(".ndjson.gz") if gzip_payload else stem
         if destination.exists():
             raise FileExistsError(f"raw original appeared during download: {destination}")
         part.rename(destination)
-        item.update(status="AVAILABLE", local_path=destination.as_posix(),
-                    coverage="slice_offset_{}_10_minutes".format(offset))
+        if gzip_payload:
+            with gzip.open(destination, "rb") as stream:
+                while stream.read(1024 * 1024):
+                    pass
+            item["gzip_integrity"] = "PASS"
+        else:
+            item["gzip_integrity"] = "NOT_COMPRESSED"
+        item.update(status=item.get("status") if item.get("status") == "INVALID" else "AVAILABLE",
+                    local_path=destination.as_posix(),
+                    coverage=f"slice_offset_{offset}_10_minutes")
     except (URLError, TimeoutError, OSError, EOFError, gzip.BadGzipFile) as exc:
         item.update(status="INVALID", error=str(exc))
     finally:
@@ -386,7 +418,7 @@ def _raw_slice(day: date, offset: int, root: Path, timeout: float) -> dict[str, 
     return item
 
 
-def collect_raw(*, dates: Iterable[date] | None = None, root: Path = RAW_ROOT,
+def collect_raw(*, dates: Iterable[date] | None = None, root: Path = ROOT,
                 manifest_path: Path = MANIFEST, timeout: float = 60.0,
                 concurrency: int = 6) -> dict[str, object]:
     authorized = candidate_dates()
@@ -395,7 +427,13 @@ def collect_raw(*, dates: Iterable[date] | None = None, root: Path = RAW_ROOT,
         raise ValueError("ONLY_AUTHORIZED_MONTHLY_CANDIDATES_ALLOWED")
     if concurrency < 1 or concurrency > 6:
         raise ValueError("raw concurrency must be between 1 and 6")
-    payload = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {}
+    payload = (
+        json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {}
+    )
+    payload["canonical_trade_manifest_sha256"] = AUDITED_SHA
+    payload["raw_acquisition_source_commit"] = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], text=True
+    ).strip()
     entries = {str(item["date"]): item for item in payload.get("dates", [])}
     prior_offsets = {
         day: {int(item["offset"]): item for item in entry.get("raw_slices", [])}
@@ -403,25 +441,42 @@ def collect_raw(*, dates: Iterable[date] | None = None, root: Path = RAW_ROOT,
     }
     jobs = [(day, offset) for day in days for offset in range(0, 1440, 10)]
     with ThreadPoolExecutor(max_workers=concurrency) as pool:
-        futures = {pool.submit(_raw_slice, day, offset, root, timeout): (day, offset)
+        futures = {pool.submit(_raw_slice, day, offset, root, timeout,
+                                prior_offsets.get(day.isoformat(), {}).get(offset)): (day, offset)
                    for day, offset in jobs}
         for future in as_completed(futures):
-            day, _ = futures[future]
+            day, offset = futures[future]
             entry = entries.setdefault(day.isoformat(), {"date": day.isoformat()})
             slices = prior_offsets.setdefault(day.isoformat(), {})
-            item = future.result()
+            item = future.result() if not future.exception() else {
+                "date": day.isoformat(), "offset": offset, "status": "INVALID",
+                "error": str(future.exception())}
             slices[int(item["offset"])] = item
+            entry["raw_slices"] = sorted(slices.values(), key=lambda value: value["offset"])
+            _write_raw_manifest(manifest_path, payload, entries)
     for entry in entries.values():
         key = str(entry["date"])
-        if key in prior_offsets:
-            entry["raw_slices"] = sorted(prior_offsets[key].values(), key=lambda item: item["offset"])
+        if prior_offsets.get(key) or "raw_slices" in entry:
+            entry["raw_slices"] = sorted(
+                prior_offsets[key].values(), key=lambda item: item["offset"]
+            )
     payload.update({"schema_version": payload.get("schema_version", "tardis-free-l2-v1"),
                     "symbol": "USDCUSDT", "source": "Tardis", "dates":
                     [entries[day.isoformat()] for day in days]})
-    temporary = manifest_path.with_suffix(manifest_path.suffix + ".tmp")
-    temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    temporary.replace(manifest_path)
+    _write_raw_manifest(manifest_path, payload, entries)
     return payload
+
+
+def _write_raw_manifest(path: Path, payload: dict[str, object],
+                        entries: dict[str, dict[str, object]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    merged = dict(payload)
+    merged.update({"schema_version": payload.get("schema_version", "tardis-free-l2-v1"),
+                   "symbol": "USDCUSDT", "source": "Tardis", "dates":
+                   [entries[key] for key in sorted(entries)]})
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(merged, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary.replace(path)
 
 
 def main() -> None:
@@ -436,7 +491,10 @@ def main() -> None:
                         help="authorized first-of-month dates (raw probe/resume)")
     args = parser.parse_args()
     if args.raw:
-        result = collect_raw(dates=args.dates, timeout=args.timeout)
+        if args.offline:
+            parser.error("--offline cannot be combined with --raw")
+        result = collect_raw(dates=args.dates, root=args.root, manifest_path=args.manifest,
+                             timeout=args.timeout)
     elif args.offline:
         result = collect(
             dates=args.dates or candidate_dates(),

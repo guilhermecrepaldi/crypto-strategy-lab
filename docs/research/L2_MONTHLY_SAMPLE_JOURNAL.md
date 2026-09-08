@@ -40,3 +40,26 @@ PASS. Investigate public raw access, without keys or bypass. No fill results yet
 
 Scientific protocol/review: GPT-6 Astra. Mechanical acquisition: GPT-5.6 Luna.
 Python performs validation/accounting; TEST_SUITE_PASS != STRATEGY_PASS.
+
+## CSV acquisition completed — native validation next
+
+L2_CANDIDATE_DATES=21
+L2_AVAILABLE_FREE=21
+L2_UNAVAILABLE=0
+CSV_TOTAL_BYTES=207733908
+CSV_TOTAL_ROWS=22143325
+GZIP_AND_SCHEMA_PASS=21
+INTEGRITY_PASS=PENDING_NATIVE_SEQUENCE_AND_TRADE_RECONCILIATION
+STRATEGY_MODEL_USED=M015
+REPLAY_MODE=INDEPENDENT_24H
+QUEUE_MODEL=OBSERVED_L2
+CSV_ACQUISITION_SOURCE_COMMIT=b46e2123ac1386abba65098c21ebccc5bb9b9403
+ECONOMIC_REPLAYS_STARTED=0
+
+All21 HTTP responses200; original files remain local and immutable. January2025
+observable book validation:828955rows, zero crossed batches or capture regressions.
+First snapshot arrives9.412998s after midnight; startup remains FLAT/idle until
+valid bridging snapshot, never an invented opening book. Raw native probe200 for
+Jan2026 confirms free ten-minute depth/snapshot/trade slices with U/u. Acquire all
+144 slices perday to validate native continuity and capture ordering independently.
+Native and CSV data retain separate provenance; this is not yet economic approval.

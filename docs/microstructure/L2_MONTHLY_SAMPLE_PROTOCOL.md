@@ -74,6 +74,13 @@ initial unavailable duration and daily coverage explicitly. Silence alone is not
 sequence gap: a quiet market may have no update. Missing slices are not silence.
 Data validation can continue for all candidates even when one date fails.
 
+Startup clarification before any economic replay: a complete inventory of all144
+native ten-minute slices may have its first bridging snapshot after midnight.
+Because every experiment starts FLAT, forbid any order/activation until that
+snapshot, record INITIAL_UNAVAILABLE_US, and include this idle time in the24h
+denominator. This does not invalidate an otherwise fully sequenced day; it never
+repairs a missing mid-day interval or assumes an initial book that was not observed.
+
 ## Causal merge contract
 
 Canonical official trades remain the authority for ID, price, quantity, aggressor

@@ -7,6 +7,7 @@ import json
 import sys
 from datetime import date
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 
@@ -116,3 +117,69 @@ def test_unavailable_is_recorded_without_auth(
     assert (
         json.loads((tmp_path / "manifest.json").read_text())["dates"][0]["status"] == "UNAVAILABLE"
     )
+
+
+def test_raw_url_has_exact_slice_and_filters() -> None:
+    query = parse_qs(urlparse(collector._raw_url(date(2025, 1, 1), 120)).query)
+    assert query["offset"] == ["120"]
+    assert query["sliceSize"] == ["10"]
+    assert query["compression"] == ["gzip"]
+    assert all(channel in query["filters"][0] for channel in collector.RAW_CHANNELS)
+
+
+def test_raw_sidecar_gzip_and_immutability(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    payload = gzip.compress(b'{"timestamp":"2025-01-01T00:00:00Z"}\n')
+
+    class Response:
+        status = 200
+
+        def __init__(self) -> None:
+            self.headers = {"Content-Length": str(len(payload)), "X-Slice-Size": "10"}
+
+        def __enter__(self) -> Response:
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            return None
+
+        def read(self, size: int = -1) -> bytes:
+            return payload
+
+    monkeypatch.setattr(collector, "urlopen", lambda request, timeout: Response())
+    result = collector._raw_slice(date(2025, 1, 1), 0, tmp_path / "raw", 1.0)
+    path = Path(result["local_path"])
+    assert result["status"] == "AVAILABLE"
+    assert result["gzip_integrity"] == "PASS"
+    before = path.read_bytes()
+    second = collector._raw_slice(
+        date(2025, 1, 1), 0, tmp_path / "raw", 1.0,
+        result,
+    )
+    assert second["status"] == "ORIGINAL_PRESENT"
+    assert path.read_bytes() == before
+    orphan = collector._raw_slice(date(2025, 1, 1), 0, tmp_path / "raw", 1.0)
+    assert orphan["status"] == "INVALID"
+    changed = collector._raw_slice(
+        date(2025, 1, 1), 0, tmp_path / "raw", 1.0, {**result, "sha256": "wrong"}
+    )
+    assert changed["status"] == "INVALID"
+
+
+def test_raw_subset_preserves_other_dates_and_checkpoints_each_slice(tmp_path, monkeypatch):
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps({"dates": [{"date": "2025-02-01", "rows": 123}]}))
+    checkpoints = []
+    original_write = collector._write_raw_manifest
+
+    def checkpoint(path, payload, entries):
+        original_write(path, payload, entries)
+        checkpoints.append(json.loads(path.read_text()))
+
+    monkeypatch.setattr(collector, "_write_raw_manifest", checkpoint)
+    monkeypatch.setattr(collector, "_raw_slice", lambda day, offset, *args: {
+        "offset": offset, "status": "UNAVAILABLE", "http_status": 401,
+    })
+    collector.collect_raw(dates=[date(2025, 1, 1)], manifest_path=manifest, root=tmp_path)
+    assert len(checkpoints) == 145
+    assert len(checkpoints[0]["dates"][0]["raw_slices"]) == 1
+    assert checkpoints[-1]["dates"][1] == {"date": "2025-02-01", "rows": 123}
