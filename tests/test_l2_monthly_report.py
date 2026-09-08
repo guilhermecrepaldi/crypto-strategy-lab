@@ -80,6 +80,28 @@ def test_wrong_day_identity_rejected(tmp_path):
         report.build(manifest(), results_root=tmp_path)
 
 
+def test_partial_checkpoint_is_visible_without_fabricating_daily_return(tmp_path):
+    root = tmp_path / report.SYNTHETIC_STATE / "CONSERVATIVE_QUEUE"
+    root.mkdir(parents=True)
+    (root / "progress.json").write_text(
+        json.dumps(
+            {
+                "LOGICAL_DAY": 1,
+                "CAPTURE_TIME_US": 1735694737939332,
+                "CUMULATIVE_NET_POSITIVE_CYCLES": 1,
+                "OPERATING_BANK": "100.00891",
+                "RESERVE": "10.00099",
+            }
+        )
+    )
+    score = report.build(manifest(), results_root=tmp_path)
+    rendered = report.render(score)
+    assert "2025-01-01T01:25:37.939332+00:00" in rendered
+    assert "Ciclos positivos acumulados: 1" in rendered
+    assert "VERDICT=PENDING" in rendered
+    assert score["rows"][0]["OPERATING_FINAL"] is None
+
+
 def test_terminal_aggregate_uses_last_equity_not_peak_and_twelve_not_twentyfour():
     rows = [
         {

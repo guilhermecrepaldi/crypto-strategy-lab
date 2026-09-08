@@ -183,3 +183,37 @@ Read start now clamps to the first actual validated event, leaving logical midni
 source offsets, day end, cold start, capital, strategy and profiles unchanged.
 Regression covers both exact-midnight and6766us first prints;21 runner tests and
 Ruff pass. Independent Astra delta review and refreshed source binding precede retry.
+
+## 2026-09-08 — Economic replay started, first conservative prefix
+
+RUN_STATUS=RUNNING; VERDICT=PENDING.
+Published execution source9e176dd1d16969c37accbbba36fd763e67ffdde2 passed all
+preflight gates. CONSERVATIVE_QUEUE run hash:
+2b17e45fb88cb97250c4bcb87ea8db824afc30045eb687ff2e402f8f4750dfc1.
+The canonical runner loaded4535834 trades from exactly the12 approved source days.
+One writer processes CONSERVATIVE_QUEUE first, then PRICE_PRIORITY independently.
+The first durable50000-event checkpoint reached logical2025-01-01T01:25:37.939332Z:
+1 positive ordinary cycle, operating ledger100.00891 USDT, reserve10.00099 USDT.
+No completed day or final audit yet. This is not a daily-cycle target verdict or
+mark-to-market return; daily reports use observed-bid marked equity at closed days.
+The report now exposes partial cycles/ledger/reserve while daily cells remain absent
+until their checkpoint. Six reporter tests pass. Reporting commits never replace
+the execution source SHA embedded in the immutable run manifest.
+
+## 2026-09-08 — First synthetic day closed; day2 running
+
+CONSERVATIVE_QUEUE completed logical day1 (source2025-01-01) and carried its
+unchanged financial/order state into logical day2 (source2025-02-01).
+DAY_1_ORDINARY_FULL_FILL_CYCLES=8
+DAY_1_NET_POSITIVE_CYCLES=8
+OPERATING_FINAL=100.07128_USDT
+RESERVE_FINAL=9.98812_USDT
+TOTAL_EQUITY_FINAL=110.05940_USDT
+DAY_1_NET_PNL=+0.05940_USDT
+MAX_HOLD_HOURS=3.0010133033333333
+MOTOR_UPTIME=0.9967923368865741
+OPEN_POSITION_AT_DAY_CLOSE=false
+RUN_STATUS=RUNNING; VERDICT=PENDING; RUNTIME_ALL_FILL_AUDIT=PENDING.
+The observed first day is below500 cycles, not strategy approval. Continue all12
+approved days with frozen M015 and compounding; no tuning or daily reset.
+PRICE_PRIORITY remains queued behind the first complete trajectory.

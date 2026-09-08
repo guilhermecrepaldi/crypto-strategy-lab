@@ -7,9 +7,11 @@ Uma única banca inicial de100 USDT +10 de reserva por envelope. Capital, posiç
 
 ## CONSERVATIVE_QUEUE
 
+Parcial — dia 2/12; origem 2025-02-01; relógio simulado 2025-01-02T01:36:46.473854+00:00. Ciclos positivos acumulados: 8. Banca contábil: 100.0712800000000000 USDT; reserva: 9.9881200000000000 USDT. PnL marcado a mercado será publicado no fechamento diário. VERDICT=PENDING; isto não é aprovação final.
+
 | Dia | Origem | Ciclos positivos | Banca | Reserva | Total | PnL dia | Max hold h | Uptime |
 |---:|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 2025-01-01 | — | — | — | — | — | — | — |
+| 1 | 2025-01-01 | 8 | 100.0712800000000000 | 9.9881200000000000 | 110.0594000000000000 | 0.0594000000000000 | 3.0010133033333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333 | 0.99679233688657407407407407407407407407407407407407407407407407407407407407407407407407407407407407407407407407407407407407407407 |
 | 2 | 2025-02-01 | — | — | — | — | — | — | — |
 | 3 | 2025-03-01 | — | — | — | — | — | — | — |
 | 4 | 2025-04-01 | — | — | — | — | — | — | — |

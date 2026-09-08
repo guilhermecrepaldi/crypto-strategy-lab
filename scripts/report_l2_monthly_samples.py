@@ -6,7 +6,7 @@ import argparse
 import hashlib
 import json
 from collections import Counter
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from statistics import median
@@ -227,9 +227,27 @@ def render(score):
         "",
     ]
     for envelope in ENVELOPES:
+        current = score["progress"][envelope]
         lines += [
             f"## {envelope}",
             "",
+        ]
+        if current and "CAPTURE_TIME_US" in current:
+            logical = datetime(1970, 1, 1, tzinfo=UTC) + timedelta(
+                microseconds=current["CAPTURE_TIME_US"]
+            )
+            day = current["LOGICAL_DAY"]
+            lines += [
+                f"Parcial — dia {day}/12; origem {SYNTHETIC_SOURCE_DATES[day - 1]}; "
+                f"relógio simulado {logical.isoformat()}. "
+                f"Ciclos positivos acumulados: {current['CUMULATIVE_NET_POSITIVE_CYCLES']}. "
+                f"Banca contábil: {current['OPERATING_BANK']} USDT; "
+                f"reserva: {current['RESERVE']} USDT. "
+                "PnL marcado a mercado será publicado no fechamento diário. "
+                "VERDICT=PENDING; isto não é aprovação final.",
+                "",
+            ]
+        lines += [
             "| Dia | Origem | Ciclos positivos | Banca | Reserva | Total | "
             "PnL dia | Max hold h | Uptime |",
             "|---:|---|---:|---:|---:|---:|---:|---:|---:|",
