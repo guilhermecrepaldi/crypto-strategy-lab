@@ -74,3 +74,21 @@ COMMIT=Containing implementation commit.
 TYPE=ERROR
 EVENT=Implementation publication command did not stop on two whitespace-only diff-check findings in historical archival helper. No kernel or economic semantics affected; no M012 run started.
 DECISION=Remove trailing whitespace, enforce command failure checks, publish correction before execution.
+
+## M012 preparation superseded by OWNER — 2026-09-07T23:58:40Z
+
+TYPE=OWNER_MULTI_QUEUE_STRATEGY_SUPERSESSION
+STATUS=SUPERSEDED_BY_OWNER_MULTI_QUEUE_STRATEGY
+REGISTRY_STATUS=SUPERSEDED
+PROCESS_STOPPED=YES; targeted Ctrl-C on session25387/Python21396
+EXECUTION_SOURCE_COMMIT=7378e8385ed9fc59a2b48b3b880161bbf80b793d
+LAST_PHASE=M012_LOADING_FROZEN_CANONICAL_TAPE
+REGISTERED_RUNS=0
+ECONOMIC_REPLAY_STARTED=NO
+LAST_CHECKPOINT=NONE; preparation had not produced an economic checkpoint
+ECONOMIC_RESULTS=NONE; do not invent zero-return evidence
+PRESERVED=Published model/source/spec/review/tests; local writer.lock; no artifacts deleted
+NEXT_FREE_MODEL_ID=M013 confirmed from physical append-only registry
+DECISION=Stop superseded single-queue model; preregister new continuous multi-queue policy under a new identity.
+AUTHORITY=docs/microstructure/CONTINUOUS_MULTI_QUEUE_OWNER_DIRECTIVE.md
+COMMIT=Containing supersession publication.

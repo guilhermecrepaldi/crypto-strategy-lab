@@ -1,0 +1,21 @@
+{
+  "model_id": "M012",
+  "model_hash": "d7bcb697bc870703deabfa35e844e23748424a0cefb08ed753bcd74ba35b022e",
+  "status": "SUPERSEDED_BY_OWNER_MULTI_QUEUE_STRATEGY",
+  "registry_status": "SUPERSEDED",
+  "execution_source_commit": "7378e8385ed9fc59a2b48b3b880161bbf80b793d",
+  "process_session": 25387,
+  "actual_python_pid": 21396,
+  "stopped_by": "TARGETED_SESSION_CTRL_C",
+  "writer_processes_remaining": 0,
+  "preparation_stage": "M012_LOADING_FROZEN_CANONICAL_TAPE",
+  "run_registered_events": 0,
+  "run_id": null,
+  "checkpoint": null,
+  "durable_economic_journal": null,
+  "economic_replay_started": false,
+  "economic_results": null,
+  "preserved_artifacts": "Published M012 source/spec/model registration/review/tests and local reality-primary/writer.lock; no economic artifact existed to copy or truncate.",
+  "reason": "OWNER replaced single-queue5pct recovery with continuous3operating+1active-reserve queues and10pctfunding/initialreserve10.",
+  "new_model_next_free": "M013"
+}

@@ -79,7 +79,7 @@ def curve_svg(rows, key, title):
         )
     xmin, xmax = min(p[0] for p in points), max(p[0] for p in points)
     ymin, ymax = min(p[1] for p in points), max(p[1] for p in points)
-    pad = max((ymax - ymin) * 0.08, abs(ymax) * 0.00001, 0.000001)
+    pad = max((ymax - ymin) * 0.08, abs(ymax) * 0.001, 0.000001)
     ymin, ymax = ymin - pad, ymax + pad
     def x(v):
         return 85 + 775 * (v - xmin) / max(1, xmax - xmin)

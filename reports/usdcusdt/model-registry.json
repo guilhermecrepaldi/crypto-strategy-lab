@@ -4806,6 +4806,16 @@
         "schema_version": "usdcusdt-model-registry-v2",
         "status": "CREATED"
       }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-07T23:58:40.474314+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M012",
+        "reason": "SUPERSEDED_BY_OWNER_MULTI_QUEUE_STRATEGY; OWNER directive 2e4f4f9c; first process stopped during canonical tape preparation, before RUN_REGISTERED/checkpoint/economic replay; code and preregistration preserved.",
+        "to": "SUPERSEDED"
+      }
     }
   ],
   "models": [
@@ -5805,7 +5815,7 @@
       "model_id": "M012",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "SUPERSEDED"
     }
   ],
   "pair": "USDCUSDT",

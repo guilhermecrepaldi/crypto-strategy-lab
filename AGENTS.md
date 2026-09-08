@@ -1,5 +1,21 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER vigente — M013 continuous multi-queue, 2026-09-07
+
+`docs/microstructure/CONTINUOUS_MULTI_QUEUE_OWNER_DIRECTIVE.md` supera políticas
+incompatíveis anteriores. M012 registrado permanece histórico/SUPERSEDED; seu processo
+foi parado ainda na preparação do histórico, antes de qualquer replay econômico.
+Registry físico confirma M013 como próximo ID livre para CONTINUOUS_MULTI_QUEUE_RECOVERY.
+COMPOUNDING: operating inicial100/reserve10/equity110. Lucro operacional10% reserva,
+90% reinvestimento; lucro da fila ativa100% reserva; nenhum saque ou reset100.
+Até3 filas operacionais independentes e1fila ativa de reserva em USDCUSDT; alocação
+causal pré-registrada, ranges distintos quando viáveis, liquidez compartilhada sem
+contar volume/depth quatro vezes. Reserva ativa<=50%;core protegido/sobrevivência>0.
+Limite24h por fila operacional; medir uptime ponderado pelo capital, fullstop e
+sustentabilidade da reserva. Nenhuma segunda paridade, conta privada, Testnet/live.
+Pré-registro+implementação+testes+review independente PASS+publicação autorizam primeira
+execução automaticamente. Não retomar B10 ou M012 nem alterar suas evidências.
+
 ## Autoridade OWNER vigente — supersessão B10 / M012, 2026-09-07
 
 `docs/microstructure/HIGH_UPTIME_RECOVERY_OWNER_DIRECTIVE.md` supera as ordens anteriores
