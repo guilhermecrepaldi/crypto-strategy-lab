@@ -217,3 +217,26 @@ RUN_STATUS=RUNNING; VERDICT=PENDING; RUNTIME_ALL_FILL_AUDIT=PENDING.
 The observed first day is below500 cycles, not strategy approval. Continue all12
 approved days with frozen M015 and compounding; no tuning or daily reset.
 PRICE_PRIORITY remains queued behind the first complete trajectory.
+
+## 2026-09-08 — OWNER-requested external execution research, no replay changes
+
+Delivered reports/usdcusdt/B10-execution-research.html: standalone Portuguese HTML
+with first-day evidence, primary-source comparisons, similar reported cases,
+source commits, reuse/licensing notes and prioritized research gates. Independent
+GPT-6 Astra scientific review PASS; browser QA at1440x1000 and390x844, navigation
+and anchors checked, no page overflow or console errors after favicon correction.
+
+Key finding: HftBacktest RiskAdverseQueueModel::depth at5f3ec40 caps ahead volume
+to new displayed depth; our frozen ordinary queue does not. Separately, its exchange
+fill rules admit price-through evidence while our CONSERVATIVE_QUEUE disables it.
+These are modeling differences, not proof of a technical defect or actual fills.
+Proposed next diagnostic: intraday time with ahead above displayed, vanished levels
+and subsequent prints, excluding seams/unknown coverage. No synthetic fill credit,
+parameter optimization, source patch or strategy change was authorized or executed.
+
+The HTML separates observed data from queue inference, software validation from
+strategy outcome, and synthetic stress from real historical returns. It does not
+claim any external project achieved500/2000 cycles under our identical conditions.
+External research used GitHub CLI, Jina Reader and available web search; Exa was
+not configured and agent-reach executable/update-check was unavailable. No external
+trading package was installed or used to execute economic simulations.
