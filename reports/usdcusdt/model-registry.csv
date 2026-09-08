@@ -4713,7 +4713,7 @@ M019,REJECTED,100,USDT,COMPOUNDING,RUN_MANIFEST,24e5a43a63bc501b4d7fb13931c0fcc3
   ""scenario_hash"": ""59e9782ad5b4143803518027e46c0cb1bba45fdbd4beabc86ebf63886a53a3ce"",
   ""status"": ""FAIL_1000""
 }","Material OWNER change to capital ownership, parallelism, inventory and exit semantics requires a new identity.",,,,,,,,,
-M020,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,d170be7d81e6a93a2bc04ce74b50775f9d054dd2f2fbf2d674f0afa2b5bab45b,M019,2026-09-08T23:05:41.008190Z,Immutable price zones with one unresolved sequence per zone and rolling four-by-four coverage can preserve more independent recycling capacity.,"M019 completed10 D1 cycles and then concentrated capital in inventory, including an18.503-hour cycle plateau.","Replace mid-following ladder offsets with a full-2025 P80 fixed map, one sequence per band and normalized one-USDC throughput units for5h.",Measure structural complete-cycle capacity and concentration without assuming profit optimization or a minimum cycle result.,"{
+M020,REJECTED,100,USDT,COMPOUNDING,RUN_MANIFEST,d170be7d81e6a93a2bc04ce74b50775f9d054dd2f2fbf2d674f0afa2b5bab45b,M019,2026-09-08T23:05:41.008190Z,Immutable price zones with one unresolved sequence per zone and rolling four-by-four coverage can preserve more independent recycling capacity.,"M019 completed10 D1 cycles and then concentrated capital in inventory, including an18.503-hour cycle plateau.","Replace mid-following ladder offsets with a full-2025 P80 fixed map, one sequence per band and normalized one-USDC throughput units for5h.",Measure structural complete-cycle capacity and concentration without assuming profit optimization or a minimum cycle result.,"{
   ""annual_high"": ""1.00900"",
   ""annual_low"": ""0.98500"",
   ""available_distinct_price_levels"": 10,
@@ -4816,4 +4816,30 @@ M020,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,d170be7d81e6a93a2bc
   ""unknown_book_coverage"": ""REJECT_ACTIVATION_OUTSIDE_PROVEN_SNAPSHOT_COVERAGE"",
   ""virtual_filter_override"": ""MIN_NOTIONAL_ONLY"",
   ""window_edge_rule"": ""WINDOW_UNDERSUPPORTED_NO_BAND_EXTENSION""
-}",,,"Fixed retrospective zones, bidirectional roundtrips, normalized filters and a five-hour objective materially change M019 semantics.",,,,,,,,,
+}","{
+  ""audit_status"": ""PASS_M020_LEDGER_EXECUTION_LIQUIDITY"",
+  ""cycles_per_hour"": ""0"",
+  ""main_limiter"": ""PRICE_OUTSIDE_FIXED_P80_MAP"",
+  ""realized_net_pnl"": ""0"",
+  ""total_complete_cycles"": 0,
+  ""total_marked_equity"": ""100.00980000"",
+  ""unrealized_pnl"": ""0.00980000"",
+  ""usdc_final"": ""49"",
+  ""usdt_final"": ""50.90690000""
+}","{
+  ""campaign_snapshot_id"": ""M020_OWNER_GATED_5H_2025-01-01_PRICE_PRIORITY"",
+  ""comparison"": {
+    ""M019"": ""QUALITATIVE_ONLY_DIFFERENT_HORIZON_ARCHITECTURE_AND_NOTIONAL"",
+    ""physical_run_hash"": ""dd80b82cafbc96c049ed6814b5c91726fc5c758876afa62ddb7795038ba61122""
+  },
+  ""criteria"": {
+    ""economic_sanity"": ""NO_CAPITAL_CREATION_AND_NO_NEGATIVE_EXIT"",
+    ""primary"": ""TOTAL_POSITIVE_COMPLETE_CYCLES_IN_5H"",
+    ""throughput_gate"": ""MEASURE_ONLY_NO_MINIMUM_PROMOTION_GATE""
+  },
+  ""next_run_authorized"": false,
+  ""outcome"": ""REJECTED_CONFIGURATION"",
+  ""reason"": ""Frozen P80 map received zero market occupancy during the authorized 5h window; no cycles were possible."",
+  ""run_hash"": ""3ff9ef96cc5c88f118d173514a00a36c0df9af30d09bee7b3e55bc907826f65c"",
+  ""scenario_hash"": ""5885c3c4558bb46069e04be8263f5a64c213d94da66612e0cb5768177c2df1da""
+}","Fixed retrospective zones, bidirectional roundtrips, normalized filters and a five-hour objective materially change M019 semantics.",,,,,,,,,

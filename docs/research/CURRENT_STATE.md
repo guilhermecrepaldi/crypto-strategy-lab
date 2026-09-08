@@ -1,14 +1,14 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=M020_ZONAL_PING_PONG_5H
-CAMPAIGN_STATUS=M020_PREREGISTERED; PRE_RUN_PUBLICATION_PENDING
-CAMPAIGN_EXECUTION_SOURCE_SHA=PENDING_PUBLIC_PREREG_COMMIT
+CAMPAIGN_STATUS=M020_COMPLETE; REJECTED_ZERO_THROUGHPUT
+CAMPAIGN_EXECUTION_SOURCE_SHA=e211838c9094c58c2fbe33d025a8d4fc80f17b8e
 CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
-CAMPAIGN_VERDICT=PENDING
-CAMPAIGN_PROGRESS_FILE=PENDING_M020_RUN
+CAMPAIGN_VERDICT=PRICE_OUTSIDE_FIXED_P80_MAP; ZERO_COMPLETE_CYCLES
+CAMPAIGN_PROGRESS_FILE=reports/usdcusdt/M020-5h-result.json
 CAMPAIGN_JOURNAL=docs/research/M020_JOURNAL.md
-CAMPAIGN_SCOREBOARD=PENDING_M020_RUN
+CAMPAIGN_SCOREBOARD=reports/usdcusdt/M020-5h-result.json
 CURRENT_OWNER_WINDOW=docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
@@ -24,7 +24,7 @@ MONTHLY_CONTINUOUS_WEEK_2_AUTHORIZED=false
 
 OWNER_NEXT_RESEARCH=STABLECOIN_ZONAL_PING_PONG_5H_V1
 OWNER_DIRECTIVE=docs/microstructure/STABLECOIN_ZONAL_PING_PONG_OWNER_DIRECTIVE.md
-NEXT_CAMPAIGN_STATUS=M020_CREATED_REVIEW_PASS; PUBLICATION_PENDING; ECONOMIC_RUN_NOT_STARTED
+NEXT_CAMPAIGN_STATUS=M020_REJECTED; NO_FURTHER_RUN_AUTHORIZED
 NEXT_CAMPAIGN_MODEL_HASH=d170be7d81e6a93a2bc04ce74b50775f9d054dd2f2fbf2d674f0afa2b5bab45b
 NEXT_CAMPAIGN_WINDOW=2025-01-01T00:00:00Z/2025-01-01T05:00:00Z_EXCLUSIVE
 NEXT_CAMPAIGN_ORDER_MODE=NORMALIZED_1_USDT_NON_EXECUTABLE
@@ -35,10 +35,13 @@ Latest OWNER authority creates M020 as a five-hour zonal throughput diagnostic,
 not a continuation or repair of M019. The fixed band geometry may use full-year
 2025 canonical trade occupancy descriptively; D1 is therefore DEVELOPMENT and
 not out-of-sample. Economic state remains hard-bounded to the first five hours.
-No M020 economic replay has started. Exact geometry, implementation, tests and
-independent review and registration are complete; a published preregistration
-remains pending. Day2 and
-an executable-safe-min-notional repetition remain closed.
+M020 completed against the published preregistration with zero cycles and zero
+fills. The bounded market traded from1.0017 to1.0027 while all immutable bands
+were0.9994–1.0003, so the result isolates `PRICE_OUTSIDE_FIXED_P80_MAP`; it is
+not evidence of queue rejection. Final marked equity was100.00980000 from
+50.90690000USDT plus49USDC; realized PnL was zero and unrealized PnL+0.00980000.
+The physical audit passed; registry status is REJECTED. Day2 and an executable
+safe-min-notional repetition remain closed.
 
 Latest OWNER authority supersedes the unexecuted three-range proposal. M019 is a
 new12-slot(6BUY+6SELL) observed-L2 inventory ladder with shared capital/liquidity,

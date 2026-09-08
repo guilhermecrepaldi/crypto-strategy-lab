@@ -9385,6 +9385,143 @@
         "schema_version": "usdcusdt-model-registry-v2",
         "status": "CREATED"
       }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-08T23:18:57.323757+00:00",
+      "payload": {
+        "SCENARIO_HASH": "5885c3c4558bb46069e04be8263f5a64c213d94da66612e0cb5768177c2df1da",
+        "label": "M020 normalized fixed-zone 5h throughput diagnostic",
+        "model_id": "M020",
+        "scenario": {
+          "day2_authorized": false,
+          "end_exclusive": "2025-01-01T05:00:00Z",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "name": "M020_OWNER_GATED_5H_PRICE_PRIORITY",
+          "order_notional_mode": "NORMALIZED_1_USDT_NON_EXECUTABLE",
+          "published_config_sha": "e211838c9094c58c2fbe33d025a8d4fc80f17b8e",
+          "source_day": "2025-01-01",
+          "start": "2025-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-08T23:18:57.637472+00:00",
+      "payload": {
+        "MODEL_HASH": "d170be7d81e6a93a2bc04ce74b50775f9d054dd2f2fbf2d674f0afa2b5bab45b",
+        "RUN_HASH": "3ff9ef96cc5c88f118d173514a00a36c0df9af30d09bee7b3e55bc907826f65c",
+        "SCENARIO_HASH": "5885c3c4558bb46069e04be8263f5a64c213d94da66612e0cb5768177c2df1da",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M020\\runs\\3ff9ef96cc5c88f118d173514a00a36c0df9af30d09bee7b3e55bc907826f65c",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "M020_OWNER_GATED_5H_2025-01-01_PRICE_PRIORITY",
+        "capital_mode": "COMPOUNDING",
+        "code_commit": "e211838c9094c58c2fbe33d025a8d4fc80f17b8e",
+        "currency": "USDT",
+        "dataset_hash": "1c564f88935a7c694d2f15cd4c9a8710013a19095f4eaece32529b22e7ba7fa2",
+        "initial_capital": "100",
+        "interval": {
+          "end_exclusive": "2025-01-01T05:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M020",
+        "run": {
+          "normalized_non_executable": true,
+          "physical_audit_sha256": "e38b1355db6e487ea9c2a01f9b372729850b1999a97702ba4a971a1decf1d98b",
+          "physical_run_hash": "dd80b82cafbc96c049ed6814b5c91726fc5c758876afa62ddb7795038ba61122",
+          "physical_summary": "artifacts/usdcusdt/l2-monthly-samples/M020/OWNER_GATED_5H/PRICE_PRIORITY/summary.json"
+        },
+        "technical_revision": "M020_ZONAL_PING_PONG_5H_V1"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-08T23:18:57.940810+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M020",
+        "reason": "Reconciled completed OWNER-authorized 5h physical replay bound to published source e211838",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-08T23:18:58.246266+00:00",
+      "payload": {
+        "EVALUATION_HASH": "43febe94d467ba74c57fa4a7146541d7f03cdb409b0f8d9f79d7e1bfcd076450",
+        "EVIDENCE_HASH": "53b71b6c9353a42c55f1ff2254d3abbc49d6b94313f5258db96de4fd811af685",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M020\\runs\\3ff9ef96cc5c88f118d173514a00a36c0df9af30d09bee7b3e55bc907826f65c\\evaluations\\43febe94d467ba74c57fa4a7146541d7f03cdb409b0f8d9f79d7e1bfcd076450",
+        "campaign_snapshot_id": "M020_OWNER_GATED_5H_2025-01-01_PRICE_PRIORITY",
+        "comparison": {
+          "M019": "QUALITATIVE_ONLY_DIFFERENT_HORIZON_ARCHITECTURE_AND_NOTIONAL",
+          "physical_run_hash": "dd80b82cafbc96c049ed6814b5c91726fc5c758876afa62ddb7795038ba61122"
+        },
+        "criteria": {
+          "economic_sanity": "NO_CAPITAL_CREATION_AND_NO_NEGATIVE_EXIT",
+          "primary": "TOTAL_POSITIVE_COMPLETE_CYCLES_IN_5H",
+          "throughput_gate": "MEASURE_ONLY_NO_MINIMUM_PROMOTION_GATE"
+        },
+        "decision": {
+          "campaign_snapshot_id": "M020_OWNER_GATED_5H_2025-01-01_PRICE_PRIORITY",
+          "comparison": {
+            "M019": "QUALITATIVE_ONLY_DIFFERENT_HORIZON_ARCHITECTURE_AND_NOTIONAL",
+            "physical_run_hash": "dd80b82cafbc96c049ed6814b5c91726fc5c758876afa62ddb7795038ba61122"
+          },
+          "criteria": {
+            "economic_sanity": "NO_CAPITAL_CREATION_AND_NO_NEGATIVE_EXIT",
+            "primary": "TOTAL_POSITIVE_COMPLETE_CYCLES_IN_5H",
+            "throughput_gate": "MEASURE_ONLY_NO_MINIMUM_PROMOTION_GATE"
+          },
+          "next_run_authorized": false,
+          "outcome": "REJECTED_CONFIGURATION",
+          "reason": "Frozen P80 map received zero market occupancy during the authorized 5h window; no cycles were possible.",
+          "run_hash": "3ff9ef96cc5c88f118d173514a00a36c0df9af30d09bee7b3e55bc907826f65c",
+          "scenario_hash": "5885c3c4558bb46069e04be8263f5a64c213d94da66612e0cb5768177c2df1da"
+        },
+        "metrics": {
+          "audit_status": "PASS_M020_LEDGER_EXECUTION_LIQUIDITY",
+          "cycles_per_hour": "0",
+          "main_limiter": "PRICE_OUTSIDE_FIXED_P80_MAP",
+          "realized_net_pnl": "0",
+          "total_complete_cycles": 0,
+          "total_marked_equity": "100.00980000",
+          "unrealized_pnl": "0.00980000",
+          "usdc_final": "49",
+          "usdt_final": "50.90690000"
+        },
+        "model_id": "M020",
+        "run_hash": "3ff9ef96cc5c88f118d173514a00a36c0df9af30d09bee7b3e55bc907826f65c",
+        "scenario_hash": "5885c3c4558bb46069e04be8263f5a64c213d94da66612e0cb5768177c2df1da"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-08T23:18:58.550884+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M020",
+        "reason": "5h physical result and independent execution audit reconciled",
+        "to": "EVALUATED"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-08T23:18:58.852344+00:00",
+      "payload": {
+        "from": "EVALUATED",
+        "model_id": "M020",
+        "reason": "Zero cycles: frozen P80 fixed map did not overlap the authorized 5h market path",
+        "to": "REJECTED"
+      }
     }
   ],
   "models": [
@@ -11294,7 +11431,7 @@
         "monthly": null,
         "run_manifest": null
       },
-      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
+      "capital_evidence": "RUN_MANIFEST",
       "capital_mode": "COMPOUNDING",
       "created_at": "2026-09-08T23:05:41.008190Z",
       "currency": "USDT",
@@ -11433,7 +11570,7 @@
       "model_id": "M020",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "REJECTED"
     }
   ],
   "pair": "USDCUSDT",

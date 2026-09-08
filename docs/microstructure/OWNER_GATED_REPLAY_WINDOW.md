@@ -8,8 +8,8 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=true
-AUTHORIZED_MODEL=M020
+NEW_REPLAY_AUTHORIZED_NOW=false
+AUTHORIZED_MODEL=NONE_M020_5H_COMPLETE
 
 ## Latest authority — adaptive stablecoin ladder V1
 
@@ -41,7 +41,7 @@ a new explicit OWNER decision and a new preregistered identity where material.
 
 OWNER_DIRECTIVE=STABLECOIN_ZONAL_PING_PONG_OWNER_DIRECTIVE.md
 MODEL_ID_CANDIDATE=M020
-STATUS=PREEXECUTION_AUTHORIZED_M020_ONLY
+STATUS=M020_5H_COMPLETE_REJECTED_ZERO_THROUGHPUT
 ECONOMIC_RUN_AUTHORIZED_ONLY_AFTER_PUBLISHED_PREREG_AND_REVIEW=true
 AUTHORIZED_START=2025-01-01T00:00:00Z
 AUTHORIZED_END_EXCLUSIVE=2025-01-01T05:00:00Z
@@ -55,6 +55,18 @@ receive no event at or after05:00UTC. The one-USDT first-leg unit is below Spot
 minimum notional and must be reported as virtual structural normalization. The
 run gate remains closed until M020 identity/specification, tests, independent
 review and the exact source/preregistration commit are published.
+
+POST_RUN_STATUS=M020_5H_COMPLETE_REJECTED
+POST_RUN_CYCLES=0
+POST_RUN_LIMITER=PRICE_OUTSIDE_FIXED_P80_MAP
+POST_RUN_SOURCE_SHA=e211838c9094c58c2fbe33d025a8d4fc80f17b8e
+POST_RUN_PHYSICAL_HASH=dd80b82cafbc96c049ed6814b5c91726fc5c758876afa62ddb7795038ba61122
+POST_RUN_AUDIT=PASS_M020_LEDGER_EXECUTION_LIQUIDITY
+
+The exact five-hour run is complete. No price entered the frozen P80 map, so
+all nine bands recorded zero cycles and M020 was rejected for this window.
+This closes the execution gate; a geometry change is a new hypothesis and the
+safe-min-notional repetition remains subject to a new OWNER authorization.
 
 ## Superseded preparation — three ranges
 

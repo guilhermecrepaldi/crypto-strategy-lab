@@ -61,3 +61,38 @@ Append-only journal for `STABLECOIN_ZONAL_PING_PONG_5H_V1`.
 - Final repository validation before publication: 724 passed, 1 skipped and 1
   integration test deselected. Ruff and focused strict mypy passed. These are
   software results only; `STRATEGY_VERDICT=PENDING`.
+
+## 2026-09-08 — five-hour replay completed and rejected
+
+- The exact preregistered source was published first at
+  `e211838c9094c58c2fbe33d025a8d4fc80f17b8e`. The physical replay is bound to
+  that commit and has physical run hash
+  `dd80b82cafbc96c049ed6814b5c91726fc5c758876afa62ddb7795038ba61122`.
+- A first CLI invocation failed before importing project code because the local
+  package path was absent. It did not open data, create an economic artifact or
+  alter replay state. The correct module invocation then completed exactly
+  `2025-01-01T00:00:00Z/2025-01-01T05:00:00Z`.
+- Result: zero complete cycles and zero fills. All nine bands produced zero
+  cycles. This is not a queue result: every canonical trade price in the
+  bounded execution audit was between 1.0017 and 1.0027, entirely above the
+  immutable P80 map 0.9994–1.0003. Consequently the causal limiter is
+  `PRICE_OUTSIDE_FIXED_P80_MAP` and `WINDOW_UNDERSUPPORTED=true`.
+- Final balances: 50.90690000 USDT plus 49 USDC, marked at terminal bid for
+  total equity 100.00980000 USDT. Realized net PnL is zero; unrealized PnL is
+  +0.00980000. The change is mark-to-market on the initial USDC endowment, not
+  cycle profit.
+- The independent physical audit passed ownership, shared-liquidity, queue and
+  native-causality reconciliation: 39,742 trade deliveries, four submitted
+  BUY orders, zero fills, zero negative exits and zero cycles. Audit file:
+  39,751 rows, SHA256
+  `e38b1355db6e487ea9c2a01f9b372729850b1999a97702ba4a971a1decf1d98b`.
+- Registry reconciliation preserves the distinct physical and registry hashes:
+  registry run `3ff9ef96cc5c88f118d173514a00a36c0df9af30d09bee7b3e55bc907826f65c`,
+  evaluation `43febe94d467ba74c57fa4a7146541d7f03cdb409b0f8d9f79d7e1bfcd076450`.
+  M020 status is `REJECTED` because this frozen geometry demonstrated no
+  throughput in the authorized window.
+- `TEST_SUITE_PASS != STRATEGY_PASS`. Day2, parameter changes and the executable
+  safe-min-notional repetition remain unauthorized.
+- Post-run registry/result validation: 46 focused tests passed; the published
+  result JSON exactly matches the physical summary and the execution-audit
+  SHA256 was independently recomputed successfully.
