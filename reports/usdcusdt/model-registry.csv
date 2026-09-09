@@ -5130,7 +5130,7 @@ M023,INCONCLUSIVE,1.0019,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXECUTABL
   ""scenario_hash"": ""85ed90cd83a9c207652690c3f8a8a145e1d6e3749c7b2acf590470df4944b636"",
   ""status"": ""INCONCLUSIVE""
 }","Serial capital, virtual candidates, hot-line pricing and strict side alternation materially change M022 order management.",,,,,,,,,
-M024,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,a2f1f9708f222ed0a984318a5fe0c56a44791f7f718bddc93bb24a91c4be6125,M023,2026-09-09T15:52:54.658376Z,Independently funded own orders already resting in segmented FIFO can preserve column-two age when column one completes.,M023 removed the self-cross/post-only storm but completed four positive cycles in three hours under public FIFO and price recovery.,"Use the OWNER-frozen triangular same-price queue geometry, shared public queue cohorts, owned-return priority and realized-profit growth.","Measure physical throughput, column pre-aging and capital efficiency without transferring priority or injecting capital.","{
+M024,INCONCLUSIVE,150.1325,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXECUTABLE_RUN_MANIFEST,a2f1f9708f222ed0a984318a5fe0c56a44791f7f718bddc93bb24a91c4be6125,M023,2026-09-09T15:52:54.658376Z,Independently funded own orders already resting in segmented FIFO can preserve column-two age when column one completes.,M023 removed the self-cross/post-only storm but completed four positive cycles in three hours under public FIFO and price recovery.,"Use the OWNER-frozen triangular same-price queue geometry, shared public queue cohorts, owned-return priority and realized-profit growth.","Measure physical throughput, column pre-aging and capital efficiency without transferring priority or injecting capital.","{
   ""activation_cross_policy"": ""REJECT_RELEASE_WITHOUT_QUEUE_AGE"",
   ""aged_order_distance_rule"": ""KEEP_WHILE_PASSIVE_AND_INSIDE_CURRENT_50_LEVEL_SIDE_WINDOW"",
   ""aged_order_retention"": true,
@@ -5204,4 +5204,32 @@ M024,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,a2f1f9708f222ed0a98
   ""target_cycles"": 30,
   ""target_cycles_per_hour"": ""10"",
   ""virtual_filter_override"": ""MIN_NOTIONAL_ONLY""
-}",,,Multiple physical FIFO columns and separately owned capital materially change M023's single-order mechanics.,,,,,,,,,
+}","{
+  ""audit_status"": ""PASS_M024_PHYSICAL_LEDGER"",
+  ""completed_cycle_pnl"": ""0.00680000"",
+  ""cycles_per_hour"": ""11.66666666666666666666666667"",
+  ""main_limiter"": ""UNDETERMINED_PENDING_POST_RUN_AUTOPSY"",
+  ""realized_net_pnl"": ""0.01080000"",
+  ""total_complete_cycles"": 35,
+  ""total_marked_equity"": ""150.16160000"",
+  ""unrealized_pnl"": ""0.01830000""
+}","{
+  ""campaign_snapshot_id"": ""1080bc0bb467f2865b26768891d2e539f476021ebab8412df6aa7509eb76ae33"",
+  ""comparison"": {
+    ""absolute_throughput_multiplier"": ""8.75"",
+    ""capital_matched_comparison_valid"": false,
+    ""parent"": ""M023"",
+    ""reason"": ""M024 used about150.13 versus about1.00 USDT-equivalent in M023""
+  },
+  ""criteria"": {
+    ""live_executable"": false,
+    ""preregistered_10_cycles_per_hour_gate"": true,
+    ""rerun_performed"": false,
+    ""strategy_pass"": false
+  },
+  ""mechanics_gate_passed"": true,
+  ""reason"": ""The normalized three-hour mechanics gate passed and pre-aging benefit was observed, but the result is non-executable and not capital-matched to M023; no strategy or live-efficacy conclusion is authorized."",
+  ""run_hash"": ""4a4339b466236b57de85e3fed5bc59c9f9bbc8e1d3bc648d357de872f4e614ed"",
+  ""scenario_hash"": ""4e7c63c8687f9b54f1479e575b137fdbb26f0fae23b272eedfca8fa9c8098d06"",
+  ""status"": ""INCONCLUSIVE""
+}",Multiple physical FIFO columns and separately owned capital materially change M023's single-order mechanics.,,,,,,,,,

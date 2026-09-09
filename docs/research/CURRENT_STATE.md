@@ -1,14 +1,14 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=M024_TRIANGULAR_PRE_AGED_QUEUE_3H
-CAMPAIGN_STATUS=M024_REGISTERED_AND_REVIEWED; READY_FOR_PUBLISHED_SOURCE_GATE; REPLAY_NOT_STARTED
-CAMPAIGN_EXECUTION_SOURCE_SHA=RECORDED_BY_RUNNER_FROM_PUBLISHED_CLEAN_HEAD
+CAMPAIGN_STATUS=M024_COMPLETE_FROM_PRESERVED_PHYSICAL_RUN; NO_RERUN
+CAMPAIGN_EXECUTION_SOURCE_SHA=74baeedfa8e1b36d7cb1f47c7aefda6d93524c5c
 CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
-CAMPAIGN_VERDICT=PENDING
-CAMPAIGN_PROGRESS_FILE=PENDING_M024_PHYSICAL_RUN
+CAMPAIGN_VERDICT=INCONCLUSIVE_NORMALIZED_MECHANICS_GATE_PASSED
+CAMPAIGN_PROGRESS_FILE=reports/usdcusdt/M024-3h-result.json
 CAMPAIGN_JOURNAL=docs/research/M024_JOURNAL.md
-CAMPAIGN_SCOREBOARD=PENDING_M024_PHYSICAL_RUN
+CAMPAIGN_SCOREBOARD=reports/usdcusdt/M024-3h-result.json
 CURRENT_OWNER_WINDOW=docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
@@ -24,7 +24,7 @@ MONTHLY_CONTINUOUS_WEEK_2_AUTHORIZED=false
 
 OWNER_NEXT_RESEARCH=TRIANGULAR_PRE_AGED_QUEUE_V1
 OWNER_DIRECTIVE=docs/microstructure/M024_TRIANGULAR_PRE_AGED_QUEUE_OWNER_DIRECTIVE.md
-NEXT_CAMPAIGN_STATUS=PREREGISTERED_AND_REVIEWED_PRE_RUN; READY_AFTER_PUBLICATION
+NEXT_CAMPAIGN_STATUS=M024_COMPLETE; NEW_REPLAY_CLOSED_PENDING_OWNER
 NEXT_CAMPAIGN_MODEL_HASH=a2f1f9708f222ed0a984318a5fe0c56a44791f7f718bddc93bb24a91c4be6125
 NEXT_CAMPAIGN_WINDOW=2025-01-01T00:00:00Z/2025-01-01T03:00:00Z_EXCLUSIVE
 NEXT_CAMPAIGN_ORDER_MODE=NORMALIZED_1_USDC_NON_EXECUTABLE_PRE_AGED_FIFO
@@ -42,6 +42,19 @@ depth only after a complete positive cycle and cannot turn USDT into USDC by boo
 The one-USDC size remains below Binance minimum notional. Code, tests and source-bound
 Astra review must be published before the single authorized replay. No rerun, sweep,
 M025, day2 or live action is authorized.
+
+M024's only physical run used published source `74baeed`, then preserved its complete
+ledger/checkpoint when the original process stopped on an auditor-only activation-state
+defect. The corrected auditor at `82999f7` recovered the result read-only, without event
+replay:35 complete positive cycles in3h (11.6667/h),9BUY-first and26SELL-first.
+Initial74.9900USDT+75USDC marked150.1325; final77.0010USDT+73USDC marked
+150.1616. Realized disposal PnL is+0.0108, completed-cycle PnL+0.0068 and unrealized
+PnL+0.0183. C2 produced13 cycles; measured pre-aging benefit median82.204886s across
+seven completed counterfactual pairs, with ten censored/rejected. Profit0.0068 did not
+fund a new1USDC cell, so the triangle did not become a depth2 rectangle. The30-cycle
+mechanics ruler passed, but M024 remains INCONCLUSIVE because1USDC is below Binance
+minimum notional and M024 used about150.13USDT-equivalent versus about1.00 in M023.
+No rerun, M025, extension, executable-notional run or live action is authorized.
 
 Latest OWNER authority creates M023 as a three-hour serial hot-line mechanics probe.
 Two persistent100-card virtual decks preserve BUY and SELL opportunities, while only

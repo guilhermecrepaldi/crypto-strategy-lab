@@ -37,3 +37,27 @@ Append-only journal for `M024_TRIANGULAR_PRE_AGED_QUEUE_V1`.
   passed. `TEST_SUITE_PASS != STRATEGY_PASS`.
 - No historical replay had started when this entry was written. The exact source must
   be committed and pushed to `origin/main` before the one authorized run.
+
+## 2026-09-09 — one physical run and preserved recovery
+
+- Preregistered source was published at `74baeedfa8e1b36d7cb1f47c7aefda6d93524c5c`.
+- The one authorized physical event pass completed its ledger and terminal checkpoint,
+  then the original process stopped at `M024_AUDIT_ACTIVATION`. The cause was confined
+  to the independent auditor: a cancel-pending order may still activate before its ACK.
+- The original failure, run manifest, execution ledger and terminal state remain
+  immutable. Their physical evidence hash is
+  `1080bc0bb467f2865b26768891d2e539f476021ebab8412df6aa7509eb76ae33`.
+- Auditor correction was published at `82999f7ef51ba0e8227fd480f9fdb9a94b714d30`.
+  GPT-6 Astra approved read-only recovery. No market event was replayed.
+- Recovered physical result:35 complete positive cycles,11.6667/hour;9BUY-first,
+  26SELL-first;72 fill fragments;29,538 canonical trades; audit PASS.
+- Initial balances:74.9900USDT and75USDC, marked150.1325. Final balances:77.0010USDT
+  and73USDC, marked150.1616. Realized disposal PnL+0.0108; completed-cycle PnL
+  +0.0068; unrealized PnL+0.0183; accounting residual zero.
+- Column1 closed22 cycles and column2 closed13. Seven of17 pre-aging diagnostics
+  completed; median observed benefit82.204886seconds. Ten were censored/rejected.
+- Growth pool ended0.0068USDT, below one new1USDC cell: no profit-funded expansion and
+  no depth2 rectangle. There were138 orders open at cutoff and no forced liquidation.
+- The mechanics ruler of30 cycles/3h passed. Strategy verdict remains INCONCLUSIVE:
+  one-USDC is normalized/non-executable and comparison to M023 is not capital-matched.
+- Gate closed. No rerun, M025, extension, parameter sweep or live action is authorized.

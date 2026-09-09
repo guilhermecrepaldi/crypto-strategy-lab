@@ -8,8 +8,8 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=true
-AUTHORIZED_MODEL=M024
+NEW_REPLAY_AUTHORIZED_NOW=false
+AUTHORIZED_MODEL=NONE_M024_COMPLETE
 
 ## Latest authority — M024 triangular pre-aged queue, three hours only
 
@@ -29,6 +29,13 @@ the first. Initial capital is74.9900USDT plus75USDC; the normalized one-USDC ord
 remain below Binance minimum notional. The machine gate permits only the first three
 hours of2025-01-01 and closes after the single physical run. No repeat, parameter
 sweep, M025, extension, executable notional or live action is authorized.
+
+The one physical run was executed from published source `74baeed`. Its engine ledger
+and terminal state completed, but the original process exited on an independent-auditor
+lifecycle defect; the four physical artifacts remain preserved. A corrected read-only
+audit recovered35 cycles without rerunning market events. M024 is now INCONCLUSIVE:
+its10cycles/hour mechanics ruler passed, but the one-USDC normalized result is not
+live-executable and is not capital-matched to M023. This gate is closed.
 
 ## Latest authority — adaptive stablecoin ladder V1
 

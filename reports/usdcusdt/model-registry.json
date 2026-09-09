@@ -10512,6 +10512,149 @@
         "schema_version": "usdcusdt-model-registry-v2",
         "status": "CREATED"
       }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-09T16:12:02.828375+00:00",
+      "payload": {
+        "SCENARIO_HASH": "4e7c63c8687f9b54f1479e575b137fdbb26f0fae23b272eedfca8fa9c8098d06",
+        "label": null,
+        "model_id": "M024",
+        "scenario": {
+          "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "initial_usdc": "75",
+          "initial_usdt": "74.9900",
+          "name": "M024_TRIANGULAR_PRE_AGED_QUEUE_3H_NORMALIZED_MECHANICS",
+          "physical_run_hash": "1080bc0bb467f2865b26768891d2e539f476021ebab8412df6aa7509eb76ae33"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-09T16:12:03.152312+00:00",
+      "payload": {
+        "MODEL_HASH": "a2f1f9708f222ed0a984318a5fe0c56a44791f7f718bddc93bb24a91c4be6125",
+        "RUN_HASH": "4a4339b466236b57de85e3fed5bc59c9f9bbc8e1d3bc648d357de872f4e614ed",
+        "SCENARIO_HASH": "4e7c63c8687f9b54f1479e575b137fdbb26f0fae23b272eedfca8fa9c8098d06",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M024\\runs\\4a4339b466236b57de85e3fed5bc59c9f9bbc8e1d3bc648d357de872f4e614ed",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "1080bc0bb467f2865b26768891d2e539f476021ebab8412df6aa7509eb76ae33",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "74baeedfa8e1b36d7cb1f47c7aefda6d93524c5c",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "150.1325",
+        "interval": {
+          "end_exclusive": "2025-01-01T03:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M024",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M024\\OWNER_GATED_3H\\PRICE_PRIORITY",
+          "audit_status": "PASS_M024_PHYSICAL_LEDGER",
+          "identity_run_hash": "dcdfd2697ecf82a9b9cd60c6504d432b1981619d661d09f52d03a5e23492dfe1",
+          "physical_run_hash": "1080bc0bb467f2865b26768891d2e539f476021ebab8412df6aa7509eb76ae33",
+          "recovered_from_preserved_auditor_failure": true,
+          "recovery_auditor_commit": "82999f7ef51ba0e8227fd480f9fdb9a94b714d30"
+        },
+        "technical_revision": "TRIANGULAR_PRE_AGED_QUEUE_V1"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-09T16:12:03.476893+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M024",
+        "reason": "Register the one immutable OWNER-authorized M024 physical run",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T16:12:03.795986+00:00",
+      "payload": {
+        "EVALUATION_HASH": "5d4bad777882f5b6cb84fc37f7486c5764241bb017aae6eac54da9050a4e4d9c",
+        "EVIDENCE_HASH": "58d85734e429d0cda08faa4384306aace3c33730e8294d15f9b7e1d0a983e275",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M024\\runs\\4a4339b466236b57de85e3fed5bc59c9f9bbc8e1d3bc648d357de872f4e614ed\\evaluations\\5d4bad777882f5b6cb84fc37f7486c5764241bb017aae6eac54da9050a4e4d9c",
+        "campaign_snapshot_id": "1080bc0bb467f2865b26768891d2e539f476021ebab8412df6aa7509eb76ae33",
+        "comparison": {
+          "absolute_throughput_multiplier": "8.75",
+          "capital_matched_comparison_valid": false,
+          "parent": "M023",
+          "reason": "M024 used about150.13 versus about1.00 USDT-equivalent in M023"
+        },
+        "criteria": {
+          "live_executable": false,
+          "preregistered_10_cycles_per_hour_gate": true,
+          "rerun_performed": false,
+          "strategy_pass": false
+        },
+        "decision": {
+          "campaign_snapshot_id": "1080bc0bb467f2865b26768891d2e539f476021ebab8412df6aa7509eb76ae33",
+          "comparison": {
+            "absolute_throughput_multiplier": "8.75",
+            "capital_matched_comparison_valid": false,
+            "parent": "M023",
+            "reason": "M024 used about150.13 versus about1.00 USDT-equivalent in M023"
+          },
+          "criteria": {
+            "live_executable": false,
+            "preregistered_10_cycles_per_hour_gate": true,
+            "rerun_performed": false,
+            "strategy_pass": false
+          },
+          "mechanics_gate_passed": true,
+          "reason": "The normalized three-hour mechanics gate passed and pre-aging benefit was observed, but the result is non-executable and not capital-matched to M023; no strategy or live-efficacy conclusion is authorized.",
+          "run_hash": "4a4339b466236b57de85e3fed5bc59c9f9bbc8e1d3bc648d357de872f4e614ed",
+          "scenario_hash": "4e7c63c8687f9b54f1479e575b137fdbb26f0fae23b272eedfca8fa9c8098d06",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "audit_status": "PASS_M024_PHYSICAL_LEDGER",
+          "completed_cycle_pnl": "0.00680000",
+          "cycles_per_hour": "11.66666666666666666666666667",
+          "main_limiter": "UNDETERMINED_PENDING_POST_RUN_AUTOPSY",
+          "realized_net_pnl": "0.01080000",
+          "total_complete_cycles": 35,
+          "total_marked_equity": "150.16160000",
+          "unrealized_pnl": "0.01830000"
+        },
+        "model_id": "M024",
+        "run_hash": "4a4339b466236b57de85e3fed5bc59c9f9bbc8e1d3bc648d357de872f4e614ed",
+        "scenario_hash": "4e7c63c8687f9b54f1479e575b137fdbb26f0fae23b272eedfca8fa9c8098d06"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-09T16:12:04.116233+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M024",
+        "reason": "Preserved physical ledger and corrected independent audit reconciled",
+        "to": "EVALUATED"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-09T16:12:04.445953+00:00",
+      "payload": {
+        "from": "EVALUATED",
+        "model_id": "M024",
+        "reason": "Mechanics gate passed, but one-USDC normalized result is not live-executable",
+        "to": "INCONCLUSIVE"
+      }
     }
   ],
   "models": [
@@ -12977,8 +13120,8 @@
         "monthly": null,
         "run_manifest": null
       },
-      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
-      "capital_mode": "COMPOUNDING",
+      "capital_evidence": "NORMALIZED_NONEXECUTABLE_RUN_MANIFEST",
+      "capital_mode": "NORMALIZED_MECHANICS_PROBE",
       "created_at": "2026-09-09T15:52:54.658376Z",
       "currency": "USDT",
       "hypothesis": {
@@ -12988,7 +13131,7 @@
         "observation": "M023 removed the self-cross/post-only storm but completed four positive cycles in three hours under public FIFO and price recovery.",
         "reason_for_new_model": "Multiple physical FIFO columns and separately owned capital materially change M023's single-order mechanics."
       },
-      "initial_capital": "100",
+      "initial_capital": "150.1325",
       "lineage": {
         "ancestor_chain": [
           "M005",
@@ -13091,7 +13234,7 @@
       "model_id": "M024",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "INCONCLUSIVE"
     }
   ],
   "pair": "USDCUSDT",
