@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections import deque
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from decimal import ROUND_CEILING, ROUND_FLOOR, Decimal
+from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, Decimal
 from typing import Any
 
 from crypto_strategy_lab.domain import canonical_hash
@@ -22,6 +22,9 @@ NORMALIZED_CAPITAL = D("100")
 NORMALIZED_ORDER_NOTIONAL = D("1")
 HISTORICAL_STEP = D("1")
 VIRTUAL_STEP = HISTORICAL_STEP
+M021_TICK_SIZE = D("0.0001")
+M021_BUY_SLOTS = 100
+M021_SELL_SLOTS = 100
 MAX_BANDS = 40
 MIN_ACTIVE_BUYS = 4
 MIN_ACTIVE_SELLS = 4
@@ -104,10 +107,15 @@ class ZonalOrder:
     activation_evaluated_us: int | None = None
     cycle_recorded: bool = False
     reentry_sale_proceeds: D = ZERO
+    queue_blocked: D = ZERO
+    fill_events: int = 0
+    last_fill_us: int | None = None
 
 
 class ZonalPingPong:
     """Deterministic fixed-band M020 kernel with a five-hour hard cutoff."""
+
+    max_band_limit = MAX_BANDS
 
     normalized_label = (
         "THIS 1-USDT ORDER RESULT IS A NORMALIZED STRUCTURAL THROUGHPUT TEST. "
@@ -123,18 +131,22 @@ class ZonalPingPong:
         latency_us: int = 1,
         cancel_latency_us: int = 1,
         initial_capital: D = NORMALIZED_CAPITAL,
+        max_bands: int = MAX_BANDS,
+        allow_duplicate_prices: bool = False,
     ) -> None:
+        if max_bands > self.max_band_limit:
+            raise ValueError("M021_MAX_BANDS_REQUIRES_DENSE_SUBCLASS")
         materialized = tuple(bands)
-        if not materialized or len(materialized) > MAX_BANDS:
+        if not materialized or len(materialized) > max_bands:
             raise ValueError("INVALID_BAND_COUNT")
         ids = [band.band_id for band in materialized]
         if len(ids) != len(set(ids)):
             raise ValueError("DUPLICATE_IMMUTABLE_BAND_ID")
         buy_prices = [band.buy_price for band in materialized]
         sell_prices = [band.sell_price for band in materialized]
-        if len(buy_prices) != len(set(buy_prices)):
+        if not allow_duplicate_prices and len(buy_prices) != len(set(buy_prices)):
             raise ValueError("DUPLICATE_IMMUTABLE_BUY_PRICE")
-        if len(sell_prices) != len(set(sell_prices)):
+        if not allow_duplicate_prices and len(sell_prices) != len(set(sell_prices)):
             raise ValueError("DUPLICATE_IMMUTABLE_SELL_PRICE")
         if end_us <= start_us or latency_us <= 0 or cancel_latency_us <= 0:
             raise ValueError("INVALID_FIVE_HOUR_WINDOW")
@@ -143,6 +155,8 @@ class ZonalPingPong:
         self.start_us, self.end_us = int(start_us), int(end_us)
         self.latency_us, self.cancel_latency_us = latency_us, cancel_latency_us
         self.initial_capital = _dec(initial_capital)
+        self.max_bands = int(max_bands)
+        self.allow_duplicate_prices = bool(allow_duplicate_prices)
         self.cash = self.initial_capital
         self.inventory = ZERO
         self.inventory_cost = ZERO
@@ -186,6 +200,10 @@ class ZonalPingPong:
         self._exact_fill_events = 0
         self._trade_through_fill_events = 0
         self._window_shortage_events = 0
+        self._max_simultaneous_open_orders = 0
+        self._total_fill_events = 0
+        self._buy_fill_events = 0
+        self._sell_fill_events = 0
 
     @property
     def active_orders(self) -> list[ZonalOrder]:
@@ -402,10 +420,21 @@ class ZonalPingPong:
         quote = quantity * price if side == "BUY" else ZERO
         allocations = self._reserve_lot(band_id, quantity) if side == "SELL" else []
         if side == "SELL" and not allocations:
+            self._record(
+                "INVENTORY_BLOCKED", now, side=side, band_id=band_id, quantity=_s(quantity)
+            )
             return
         if side == "BUY":
             funding = self._sell_proceeds[band_id] if role == "EXIT" else self.cash
             if quote > funding:
+                self._record(
+                    "CAPITAL_BLOCKED",
+                    now,
+                    side=side,
+                    band_id=band_id,
+                    required=_s(quote),
+                    available=_s(funding),
+                )
                 return
         if side == "BUY" and any(
             order.side == "SELL" and order.price <= price for order in self.active_orders
@@ -471,6 +500,9 @@ class ZonalPingPong:
         )
         self._next_order_id += 1
         self.orders.append(order)
+        self._max_simultaneous_open_orders = max(
+            self._max_simultaneous_open_orders, len(self.active_orders)
+        )
         self._record(
             "SUBMIT",
             now,
@@ -890,6 +922,13 @@ class ZonalPingPong:
             economic_source_order_ids=sorted(economic_source_orders),
             economic_origins=sorted(economic_origins),
         )
+        self._total_fill_events += 1
+        order.fill_events += 1
+        order.last_fill_us = time_us
+        if order.side == "BUY":
+            self._buy_fill_events += 1
+        else:
+            self._sell_fill_events += 1
         for source_order_id in affected_source_orders:
             self._maybe_settle_buy_order(source_order_id, time_us)
         if order.remaining <= ZERO:
@@ -1000,6 +1039,7 @@ class ZonalPingPong:
                 if ahead > ZERO:
                     self._queue_blocked_events += 1
                     self._queue_blocked_quantity += ahead
+                    order.queue_blocked += ahead
                     self._record(
                         "QUEUE_FLOW",
                         logical,
@@ -1144,6 +1184,10 @@ class ZonalPingPong:
             "processed_trades": len(self.processed_trades),
             "active_buys": buy_count,
             "active_sells": sell_count,
+            "max_simultaneous_open_orders": self._max_simultaneous_open_orders,
+            "total_fill_events": self._total_fill_events,
+            "buy_fill_events": self._buy_fill_events,
+            "sell_fill_events": self._sell_fill_events,
             "cycles_by_band": dict(self._cycles_by_band),
             "cycles_by_direction": dict(self._cycles_by_direction),
             "queue_blocked_events": self._queue_blocked_events,
@@ -1183,6 +1227,7 @@ class ZonalPingPong:
                 "queue",
                 "reserved_quote",
                 "reentry_sale_proceeds",
+                "queue_blocked",
             ):
                 row[key] = _s(row[key])
             row["reserved_lots"] = [[key, _s(value)] for key, value in order.reserved_lots]
@@ -1248,6 +1293,10 @@ class ZonalPingPong:
             "exact_fill_events": self._exact_fill_events,
             "trade_through_fill_events": self._trade_through_fill_events,
             "window_shortage_events": self._window_shortage_events,
+            "max_simultaneous_open_orders": self._max_simultaneous_open_orders,
+            "total_fill_events": self._total_fill_events,
+            "buy_fill_events": self._buy_fill_events,
+            "sell_fill_events": self._sell_fill_events,
             "config": self._config(),
         }
 
@@ -1258,6 +1307,8 @@ class ZonalPingPong:
             "latency_us": self.latency_us,
             "cancel_latency_us": self.cancel_latency_us,
             "initial_capital": _s(self.initial_capital),
+            "max_bands": self.max_bands,
+            "allow_duplicate_prices": self.allow_duplicate_prices,
             "bands": [
                 {
                     "band_id": band.band_id,
@@ -1333,6 +1384,12 @@ class ZonalPingPong:
         self._exact_fill_events = int(state.get("exact_fill_events", 0))
         self._trade_through_fill_events = int(state.get("trade_through_fill_events", 0))
         self._window_shortage_events = int(state.get("window_shortage_events", 0))
+        self._max_simultaneous_open_orders = int(
+            state.get("max_simultaneous_open_orders", len(self.active_orders))
+        )
+        self._total_fill_events = int(state.get("total_fill_events", 0))
+        self._buy_fill_events = int(state.get("buy_fill_events", 0))
+        self._sell_fill_events = int(state.get("sell_fill_events", 0))
         self._endowed = bool(state["endowed"])
         self._last_book = state["last_book"]
         if self._last_book is not None:
@@ -1355,6 +1412,7 @@ class ZonalPingPong:
                 "queue",
                 "reserved_quote",
                 "reentry_sale_proceeds",
+                "queue_blocked",
             ):
                 row[key] = D(row[key])
             row["reserved_lots"] = [(key, D(value)) for key, value in row["reserved_lots"]]
@@ -1396,13 +1454,350 @@ class ZonalPingPong:
         return value
 
 
+class DensePingPongProbe(ZonalPingPong):
+    """M021's fixed 100-buy/100-sell normalized mechanics probe.
+
+    The grid is created from the first valid book and never recenters.  This
+    subclass deliberately reuses the M020 causal book, queue, ownership and
+    trade-budget machinery; it only changes the frozen slot geometry and the
+    normalized starting allocation.
+    """
+
+    normalized_label = (
+        "M021 DENSE 200-SLOT PING-PONG MECHANICS PROBE. "
+        "NORMALIZED 1-USDC ORDERS ARE NOT LIVE-EXECUTABLE."
+    )
+    max_band_limit = M021_BUY_SLOTS + M021_SELL_SLOTS
+
+    def __init__(
+        self,
+        *,
+        start_us: int,
+        end_us: int,
+        latency_us: int = 1,
+        cancel_latency_us: int = 1,
+        anchor: D | None = None,
+        initial_capital: D | None = None,
+    ) -> None:
+        anchor_value = None if anchor is None else _dec(anchor)
+        provisional = anchor_value or D("1")
+        bands = self._make_grid(provisional)
+        total_capital = (
+            _dec(initial_capital)
+            if initial_capital is not None
+            else D("200") * provisional
+        )
+        super().__init__(
+            bands,
+            start_us=start_us,
+            end_us=end_us,
+            latency_us=latency_us,
+            cancel_latency_us=cancel_latency_us,
+            initial_capital=total_capital,
+            max_bands=M021_BUY_SLOTS + M021_SELL_SLOTS,
+            allow_duplicate_prices=True,
+        )
+        self.grid_anchor = anchor_value
+        self.rolling_recenter = False
+        self._dense_configured = anchor_value is not None
+        self._dense_initial_usdt: D | None = None
+        self._dense_initial_usdc = D("100")
+        self._dense_first_bid: D | None = None
+
+    @staticmethod
+    def _make_grid(anchor: D) -> tuple[ZonalBand, ...]:
+        anchor = _dec(anchor)
+        if anchor <= D("0.0100"):
+            raise ValueError("M021_ANCHOR_TOO_LOW")
+        bands: list[ZonalBand] = []
+        for index in range(1, M021_BUY_SLOTS + 1):
+            entry = anchor - M021_TICK_SIZE * D(index)
+            exit_price = entry + M021_TICK_SIZE
+            bands.append(
+                ZonalBand(
+                    f"B{index:03d}",
+                    entry,
+                    exit_price,
+                    entry,
+                    exit_price,
+                    ONE,
+                    ONE,
+                )
+            )
+        for index in range(1, M021_SELL_SLOTS + 1):
+            entry = anchor + M021_TICK_SIZE * D(index)
+            exit_price = entry - M021_TICK_SIZE
+            bands.append(
+                ZonalBand(
+                    f"S{index:03d}",
+                    exit_price,
+                    entry,
+                    exit_price,
+                    entry,
+                    ONE,
+                    ONE,
+                )
+            )
+        return tuple(bands)
+
+    def _replace_grid(self, anchor: D) -> None:
+        self.grid_anchor = _dec(anchor)
+        self.bands = self._make_grid(self.grid_anchor)
+        self._bands = {band.band_id: band for band in self.bands}
+        self._band_state = {band.band_id: "READY_FOR_BUY" for band in self.bands}
+        self._sell_proceeds = {band.band_id: ZERO for band in self.bands}
+        self._sell_quantity = {band.band_id: ZERO for band in self.bands}
+        self._sell_source_order = {band.band_id: None for band in self.bands}
+        self._cycles_by_band = {band.band_id: 0 for band in self.bands}
+
+    def initialize_endowment(self, first_bid: D, *, time_us: int | None = None) -> None:
+        if self._endowed:
+            raise ValueError("ENDOWMENT_ALREADY_INITIALIZED")
+        time_us = self.start_us if time_us is None else int(time_us)
+        self._check_time(time_us)
+        first_bid = _dec(first_bid)
+        if first_bid <= ZERO:
+            raise ValueError("INVALID_ENDOWMENT_BID")
+        quantity = self._dense_initial_usdc
+        cost = quantity * first_bid
+        self.cash -= cost
+        self.inventory += quantity
+        self.inventory_cost += cost
+        self.endowment_free_quantity = quantity
+        self.endowment_basis = first_bid
+        self.endowment_cost = cost
+        self._endowment_layers.append((quantity, first_bid))
+        self.endowment_initial_quantity = quantity
+        self._endowed = True
+        self._record("ENDOWMENT", time_us, bid=_s(first_bid), quantity=_s(quantity))
+
+    def receive_book(self, book: Any, *, capture_time_us: int | None = None) -> None:
+        if not self._dense_configured:
+            bids = book.get("bids", ()) if isinstance(book, dict) else getattr(book, "bids", ())
+            asks = book.get("asks", ()) if isinstance(book, dict) else getattr(book, "asks", ())
+            if not bids or not asks:
+                raise ValueError("INCOMPLETE_BOOK")
+            bid = _dec(bids[0][0])
+            ask = _dec(asks[0][0])
+            midpoint = (bid + ask) / D("2")
+            anchor = (midpoint / M021_TICK_SIZE).to_integral_value(rounding=ROUND_HALF_UP)
+            self._replace_grid(anchor * M021_TICK_SIZE)
+            self._dense_initial_usdt = sum(
+                (band.buy_price for band in self.bands if band.band_id.startswith("B")),
+                ZERO,
+            )
+            self._dense_first_bid = bid
+            self.initial_capital = self._dense_initial_usdt + self._dense_initial_usdc * bid
+            self.cash = self.initial_capital
+            self._dense_configured = True
+        super().receive_book(book, capture_time_us=capture_time_us)
+
+    def _desired(self, now: int, best_bid: D, best_ask: D) -> list[tuple[str, str, D, D]]:
+        desired: list[tuple[str, str, D, D]] = []
+        for band in self.bands:
+            state = self._band_state[band.band_id]
+            lots = self._lots_for_band(band.band_id)
+            if band.band_id.startswith("B"):
+                if (
+                    state == "READY_FOR_BUY"
+                    and not lots
+                    and self._sell_proceeds[band.band_id] == ZERO
+                ):
+                    desired.append(("BUY", band.band_id, band.buy_price, ONE))
+                elif (
+                    state == "USDC_INVENTORY"
+                    and lots
+                    and band.sell_price > max(lot.unit_basis for lot in lots)
+                ):
+                    desired.append(("SELL", band.band_id, band.sell_price, ONE))
+            else:
+                if state == "READY_FOR_BUY" and self._sell_proceeds[band.band_id] > ZERO:
+                    quantity = self._sell_quantity[band.band_id]
+                    if band.buy_price * quantity < self._sell_proceeds[band.band_id]:
+                        desired.append(("BUY", band.band_id, band.buy_price, quantity))
+                elif (
+                    state == "READY_FOR_BUY"
+                    and self._sell_proceeds[band.band_id] == ZERO
+                    and (not lots or any(lot.reserved > ZERO for lot in lots))
+                ):
+                    desired.append(("SELL", band.band_id, band.sell_price, ONE))
+        return desired
+
+    def metrics(self) -> dict[str, Any]:
+        result = super().metrics()
+        active_until_us = self.end_us if self._finished else self._last_logical_us
+        slots = []
+        for band in self.bands:
+            orders = [order for order in self.orders if order.band_id == band.band_id]
+            filled_quantity = sum((order.filled for order in orders), ZERO)
+            fill_events = sum(order.fill_events for order in orders)
+            active_time_us = 0
+            for order in orders:
+                if order.activation_evaluated_us is None or order.status == "REJECTED":
+                    continue
+                if order.status == "FILLED" and order.last_fill_us is not None:
+                    order_end_us = order.last_fill_us
+                elif order.cancel_us is not None and order.status == "CANCELED":
+                    order_end_us = order.cancel_us
+                else:
+                    order_end_us = active_until_us
+                active_time_us += max(0, order_end_us - order.activation_evaluated_us)
+            slots.append(
+                {
+                    "slot_id": band.band_id,
+                    "initial_side": "BUY" if band.band_id.startswith("B") else "SELL",
+                    "price": _s(
+                        band.buy_price if band.band_id.startswith("B") else band.sell_price
+                    ),
+                    "fills": fill_events,
+                    "filled_quantity": _s(filled_quantity),
+                    "complete_cycles": self._cycles_by_band[band.band_id],
+                    "active_time_us": active_time_us,
+                    "queue_blocked": _s(sum((order.queue_blocked for order in orders), ZERO)),
+                    "open_position_at_cutoff": any(
+                        lot.band_id == band.band_id and lot.remaining > ZERO for lot in self.lots
+                    )
+                    or self._sell_proceeds[band.band_id] > ZERO,
+                }
+            )
+        buckets = {}
+        for prefix in ("B", "S"):
+            for start in range(1, 101, 10):
+                ids = {f"{prefix}{index:03d}" for index in range(start, start + 10)}
+                buckets[f"{prefix}{start:03d}_{start + 9:03d}"] = {
+                    "fills": sum(slot["fills"] for slot in slots if slot["slot_id"] in ids),
+                    "cycles": sum(
+                        slot["complete_cycles"] for slot in slots if slot["slot_id"] in ids
+                    ),
+                }
+        buy_bands = [band for band in self.bands if band.band_id.startswith("B")]
+        sell_bands = [band for band in self.bands if band.band_id.startswith("S")]
+        result.update(
+            {
+                "model": "M021",
+                "period_hours": "5",
+                "rolling_recenter": False,
+                "grid_anchor": None if self.grid_anchor is None else _s(self.grid_anchor),
+                "grid_tick": _s(M021_TICK_SIZE),
+                "buy_slot_count": M021_BUY_SLOTS,
+                "sell_slot_count": M021_SELL_SLOTS,
+                "initial_usdt": (
+                    None
+                    if self._dense_initial_usdt is None
+                    else _s(self._dense_initial_usdt)
+                ),
+                "initial_usdc": _s(self._dense_initial_usdc),
+                "initial_marked_equity": (
+                    None
+                    if self._dense_initial_usdt is None or self._dense_first_bid is None
+                    else _s(
+                        self._dense_initial_usdt
+                        + self._dense_initial_usdc * self._dense_first_bid
+                    )
+                ),
+                "buy_first_cycles": self._cycles_by_direction["BUY_SELL"],
+                "sell_first_cycles": self._cycles_by_direction["SELL_BUY"],
+                "total_fills": self._total_fill_events,
+                "buy_fills": self._buy_fill_events,
+                "sell_fills": self._sell_fill_events,
+                "max_simultaneous_open_orders": self._max_simultaneous_open_orders,
+                "grid_prices": {
+                    "buy_entries": [_s(band.buy_price) for band in buy_bands],
+                    "sell_entries": [_s(band.sell_price) for band in sell_bands],
+                    "buy_exits": [_s(band.buy_price) for band in sell_bands],
+                    "sell_exits": [_s(band.sell_price) for band in buy_bands],
+                },
+                "slot_report": slots,
+                "bucket_report": buckets,
+                "order_notional_mode": "NORMALIZED_1_USDC_NON_EXECUTABLE_MECHANICS_PROBE",
+            }
+        )
+        return result
+
+    def _state(self) -> dict[str, Any]:
+        state = super()._state()
+        state.update(
+            {
+                "dense_anchor": None if self.grid_anchor is None else _s(self.grid_anchor),
+                "dense_configured": self._dense_configured,
+                "dense_initial_usdt": (
+                    None if self._dense_initial_usdt is None else _s(self._dense_initial_usdt)
+                ),
+                "dense_first_bid": (
+                    None if self._dense_first_bid is None else _s(self._dense_first_bid)
+                ),
+            }
+        )
+        return state
+
+    def checkpoint(self) -> dict[str, Any]:
+        state = self._state()
+        return {
+            "schema": "M021_DENSE_PING_PONG_V1",
+            "state": state,
+            "sha256": canonical_hash(state),
+        }
+
+    def restore(self, checkpoint: dict[str, Any]) -> None:
+        if checkpoint.get("schema") != "M021_DENSE_PING_PONG_V1":
+            raise ValueError("INVALID_M021_CHECKPOINT")
+        state = checkpoint.get("state")
+        if not isinstance(state, dict) or checkpoint.get("sha256") != canonical_hash(state):
+            raise ValueError("M021_CHECKPOINT_HASH_MISMATCH")
+        base_checkpoint = {
+            "schema": "M020_ZONAL_PING_PONG_V1",
+            "state": state,
+            "sha256": checkpoint["sha256"],
+        }
+        super().restore(base_checkpoint)
+        self.grid_anchor = None if state.get("dense_anchor") is None else D(state["dense_anchor"])
+        self._dense_configured = bool(state.get("dense_configured", True))
+        self._dense_initial_usdt = (
+            None if state.get("dense_initial_usdt") is None else D(state["dense_initial_usdt"])
+        )
+        self._dense_first_bid = (
+            None if state.get("dense_first_bid") is None else D(state["dense_first_bid"])
+        )
+
+    @classmethod
+    def from_checkpoint(
+        cls,
+        checkpoint: dict[str, Any],
+        *,
+        start_us: int | None = None,
+        end_us: int | None = None,
+        latency_us: int | None = None,
+        cancel_latency_us: int | None = None,
+    ) -> DensePingPongProbe:
+        state = checkpoint.get("state", {})
+        config = state.get("config", {})
+        value = cls(
+            start_us=config["start_us"] if start_us is None else start_us,
+            end_us=config["end_us"] if end_us is None else end_us,
+            latency_us=config["latency_us"] if latency_us is None else latency_us,
+            cancel_latency_us=(
+                config["cancel_latency_us"]
+                if cancel_latency_us is None
+                else cancel_latency_us
+            ),
+            anchor=None if state.get("dense_anchor") is None else D(state["dense_anchor"]),
+            initial_capital=D(config["initial_capital"]),
+        )
+        value.restore(checkpoint)
+        return value
+
+
 __all__ = [
+    "M021_BUY_SLOTS",
+    "M021_SELL_SLOTS",
+    "M021_TICK_SIZE",
     "MAX_BANDS",
     "MIN_ACTIVE_BUYS",
     "MIN_ACTIVE_SELLS",
     "NORMALIZED_CAPITAL",
     "NORMALIZED_ORDER_NOTIONAL",
     "VIRTUAL_STEP",
+    "DensePingPongProbe",
     "ZonalBand",
     "ZonalLot",
     "ZonalOrder",

@@ -97,6 +97,38 @@ def test_capital_projection_rejects_conflicting_historical_evidence() -> None:
         _capital_fields("M010", events)
 
 
+def test_normalized_mechanics_probe_preserves_noncanonical_capital_evidence(
+    tmp_path: Path,
+) -> None:
+    registry = ModelRegistry(tmp_path / "artifacts", tmp_path / "reports")
+    model = registry.register(spec())
+    scenario = registry.append_scenario(
+        model.model_id,
+        {"scenario": {"name": "normalized-probe"}},
+        occurred_at=AT,
+    )
+    registry.append_run(
+        model.model_id,
+        RunSpec(
+            scenario_hash=scenario["payload"]["SCENARIO_HASH"],
+            dataset_hash="dataset",
+            campaign_snapshot_id="normalized-snapshot",
+            interval={"start": "2025-01-01T00:00:00Z", "end": "2025-01-01T05:00:00Z"},
+            code_commit="abc123",
+            technical_revision="dense-probe-v1",
+            backend=BackendSpec(backend="CPU"),
+            initial_capital=Decimal("199.885"),
+            capital_mode="NORMALIZED_MECHANICS_PROBE",
+        ),
+        occurred_at=AT,
+    )
+    projected = json.loads(registry.registry_projection_path.read_text(encoding="utf-8"))
+    row = projected["models"][0]
+    assert row["initial_capital"] == "199.885"
+    assert row["capital_mode"] == "NORMALIZED_MECHANICS_PROBE"
+    assert row["capital_evidence"] == "NORMALIZED_NONEXECUTABLE_RUN_MANIFEST"
+
+
 def spec(seed: int = 11) -> ModelSpec:
     return ModelSpec(
         model={"decision_rule": "caller-provided", "seed": seed},

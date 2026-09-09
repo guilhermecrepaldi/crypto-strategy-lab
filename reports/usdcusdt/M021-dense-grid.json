@@ -1,0 +1,1222 @@
+{
+  "schema": "M021_DENSE_GRID_V1",
+  "source_book": {
+    "exchange_us": 1735689609412998,
+    "capture_us": 1735689609412998,
+    "best_bid": "1.00190000",
+    "best_ask": "1.00200000",
+    "mid": "1.00195000"
+  },
+  "tick_size": "0.0001",
+  "anchor_quantization": "ROUND_HALF_UP_TO_HISTORICAL_TICK",
+  "anchor": "1.0020",
+  "entry_at_anchor": false,
+  "one_tick_returns_at_anchor_allowed": true,
+  "buy_slots": [
+    {
+      "slot_id": "B001",
+      "initial_side": "BUY",
+      "entry_price": "1.0019",
+      "return_price": "1.0020"
+    },
+    {
+      "slot_id": "B002",
+      "initial_side": "BUY",
+      "entry_price": "1.0018",
+      "return_price": "1.0019"
+    },
+    {
+      "slot_id": "B003",
+      "initial_side": "BUY",
+      "entry_price": "1.0017",
+      "return_price": "1.0018"
+    },
+    {
+      "slot_id": "B004",
+      "initial_side": "BUY",
+      "entry_price": "1.0016",
+      "return_price": "1.0017"
+    },
+    {
+      "slot_id": "B005",
+      "initial_side": "BUY",
+      "entry_price": "1.0015",
+      "return_price": "1.0016"
+    },
+    {
+      "slot_id": "B006",
+      "initial_side": "BUY",
+      "entry_price": "1.0014",
+      "return_price": "1.0015"
+    },
+    {
+      "slot_id": "B007",
+      "initial_side": "BUY",
+      "entry_price": "1.0013",
+      "return_price": "1.0014"
+    },
+    {
+      "slot_id": "B008",
+      "initial_side": "BUY",
+      "entry_price": "1.0012",
+      "return_price": "1.0013"
+    },
+    {
+      "slot_id": "B009",
+      "initial_side": "BUY",
+      "entry_price": "1.0011",
+      "return_price": "1.0012"
+    },
+    {
+      "slot_id": "B010",
+      "initial_side": "BUY",
+      "entry_price": "1.0010",
+      "return_price": "1.0011"
+    },
+    {
+      "slot_id": "B011",
+      "initial_side": "BUY",
+      "entry_price": "1.0009",
+      "return_price": "1.0010"
+    },
+    {
+      "slot_id": "B012",
+      "initial_side": "BUY",
+      "entry_price": "1.0008",
+      "return_price": "1.0009"
+    },
+    {
+      "slot_id": "B013",
+      "initial_side": "BUY",
+      "entry_price": "1.0007",
+      "return_price": "1.0008"
+    },
+    {
+      "slot_id": "B014",
+      "initial_side": "BUY",
+      "entry_price": "1.0006",
+      "return_price": "1.0007"
+    },
+    {
+      "slot_id": "B015",
+      "initial_side": "BUY",
+      "entry_price": "1.0005",
+      "return_price": "1.0006"
+    },
+    {
+      "slot_id": "B016",
+      "initial_side": "BUY",
+      "entry_price": "1.0004",
+      "return_price": "1.0005"
+    },
+    {
+      "slot_id": "B017",
+      "initial_side": "BUY",
+      "entry_price": "1.0003",
+      "return_price": "1.0004"
+    },
+    {
+      "slot_id": "B018",
+      "initial_side": "BUY",
+      "entry_price": "1.0002",
+      "return_price": "1.0003"
+    },
+    {
+      "slot_id": "B019",
+      "initial_side": "BUY",
+      "entry_price": "1.0001",
+      "return_price": "1.0002"
+    },
+    {
+      "slot_id": "B020",
+      "initial_side": "BUY",
+      "entry_price": "1.0000",
+      "return_price": "1.0001"
+    },
+    {
+      "slot_id": "B021",
+      "initial_side": "BUY",
+      "entry_price": "0.9999",
+      "return_price": "1.0000"
+    },
+    {
+      "slot_id": "B022",
+      "initial_side": "BUY",
+      "entry_price": "0.9998",
+      "return_price": "0.9999"
+    },
+    {
+      "slot_id": "B023",
+      "initial_side": "BUY",
+      "entry_price": "0.9997",
+      "return_price": "0.9998"
+    },
+    {
+      "slot_id": "B024",
+      "initial_side": "BUY",
+      "entry_price": "0.9996",
+      "return_price": "0.9997"
+    },
+    {
+      "slot_id": "B025",
+      "initial_side": "BUY",
+      "entry_price": "0.9995",
+      "return_price": "0.9996"
+    },
+    {
+      "slot_id": "B026",
+      "initial_side": "BUY",
+      "entry_price": "0.9994",
+      "return_price": "0.9995"
+    },
+    {
+      "slot_id": "B027",
+      "initial_side": "BUY",
+      "entry_price": "0.9993",
+      "return_price": "0.9994"
+    },
+    {
+      "slot_id": "B028",
+      "initial_side": "BUY",
+      "entry_price": "0.9992",
+      "return_price": "0.9993"
+    },
+    {
+      "slot_id": "B029",
+      "initial_side": "BUY",
+      "entry_price": "0.9991",
+      "return_price": "0.9992"
+    },
+    {
+      "slot_id": "B030",
+      "initial_side": "BUY",
+      "entry_price": "0.9990",
+      "return_price": "0.9991"
+    },
+    {
+      "slot_id": "B031",
+      "initial_side": "BUY",
+      "entry_price": "0.9989",
+      "return_price": "0.9990"
+    },
+    {
+      "slot_id": "B032",
+      "initial_side": "BUY",
+      "entry_price": "0.9988",
+      "return_price": "0.9989"
+    },
+    {
+      "slot_id": "B033",
+      "initial_side": "BUY",
+      "entry_price": "0.9987",
+      "return_price": "0.9988"
+    },
+    {
+      "slot_id": "B034",
+      "initial_side": "BUY",
+      "entry_price": "0.9986",
+      "return_price": "0.9987"
+    },
+    {
+      "slot_id": "B035",
+      "initial_side": "BUY",
+      "entry_price": "0.9985",
+      "return_price": "0.9986"
+    },
+    {
+      "slot_id": "B036",
+      "initial_side": "BUY",
+      "entry_price": "0.9984",
+      "return_price": "0.9985"
+    },
+    {
+      "slot_id": "B037",
+      "initial_side": "BUY",
+      "entry_price": "0.9983",
+      "return_price": "0.9984"
+    },
+    {
+      "slot_id": "B038",
+      "initial_side": "BUY",
+      "entry_price": "0.9982",
+      "return_price": "0.9983"
+    },
+    {
+      "slot_id": "B039",
+      "initial_side": "BUY",
+      "entry_price": "0.9981",
+      "return_price": "0.9982"
+    },
+    {
+      "slot_id": "B040",
+      "initial_side": "BUY",
+      "entry_price": "0.9980",
+      "return_price": "0.9981"
+    },
+    {
+      "slot_id": "B041",
+      "initial_side": "BUY",
+      "entry_price": "0.9979",
+      "return_price": "0.9980"
+    },
+    {
+      "slot_id": "B042",
+      "initial_side": "BUY",
+      "entry_price": "0.9978",
+      "return_price": "0.9979"
+    },
+    {
+      "slot_id": "B043",
+      "initial_side": "BUY",
+      "entry_price": "0.9977",
+      "return_price": "0.9978"
+    },
+    {
+      "slot_id": "B044",
+      "initial_side": "BUY",
+      "entry_price": "0.9976",
+      "return_price": "0.9977"
+    },
+    {
+      "slot_id": "B045",
+      "initial_side": "BUY",
+      "entry_price": "0.9975",
+      "return_price": "0.9976"
+    },
+    {
+      "slot_id": "B046",
+      "initial_side": "BUY",
+      "entry_price": "0.9974",
+      "return_price": "0.9975"
+    },
+    {
+      "slot_id": "B047",
+      "initial_side": "BUY",
+      "entry_price": "0.9973",
+      "return_price": "0.9974"
+    },
+    {
+      "slot_id": "B048",
+      "initial_side": "BUY",
+      "entry_price": "0.9972",
+      "return_price": "0.9973"
+    },
+    {
+      "slot_id": "B049",
+      "initial_side": "BUY",
+      "entry_price": "0.9971",
+      "return_price": "0.9972"
+    },
+    {
+      "slot_id": "B050",
+      "initial_side": "BUY",
+      "entry_price": "0.9970",
+      "return_price": "0.9971"
+    },
+    {
+      "slot_id": "B051",
+      "initial_side": "BUY",
+      "entry_price": "0.9969",
+      "return_price": "0.9970"
+    },
+    {
+      "slot_id": "B052",
+      "initial_side": "BUY",
+      "entry_price": "0.9968",
+      "return_price": "0.9969"
+    },
+    {
+      "slot_id": "B053",
+      "initial_side": "BUY",
+      "entry_price": "0.9967",
+      "return_price": "0.9968"
+    },
+    {
+      "slot_id": "B054",
+      "initial_side": "BUY",
+      "entry_price": "0.9966",
+      "return_price": "0.9967"
+    },
+    {
+      "slot_id": "B055",
+      "initial_side": "BUY",
+      "entry_price": "0.9965",
+      "return_price": "0.9966"
+    },
+    {
+      "slot_id": "B056",
+      "initial_side": "BUY",
+      "entry_price": "0.9964",
+      "return_price": "0.9965"
+    },
+    {
+      "slot_id": "B057",
+      "initial_side": "BUY",
+      "entry_price": "0.9963",
+      "return_price": "0.9964"
+    },
+    {
+      "slot_id": "B058",
+      "initial_side": "BUY",
+      "entry_price": "0.9962",
+      "return_price": "0.9963"
+    },
+    {
+      "slot_id": "B059",
+      "initial_side": "BUY",
+      "entry_price": "0.9961",
+      "return_price": "0.9962"
+    },
+    {
+      "slot_id": "B060",
+      "initial_side": "BUY",
+      "entry_price": "0.9960",
+      "return_price": "0.9961"
+    },
+    {
+      "slot_id": "B061",
+      "initial_side": "BUY",
+      "entry_price": "0.9959",
+      "return_price": "0.9960"
+    },
+    {
+      "slot_id": "B062",
+      "initial_side": "BUY",
+      "entry_price": "0.9958",
+      "return_price": "0.9959"
+    },
+    {
+      "slot_id": "B063",
+      "initial_side": "BUY",
+      "entry_price": "0.9957",
+      "return_price": "0.9958"
+    },
+    {
+      "slot_id": "B064",
+      "initial_side": "BUY",
+      "entry_price": "0.9956",
+      "return_price": "0.9957"
+    },
+    {
+      "slot_id": "B065",
+      "initial_side": "BUY",
+      "entry_price": "0.9955",
+      "return_price": "0.9956"
+    },
+    {
+      "slot_id": "B066",
+      "initial_side": "BUY",
+      "entry_price": "0.9954",
+      "return_price": "0.9955"
+    },
+    {
+      "slot_id": "B067",
+      "initial_side": "BUY",
+      "entry_price": "0.9953",
+      "return_price": "0.9954"
+    },
+    {
+      "slot_id": "B068",
+      "initial_side": "BUY",
+      "entry_price": "0.9952",
+      "return_price": "0.9953"
+    },
+    {
+      "slot_id": "B069",
+      "initial_side": "BUY",
+      "entry_price": "0.9951",
+      "return_price": "0.9952"
+    },
+    {
+      "slot_id": "B070",
+      "initial_side": "BUY",
+      "entry_price": "0.9950",
+      "return_price": "0.9951"
+    },
+    {
+      "slot_id": "B071",
+      "initial_side": "BUY",
+      "entry_price": "0.9949",
+      "return_price": "0.9950"
+    },
+    {
+      "slot_id": "B072",
+      "initial_side": "BUY",
+      "entry_price": "0.9948",
+      "return_price": "0.9949"
+    },
+    {
+      "slot_id": "B073",
+      "initial_side": "BUY",
+      "entry_price": "0.9947",
+      "return_price": "0.9948"
+    },
+    {
+      "slot_id": "B074",
+      "initial_side": "BUY",
+      "entry_price": "0.9946",
+      "return_price": "0.9947"
+    },
+    {
+      "slot_id": "B075",
+      "initial_side": "BUY",
+      "entry_price": "0.9945",
+      "return_price": "0.9946"
+    },
+    {
+      "slot_id": "B076",
+      "initial_side": "BUY",
+      "entry_price": "0.9944",
+      "return_price": "0.9945"
+    },
+    {
+      "slot_id": "B077",
+      "initial_side": "BUY",
+      "entry_price": "0.9943",
+      "return_price": "0.9944"
+    },
+    {
+      "slot_id": "B078",
+      "initial_side": "BUY",
+      "entry_price": "0.9942",
+      "return_price": "0.9943"
+    },
+    {
+      "slot_id": "B079",
+      "initial_side": "BUY",
+      "entry_price": "0.9941",
+      "return_price": "0.9942"
+    },
+    {
+      "slot_id": "B080",
+      "initial_side": "BUY",
+      "entry_price": "0.9940",
+      "return_price": "0.9941"
+    },
+    {
+      "slot_id": "B081",
+      "initial_side": "BUY",
+      "entry_price": "0.9939",
+      "return_price": "0.9940"
+    },
+    {
+      "slot_id": "B082",
+      "initial_side": "BUY",
+      "entry_price": "0.9938",
+      "return_price": "0.9939"
+    },
+    {
+      "slot_id": "B083",
+      "initial_side": "BUY",
+      "entry_price": "0.9937",
+      "return_price": "0.9938"
+    },
+    {
+      "slot_id": "B084",
+      "initial_side": "BUY",
+      "entry_price": "0.9936",
+      "return_price": "0.9937"
+    },
+    {
+      "slot_id": "B085",
+      "initial_side": "BUY",
+      "entry_price": "0.9935",
+      "return_price": "0.9936"
+    },
+    {
+      "slot_id": "B086",
+      "initial_side": "BUY",
+      "entry_price": "0.9934",
+      "return_price": "0.9935"
+    },
+    {
+      "slot_id": "B087",
+      "initial_side": "BUY",
+      "entry_price": "0.9933",
+      "return_price": "0.9934"
+    },
+    {
+      "slot_id": "B088",
+      "initial_side": "BUY",
+      "entry_price": "0.9932",
+      "return_price": "0.9933"
+    },
+    {
+      "slot_id": "B089",
+      "initial_side": "BUY",
+      "entry_price": "0.9931",
+      "return_price": "0.9932"
+    },
+    {
+      "slot_id": "B090",
+      "initial_side": "BUY",
+      "entry_price": "0.9930",
+      "return_price": "0.9931"
+    },
+    {
+      "slot_id": "B091",
+      "initial_side": "BUY",
+      "entry_price": "0.9929",
+      "return_price": "0.9930"
+    },
+    {
+      "slot_id": "B092",
+      "initial_side": "BUY",
+      "entry_price": "0.9928",
+      "return_price": "0.9929"
+    },
+    {
+      "slot_id": "B093",
+      "initial_side": "BUY",
+      "entry_price": "0.9927",
+      "return_price": "0.9928"
+    },
+    {
+      "slot_id": "B094",
+      "initial_side": "BUY",
+      "entry_price": "0.9926",
+      "return_price": "0.9927"
+    },
+    {
+      "slot_id": "B095",
+      "initial_side": "BUY",
+      "entry_price": "0.9925",
+      "return_price": "0.9926"
+    },
+    {
+      "slot_id": "B096",
+      "initial_side": "BUY",
+      "entry_price": "0.9924",
+      "return_price": "0.9925"
+    },
+    {
+      "slot_id": "B097",
+      "initial_side": "BUY",
+      "entry_price": "0.9923",
+      "return_price": "0.9924"
+    },
+    {
+      "slot_id": "B098",
+      "initial_side": "BUY",
+      "entry_price": "0.9922",
+      "return_price": "0.9923"
+    },
+    {
+      "slot_id": "B099",
+      "initial_side": "BUY",
+      "entry_price": "0.9921",
+      "return_price": "0.9922"
+    },
+    {
+      "slot_id": "B100",
+      "initial_side": "BUY",
+      "entry_price": "0.9920",
+      "return_price": "0.9921"
+    }
+  ],
+  "sell_slots": [
+    {
+      "slot_id": "S001",
+      "initial_side": "SELL",
+      "entry_price": "1.0021",
+      "return_price": "1.0020"
+    },
+    {
+      "slot_id": "S002",
+      "initial_side": "SELL",
+      "entry_price": "1.0022",
+      "return_price": "1.0021"
+    },
+    {
+      "slot_id": "S003",
+      "initial_side": "SELL",
+      "entry_price": "1.0023",
+      "return_price": "1.0022"
+    },
+    {
+      "slot_id": "S004",
+      "initial_side": "SELL",
+      "entry_price": "1.0024",
+      "return_price": "1.0023"
+    },
+    {
+      "slot_id": "S005",
+      "initial_side": "SELL",
+      "entry_price": "1.0025",
+      "return_price": "1.0024"
+    },
+    {
+      "slot_id": "S006",
+      "initial_side": "SELL",
+      "entry_price": "1.0026",
+      "return_price": "1.0025"
+    },
+    {
+      "slot_id": "S007",
+      "initial_side": "SELL",
+      "entry_price": "1.0027",
+      "return_price": "1.0026"
+    },
+    {
+      "slot_id": "S008",
+      "initial_side": "SELL",
+      "entry_price": "1.0028",
+      "return_price": "1.0027"
+    },
+    {
+      "slot_id": "S009",
+      "initial_side": "SELL",
+      "entry_price": "1.0029",
+      "return_price": "1.0028"
+    },
+    {
+      "slot_id": "S010",
+      "initial_side": "SELL",
+      "entry_price": "1.0030",
+      "return_price": "1.0029"
+    },
+    {
+      "slot_id": "S011",
+      "initial_side": "SELL",
+      "entry_price": "1.0031",
+      "return_price": "1.0030"
+    },
+    {
+      "slot_id": "S012",
+      "initial_side": "SELL",
+      "entry_price": "1.0032",
+      "return_price": "1.0031"
+    },
+    {
+      "slot_id": "S013",
+      "initial_side": "SELL",
+      "entry_price": "1.0033",
+      "return_price": "1.0032"
+    },
+    {
+      "slot_id": "S014",
+      "initial_side": "SELL",
+      "entry_price": "1.0034",
+      "return_price": "1.0033"
+    },
+    {
+      "slot_id": "S015",
+      "initial_side": "SELL",
+      "entry_price": "1.0035",
+      "return_price": "1.0034"
+    },
+    {
+      "slot_id": "S016",
+      "initial_side": "SELL",
+      "entry_price": "1.0036",
+      "return_price": "1.0035"
+    },
+    {
+      "slot_id": "S017",
+      "initial_side": "SELL",
+      "entry_price": "1.0037",
+      "return_price": "1.0036"
+    },
+    {
+      "slot_id": "S018",
+      "initial_side": "SELL",
+      "entry_price": "1.0038",
+      "return_price": "1.0037"
+    },
+    {
+      "slot_id": "S019",
+      "initial_side": "SELL",
+      "entry_price": "1.0039",
+      "return_price": "1.0038"
+    },
+    {
+      "slot_id": "S020",
+      "initial_side": "SELL",
+      "entry_price": "1.0040",
+      "return_price": "1.0039"
+    },
+    {
+      "slot_id": "S021",
+      "initial_side": "SELL",
+      "entry_price": "1.0041",
+      "return_price": "1.0040"
+    },
+    {
+      "slot_id": "S022",
+      "initial_side": "SELL",
+      "entry_price": "1.0042",
+      "return_price": "1.0041"
+    },
+    {
+      "slot_id": "S023",
+      "initial_side": "SELL",
+      "entry_price": "1.0043",
+      "return_price": "1.0042"
+    },
+    {
+      "slot_id": "S024",
+      "initial_side": "SELL",
+      "entry_price": "1.0044",
+      "return_price": "1.0043"
+    },
+    {
+      "slot_id": "S025",
+      "initial_side": "SELL",
+      "entry_price": "1.0045",
+      "return_price": "1.0044"
+    },
+    {
+      "slot_id": "S026",
+      "initial_side": "SELL",
+      "entry_price": "1.0046",
+      "return_price": "1.0045"
+    },
+    {
+      "slot_id": "S027",
+      "initial_side": "SELL",
+      "entry_price": "1.0047",
+      "return_price": "1.0046"
+    },
+    {
+      "slot_id": "S028",
+      "initial_side": "SELL",
+      "entry_price": "1.0048",
+      "return_price": "1.0047"
+    },
+    {
+      "slot_id": "S029",
+      "initial_side": "SELL",
+      "entry_price": "1.0049",
+      "return_price": "1.0048"
+    },
+    {
+      "slot_id": "S030",
+      "initial_side": "SELL",
+      "entry_price": "1.0050",
+      "return_price": "1.0049"
+    },
+    {
+      "slot_id": "S031",
+      "initial_side": "SELL",
+      "entry_price": "1.0051",
+      "return_price": "1.0050"
+    },
+    {
+      "slot_id": "S032",
+      "initial_side": "SELL",
+      "entry_price": "1.0052",
+      "return_price": "1.0051"
+    },
+    {
+      "slot_id": "S033",
+      "initial_side": "SELL",
+      "entry_price": "1.0053",
+      "return_price": "1.0052"
+    },
+    {
+      "slot_id": "S034",
+      "initial_side": "SELL",
+      "entry_price": "1.0054",
+      "return_price": "1.0053"
+    },
+    {
+      "slot_id": "S035",
+      "initial_side": "SELL",
+      "entry_price": "1.0055",
+      "return_price": "1.0054"
+    },
+    {
+      "slot_id": "S036",
+      "initial_side": "SELL",
+      "entry_price": "1.0056",
+      "return_price": "1.0055"
+    },
+    {
+      "slot_id": "S037",
+      "initial_side": "SELL",
+      "entry_price": "1.0057",
+      "return_price": "1.0056"
+    },
+    {
+      "slot_id": "S038",
+      "initial_side": "SELL",
+      "entry_price": "1.0058",
+      "return_price": "1.0057"
+    },
+    {
+      "slot_id": "S039",
+      "initial_side": "SELL",
+      "entry_price": "1.0059",
+      "return_price": "1.0058"
+    },
+    {
+      "slot_id": "S040",
+      "initial_side": "SELL",
+      "entry_price": "1.0060",
+      "return_price": "1.0059"
+    },
+    {
+      "slot_id": "S041",
+      "initial_side": "SELL",
+      "entry_price": "1.0061",
+      "return_price": "1.0060"
+    },
+    {
+      "slot_id": "S042",
+      "initial_side": "SELL",
+      "entry_price": "1.0062",
+      "return_price": "1.0061"
+    },
+    {
+      "slot_id": "S043",
+      "initial_side": "SELL",
+      "entry_price": "1.0063",
+      "return_price": "1.0062"
+    },
+    {
+      "slot_id": "S044",
+      "initial_side": "SELL",
+      "entry_price": "1.0064",
+      "return_price": "1.0063"
+    },
+    {
+      "slot_id": "S045",
+      "initial_side": "SELL",
+      "entry_price": "1.0065",
+      "return_price": "1.0064"
+    },
+    {
+      "slot_id": "S046",
+      "initial_side": "SELL",
+      "entry_price": "1.0066",
+      "return_price": "1.0065"
+    },
+    {
+      "slot_id": "S047",
+      "initial_side": "SELL",
+      "entry_price": "1.0067",
+      "return_price": "1.0066"
+    },
+    {
+      "slot_id": "S048",
+      "initial_side": "SELL",
+      "entry_price": "1.0068",
+      "return_price": "1.0067"
+    },
+    {
+      "slot_id": "S049",
+      "initial_side": "SELL",
+      "entry_price": "1.0069",
+      "return_price": "1.0068"
+    },
+    {
+      "slot_id": "S050",
+      "initial_side": "SELL",
+      "entry_price": "1.0070",
+      "return_price": "1.0069"
+    },
+    {
+      "slot_id": "S051",
+      "initial_side": "SELL",
+      "entry_price": "1.0071",
+      "return_price": "1.0070"
+    },
+    {
+      "slot_id": "S052",
+      "initial_side": "SELL",
+      "entry_price": "1.0072",
+      "return_price": "1.0071"
+    },
+    {
+      "slot_id": "S053",
+      "initial_side": "SELL",
+      "entry_price": "1.0073",
+      "return_price": "1.0072"
+    },
+    {
+      "slot_id": "S054",
+      "initial_side": "SELL",
+      "entry_price": "1.0074",
+      "return_price": "1.0073"
+    },
+    {
+      "slot_id": "S055",
+      "initial_side": "SELL",
+      "entry_price": "1.0075",
+      "return_price": "1.0074"
+    },
+    {
+      "slot_id": "S056",
+      "initial_side": "SELL",
+      "entry_price": "1.0076",
+      "return_price": "1.0075"
+    },
+    {
+      "slot_id": "S057",
+      "initial_side": "SELL",
+      "entry_price": "1.0077",
+      "return_price": "1.0076"
+    },
+    {
+      "slot_id": "S058",
+      "initial_side": "SELL",
+      "entry_price": "1.0078",
+      "return_price": "1.0077"
+    },
+    {
+      "slot_id": "S059",
+      "initial_side": "SELL",
+      "entry_price": "1.0079",
+      "return_price": "1.0078"
+    },
+    {
+      "slot_id": "S060",
+      "initial_side": "SELL",
+      "entry_price": "1.0080",
+      "return_price": "1.0079"
+    },
+    {
+      "slot_id": "S061",
+      "initial_side": "SELL",
+      "entry_price": "1.0081",
+      "return_price": "1.0080"
+    },
+    {
+      "slot_id": "S062",
+      "initial_side": "SELL",
+      "entry_price": "1.0082",
+      "return_price": "1.0081"
+    },
+    {
+      "slot_id": "S063",
+      "initial_side": "SELL",
+      "entry_price": "1.0083",
+      "return_price": "1.0082"
+    },
+    {
+      "slot_id": "S064",
+      "initial_side": "SELL",
+      "entry_price": "1.0084",
+      "return_price": "1.0083"
+    },
+    {
+      "slot_id": "S065",
+      "initial_side": "SELL",
+      "entry_price": "1.0085",
+      "return_price": "1.0084"
+    },
+    {
+      "slot_id": "S066",
+      "initial_side": "SELL",
+      "entry_price": "1.0086",
+      "return_price": "1.0085"
+    },
+    {
+      "slot_id": "S067",
+      "initial_side": "SELL",
+      "entry_price": "1.0087",
+      "return_price": "1.0086"
+    },
+    {
+      "slot_id": "S068",
+      "initial_side": "SELL",
+      "entry_price": "1.0088",
+      "return_price": "1.0087"
+    },
+    {
+      "slot_id": "S069",
+      "initial_side": "SELL",
+      "entry_price": "1.0089",
+      "return_price": "1.0088"
+    },
+    {
+      "slot_id": "S070",
+      "initial_side": "SELL",
+      "entry_price": "1.0090",
+      "return_price": "1.0089"
+    },
+    {
+      "slot_id": "S071",
+      "initial_side": "SELL",
+      "entry_price": "1.0091",
+      "return_price": "1.0090"
+    },
+    {
+      "slot_id": "S072",
+      "initial_side": "SELL",
+      "entry_price": "1.0092",
+      "return_price": "1.0091"
+    },
+    {
+      "slot_id": "S073",
+      "initial_side": "SELL",
+      "entry_price": "1.0093",
+      "return_price": "1.0092"
+    },
+    {
+      "slot_id": "S074",
+      "initial_side": "SELL",
+      "entry_price": "1.0094",
+      "return_price": "1.0093"
+    },
+    {
+      "slot_id": "S075",
+      "initial_side": "SELL",
+      "entry_price": "1.0095",
+      "return_price": "1.0094"
+    },
+    {
+      "slot_id": "S076",
+      "initial_side": "SELL",
+      "entry_price": "1.0096",
+      "return_price": "1.0095"
+    },
+    {
+      "slot_id": "S077",
+      "initial_side": "SELL",
+      "entry_price": "1.0097",
+      "return_price": "1.0096"
+    },
+    {
+      "slot_id": "S078",
+      "initial_side": "SELL",
+      "entry_price": "1.0098",
+      "return_price": "1.0097"
+    },
+    {
+      "slot_id": "S079",
+      "initial_side": "SELL",
+      "entry_price": "1.0099",
+      "return_price": "1.0098"
+    },
+    {
+      "slot_id": "S080",
+      "initial_side": "SELL",
+      "entry_price": "1.0100",
+      "return_price": "1.0099"
+    },
+    {
+      "slot_id": "S081",
+      "initial_side": "SELL",
+      "entry_price": "1.0101",
+      "return_price": "1.0100"
+    },
+    {
+      "slot_id": "S082",
+      "initial_side": "SELL",
+      "entry_price": "1.0102",
+      "return_price": "1.0101"
+    },
+    {
+      "slot_id": "S083",
+      "initial_side": "SELL",
+      "entry_price": "1.0103",
+      "return_price": "1.0102"
+    },
+    {
+      "slot_id": "S084",
+      "initial_side": "SELL",
+      "entry_price": "1.0104",
+      "return_price": "1.0103"
+    },
+    {
+      "slot_id": "S085",
+      "initial_side": "SELL",
+      "entry_price": "1.0105",
+      "return_price": "1.0104"
+    },
+    {
+      "slot_id": "S086",
+      "initial_side": "SELL",
+      "entry_price": "1.0106",
+      "return_price": "1.0105"
+    },
+    {
+      "slot_id": "S087",
+      "initial_side": "SELL",
+      "entry_price": "1.0107",
+      "return_price": "1.0106"
+    },
+    {
+      "slot_id": "S088",
+      "initial_side": "SELL",
+      "entry_price": "1.0108",
+      "return_price": "1.0107"
+    },
+    {
+      "slot_id": "S089",
+      "initial_side": "SELL",
+      "entry_price": "1.0109",
+      "return_price": "1.0108"
+    },
+    {
+      "slot_id": "S090",
+      "initial_side": "SELL",
+      "entry_price": "1.0110",
+      "return_price": "1.0109"
+    },
+    {
+      "slot_id": "S091",
+      "initial_side": "SELL",
+      "entry_price": "1.0111",
+      "return_price": "1.0110"
+    },
+    {
+      "slot_id": "S092",
+      "initial_side": "SELL",
+      "entry_price": "1.0112",
+      "return_price": "1.0111"
+    },
+    {
+      "slot_id": "S093",
+      "initial_side": "SELL",
+      "entry_price": "1.0113",
+      "return_price": "1.0112"
+    },
+    {
+      "slot_id": "S094",
+      "initial_side": "SELL",
+      "entry_price": "1.0114",
+      "return_price": "1.0113"
+    },
+    {
+      "slot_id": "S095",
+      "initial_side": "SELL",
+      "entry_price": "1.0115",
+      "return_price": "1.0114"
+    },
+    {
+      "slot_id": "S096",
+      "initial_side": "SELL",
+      "entry_price": "1.0116",
+      "return_price": "1.0115"
+    },
+    {
+      "slot_id": "S097",
+      "initial_side": "SELL",
+      "entry_price": "1.0117",
+      "return_price": "1.0116"
+    },
+    {
+      "slot_id": "S098",
+      "initial_side": "SELL",
+      "entry_price": "1.0118",
+      "return_price": "1.0117"
+    },
+    {
+      "slot_id": "S099",
+      "initial_side": "SELL",
+      "entry_price": "1.0119",
+      "return_price": "1.0118"
+    },
+    {
+      "slot_id": "S100",
+      "initial_side": "SELL",
+      "entry_price": "1.0120",
+      "return_price": "1.0119"
+    }
+  ],
+  "initial_usdt": "99.6950",
+  "initial_usdc": "100",
+  "initial_marked_equity": "199.88500000"
+}

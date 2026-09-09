@@ -228,7 +228,7 @@ class RunSpec(BaseModel):
     backend: BackendSpec
     initial_capital: Decimal = Field(default=Decimal("100"), gt=0)
     currency: Literal["USDT"] = "USDT"
-    capital_mode: Literal["COMPOUNDING"] = "COMPOUNDING"
+    capital_mode: Literal["COMPOUNDING", "NORMALIZED_MECHANICS_PROBE"] = "COMPOUNDING"
     run: dict[str, Any] = Field(default_factory=dict)
     run_hash: str | None = Field(
         default=None, validation_alias=AliasChoices("run_hash", "RUN_HASH")
@@ -238,7 +238,7 @@ class RunSpec(BaseModel):
     def validate_interval(self) -> Self:
         if self.interval is None or self.interval == "" or self.interval == {}:
             raise ValueError("interval is required")
-        if self.initial_capital != Decimal("100"):
+        if self.capital_mode == "COMPOUNDING" and self.initial_capital != Decimal("100"):
             raise ValueError(
                 "INITIAL_CAPITAL_INVARIANT_VIOLATION: canonical USDCUSDT run "
                 "requires initial_capital=100 USDT"
@@ -1332,6 +1332,19 @@ def _capital_fields(model_id: str, events: Sequence[Mapping[str, Any]]) -> dict[
             "capital_mode": str(latest.get("capital_mode", "COMPOUNDING")),
             "capital_evidence": "MISSING_EXECUTION_EVIDENCE",
         }
+    capital_mode = str(latest.get("capital_mode", "COMPOUNDING"))
+    if capital_mode == "NORMALIZED_MECHANICS_PROBE":
+        if any(value != observed[0] for value in observed):
+            raise ValueError(
+                "NORMALIZED_CAPITAL_EVIDENCE_CONFLICT: registered diagnostic "
+                f"evidence for {model_id} disagrees"
+            )
+        return {
+            "initial_capital": str(observed[0]),
+            "currency": str(latest.get("currency", "USDT")),
+            "capital_mode": capital_mode,
+            "capital_evidence": "NORMALIZED_NONEXECUTABLE_RUN_MANIFEST",
+        }
     if any(value != Decimal("100") for value in observed):
         raise ValueError(
             "INITIAL_CAPITAL_INVARIANT_VIOLATION: registered execution evidence "
@@ -1340,7 +1353,7 @@ def _capital_fields(model_id: str, events: Sequence[Mapping[str, Any]]) -> dict[
     return {
         "initial_capital": "100",
         "currency": str(latest.get("currency", "USDT")),
-        "capital_mode": str(latest.get("capital_mode", "COMPOUNDING")),
+        "capital_mode": capital_mode,
         "capital_evidence": (
             "RUN_MANIFEST"
             if latest.get("initial_capital") is not None

@@ -8,8 +8,8 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=false
-AUTHORIZED_MODEL=NONE_M020_5H_COMPLETE
+NEW_REPLAY_AUTHORIZED_NOW=true
+AUTHORIZED_MODEL=M021
 
 ## Latest authority — adaptive stablecoin ladder V1
 
@@ -67,6 +67,24 @@ The exact five-hour run is complete. No price entered the frozen P80 map, so
 all nine bands recorded zero cycles and M020 was rejected for this window.
 This closes the execution gate; a geometry change is a new hypothesis and the
 safe-min-notional repetition remains subject to a new OWNER authorization.
+
+## Active successor authority — M021 dense mechanics probe, five hours only
+
+OWNER_DIRECTIVE=M021_DENSE_PING_PONG_OWNER_DIRECTIVE.md
+MODEL_ID=M021
+STATUS=PREREGISTERED_REVIEWED_REGISTERED_AWAITING_SINGLE_RUN
+AUTHORIZED_START=2025-01-01T00:00:00Z
+AUTHORIZED_END_EXCLUSIVE=2025-01-01T05:00:00Z
+ORDER_MODE=NORMALIZED_1_USDC_NON_EXECUTABLE_MECHANICS_PROBE
+DAY2_AUTHORIZED=false
+AUTOMATIC_SUCCESSOR_AUTHORIZED=false
+
+The OWNER authorized exactly one M021 mechanics run after published pre-registration,
+tests, independent source-bound review and CREATED registry identity. Those prerequisites
+are prepared for publication. The machine gate above authorizes only M021 at the exact
+five-hour cutoff after HEAD equals origin/main and the worktree is clean. It does not
+authorize Day2, M022, live execution, a notional-executable replay or parameter changes.
+M020 remains immutable and rejected.
 
 ## Superseded preparation — three ranges
 
