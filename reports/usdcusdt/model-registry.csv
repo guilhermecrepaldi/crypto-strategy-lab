@@ -5233,7 +5233,7 @@ M024,INCONCLUSIVE,150.1325,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXECUTA
   ""scenario_hash"": ""4e7c63c8687f9b54f1479e575b137fdbb26f0fae23b272eedfca8fa9c8098d06"",
   ""status"": ""INCONCLUSIVE""
 }",Multiple physical FIFO columns and separately owned capital materially change M023's single-order mechanics.,,,,,,,,,
-M025,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f,M024,2026-09-09T21:17:43.732885Z,Increasing Q eventually lowers full-cycle throughput when observed flow cannot complete entry and return quantities.,M024 closed 35 cycles at Q1 but did not measure size capacity.,Run eleven independent proportional-capital scenarios with only Q changed and growth expansion disabled.,Locate a robust throughput-capacity region or show that no knee is observed up to Q5000 under the frozen exogenous tape.,"{
+M025,INCONCLUSIVE,750662.50000000,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXECUTABLE_RUN_MANIFEST,a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f,M024,2026-09-09T21:17:43.732885Z,Increasing Q eventually lowers full-cycle throughput when observed flow cannot complete entry and return quantities.,M024 closed 35 cycles at Q1 but did not measure size capacity.,Run eleven independent proportional-capital scenarios with only Q changed and growth expansion disabled.,Locate a robust throughput-capacity region or show that no knee is observed up to Q5000 under the frozen exogenous tape.,"{
   ""automatic_successor_authorized"": false,
   ""breakeven_positive_cycle"": false,
   ""capital_injection"": false,
@@ -5308,4 +5308,31 @@ M025,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,a6fffeb379521679db7
   ""true_historical_queue_rank_known"": false,
   ""virtual_filter_override"": ""MIN_NOTIONAL_ONLY"",
   ""zero_baseline_ratio_policy"": ""UNDEFINED""
-}",,,"Order quantity materially changes fill completion, residual inventory and capital requirements.",,,,,,,,,
+}","{
+  ""complete_positive_cycles"": 37,
+  ""completed_cycle_pnl"": ""35.0000000000000000"",
+  ""completed_roundtrip_usdc_per_hour"": ""61666.66666666666666666666667"",
+  ""cycles_per_hour"": ""12.33333333333333333333333333"",
+  ""final_marked_equity"": ""750808.9699000000000000"",
+  ""order_quantity_usdc"": ""5000"",
+  ""realized_disposal_pnl"": ""58.0000000000000000"",
+  ""residual_partial_orders"": 2,
+  ""unrealized_pnl"": ""88.4699000000000000""
+}","{
+  ""campaign_snapshot_id"": ""889bb7987fbd71475fd6b2acedc10282e59efc12b52ae2ac50b107e34b5f4bdf"",
+  ""comparison"": {
+    ""capacity_knee"": ""NOT_OBSERVED_UP_TO_5000_USDC"",
+    ""only_independent_variable"": ""ORDER_QUANTITY_USDC"",
+    ""order_quantity_usdc"": ""5000""
+  },
+  ""criteria"": {
+    ""event_rerun_performed"": false,
+    ""live_executable_result"": false,
+    ""physical_audit_pass"": true,
+    ""strategy_pass"": false
+  },
+  ""reason"": ""Developmental exogenous-tape capacity result; no live capacity, strategy profitability or successor authorization is established."",
+  ""run_hash"": ""fe3910264c9267fbc33196c09cb2496a8ab6110d75ae1b9f88e85bd1cdee20a9"",
+  ""scenario_hash"": ""17e87fa5183976156133c729fcba52a148e3fc032ab6547caa6315cf557c8972"",
+  ""status"": ""INCONCLUSIVE""
+}","Order quantity materially changes fill completion, residual inventory and capital requirements.",,,,,,,,,

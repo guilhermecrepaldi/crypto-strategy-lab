@@ -1,18 +1,18 @@
 # CURRENT STATE
 
-ACTIVE_EXECUTION_CAMPAIGN=M025_ORDER_SIZE_CAPACITY_CURVE_3H
-CAMPAIGN_STATUS=M025_PREREGISTERED_AND_SOURCE_REVIEWED; NO_SCENARIO_STARTED
-CAMPAIGN_EXECUTION_SOURCE_SHA=BOUND_BY_RUN_MANIFEST_TO_PUBLISHED_PRERUN_COMMIT
+ACTIVE_EXECUTION_CAMPAIGN=NONE_M025_COMPLETE
+CAMPAIGN_STATUS=M025_COMPLETE_CORRECTED_DERIVED_REPORT; GATE_CLOSED
+CAMPAIGN_EXECUTION_SOURCE_SHA=7745600715bdc321a65296b67b0faba67cfe1b79
 CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
-CAMPAIGN_VERDICT=INCONCLUSIVE_NORMALIZED_MECHANICS_GATE_PASSED
+CAMPAIGN_VERDICT=INCONCLUSIVE_CAPACITY_KNEE_NOT_OBSERVED_THROUGH_Q5000
 CAMPAIGN_PROGRESS_FILE=reports/usdcusdt/M025-order-size-capacity-result.json
 CAMPAIGN_JOURNAL=docs/research/M025_JOURNAL.md
 CAMPAIGN_SCOREBOARD=reports/usdcusdt/M025-order-size-capacity-result.json
 CURRENT_OWNER_WINDOW=docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-CURRENT_ACTIVE_RESEARCH_MODEL=M025
+CURRENT_ACTIVE_RESEARCH_MODEL=NONE_OWNER_GATE_REQUIRED
 MONTHLY_REPLAY_MODE=OWNER_GATED_DAY1
 MONTHLY_CANDIDATES=21
 MONTHLY_CSV_AVAILABLE=21
@@ -22,9 +22,9 @@ MONTHLY_INITIALIZATION=ONCE_100_OPERATING_PLUS_10_RESERVE_PER_ENVELOPE
 MONTHLY_ECONOMIC_REPLAYS_STARTED=6
 MONTHLY_CONTINUOUS_WEEK_2_AUTHORIZED=false
 
-OWNER_NEXT_RESEARCH=M024_ORDER_SIZE_CAPACITY_CURVE_V1
+OWNER_NEXT_RESEARCH=AWAIT_OWNER_DECISION_AFTER_M025
 OWNER_DIRECTIVE=docs/microstructure/M025_ORDER_SIZE_CAPACITY_OWNER_DIRECTIVE.md
-NEXT_CAMPAIGN_STATUS=M025_AUTHORIZED_PRE_RUN; ASTRA_SOURCE_REVIEW_PASS; PENDING_PUBLICATION
+NEXT_CAMPAIGN_STATUS=NONE; M025_COMPLETE; NO_M026_OR_EXTENSION_AUTHORIZED
 NEXT_CAMPAIGN_MODEL_HASH=a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f
 NEXT_CAMPAIGN_WINDOW=2025-01-01T00:00:00Z/2025-01-01T03:00:00Z_EXCLUSIVE
 NEXT_CAMPAIGN_ORDER_MODE=NORMALIZED_Q_CAPACITY_CURVE; Q=10..5000_USDC
@@ -38,8 +38,21 @@ Only Q changes; physical book/trade quantities never scale. Growth pool is measu
 cannot add cells. A cycle requires full Q entry and full Q profitable return. The curve
 must distinguish volume throughput from cycle throughput and may declare a knee only
 with a >=20% adjacent cycle-rate drop plus an orthogonal fill/partial/timing signal.
-No scenario has started; source-bound Astra PASS and published pre-run commit remain
-mandatory. No M026, extension, account, Testnet or live action is authorized.
+Before execution, the scenario set required source-bound Astra PASS and a published
+pre-run commit; both gates were satisfied. No M026, extension, account, Testnet or live
+action is authorized.
+
+M025's one published-source campaign (`7745600`) is now complete: all eleven Q scenarios
+passed independent physical-ledger audit under campaign run hash
+`a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22`. Cycle rate
+remained between11.33/h and12.33/h; Q500 closed35 cycles in3h and Q5000 closed37.
+The preregistered capacity knee was not observed through Q5000. This does not establish
+live capacity because the tape is exogenous, true L3 rank/impact are unknown and fees are
+conditional. A reporting-only public-queue-zero attribution bug was corrected from the
+preserved ledgers/checkpoints with no event replay; all economic metrics and the curve
+remained identical, and the raw derived report is preserved. M025 is `INCONCLUSIVE`.
+The limiting return-path mixture is not causally decomposed. Gate closed: no M026, day2,
+mixed-base replay, account, Testnet or live action is authorized.
 
 Latest OWNER authority creates M024 as a new three-hour normalized mechanics test and
 preserves M023. The initial same-price triangle has75 funded BUY orders and75 funded

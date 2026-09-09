@@ -24,6 +24,74 @@ AUTHORIZED_QUANTITIES = tuple(
 )
 
 
+def _public_queue_zero_observations(
+    audit: list[dict[str, Any]], order_by_id: dict[int, QueueOrder]
+) -> dict[int, int]:
+    """Return public-zero times observed before first fill/inactivation.
+
+    Ledger ordinal is authoritative when events share a timestamp.  A public
+    cohort depleted after a strict trade-through fill or after CANCEL_ACK is not
+    retroactively attributed to the no-longer-observed order.
+    """
+
+    first_fill_index: dict[int, int] = {}
+    inactive_index: dict[int, int] = {}
+    for index, row in enumerate(audit):
+        if row["event"] == "FILL":
+            first_fill_index.setdefault(int(row["order_id"]), index)
+        elif row["event"] == "CANCEL_ACK" or row["event"].startswith("REJECTED_"):
+            inactive_index.setdefault(int(row["order_id"]), index)
+
+    public_segments: dict[tuple[str, D], list[dict[str, Any]]] = {}
+    relevant_segments: dict[int, tuple[int, ...]] = {}
+    observed: dict[int, int] = {}
+    for index, row in enumerate(audit):
+        if row["event"] == "ACTIVATED":
+            key = (row["side"], _dec(row["price"]))
+            segments = public_segments.setdefault(key, [])
+            cohort = int(row["cohort_activation_us"])
+            if not segments or int(segments[-1]["cohort"]) != cohort:
+                segments.append(
+                    {"cohort": cohort, "remaining": _dec(row["public_barrier_added"])}
+                )
+            order_id = int(row["order_id"])
+            relevant_segments[order_id] = tuple(
+                int(segment["cohort"]) for segment in segments
+            )
+            if sum((segment["remaining"] for segment in segments), ZERO) == ZERO:
+                observed[order_id] = int(row["time_us"])
+        elif row["event"] == "PUBLIC_QUEUE_CONSUMED":
+            key = (row["side"], _dec(row["price"]))
+            segments = public_segments[key]
+            cohort = int(row["cohort_activation_us"])
+            segment = next(item for item in segments if int(item["cohort"]) == cohort)
+            segment["remaining"] -= _dec(row["quantity"])
+            for order_id, cohorts in relevant_segments.items():
+                if order_id in observed:
+                    continue
+                order = order_by_id[order_id]
+                if (order.side, order.price) != key:
+                    continue
+                observation_end = first_fill_index.get(
+                    order_id, inactive_index.get(order_id, len(audit))
+                )
+                if index > observation_end:
+                    continue
+                if (
+                    sum(
+                        (
+                            item["remaining"]
+                            for item in segments
+                            if int(item["cohort"]) in cohorts
+                        ),
+                        ZERO,
+                    )
+                    == ZERO
+                ):
+                    observed[order_id] = int(row["time_us"])
+    return observed
+
+
 class OrderSizeCapacityProbe(TriangularPreAgedQueueProbe):
     """M024 mechanics with one frozen scenario quantity and no growth expansion.
 
@@ -317,50 +385,7 @@ class OrderSizeCapacityProbe(TriangularPreAgedQueueProbe):
         activation_rows = {
             int(row["order_id"]): row for row in self.audit if row["event"] == "ACTIVATED"
         }
-        public_segments: dict[tuple[str, D], list[dict[str, Any]]] = {}
-        relevant_segments: dict[int, tuple[int, ...]] = {}
-        public_zero_by_order: dict[int, int] = {}
-        for row in self.audit:
-            if row["event"] == "ACTIVATED":
-                key = (row["side"], _dec(row["price"]))
-                segments = public_segments.setdefault(key, [])
-                cohort = int(row["cohort_activation_us"])
-                if not segments or int(segments[-1]["cohort"]) != cohort:
-                    segments.append(
-                        {
-                            "cohort": cohort,
-                            "remaining": _dec(row["public_barrier_added"]),
-                        }
-                    )
-                order_id = int(row["order_id"])
-                relevant_segments[order_id] = tuple(int(segment["cohort"]) for segment in segments)
-                if sum((segment["remaining"] for segment in segments), ZERO) == ZERO:
-                    public_zero_by_order[order_id] = int(row["time_us"])
-            elif row["event"] == "PUBLIC_QUEUE_CONSUMED":
-                key = (row["side"], _dec(row["price"]))
-                segments = public_segments[key]
-                cohort = int(row["cohort_activation_us"])
-                segment = next(item for item in segments if int(item["cohort"]) == cohort)
-                segment["remaining"] -= _dec(row["quantity"])
-                now = int(row["time_us"])
-                for order_id, cohorts in relevant_segments.items():
-                    if order_id in public_zero_by_order:
-                        continue
-                    order = order_by_id[order_id]
-                    if (order.side, order.price) != key:
-                        continue
-                    if (
-                        sum(
-                            (
-                                item["remaining"]
-                                for item in segments
-                                if int(item["cohort"]) in cohorts
-                            ),
-                            ZERO,
-                        )
-                        == ZERO
-                    ):
-                        public_zero_by_order[order_id] = now
+        public_zero_by_order = _public_queue_zero_observations(self.audit, order_by_id)
         public_waits = [
             public_zero_by_order[order.order_id] - int(order.activation_evaluated_us)
             for order in activated
@@ -513,6 +538,16 @@ class OrderSizeCapacityProbe(TriangularPreAgedQueueProbe):
             QUEUE_ZERO_CENSORED_WITHOUT_FILL_COUNT=len(
                 set(public_zero_by_order).difference(first_fill_by_order)
             ),
+            QUEUE_ZERO_NOT_OBSERVED_BEFORE_FIRST_FILL_COUNT=len(
+                set(first_fill_by_order).difference(public_zero_by_order)
+            ),
+            QUEUE_ZERO_TO_FIRST_FILL_DENOMINATOR=len(
+                set(public_zero_by_order).intersection(first_fill_by_order)
+            ),
+            QUEUE_ZERO_ACTIVATED_ORDER_DENOMINATOR=len(activated),
+            QUEUE_ZERO_MISSING_REASON=(
+                "STRICT_TRADE_THROUGH_OR_CENSORING_BEFORE_OBSERVED_PUBLIC_ZERO"
+            ),
             QUEUE_ZERO_TIME_DEFINITION=(
                 "RECONSTRUCTED_PUBLIC_SEGMENTS_RELEVANT_AT_ORDER_ACTIVATION_REACH_ZERO"
             ),
@@ -614,6 +649,11 @@ class OrderSizeCapacityProbe(TriangularPreAgedQueueProbe):
             "sha256": checkpoint["sha256"],
         }
         super().restore(parent)
+        # M024's historical restore path predates metrics that subtract the
+        # activation queue amount.  Keep M024 immutable and repair the M025
+        # in-memory representation at its boundary.
+        for order in self.orders:
+            order.queue_ahead_at_activation = _dec(order.queue_ahead_at_activation)
 
     @classmethod
     def from_checkpoint(

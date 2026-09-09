@@ -7,6 +7,7 @@ import pytest
 from crypto_strategy_lab.microstructure.order_size_capacity import (
     AUTHORIZED_QUANTITIES,
     OrderSizeCapacityProbe,
+    _public_queue_zero_observations,
 )
 
 
@@ -215,6 +216,9 @@ def test_owner_capacity_metric_contract_is_complete() -> None:
         "QUEUE_ZERO_REACHED_COUNT",
         "QUEUE_ZERO_THEN_FILLED_COUNT",
         "QUEUE_ZERO_CENSORED_WITHOUT_FILL_COUNT",
+        "QUEUE_ZERO_NOT_OBSERVED_BEFORE_FIRST_FILL_COUNT",
+        "QUEUE_ZERO_TO_FIRST_FILL_DENOMINATOR",
+        "QUEUE_ZERO_ACTIVATED_ORDER_DENOMINATOR",
         "PUBLIC_QUEUE_AHEAD_AT_ACTIVATION_USDC",
         "OWN_QUANTITY_AHEAD_AT_ACTIVATION_USDC",
         "PUBLIC_QUEUE_QUANTITY_CONSUMED_USDC",
@@ -244,6 +248,75 @@ def test_owner_capacity_metric_contract_is_complete() -> None:
         "OWN_QUANTITY_AHEAD_AT_ACTIVATION_USDC",
     ):
         assert set(metrics[field]) == {"mean", "median", "p95", "max"}
+        assert all(
+            value is None or value >= 0 for value in metrics[field].values()
+        )
+
+
+def test_queue_zero_uses_ledger_ordinal_before_fill_or_cancel_ack() -> None:
+    from types import SimpleNamespace
+
+    orders = {
+        order_id: SimpleNamespace(side="BUY", price=D("1.0000"))
+        for order_id in (1, 2, 3)
+    }
+    rows = [
+        {
+            "event": "ACTIVATED",
+            "time_us": 10,
+            "order_id": 1,
+            "side": "BUY",
+            "price": "1.0000",
+            "cohort_activation_us": 10,
+            "public_barrier_added": "5",
+        },
+        {"event": "FILL", "time_us": 20, "order_id": 1},
+        {
+            "event": "PUBLIC_QUEUE_CONSUMED",
+            "time_us": 20,
+            "side": "BUY",
+            "price": "1.0000",
+            "cohort_activation_us": 10,
+            "quantity": "5",
+        },
+        {
+            "event": "ACTIVATED",
+            "time_us": 30,
+            "order_id": 2,
+            "side": "BUY",
+            "price": "1.0000",
+            "cohort_activation_us": 30,
+            "public_barrier_added": "5",
+        },
+        {"event": "CANCEL_ACK", "time_us": 40, "order_id": 2},
+        {
+            "event": "PUBLIC_QUEUE_CONSUMED",
+            "time_us": 40,
+            "side": "BUY",
+            "price": "1.0000",
+            "cohort_activation_us": 30,
+            "quantity": "5",
+        },
+        {
+            "event": "ACTIVATED",
+            "time_us": 50,
+            "order_id": 3,
+            "side": "BUY",
+            "price": "1.0000",
+            "cohort_activation_us": 50,
+            "public_barrier_added": "5",
+        },
+        {
+            "event": "PUBLIC_QUEUE_CONSUMED",
+            "time_us": 60,
+            "side": "BUY",
+            "price": "1.0000",
+            "cohort_activation_us": 50,
+            "quantity": "5",
+        },
+        {"event": "FILL", "time_us": 60, "order_id": 3},
+    ]
+    assert _public_queue_zero_observations(rows, orders) == {3: 60}
 
 
 def test_quantity_mismatch_and_negative_exit_fail_closed() -> None:

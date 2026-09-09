@@ -46,3 +46,26 @@ Append-only journal for `M024_ORDER_SIZE_CAPACITY_CURVE_V1`.
   `a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f`.
 - No historical scenario had started at this journal checkpoint. The next gate is a
   clean pre-run commit on `origin/main`, followed by exactly one eleven-scenario run.
+
+## 2026-09-09 — single physical campaign and reporting correction
+
+- Pre-run source commit `7745600715bdc321a65296b67b0faba67cfe1b79` was pushed and
+  confirmed equal to `origin/main` before the physical run.
+- Exactly one campaign traversed the 2025-01-01 00:00–03:00 UTC tape. Campaign run hash:
+  `a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22`.
+- All eleven independent scenario ledgers passed the exact physical auditor. Q500 closed
+  35 cycles (11.67/h); Q5000 closed 37 (12.33/h). The preregistered capacity knee was
+  not observed through Q5000. This is not evidence of live capacity.
+- Before publication, a derived queue-time defect was found: public zero could be assigned
+  after first strict-trade-through fill or cancel ACK, producing negative durations. The
+  raw report was preserved. A ledger-ordinal repair restored all eleven checkpoints,
+  recomputed only queue-zero reporting and repeated every auditor without event replay.
+  Cycles, fills, capital, PnL, curve and physical run hash stayed identical.
+- Registry finalization appended 11 scenarios, 11 runs and 11 evaluations and moved M025
+  to `INCONCLUSIVE`. An initial finalizer call appended only Q10's scenario then stopped
+  before run/status on a registry enum mismatch; the corrected call reused that identical
+  scenario idempotently and completed the remaining records. No market event was replayed
+  and no registry run was duplicated.
+- `MAIN_LIMITER=UNDETERMINED_RETURN_PATH_COMPOSITE`. Public FIFO, own FIFO, price recovery
+  and deferred cancel time require per-lot phase attribution before one can be named causal.
+- No M026, extension, mixed-base execution, account, Testnet or live action is authorized.

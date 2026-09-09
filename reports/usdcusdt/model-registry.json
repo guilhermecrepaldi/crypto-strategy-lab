@@ -10787,6 +10787,1246 @@
         "schema_version": "usdcusdt-model-registry-v2",
         "status": "CREATED"
       }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:17.983497+00:00",
+      "payload": {
+        "SCENARIO_HASH": "dbffd800b68a82c4d5929e2c63295c7105580b46199664f71a7b4a0869d17e1d",
+        "label": null,
+        "model_id": "M025",
+        "scenario": {
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "capital_mode": "PROPORTIONAL_NORMALIZED_CAPACITY_CURVE",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "growth_expansion_enabled": false,
+          "initial_marked_equity": "1501.32500000",
+          "name": "M025_ORDER_SIZE_Q10_3H",
+          "order_quantity_usdc": "10"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:43.275237+00:00",
+      "payload": {
+        "MODEL_HASH": "a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f",
+        "RUN_HASH": "fb02e9deec3411c52491ea651d524c440a82a79eb6a07cc700427037f7604318",
+        "SCENARIO_HASH": "dbffd800b68a82c4d5929e2c63295c7105580b46199664f71a7b4a0869d17e1d",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\fb02e9deec3411c52491ea651d524c440a82a79eb6a07cc700427037f7604318",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "1f11521cf1640af13b7aaa0caa314329fcb8f341042b0036af39bd6fdc4c787b",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "7745600715bdc321a65296b67b0faba67cfe1b79",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "1501.32500000",
+        "interval": {
+          "end_exclusive": "2025-01-01T03:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M025",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M025\\OWNER_GATED_3H\\CAPACITY_CURVE\\Q00010",
+          "audit_status": "PASS_M025_INDEPENDENT_SCENARIO_AUDIT",
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "reporting_correction": "NO_EVENT_REPLAY"
+        },
+        "technical_revision": "M024_ORDER_SIZE_CAPACITY_CURVE_V1"
+      }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:43.802148+00:00",
+      "payload": {
+        "SCENARIO_HASH": "3c5e6b72b544cbc3dad72ff2635be6fa50ce01909914f20fdf0d74bcefd99db0",
+        "label": null,
+        "model_id": "M025",
+        "scenario": {
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "capital_mode": "PROPORTIONAL_NORMALIZED_CAPACITY_CURVE",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "growth_expansion_enabled": false,
+          "initial_marked_equity": "7506.62500000",
+          "name": "M025_ORDER_SIZE_Q50_3H",
+          "order_quantity_usdc": "50"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:44.186343+00:00",
+      "payload": {
+        "MODEL_HASH": "a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f",
+        "RUN_HASH": "93b43a0a54ccf78acab91962f4b5b256b548f4d68bea6a74adc5bd0a97ba0d85",
+        "SCENARIO_HASH": "3c5e6b72b544cbc3dad72ff2635be6fa50ce01909914f20fdf0d74bcefd99db0",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\93b43a0a54ccf78acab91962f4b5b256b548f4d68bea6a74adc5bd0a97ba0d85",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "cbd49fd5c74a4838a37ddb8d4dfbe75c269a2004b9850b7c90e5483151e5851e",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "7745600715bdc321a65296b67b0faba67cfe1b79",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "7506.62500000",
+        "interval": {
+          "end_exclusive": "2025-01-01T03:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M025",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M025\\OWNER_GATED_3H\\CAPACITY_CURVE\\Q00050",
+          "audit_status": "PASS_M025_INDEPENDENT_SCENARIO_AUDIT",
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "reporting_correction": "NO_EVENT_REPLAY"
+        },
+        "technical_revision": "M024_ORDER_SIZE_CAPACITY_CURVE_V1"
+      }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:44.610589+00:00",
+      "payload": {
+        "SCENARIO_HASH": "29431709ba47f6ec957c42bee93c52ad0d00278627b99c67df18b740f2bd6114",
+        "label": null,
+        "model_id": "M025",
+        "scenario": {
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "capital_mode": "PROPORTIONAL_NORMALIZED_CAPACITY_CURVE",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "growth_expansion_enabled": false,
+          "initial_marked_equity": "15013.25000000",
+          "name": "M025_ORDER_SIZE_Q100_3H",
+          "order_quantity_usdc": "100"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:45.006704+00:00",
+      "payload": {
+        "MODEL_HASH": "a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f",
+        "RUN_HASH": "8e4961b74382da3c3e7bdcec2d35cf14a636801b8b8a9d081b2ed9e4bd14bc06",
+        "SCENARIO_HASH": "29431709ba47f6ec957c42bee93c52ad0d00278627b99c67df18b740f2bd6114",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\8e4961b74382da3c3e7bdcec2d35cf14a636801b8b8a9d081b2ed9e4bd14bc06",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "1fd5549e4c2c72b24d3dab4f502b0b1cbd30d8a431ab5cdcce6d0d8156501a5d",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "7745600715bdc321a65296b67b0faba67cfe1b79",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "15013.25000000",
+        "interval": {
+          "end_exclusive": "2025-01-01T03:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M025",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M025\\OWNER_GATED_3H\\CAPACITY_CURVE\\Q00100",
+          "audit_status": "PASS_M025_INDEPENDENT_SCENARIO_AUDIT",
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "reporting_correction": "NO_EVENT_REPLAY"
+        },
+        "technical_revision": "M024_ORDER_SIZE_CAPACITY_CURVE_V1"
+      }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:45.434959+00:00",
+      "payload": {
+        "SCENARIO_HASH": "1b27b0983bae18e2e98be6c920481e506e2c59cdaa4ac9efe4ed3497a8746763",
+        "label": null,
+        "model_id": "M025",
+        "scenario": {
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "capital_mode": "PROPORTIONAL_NORMALIZED_CAPACITY_CURVE",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "growth_expansion_enabled": false,
+          "initial_marked_equity": "37533.12500000",
+          "name": "M025_ORDER_SIZE_Q250_3H",
+          "order_quantity_usdc": "250"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:45.833121+00:00",
+      "payload": {
+        "MODEL_HASH": "a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f",
+        "RUN_HASH": "bf571c28f3fb9ac6083739e0d79b3be7a2fe0acf6e1729bc9ed94e9a22be091e",
+        "SCENARIO_HASH": "1b27b0983bae18e2e98be6c920481e506e2c59cdaa4ac9efe4ed3497a8746763",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\bf571c28f3fb9ac6083739e0d79b3be7a2fe0acf6e1729bc9ed94e9a22be091e",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "9d480b2eaad10f19c2b9b607782fb02c19c80f3d9108cfdfa0a1e102a3cdd2e1",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "7745600715bdc321a65296b67b0faba67cfe1b79",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "37533.12500000",
+        "interval": {
+          "end_exclusive": "2025-01-01T03:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M025",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M025\\OWNER_GATED_3H\\CAPACITY_CURVE\\Q00250",
+          "audit_status": "PASS_M025_INDEPENDENT_SCENARIO_AUDIT",
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "reporting_correction": "NO_EVENT_REPLAY"
+        },
+        "technical_revision": "M024_ORDER_SIZE_CAPACITY_CURVE_V1"
+      }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:46.286637+00:00",
+      "payload": {
+        "SCENARIO_HASH": "f7853d30bd59858d8d46b3634175ef2e28899a4716bcb9d576fb814ab724f412",
+        "label": null,
+        "model_id": "M025",
+        "scenario": {
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "capital_mode": "PROPORTIONAL_NORMALIZED_CAPACITY_CURVE",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "growth_expansion_enabled": false,
+          "initial_marked_equity": "75066.25000000",
+          "name": "M025_ORDER_SIZE_Q500_3H",
+          "order_quantity_usdc": "500"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:46.672453+00:00",
+      "payload": {
+        "MODEL_HASH": "a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f",
+        "RUN_HASH": "0f191497243e4ebd3e3589ba532b89fad42f36fb5d5222c7db749216503672b2",
+        "SCENARIO_HASH": "f7853d30bd59858d8d46b3634175ef2e28899a4716bcb9d576fb814ab724f412",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\0f191497243e4ebd3e3589ba532b89fad42f36fb5d5222c7db749216503672b2",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "ff9e469de212daf78af711863c55e54961a4d5ddbfbd3bc9220fe403c0df4db9",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "7745600715bdc321a65296b67b0faba67cfe1b79",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "75066.25000000",
+        "interval": {
+          "end_exclusive": "2025-01-01T03:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M025",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M025\\OWNER_GATED_3H\\CAPACITY_CURVE\\Q00500",
+          "audit_status": "PASS_M025_INDEPENDENT_SCENARIO_AUDIT",
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "reporting_correction": "NO_EVENT_REPLAY"
+        },
+        "technical_revision": "M024_ORDER_SIZE_CAPACITY_CURVE_V1"
+      }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:47.103281+00:00",
+      "payload": {
+        "SCENARIO_HASH": "5ce5c6449316bd620d65dcfad53f8a99611a6630f6010c950b5ce5c9d0be302e",
+        "label": null,
+        "model_id": "M025",
+        "scenario": {
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "capital_mode": "PROPORTIONAL_NORMALIZED_CAPACITY_CURVE",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "growth_expansion_enabled": false,
+          "initial_marked_equity": "112599.37500000",
+          "name": "M025_ORDER_SIZE_Q750_3H",
+          "order_quantity_usdc": "750"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:47.504286+00:00",
+      "payload": {
+        "MODEL_HASH": "a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f",
+        "RUN_HASH": "3c9da6960ad80a4ec503b28db2fb71c03365af5d6911ed06d5fbe88e7ef151b6",
+        "SCENARIO_HASH": "5ce5c6449316bd620d65dcfad53f8a99611a6630f6010c950b5ce5c9d0be302e",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\3c9da6960ad80a4ec503b28db2fb71c03365af5d6911ed06d5fbe88e7ef151b6",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "055acfc5a54fbb44e3b90dcf16ae76ee22fc65eab603f3f4e689f0e6c2ed09a2",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "7745600715bdc321a65296b67b0faba67cfe1b79",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "112599.37500000",
+        "interval": {
+          "end_exclusive": "2025-01-01T03:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M025",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M025\\OWNER_GATED_3H\\CAPACITY_CURVE\\Q00750",
+          "audit_status": "PASS_M025_INDEPENDENT_SCENARIO_AUDIT",
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "reporting_correction": "NO_EVENT_REPLAY"
+        },
+        "technical_revision": "M024_ORDER_SIZE_CAPACITY_CURVE_V1"
+      }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:47.944316+00:00",
+      "payload": {
+        "SCENARIO_HASH": "7bcd0eaa7f4728c358c9b2966c1c0248bbbd19bc8c55c2744d71988402a1172d",
+        "label": null,
+        "model_id": "M025",
+        "scenario": {
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "capital_mode": "PROPORTIONAL_NORMALIZED_CAPACITY_CURVE",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "growth_expansion_enabled": false,
+          "initial_marked_equity": "150132.50000000",
+          "name": "M025_ORDER_SIZE_Q1000_3H",
+          "order_quantity_usdc": "1000"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:48.349828+00:00",
+      "payload": {
+        "MODEL_HASH": "a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f",
+        "RUN_HASH": "7db94e8e86aac735699ec71f65d74667f97762f60d02df3044688337d27634fc",
+        "SCENARIO_HASH": "7bcd0eaa7f4728c358c9b2966c1c0248bbbd19bc8c55c2744d71988402a1172d",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\7db94e8e86aac735699ec71f65d74667f97762f60d02df3044688337d27634fc",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "2704477af4e5c39f694d8e9890edc3def9a4ea399844c00fb2532caae5827310",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "7745600715bdc321a65296b67b0faba67cfe1b79",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "150132.50000000",
+        "interval": {
+          "end_exclusive": "2025-01-01T03:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M025",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M025\\OWNER_GATED_3H\\CAPACITY_CURVE\\Q01000",
+          "audit_status": "PASS_M025_INDEPENDENT_SCENARIO_AUDIT",
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "reporting_correction": "NO_EVENT_REPLAY"
+        },
+        "technical_revision": "M024_ORDER_SIZE_CAPACITY_CURVE_V1"
+      }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:48.778544+00:00",
+      "payload": {
+        "SCENARIO_HASH": "b71697e578451e8d6a49c7f630e5b10e4b5158839ccabea4c70526f5678c2a29",
+        "label": null,
+        "model_id": "M025",
+        "scenario": {
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "capital_mode": "PROPORTIONAL_NORMALIZED_CAPACITY_CURVE",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "growth_expansion_enabled": false,
+          "initial_marked_equity": "225198.75000000",
+          "name": "M025_ORDER_SIZE_Q1500_3H",
+          "order_quantity_usdc": "1500"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:49.232743+00:00",
+      "payload": {
+        "MODEL_HASH": "a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f",
+        "RUN_HASH": "8b9cbbf3c21cd4045dc1d1cc110056c39b9edf0c2643d3d6fa4fbf263bbc3d8c",
+        "SCENARIO_HASH": "b71697e578451e8d6a49c7f630e5b10e4b5158839ccabea4c70526f5678c2a29",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\8b9cbbf3c21cd4045dc1d1cc110056c39b9edf0c2643d3d6fa4fbf263bbc3d8c",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "7762e1b0db8eaf3bfd5c2dfc9dd8ebdf14890ade0a8a4a1c59183ca5c61151a8",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "7745600715bdc321a65296b67b0faba67cfe1b79",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "225198.75000000",
+        "interval": {
+          "end_exclusive": "2025-01-01T03:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M025",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M025\\OWNER_GATED_3H\\CAPACITY_CURVE\\Q01500",
+          "audit_status": "PASS_M025_INDEPENDENT_SCENARIO_AUDIT",
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "reporting_correction": "NO_EVENT_REPLAY"
+        },
+        "technical_revision": "M024_ORDER_SIZE_CAPACITY_CURVE_V1"
+      }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:49.669382+00:00",
+      "payload": {
+        "SCENARIO_HASH": "fc6266446cd445a61c8612ece96bd0dedab98c0564b68449eb31d5b85c46b56e",
+        "label": null,
+        "model_id": "M025",
+        "scenario": {
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "capital_mode": "PROPORTIONAL_NORMALIZED_CAPACITY_CURVE",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "growth_expansion_enabled": false,
+          "initial_marked_equity": "300265.00000000",
+          "name": "M025_ORDER_SIZE_Q2000_3H",
+          "order_quantity_usdc": "2000"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:50.065942+00:00",
+      "payload": {
+        "MODEL_HASH": "a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f",
+        "RUN_HASH": "1446ceb90f13e94eeb6822125a25334881c87196cf0e2cec3f058f2788e08419",
+        "SCENARIO_HASH": "fc6266446cd445a61c8612ece96bd0dedab98c0564b68449eb31d5b85c46b56e",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\1446ceb90f13e94eeb6822125a25334881c87196cf0e2cec3f058f2788e08419",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "e7a7aa582e56c848f0a491f959a471ebc0c10801ef8089a9401bbd49e8f1adc7",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "7745600715bdc321a65296b67b0faba67cfe1b79",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "300265.00000000",
+        "interval": {
+          "end_exclusive": "2025-01-01T03:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M025",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M025\\OWNER_GATED_3H\\CAPACITY_CURVE\\Q02000",
+          "audit_status": "PASS_M025_INDEPENDENT_SCENARIO_AUDIT",
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "reporting_correction": "NO_EVENT_REPLAY"
+        },
+        "technical_revision": "M024_ORDER_SIZE_CAPACITY_CURVE_V1"
+      }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:50.515614+00:00",
+      "payload": {
+        "SCENARIO_HASH": "009f7be50bededdeede1f23dbd309f3943e0ea3b3e311cd8f802d0c1fd5771ec",
+        "label": null,
+        "model_id": "M025",
+        "scenario": {
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "capital_mode": "PROPORTIONAL_NORMALIZED_CAPACITY_CURVE",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "growth_expansion_enabled": false,
+          "initial_marked_equity": "450397.50000000",
+          "name": "M025_ORDER_SIZE_Q3000_3H",
+          "order_quantity_usdc": "3000"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:50.918180+00:00",
+      "payload": {
+        "MODEL_HASH": "a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f",
+        "RUN_HASH": "026a83d8834834774efc5f9955080747c39d46f05557e3bd4f162867842c62c4",
+        "SCENARIO_HASH": "009f7be50bededdeede1f23dbd309f3943e0ea3b3e311cd8f802d0c1fd5771ec",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\026a83d8834834774efc5f9955080747c39d46f05557e3bd4f162867842c62c4",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "6e0ee46fd51df7cc76d3f76b2b572bfa34ad468f246be7609aa6845927201ab0",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "7745600715bdc321a65296b67b0faba67cfe1b79",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "450397.50000000",
+        "interval": {
+          "end_exclusive": "2025-01-01T03:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M025",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M025\\OWNER_GATED_3H\\CAPACITY_CURVE\\Q03000",
+          "audit_status": "PASS_M025_INDEPENDENT_SCENARIO_AUDIT",
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "reporting_correction": "NO_EVENT_REPLAY"
+        },
+        "technical_revision": "M024_ORDER_SIZE_CAPACITY_CURVE_V1"
+      }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:51.365429+00:00",
+      "payload": {
+        "SCENARIO_HASH": "17e87fa5183976156133c729fcba52a148e3fc032ab6547caa6315cf557c8972",
+        "label": null,
+        "model_id": "M025",
+        "scenario": {
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "capital_mode": "PROPORTIONAL_NORMALIZED_CAPACITY_CURVE",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "growth_expansion_enabled": false,
+          "initial_marked_equity": "750662.50000000",
+          "name": "M025_ORDER_SIZE_Q5000_3H",
+          "order_quantity_usdc": "5000"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-09T22:11:51.762681+00:00",
+      "payload": {
+        "MODEL_HASH": "a6fffeb379521679db725a30e361345af6356798e60d7ec32c0855f12e36112f",
+        "RUN_HASH": "fe3910264c9267fbc33196c09cb2496a8ab6110d75ae1b9f88e85bd1cdee20a9",
+        "SCENARIO_HASH": "17e87fa5183976156133c729fcba52a148e3fc032ab6547caa6315cf557c8972",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\fe3910264c9267fbc33196c09cb2496a8ab6110d75ae1b9f88e85bd1cdee20a9",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "889bb7987fbd71475fd6b2acedc10282e59efc12b52ae2ac50b107e34b5f4bdf",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "7745600715bdc321a65296b67b0faba67cfe1b79",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "750662.50000000",
+        "interval": {
+          "end_exclusive": "2025-01-01T03:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M025",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M025\\OWNER_GATED_3H\\CAPACITY_CURVE\\Q05000",
+          "audit_status": "PASS_M025_INDEPENDENT_SCENARIO_AUDIT",
+          "campaign_run_hash": "a2ada49ad8c237ad8b41b7da9096b15e67c5005e81c31fc7ed6e2672090adc22",
+          "reporting_correction": "NO_EVENT_REPLAY"
+        },
+        "technical_revision": "M024_ORDER_SIZE_CAPACITY_CURVE_V1"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-09T22:11:52.168671+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M025",
+        "reason": "Register the one completed OWNER-authorized M025 capacity campaign",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T22:11:52.577149+00:00",
+      "payload": {
+        "EVALUATION_HASH": "b714f90cada69ef26a6a4d3ff18602179f212de667736f946ba4ef0da7b6e81d",
+        "EVIDENCE_HASH": "fa2d5a7f4b0a3a95415592df102a770a5e5d3bdf67c136db7b7ab23753943360",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\fb02e9deec3411c52491ea651d524c440a82a79eb6a07cc700427037f7604318\\evaluations\\b714f90cada69ef26a6a4d3ff18602179f212de667736f946ba4ef0da7b6e81d",
+        "campaign_snapshot_id": "1f11521cf1640af13b7aaa0caa314329fcb8f341042b0036af39bd6fdc4c787b",
+        "comparison": {
+          "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+          "only_independent_variable": "ORDER_QUANTITY_USDC",
+          "order_quantity_usdc": "10"
+        },
+        "criteria": {
+          "event_rerun_performed": false,
+          "live_executable_result": false,
+          "physical_audit_pass": true,
+          "strategy_pass": false
+        },
+        "decision": {
+          "campaign_snapshot_id": "1f11521cf1640af13b7aaa0caa314329fcb8f341042b0036af39bd6fdc4c787b",
+          "comparison": {
+            "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+            "only_independent_variable": "ORDER_QUANTITY_USDC",
+            "order_quantity_usdc": "10"
+          },
+          "criteria": {
+            "event_rerun_performed": false,
+            "live_executable_result": false,
+            "physical_audit_pass": true,
+            "strategy_pass": false
+          },
+          "reason": "Developmental exogenous-tape capacity result; no live capacity, strategy profitability or successor authorization is established.",
+          "run_hash": "fb02e9deec3411c52491ea651d524c440a82a79eb6a07cc700427037f7604318",
+          "scenario_hash": "dbffd800b68a82c4d5929e2c63295c7105580b46199664f71a7b4a0869d17e1d",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "complete_positive_cycles": 35,
+          "completed_cycle_pnl": "0.068000000000",
+          "completed_roundtrip_usdc_per_hour": "116.6666666666666666666666667",
+          "cycles_per_hour": "11.66666666666666666666666667",
+          "final_marked_equity": "1501.6160000000000000",
+          "order_quantity_usdc": "10",
+          "realized_disposal_pnl": "0.108000000000",
+          "residual_partial_orders": 0,
+          "unrealized_pnl": "0.18300000"
+        },
+        "model_id": "M025",
+        "run_hash": "fb02e9deec3411c52491ea651d524c440a82a79eb6a07cc700427037f7604318",
+        "scenario_hash": "dbffd800b68a82c4d5929e2c63295c7105580b46199664f71a7b4a0869d17e1d"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T22:11:52.985759+00:00",
+      "payload": {
+        "EVALUATION_HASH": "bffd96b840dcfe12f7dbc4f3a43116707bf9fefa25d94788025e853f7dd1b931",
+        "EVIDENCE_HASH": "9a5292cfb7cd0c4d01c51ec8986fb3c4d2c4567873a080b5e7b9e0d144dad862",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\93b43a0a54ccf78acab91962f4b5b256b548f4d68bea6a74adc5bd0a97ba0d85\\evaluations\\bffd96b840dcfe12f7dbc4f3a43116707bf9fefa25d94788025e853f7dd1b931",
+        "campaign_snapshot_id": "cbd49fd5c74a4838a37ddb8d4dfbe75c269a2004b9850b7c90e5483151e5851e",
+        "comparison": {
+          "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+          "only_independent_variable": "ORDER_QUANTITY_USDC",
+          "order_quantity_usdc": "50"
+        },
+        "criteria": {
+          "event_rerun_performed": false,
+          "live_executable_result": false,
+          "physical_audit_pass": true,
+          "strategy_pass": false
+        },
+        "decision": {
+          "campaign_snapshot_id": "cbd49fd5c74a4838a37ddb8d4dfbe75c269a2004b9850b7c90e5483151e5851e",
+          "comparison": {
+            "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+            "only_independent_variable": "ORDER_QUANTITY_USDC",
+            "order_quantity_usdc": "50"
+          },
+          "criteria": {
+            "event_rerun_performed": false,
+            "live_executable_result": false,
+            "physical_audit_pass": true,
+            "strategy_pass": false
+          },
+          "reason": "Developmental exogenous-tape capacity result; no live capacity, strategy profitability or successor authorization is established.",
+          "run_hash": "93b43a0a54ccf78acab91962f4b5b256b548f4d68bea6a74adc5bd0a97ba0d85",
+          "scenario_hash": "3c5e6b72b544cbc3dad72ff2635be6fa50ce01909914f20fdf0d74bcefd99db0",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "complete_positive_cycles": 35,
+          "completed_cycle_pnl": "0.340000000000",
+          "completed_roundtrip_usdc_per_hour": "583.3333333333333333333333333",
+          "cycles_per_hour": "11.66666666666666666666666667",
+          "final_marked_equity": "7508.0800000000000000",
+          "order_quantity_usdc": "50",
+          "realized_disposal_pnl": "0.540000000000",
+          "residual_partial_orders": 0,
+          "unrealized_pnl": "0.91500000"
+        },
+        "model_id": "M025",
+        "run_hash": "93b43a0a54ccf78acab91962f4b5b256b548f4d68bea6a74adc5bd0a97ba0d85",
+        "scenario_hash": "3c5e6b72b544cbc3dad72ff2635be6fa50ce01909914f20fdf0d74bcefd99db0"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T22:11:53.405718+00:00",
+      "payload": {
+        "EVALUATION_HASH": "0551ef40d867fe6e922e70dda013a7801584af32100e7374dcbaf5446f45c3ae",
+        "EVIDENCE_HASH": "4504ef3f032c198a72e020cee132f1d0c0c9b62f5a354e92b33414b1ef9d73e1",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\8e4961b74382da3c3e7bdcec2d35cf14a636801b8b8a9d081b2ed9e4bd14bc06\\evaluations\\0551ef40d867fe6e922e70dda013a7801584af32100e7374dcbaf5446f45c3ae",
+        "campaign_snapshot_id": "1fd5549e4c2c72b24d3dab4f502b0b1cbd30d8a431ab5cdcce6d0d8156501a5d",
+        "comparison": {
+          "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+          "only_independent_variable": "ORDER_QUANTITY_USDC",
+          "order_quantity_usdc": "100"
+        },
+        "criteria": {
+          "event_rerun_performed": false,
+          "live_executable_result": false,
+          "physical_audit_pass": true,
+          "strategy_pass": false
+        },
+        "decision": {
+          "campaign_snapshot_id": "1fd5549e4c2c72b24d3dab4f502b0b1cbd30d8a431ab5cdcce6d0d8156501a5d",
+          "comparison": {
+            "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+            "only_independent_variable": "ORDER_QUANTITY_USDC",
+            "order_quantity_usdc": "100"
+          },
+          "criteria": {
+            "event_rerun_performed": false,
+            "live_executable_result": false,
+            "physical_audit_pass": true,
+            "strategy_pass": false
+          },
+          "reason": "Developmental exogenous-tape capacity result; no live capacity, strategy profitability or successor authorization is established.",
+          "run_hash": "8e4961b74382da3c3e7bdcec2d35cf14a636801b8b8a9d081b2ed9e4bd14bc06",
+          "scenario_hash": "29431709ba47f6ec957c42bee93c52ad0d00278627b99c67df18b740f2bd6114",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "complete_positive_cycles": 34,
+          "completed_cycle_pnl": "0.6600000000000000",
+          "completed_roundtrip_usdc_per_hour": "1133.333333333333333333333333",
+          "cycles_per_hour": "11.33333333333333333333333333",
+          "final_marked_equity": "15016.1069000000000000",
+          "order_quantity_usdc": "100",
+          "realized_disposal_pnl": "1.0800000000000000",
+          "residual_partial_orders": 1,
+          "unrealized_pnl": "1.7769000000000000"
+        },
+        "model_id": "M025",
+        "run_hash": "8e4961b74382da3c3e7bdcec2d35cf14a636801b8b8a9d081b2ed9e4bd14bc06",
+        "scenario_hash": "29431709ba47f6ec957c42bee93c52ad0d00278627b99c67df18b740f2bd6114"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T22:11:53.908676+00:00",
+      "payload": {
+        "EVALUATION_HASH": "b0c08e403872ed4af2e1f1b32af2f5ccc7c3951e3056519d8d0aa3c8e0ef7065",
+        "EVIDENCE_HASH": "5a774dec09a8607a44a3ce1a2c8e87b771f4a335704760ca131e80182a219022",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\bf571c28f3fb9ac6083739e0d79b3be7a2fe0acf6e1729bc9ed94e9a22be091e\\evaluations\\b0c08e403872ed4af2e1f1b32af2f5ccc7c3951e3056519d8d0aa3c8e0ef7065",
+        "campaign_snapshot_id": "9d480b2eaad10f19c2b9b607782fb02c19c80f3d9108cfdfa0a1e102a3cdd2e1",
+        "comparison": {
+          "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+          "only_independent_variable": "ORDER_QUANTITY_USDC",
+          "order_quantity_usdc": "250"
+        },
+        "criteria": {
+          "event_rerun_performed": false,
+          "live_executable_result": false,
+          "physical_audit_pass": true,
+          "strategy_pass": false
+        },
+        "decision": {
+          "campaign_snapshot_id": "9d480b2eaad10f19c2b9b607782fb02c19c80f3d9108cfdfa0a1e102a3cdd2e1",
+          "comparison": {
+            "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+            "only_independent_variable": "ORDER_QUANTITY_USDC",
+            "order_quantity_usdc": "250"
+          },
+          "criteria": {
+            "event_rerun_performed": false,
+            "live_executable_result": false,
+            "physical_audit_pass": true,
+            "strategy_pass": false
+          },
+          "reason": "Developmental exogenous-tape capacity result; no live capacity, strategy profitability or successor authorization is established.",
+          "run_hash": "bf571c28f3fb9ac6083739e0d79b3be7a2fe0acf6e1729bc9ed94e9a22be091e",
+          "scenario_hash": "1b27b0983bae18e2e98be6c920481e506e2c59cdaa4ac9efe4ed3497a8746763",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "complete_positive_cycles": 34,
+          "completed_cycle_pnl": "1.6500000000000000",
+          "completed_roundtrip_usdc_per_hour": "2833.333333333333333333333333",
+          "cycles_per_hour": "11.33333333333333333333333333",
+          "final_marked_equity": "37540.2569000000000000",
+          "order_quantity_usdc": "250",
+          "realized_disposal_pnl": "2.7000000000000000",
+          "residual_partial_orders": 1,
+          "unrealized_pnl": "4.4319000000000000"
+        },
+        "model_id": "M025",
+        "run_hash": "bf571c28f3fb9ac6083739e0d79b3be7a2fe0acf6e1729bc9ed94e9a22be091e",
+        "scenario_hash": "1b27b0983bae18e2e98be6c920481e506e2c59cdaa4ac9efe4ed3497a8746763"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T22:11:54.330996+00:00",
+      "payload": {
+        "EVALUATION_HASH": "68f0a5ccff3eb41f68afb690d86067138ce184230b97395c1006cb6d47e239e9",
+        "EVIDENCE_HASH": "14888427b4871249587f2d466a4b7512a62ed9d1afccdee3c9886074730ae83b",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\0f191497243e4ebd3e3589ba532b89fad42f36fb5d5222c7db749216503672b2\\evaluations\\68f0a5ccff3eb41f68afb690d86067138ce184230b97395c1006cb6d47e239e9",
+        "campaign_snapshot_id": "ff9e469de212daf78af711863c55e54961a4d5ddbfbd3bc9220fe403c0df4db9",
+        "comparison": {
+          "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+          "only_independent_variable": "ORDER_QUANTITY_USDC",
+          "order_quantity_usdc": "500"
+        },
+        "criteria": {
+          "event_rerun_performed": false,
+          "live_executable_result": false,
+          "physical_audit_pass": true,
+          "strategy_pass": false
+        },
+        "decision": {
+          "campaign_snapshot_id": "ff9e469de212daf78af711863c55e54961a4d5ddbfbd3bc9220fe403c0df4db9",
+          "comparison": {
+            "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+            "only_independent_variable": "ORDER_QUANTITY_USDC",
+            "order_quantity_usdc": "500"
+          },
+          "criteria": {
+            "event_rerun_performed": false,
+            "live_executable_result": false,
+            "physical_audit_pass": true,
+            "strategy_pass": false
+          },
+          "reason": "Developmental exogenous-tape capacity result; no live capacity, strategy profitability or successor authorization is established.",
+          "run_hash": "0f191497243e4ebd3e3589ba532b89fad42f36fb5d5222c7db749216503672b2",
+          "scenario_hash": "f7853d30bd59858d8d46b3634175ef2e28899a4716bcb9d576fb814ab724f412",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "complete_positive_cycles": 35,
+          "completed_cycle_pnl": "3.3500000000000000",
+          "completed_roundtrip_usdc_per_hour": "5833.333333333333333333333333",
+          "cycles_per_hour": "11.66666666666666666666666667",
+          "final_marked_equity": "75080.5569000000000000",
+          "order_quantity_usdc": "500",
+          "realized_disposal_pnl": "5.4500000000000000",
+          "residual_partial_orders": 1,
+          "unrealized_pnl": "8.8569000000000000"
+        },
+        "model_id": "M025",
+        "run_hash": "0f191497243e4ebd3e3589ba532b89fad42f36fb5d5222c7db749216503672b2",
+        "scenario_hash": "f7853d30bd59858d8d46b3634175ef2e28899a4716bcb9d576fb814ab724f412"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T22:11:54.750989+00:00",
+      "payload": {
+        "EVALUATION_HASH": "a9b2187c93c482470071c70da03ee9d949269a4bdc81ff4b1b3fb3f0451b2a43",
+        "EVIDENCE_HASH": "ad75f81747734f28e42d2d99d3486f8056f417a9cc95b4f77be1f11705ee45b9",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\3c9da6960ad80a4ec503b28db2fb71c03365af5d6911ed06d5fbe88e7ef151b6\\evaluations\\a9b2187c93c482470071c70da03ee9d949269a4bdc81ff4b1b3fb3f0451b2a43",
+        "campaign_snapshot_id": "055acfc5a54fbb44e3b90dcf16ae76ee22fc65eab603f3f4e689f0e6c2ed09a2",
+        "comparison": {
+          "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+          "only_independent_variable": "ORDER_QUANTITY_USDC",
+          "order_quantity_usdc": "750"
+        },
+        "criteria": {
+          "event_rerun_performed": false,
+          "live_executable_result": false,
+          "physical_audit_pass": true,
+          "strategy_pass": false
+        },
+        "decision": {
+          "campaign_snapshot_id": "055acfc5a54fbb44e3b90dcf16ae76ee22fc65eab603f3f4e689f0e6c2ed09a2",
+          "comparison": {
+            "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+            "only_independent_variable": "ORDER_QUANTITY_USDC",
+            "order_quantity_usdc": "750"
+          },
+          "criteria": {
+            "event_rerun_performed": false,
+            "live_executable_result": false,
+            "physical_audit_pass": true,
+            "strategy_pass": false
+          },
+          "reason": "Developmental exogenous-tape capacity result; no live capacity, strategy profitability or successor authorization is established.",
+          "run_hash": "3c9da6960ad80a4ec503b28db2fb71c03365af5d6911ed06d5fbe88e7ef151b6",
+          "scenario_hash": "5ce5c6449316bd620d65dcfad53f8a99611a6630f6010c950b5ce5c9d0be302e",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "complete_positive_cycles": 34,
+          "completed_cycle_pnl": "4.9500000000000000",
+          "completed_roundtrip_usdc_per_hour": "8500",
+          "cycles_per_hour": "11.33333333333333333333333333",
+          "final_marked_equity": "112620.7569000000000000",
+          "order_quantity_usdc": "750",
+          "realized_disposal_pnl": "8.1000000000000000",
+          "residual_partial_orders": 1,
+          "unrealized_pnl": "13.2819000000000000"
+        },
+        "model_id": "M025",
+        "run_hash": "3c9da6960ad80a4ec503b28db2fb71c03365af5d6911ed06d5fbe88e7ef151b6",
+        "scenario_hash": "5ce5c6449316bd620d65dcfad53f8a99611a6630f6010c950b5ce5c9d0be302e"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T22:11:55.178519+00:00",
+      "payload": {
+        "EVALUATION_HASH": "6e0b0223f391dbaaf381305eabe089c87a7561848de6e53d3e8ef50a270a9e43",
+        "EVIDENCE_HASH": "6b691031d94ad6807a3d5613dc38611ddd38f460494cefcd532dbac354f24fa1",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\7db94e8e86aac735699ec71f65d74667f97762f60d02df3044688337d27634fc\\evaluations\\6e0b0223f391dbaaf381305eabe089c87a7561848de6e53d3e8ef50a270a9e43",
+        "campaign_snapshot_id": "2704477af4e5c39f694d8e9890edc3def9a4ea399844c00fb2532caae5827310",
+        "comparison": {
+          "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+          "only_independent_variable": "ORDER_QUANTITY_USDC",
+          "order_quantity_usdc": "1000"
+        },
+        "criteria": {
+          "event_rerun_performed": false,
+          "live_executable_result": false,
+          "physical_audit_pass": true,
+          "strategy_pass": false
+        },
+        "decision": {
+          "campaign_snapshot_id": "2704477af4e5c39f694d8e9890edc3def9a4ea399844c00fb2532caae5827310",
+          "comparison": {
+            "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+            "only_independent_variable": "ORDER_QUANTITY_USDC",
+            "order_quantity_usdc": "1000"
+          },
+          "criteria": {
+            "event_rerun_performed": false,
+            "live_executable_result": false,
+            "physical_audit_pass": true,
+            "strategy_pass": false
+          },
+          "reason": "Developmental exogenous-tape capacity result; no live capacity, strategy profitability or successor authorization is established.",
+          "run_hash": "7db94e8e86aac735699ec71f65d74667f97762f60d02df3044688337d27634fc",
+          "scenario_hash": "7bcd0eaa7f4728c358c9b2966c1c0248bbbd19bc8c55c2744d71988402a1172d",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "complete_positive_cycles": 35,
+          "completed_cycle_pnl": "6.7000000000000000",
+          "completed_roundtrip_usdc_per_hour": "11666.66666666666666666666667",
+          "cycles_per_hour": "11.66666666666666666666666667",
+          "final_marked_equity": "150161.1069000000000000",
+          "order_quantity_usdc": "1000",
+          "realized_disposal_pnl": "10.9000000000000000",
+          "residual_partial_orders": 1,
+          "unrealized_pnl": "17.7069000000000000"
+        },
+        "model_id": "M025",
+        "run_hash": "7db94e8e86aac735699ec71f65d74667f97762f60d02df3044688337d27634fc",
+        "scenario_hash": "7bcd0eaa7f4728c358c9b2966c1c0248bbbd19bc8c55c2744d71988402a1172d"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T22:11:55.594704+00:00",
+      "payload": {
+        "EVALUATION_HASH": "7e44b2729405ed3d734e9c96399e7483f1f33e842cfad072138ba887242d8a37",
+        "EVIDENCE_HASH": "d7602b8a863f6086de2c9cfd02807a4063803d99eb214deec4e4b4d875aecbb8",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\8b9cbbf3c21cd4045dc1d1cc110056c39b9edf0c2643d3d6fa4fbf263bbc3d8c\\evaluations\\7e44b2729405ed3d734e9c96399e7483f1f33e842cfad072138ba887242d8a37",
+        "campaign_snapshot_id": "7762e1b0db8eaf3bfd5c2dfc9dd8ebdf14890ade0a8a4a1c59183ca5c61151a8",
+        "comparison": {
+          "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+          "only_independent_variable": "ORDER_QUANTITY_USDC",
+          "order_quantity_usdc": "1500"
+        },
+        "criteria": {
+          "event_rerun_performed": false,
+          "live_executable_result": false,
+          "physical_audit_pass": true,
+          "strategy_pass": false
+        },
+        "decision": {
+          "campaign_snapshot_id": "7762e1b0db8eaf3bfd5c2dfc9dd8ebdf14890ade0a8a4a1c59183ca5c61151a8",
+          "comparison": {
+            "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+            "only_independent_variable": "ORDER_QUANTITY_USDC",
+            "order_quantity_usdc": "1500"
+          },
+          "criteria": {
+            "event_rerun_performed": false,
+            "live_executable_result": false,
+            "physical_audit_pass": true,
+            "strategy_pass": false
+          },
+          "reason": "Developmental exogenous-tape capacity result; no live capacity, strategy profitability or successor authorization is established.",
+          "run_hash": "8b9cbbf3c21cd4045dc1d1cc110056c39b9edf0c2643d3d6fa4fbf263bbc3d8c",
+          "scenario_hash": "b71697e578451e8d6a49c7f630e5b10e4b5158839ccabea4c70526f5678c2a29",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "complete_positive_cycles": 34,
+          "completed_cycle_pnl": "9.9000000000000000",
+          "completed_roundtrip_usdc_per_hour": "17000",
+          "cycles_per_hour": "11.33333333333333333333333333",
+          "final_marked_equity": "225241.7699000000000000",
+          "order_quantity_usdc": "1500",
+          "realized_disposal_pnl": "16.5000000000000000",
+          "residual_partial_orders": 2,
+          "unrealized_pnl": "26.5199000000000000"
+        },
+        "model_id": "M025",
+        "run_hash": "8b9cbbf3c21cd4045dc1d1cc110056c39b9edf0c2643d3d6fa4fbf263bbc3d8c",
+        "scenario_hash": "b71697e578451e8d6a49c7f630e5b10e4b5158839ccabea4c70526f5678c2a29"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T22:11:56.038458+00:00",
+      "payload": {
+        "EVALUATION_HASH": "ba6bb861fdaff086d84806644abaf9b78bb7a208c318e5b0c000bdecee507f41",
+        "EVIDENCE_HASH": "607ee6db33e11947a39b71c09a865108fb2f5f0eda63f6dd2c99a3652b17df19",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\1446ceb90f13e94eeb6822125a25334881c87196cf0e2cec3f058f2788e08419\\evaluations\\ba6bb861fdaff086d84806644abaf9b78bb7a208c318e5b0c000bdecee507f41",
+        "campaign_snapshot_id": "e7a7aa582e56c848f0a491f959a471ebc0c10801ef8089a9401bbd49e8f1adc7",
+        "comparison": {
+          "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+          "only_independent_variable": "ORDER_QUANTITY_USDC",
+          "order_quantity_usdc": "2000"
+        },
+        "criteria": {
+          "event_rerun_performed": false,
+          "live_executable_result": false,
+          "physical_audit_pass": true,
+          "strategy_pass": false
+        },
+        "decision": {
+          "campaign_snapshot_id": "e7a7aa582e56c848f0a491f959a471ebc0c10801ef8089a9401bbd49e8f1adc7",
+          "comparison": {
+            "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+            "only_independent_variable": "ORDER_QUANTITY_USDC",
+            "order_quantity_usdc": "2000"
+          },
+          "criteria": {
+            "event_rerun_performed": false,
+            "live_executable_result": false,
+            "physical_audit_pass": true,
+            "strategy_pass": false
+          },
+          "reason": "Developmental exogenous-tape capacity result; no live capacity, strategy profitability or successor authorization is established.",
+          "run_hash": "1446ceb90f13e94eeb6822125a25334881c87196cf0e2cec3f058f2788e08419",
+          "scenario_hash": "fc6266446cd445a61c8612ece96bd0dedab98c0564b68449eb31d5b85c46b56e",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "complete_positive_cycles": 36,
+          "completed_cycle_pnl": "13.6000000000000000",
+          "completed_roundtrip_usdc_per_hour": "24000",
+          "cycles_per_hour": "12",
+          "final_marked_equity": "300322.7699000000000000",
+          "order_quantity_usdc": "2000",
+          "realized_disposal_pnl": "22.4000000000000000",
+          "residual_partial_orders": 2,
+          "unrealized_pnl": "35.3699000000000000"
+        },
+        "model_id": "M025",
+        "run_hash": "1446ceb90f13e94eeb6822125a25334881c87196cf0e2cec3f058f2788e08419",
+        "scenario_hash": "fc6266446cd445a61c8612ece96bd0dedab98c0564b68449eb31d5b85c46b56e"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T22:11:56.468681+00:00",
+      "payload": {
+        "EVALUATION_HASH": "8e5505f41973df7c0f17fa87c266ecf6c24be1b32577d01f609d702e16dce6b9",
+        "EVIDENCE_HASH": "8f02a1fa8383f141a356855f390764fcf6f387d6e4ea71d46bd487b33d3283a3",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\026a83d8834834774efc5f9955080747c39d46f05557e3bd4f162867842c62c4\\evaluations\\8e5505f41973df7c0f17fa87c266ecf6c24be1b32577d01f609d702e16dce6b9",
+        "campaign_snapshot_id": "6e0ee46fd51df7cc76d3f76b2b572bfa34ad468f246be7609aa6845927201ab0",
+        "comparison": {
+          "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+          "only_independent_variable": "ORDER_QUANTITY_USDC",
+          "order_quantity_usdc": "3000"
+        },
+        "criteria": {
+          "event_rerun_performed": false,
+          "live_executable_result": false,
+          "physical_audit_pass": true,
+          "strategy_pass": false
+        },
+        "decision": {
+          "campaign_snapshot_id": "6e0ee46fd51df7cc76d3f76b2b572bfa34ad468f246be7609aa6845927201ab0",
+          "comparison": {
+            "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+            "only_independent_variable": "ORDER_QUANTITY_USDC",
+            "order_quantity_usdc": "3000"
+          },
+          "criteria": {
+            "event_rerun_performed": false,
+            "live_executable_result": false,
+            "physical_audit_pass": true,
+            "strategy_pass": false
+          },
+          "reason": "Developmental exogenous-tape capacity result; no live capacity, strategy profitability or successor authorization is established.",
+          "run_hash": "026a83d8834834774efc5f9955080747c39d46f05557e3bd4f162867842c62c4",
+          "scenario_hash": "009f7be50bededdeede1f23dbd309f3943e0ea3b3e311cd8f802d0c1fd5771ec",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "complete_positive_cycles": 36,
+          "completed_cycle_pnl": "20.7000000000000000",
+          "completed_roundtrip_usdc_per_hour": "36000",
+          "cycles_per_hour": "12",
+          "final_marked_equity": "450485.0699000000000000",
+          "order_quantity_usdc": "3000",
+          "realized_disposal_pnl": "34.5000000000000000",
+          "residual_partial_orders": 2,
+          "unrealized_pnl": "53.0699000000000000"
+        },
+        "model_id": "M025",
+        "run_hash": "026a83d8834834774efc5f9955080747c39d46f05557e3bd4f162867842c62c4",
+        "scenario_hash": "009f7be50bededdeede1f23dbd309f3943e0ea3b3e311cd8f802d0c1fd5771ec"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T22:11:56.890724+00:00",
+      "payload": {
+        "EVALUATION_HASH": "1188d33fb43185967d1fba91369e017e11e6ebf602a87f193dc746fe1eb1a57c",
+        "EVIDENCE_HASH": "f43e3decf230f564d4e7ef5cb0edd612a8680b2315d229dad31402b212178949",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M025\\runs\\fe3910264c9267fbc33196c09cb2496a8ab6110d75ae1b9f88e85bd1cdee20a9\\evaluations\\1188d33fb43185967d1fba91369e017e11e6ebf602a87f193dc746fe1eb1a57c",
+        "campaign_snapshot_id": "889bb7987fbd71475fd6b2acedc10282e59efc12b52ae2ac50b107e34b5f4bdf",
+        "comparison": {
+          "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+          "only_independent_variable": "ORDER_QUANTITY_USDC",
+          "order_quantity_usdc": "5000"
+        },
+        "criteria": {
+          "event_rerun_performed": false,
+          "live_executable_result": false,
+          "physical_audit_pass": true,
+          "strategy_pass": false
+        },
+        "decision": {
+          "campaign_snapshot_id": "889bb7987fbd71475fd6b2acedc10282e59efc12b52ae2ac50b107e34b5f4bdf",
+          "comparison": {
+            "capacity_knee": "NOT_OBSERVED_UP_TO_5000_USDC",
+            "only_independent_variable": "ORDER_QUANTITY_USDC",
+            "order_quantity_usdc": "5000"
+          },
+          "criteria": {
+            "event_rerun_performed": false,
+            "live_executable_result": false,
+            "physical_audit_pass": true,
+            "strategy_pass": false
+          },
+          "reason": "Developmental exogenous-tape capacity result; no live capacity, strategy profitability or successor authorization is established.",
+          "run_hash": "fe3910264c9267fbc33196c09cb2496a8ab6110d75ae1b9f88e85bd1cdee20a9",
+          "scenario_hash": "17e87fa5183976156133c729fcba52a148e3fc032ab6547caa6315cf557c8972",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "complete_positive_cycles": 37,
+          "completed_cycle_pnl": "35.0000000000000000",
+          "completed_roundtrip_usdc_per_hour": "61666.66666666666666666666667",
+          "cycles_per_hour": "12.33333333333333333333333333",
+          "final_marked_equity": "750808.9699000000000000",
+          "order_quantity_usdc": "5000",
+          "realized_disposal_pnl": "58.0000000000000000",
+          "residual_partial_orders": 2,
+          "unrealized_pnl": "88.4699000000000000"
+        },
+        "model_id": "M025",
+        "run_hash": "fe3910264c9267fbc33196c09cb2496a8ab6110d75ae1b9f88e85bd1cdee20a9",
+        "scenario_hash": "17e87fa5183976156133c729fcba52a148e3fc032ab6547caa6315cf557c8972"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-09T22:11:57.310249+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M025",
+        "reason": "All eleven physical scenarios and corrected derived report reconciled",
+        "to": "EVALUATED"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-09T22:11:57.735495+00:00",
+      "payload": {
+        "from": "EVALUATED",
+        "model_id": "M025",
+        "reason": "Capacity knee not observed through Q5000; live rank and impact remain unknown",
+        "to": "INCONCLUSIVE"
+      }
     }
   ],
   "models": [
@@ -13390,8 +14630,8 @@
         "monthly": null,
         "run_manifest": null
       },
-      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
-      "capital_mode": "COMPOUNDING",
+      "capital_evidence": "NORMALIZED_NONEXECUTABLE_RUN_MANIFEST",
+      "capital_mode": "NORMALIZED_MECHANICS_PROBE",
       "created_at": "2026-09-09T21:17:43.732885Z",
       "currency": "USDT",
       "hypothesis": {
@@ -13401,7 +14641,7 @@
         "observation": "M024 closed 35 cycles at Q1 but did not measure size capacity.",
         "reason_for_new_model": "Order quantity materially changes fill completion, residual inventory and capital requirements."
       },
-      "initial_capital": "100",
+      "initial_capital": "750662.50000000",
       "lineage": {
         "ancestor_chain": [
           "M005",
@@ -13506,7 +14746,7 @@
       "model_id": "M025",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "INCONCLUSIVE"
     }
   ],
   "pair": "USDCUSDT",
