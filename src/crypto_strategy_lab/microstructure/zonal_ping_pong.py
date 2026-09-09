@@ -1633,7 +1633,7 @@ class DensePingPongProbe(ZonalPingPong):
             fill_events = sum(order.fill_events for order in orders)
             active_time_us = 0
             for order in orders:
-                if order.activation_evaluated_us is None or order.status == "REJECTED":
+                if order.activation_evaluated_us is None or order.status.startswith("REJECTED"):
                     continue
                 if order.status == "FILLED" and order.last_fill_us is not None:
                     order_end_us = order.last_fill_us

@@ -8,8 +8,8 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=true
-AUTHORIZED_MODEL=M021
+NEW_REPLAY_AUTHORIZED_NOW=false
+AUTHORIZED_MODEL=NONE_M021_5H_COMPLETE
 
 ## Latest authority — adaptive stablecoin ladder V1
 
@@ -72,7 +72,7 @@ safe-min-notional repetition remains subject to a new OWNER authorization.
 
 OWNER_DIRECTIVE=M021_DENSE_PING_PONG_OWNER_DIRECTIVE.md
 MODEL_ID=M021
-STATUS=PREREGISTERED_REVIEWED_REGISTERED_AWAITING_SINGLE_RUN
+STATUS=M021_5H_COMPLETE_INCONCLUSIVE_MECHANIC_OBSERVED
 AUTHORIZED_START=2025-01-01T00:00:00Z
 AUTHORIZED_END_EXCLUSIVE=2025-01-01T05:00:00Z
 ORDER_MODE=NORMALIZED_1_USDC_NON_EXECUTABLE_MECHANICS_PROBE
@@ -85,6 +85,17 @@ are prepared for publication. The machine gate above authorizes only M021 at the
 five-hour cutoff after HEAD equals origin/main and the worktree is clean. It does not
 authorize Day2, M022, live execution, a notional-executable replay or parameter changes.
 M020 remains immutable and rejected.
+
+POST_RUN_CYCLES=19
+POST_RUN_CYCLES_PER_HOUR=3.8
+POST_RUN_AUDIT=PASS_M021_LEDGER_EXECUTION_LIQUIDITY
+POST_RUN_PHYSICAL_HASH=7508beca1ee232864027204c6e33a92191fe1725d42d2eccd82f7349815a05ae
+POST_RUN_STATUS=INCONCLUSIVE
+
+The single run is complete and the gate is closed. The normalized ping-pong
+mechanic was observed, but its3.8cycles/hour is not high throughput and the
+one-USDC unit remains below exchange minimum notional. No rerun, Day2, M022 or
+parameter adjustment is authorized by this result.
 
 ## Superseded preparation — three ranges
 

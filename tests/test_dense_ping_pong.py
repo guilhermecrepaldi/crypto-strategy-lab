@@ -107,6 +107,15 @@ def test_dense_post_only_rechecks_at_activation() -> None:
     value.receive_book(book(1))
     value.receive_book(book(2, bid=".9999", ask=".99995"))
     assert any(row["event"] == "REJECTED_POST_ONLY" for row in value.audit)
+    value.finish(time_us=END)
+    rejected_ids = {
+        order.band_id for order in value.orders if order.status == "REJECTED_POST_ONLY"
+    }
+    assert all(
+        row["active_time_us"] == 0
+        for row in value.metrics()["slot_report"]
+        if row["slot_id"] in rejected_ids
+    )
 
 
 def test_dense_trade_print_is_consumed_once_by_best_price() -> None:

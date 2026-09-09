@@ -4843,7 +4843,7 @@ M020,REJECTED,100,USDT,COMPOUNDING,RUN_MANIFEST,d170be7d81e6a93a2bc04ce74b50775f
   ""run_hash"": ""3ff9ef96cc5c88f118d173514a00a36c0df9af30d09bee7b3e55bc907826f65c"",
   ""scenario_hash"": ""5885c3c4558bb46069e04be8263f5a64c213d94da66612e0cb5768177c2df1da""
 }","Fixed retrospective zones, bidirectional roundtrips, normalized filters and a five-hour objective materially change M019 semantics.",,,,,,,,,
-M021,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,2276cbcf7e3419f6c08d7242bfef2fe19e1a6be8f49ea4c9be333af53394f9f9,M020,2026-09-09T00:06:54.221449Z,A dense 200-slot immutable grid centered on the first causal L2 book can expose whether one-tick ping-pong mechanics complete at all.,M020 produced zero fills because its fixed P80 map did not overlap the observed five-hour price path.,"Use 100 BUY-first and 100 SELL-first one-USDC slots around one frozen causal anchor, without recentering or P80 selection.","Measure normalized five-hour completed-cycle mechanics, fill distribution and execution blockers without claiming profitability or capacity.","{
+M021,INCONCLUSIVE,199.88500000,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXECUTABLE_RUN_MANIFEST,2276cbcf7e3419f6c08d7242bfef2fe19e1a6be8f49ea4c9be333af53394f9f9,M020,2026-09-09T00:06:54.221449Z,A dense 200-slot immutable grid centered on the first causal L2 book can expose whether one-tick ping-pong mechanics complete at all.,M020 produced zero fills because its fixed P80 map did not overlap the observed five-hour price path.,"Use 100 BUY-first and 100 SELL-first one-USDC slots around one frozen causal anchor, without recentering or P80 selection.","Measure normalized five-hour completed-cycle mechanics, fill distribution and execution blockers without claiming profitability or capacity.","{
   ""anchor_quantization"": ""ROUND_HALF_UP_TO_HISTORICAL_TICK"",
   ""anchor_return_conflict_policy"": ""DETERMINISTIC_SELF_CROSS_BLOCK_AND_DEFER_WITHOUT_REPRICE_OR_INTERNAL_FILL"",
   ""automatic_successor_authorized"": false,
@@ -4925,4 +4925,22 @@ M021,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,2276cbcf7e3419f6c08
   ""total_logical_slots"": 200,
   ""trading_enabled"": false,
   ""virtual_filter_override"": ""MIN_NOTIONAL_ONLY""
-}",,,"The causal anchor, 200 slots, capital near 200 and one-tick bilateral state machines materially differ from M020.",,,,,,,,,
+}","{
+  ""active_time_changed_slots"": 0,
+  ""economic_fields_changed"": false,
+  ""economic_replay_repeated"": false,
+  ""rejected_post_only_orders"": 182
+}","{
+  ""campaign_snapshot_id"": ""7508beca1ee232864027204c6e33a92191fe1725d42d2eccd82f7349815a05ae"",
+  ""comparison"": {
+    ""scope"": ""POST_RUN_REPORTING_FACT_CORRECTION""
+  },
+  ""correct_statement"": ""Defensive predicate hardening only; no M021 active-time or economic value changed."",
+  ""criteria"": {
+    ""physical_and_derived_active_time_must_match"": true
+  },
+  ""run_hash"": ""4e8b842d95a0e4a0c2351e76cd7fe6edf3d9f25c9964c1c79fdbcb8eba382f1d"",
+  ""scenario_hash"": ""6ffda45157954371091bc32d0e939447e1ca9777dbeed3dfc7a61b17ee4f07a5"",
+  ""status"": ""FACTUAL_CORRECTION"",
+  ""supersedes_claim"": ""ACTIVE_TIME_US_ONLY_REPORTING_CORRECTION""
+}","The causal anchor, 200 slots, capital near 200 and one-tick bilateral state machines materially differ from M020.",,,,,,,,,

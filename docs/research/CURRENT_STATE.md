@@ -1,11 +1,11 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=M021_DENSE_PING_PONG_MECHANICS_5H
-CAMPAIGN_STATUS=PREREGISTERED_REVIEWED_REGISTERED; PRE_RUN_NOT_EXECUTED
-CAMPAIGN_EXECUTION_SOURCE_SHA=PENDING_PUBLICATION
-CAMPAIGN_ACTIVE_ENVELOPE=PRICE_PRIORITY_AFTER_PUBLICATION
+CAMPAIGN_STATUS=M021_COMPLETE; INCONCLUSIVE_MECHANIC_OBSERVED_LOW_THROUGHPUT
+CAMPAIGN_EXECUTION_SOURCE_SHA=f430a07a416dc31e0b06a7198cd8f51fdd0b5a89
+CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
-CAMPAIGN_VERDICT=PENDING
+CAMPAIGN_VERDICT=19_COMPLETE_CYCLES_IN_5H; NORMALIZED_NOT_LIVE_EXECUTABLE
 CAMPAIGN_PROGRESS_FILE=reports/usdcusdt/M021-5h-result.json
 CAMPAIGN_JOURNAL=docs/research/M021_JOURNAL.md
 CAMPAIGN_SCOREBOARD=reports/usdcusdt/M021-5h-result.json
@@ -24,7 +24,7 @@ MONTHLY_CONTINUOUS_WEEK_2_AUTHORIZED=false
 
 OWNER_NEXT_RESEARCH=DENSE_200_SLOT_PING_PONG_MECHANICS_PROBE_V1
 OWNER_DIRECTIVE=docs/microstructure/M021_DENSE_PING_PONG_OWNER_DIRECTIVE.md
-NEXT_CAMPAIGN_STATUS=M021_PREREGISTERED_REVIEWED_REGISTERED; RUN_AFTER_PUBLICATION
+NEXT_CAMPAIGN_STATUS=M021_INCONCLUSIVE; NO_FURTHER_RUN_AUTHORIZED
 NEXT_CAMPAIGN_MODEL_HASH=2276cbcf7e3419f6c08d7242bfef2fe19e1a6be8f49ea4c9be333af53394f9f9
 NEXT_CAMPAIGN_WINDOW=2025-01-01T00:00:00Z/2025-01-01T05:00:00Z_EXCLUSIVE
 NEXT_CAMPAIGN_ORDER_MODE=NORMALIZED_1_USDC_NON_EXECUTABLE_MECHANICS_PROBE
@@ -38,8 +38,19 @@ five hours. The one-USDC unit bypasses minimum notional only and is not live exe
 Initial USDT is the exact99.6950 needed for all BUY entries; initial inventory is100USDC,
 marked at bid1.0019 for total199.88500000. GPT-6 Astra source-bound review passed
 conditionally after reporting/registration defects were corrected;62 focused tests and
-the full suite passed. Registry M021 status is CREATED. No economic event has run yet;
-the execution requires the forthcoming published clean source SHA. Day2/M022 remain closed.
+the full suite passed. The single published-source replay completed19 positive cycles
+in5h(3.8/h):4 BUY-first and15 SELL-first. Final balances were103.70680000USDT and
+96USDC; marked equity199.90840000, realized PnL0.00510000 and unrealized PnL0.01830000.
+Execution audit passed with no negative exits or liquidity reuse. Only10 of200 slots
+filled and7 completed cycles; the path spanned only10 ticks. Owned buyback exits for
+S005-S007 conflicted with lower resting SELL entries, producing self-cross/post-only
+blocking. A post-run review hardened the rejected-status predicate, but comparison
+proved all200 `ACTIVE_TIME_US` values already matched; no report or economic value
+changed and no replay occurred. Physical
+hash7508beca1ee232864027204c6e33a92191fe1725d42d2eccd82f7349815a05ae.
+Registry M021 status is INCONCLUSIVE. The mechanism existed, but throughput was low
+and the normalized order is not live executable. Independent post-run Astra review
+is `PASS_FACTUAL_POST_RUN`. Gate closed; Day2/M022 remain closed.
 
 Latest OWNER authority creates M020 as a five-hour zonal throughput diagnostic,
 not a continuation or repair of M019. The fixed band geometry may use full-year

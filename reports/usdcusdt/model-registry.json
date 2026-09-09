@@ -9657,6 +9657,192 @@
         "schema_version": "usdcusdt-model-registry-v2",
         "status": "CREATED"
       }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-09T00:21:06.218437+00:00",
+      "payload": {
+        "SCENARIO_HASH": "6ffda45157954371091bc32d0e939447e1ca9777dbeed3dfc7a61b17ee4f07a5",
+        "label": null,
+        "model_id": "M021",
+        "scenario": {
+          "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "grid_anchor": "1.0020",
+          "initial_marked_equity": "199.88500000",
+          "initial_usdc": "100",
+          "initial_usdt": "99.6950",
+          "name": "M021_DENSE_PING_PONG_5H_NORMALIZED_MECHANICS",
+          "physical_run_hash": "7508beca1ee232864027204c6e33a92191fe1725d42d2eccd82f7349815a05ae"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-09T00:21:06.554615+00:00",
+      "payload": {
+        "MODEL_HASH": "2276cbcf7e3419f6c08d7242bfef2fe19e1a6be8f49ea4c9be333af53394f9f9",
+        "RUN_HASH": "4e8b842d95a0e4a0c2351e76cd7fe6edf3d9f25c9964c1c79fdbcb8eba382f1d",
+        "SCENARIO_HASH": "6ffda45157954371091bc32d0e939447e1ca9777dbeed3dfc7a61b17ee4f07a5",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M021\\runs\\4e8b842d95a0e4a0c2351e76cd7fe6edf3d9f25c9964c1c79fdbcb8eba382f1d",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "7508beca1ee232864027204c6e33a92191fe1725d42d2eccd82f7349815a05ae",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "f430a07a416dc31e0b06a7198cd8f51fdd0b5a89",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "199.88500000",
+        "interval": {
+          "end_exclusive": "2025-01-01T05:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M021",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M021\\OWNER_GATED_5H\\PRICE_PRIORITY",
+          "audit_status": "PASS_M021_LEDGER_EXECUTION_LIQUIDITY",
+          "identity_run_hash": "22502555bc4ac44fbfae49c8a15e37b5c5134abe96650722ae0a533f2e9cce89",
+          "physical_run_hash": "7508beca1ee232864027204c6e33a92191fe1725d42d2eccd82f7349815a05ae",
+          "reporting_correction": {
+            "economic_fields_changed": false,
+            "economic_replay_repeated": false,
+            "physical_summary_preserved": "artifacts\\usdcusdt\\l2-monthly-samples\\M021\\OWNER_GATED_5H\\PRICE_PRIORITY\\summary.json",
+            "reason": "Post-only rejected orders were previously extended to cutoff in the secondary slot active-time derivation.",
+            "scope": "ACTIVE_TIME_US_ONLY"
+          }
+        },
+        "technical_revision": "DENSE_200_SLOT_PING_PONG_MECHANICS_PROBE_V1"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-09T00:21:07.009575+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M021",
+        "reason": "Register immutable already-completed OWNER-authorized physical run evidence",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T00:21:07.531187+00:00",
+      "payload": {
+        "EVALUATION_HASH": "b31d8742eac39b8c32312828fd695b7daff513fd3c467e4afcbc2926df3296ef",
+        "EVIDENCE_HASH": "27b51eaeb407211b412c8f24d5cced28057d6241f9a443c2e134bdcc4b4c001b",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M021\\runs\\4e8b842d95a0e4a0c2351e76cd7fe6edf3d9f25c9964c1c79fdbcb8eba382f1d\\evaluations\\b31d8742eac39b8c32312828fd695b7daff513fd3c467e4afcbc2926df3296ef",
+        "campaign_snapshot_id": "7508beca1ee232864027204c6e33a92191fe1725d42d2eccd82f7349815a05ae",
+        "comparison": {
+          "controlled_profitability_comparison": false,
+          "parent": "M020",
+          "reason": "Capital and geometry differ; only mechanical observation is compared."
+        },
+        "criteria": {
+          "informational_gate": "TOTAL_COMPLETE_CYCLES_GT_ZERO",
+          "live_executable": false,
+          "strategy_pass": false
+        },
+        "decision": {
+          "campaign_snapshot_id": "7508beca1ee232864027204c6e33a92191fe1725d42d2eccd82f7349815a05ae",
+          "comparison": {
+            "controlled_profitability_comparison": false,
+            "parent": "M020",
+            "reason": "Capital and geometry differ; only mechanical observation is compared."
+          },
+          "criteria": {
+            "informational_gate": "TOTAL_COMPLETE_CYCLES_GT_ZERO",
+            "live_executable": false,
+            "strategy_pass": false
+          },
+          "mechanic_observed": true,
+          "reason": "The normalized mechanic completed cycles, but 3.8 cycles/hour is not high throughput and the one-USDC orders are not exchange executable.",
+          "run_hash": "4e8b842d95a0e4a0c2351e76cd7fe6edf3d9f25c9964c1c79fdbcb8eba382f1d",
+          "scenario_hash": "6ffda45157954371091bc32d0e939447e1ca9777dbeed3dfc7a61b17ee4f07a5",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "audit_status": "PASS_M021_LEDGER_EXECUTION_LIQUIDITY",
+          "buy_first_cycles": 4,
+          "cycles_per_hour": "3.8",
+          "main_limiter": "NARROW_PRICE_PATH_PLUS_EXIT_SELF_CROSS_POST_ONLY_CONFLICT",
+          "realized_net_pnl": "0.00510000",
+          "sell_first_cycles": 15,
+          "total_complete_cycles": 19,
+          "total_marked_equity": "199.90840000",
+          "unrealized_pnl": "0.01830000"
+        },
+        "model_id": "M021",
+        "run_hash": "4e8b842d95a0e4a0c2351e76cd7fe6edf3d9f25c9964c1c79fdbcb8eba382f1d",
+        "scenario_hash": "6ffda45157954371091bc32d0e939447e1ca9777dbeed3dfc7a61b17ee4f07a5"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-09T00:21:08.242657+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M021",
+        "reason": "Five-hour physical result and independent execution audit reconciled",
+        "to": "EVALUATED"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-09T00:21:09.337824+00:00",
+      "payload": {
+        "from": "EVALUATED",
+        "model_id": "M021",
+        "reason": "Mechanic observed at normalized notional; insufficient throughput and no live-executable or profitability conclusion",
+        "to": "INCONCLUSIVE"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T00:29:29.259516+00:00",
+      "payload": {
+        "EVALUATION_HASH": "9f8085e29a0e0ea5218628718ba714322f4c3c2c0620b62bf9bccc7865e72977",
+        "EVIDENCE_HASH": "a38c71c03cd353777b9cfff9a8e9831f1ace00fd4d87ab4547819eee4694a3e9",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M021\\runs\\4e8b842d95a0e4a0c2351e76cd7fe6edf3d9f25c9964c1c79fdbcb8eba382f1d\\evaluations\\9f8085e29a0e0ea5218628718ba714322f4c3c2c0620b62bf9bccc7865e72977",
+        "campaign_snapshot_id": "7508beca1ee232864027204c6e33a92191fe1725d42d2eccd82f7349815a05ae",
+        "comparison": {
+          "scope": "POST_RUN_REPORTING_FACT_CORRECTION"
+        },
+        "criteria": {
+          "physical_and_derived_active_time_must_match": true
+        },
+        "decision": {
+          "campaign_snapshot_id": "7508beca1ee232864027204c6e33a92191fe1725d42d2eccd82f7349815a05ae",
+          "comparison": {
+            "scope": "POST_RUN_REPORTING_FACT_CORRECTION"
+          },
+          "correct_statement": "Defensive predicate hardening only; no M021 active-time or economic value changed.",
+          "criteria": {
+            "physical_and_derived_active_time_must_match": true
+          },
+          "run_hash": "4e8b842d95a0e4a0c2351e76cd7fe6edf3d9f25c9964c1c79fdbcb8eba382f1d",
+          "scenario_hash": "6ffda45157954371091bc32d0e939447e1ca9777dbeed3dfc7a61b17ee4f07a5",
+          "status": "FACTUAL_CORRECTION",
+          "supersedes_claim": "ACTIVE_TIME_US_ONLY_REPORTING_CORRECTION"
+        },
+        "metrics": {
+          "active_time_changed_slots": 0,
+          "economic_fields_changed": false,
+          "economic_replay_repeated": false,
+          "rejected_post_only_orders": 182
+        },
+        "model_id": "M021",
+        "run_hash": "4e8b842d95a0e4a0c2351e76cd7fe6edf3d9f25c9964c1c79fdbcb8eba382f1d",
+        "scenario_hash": "6ffda45157954371091bc32d0e939447e1ca9777dbeed3dfc7a61b17ee4f07a5"
+      }
     }
   ],
   "models": [
@@ -11729,8 +11915,8 @@
         "monthly": null,
         "run_manifest": null
       },
-      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
-      "capital_mode": "COMPOUNDING",
+      "capital_evidence": "NORMALIZED_NONEXECUTABLE_RUN_MANIFEST",
+      "capital_mode": "NORMALIZED_MECHANICS_PROBE",
       "created_at": "2026-09-09T00:06:54.221449Z",
       "currency": "USDT",
       "hypothesis": {
@@ -11740,7 +11926,7 @@
         "observation": "M020 produced zero fills because its fixed P80 map did not overlap the observed five-hour price path.",
         "reason_for_new_model": "The causal anchor, 200 slots, capital near 200 and one-tick bilateral state machines materially differ from M020."
       },
-      "initial_capital": "100",
+      "initial_capital": "199.88500000",
       "lineage": {
         "ancestor_chain": [
           "M005",
@@ -11848,7 +12034,7 @@
       "model_id": "M021",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "INCONCLUSIVE"
     }
   ],
   "pair": "USDCUSDT",
