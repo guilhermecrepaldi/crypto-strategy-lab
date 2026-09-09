@@ -1,5 +1,20 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER mais recente — M024 triangular pre-aged queue, 2026-09-09
+
+Seguir `docs/microstructure/M024_TRIANGULAR_PRE_AGED_QUEUE_OWNER_DIRECTIVE.md`.
+M023 permanece imutável. M024 testa uma única vez o mesmo prefixo L2 de
+2025-01-01T00:00Z–03:00Z com50 níveis lógicos por lado,75 BUY+75 SELL entries
+normalizadas de1USDC e segunda coluna same-price nos25 níveis mais próximos.
+Cada `SIDE+PRICE` usa fila pública/own FIFO segmentada por coorte; não duplicar fila,
+trade, capital ou idade. C2 conserva somente prioridade realmente adquirida. Capital
+inicial74.9900USDT+75USDC, equity marcada150.1325; sem injeção. Principal reciclado
+mantém o pipeline, mas somente lucro de ciclo completo realizado financia nova célula;
+USDT não vira USDC contabilmente. Owned returns têm prioridade e permanecem passivos
+e lucrativos. Cap físico200. O teste é abaixo do minNotional, não live-executable.
+Publicar pré-registro/source/revisão Astra antes do único run; depois publicar resultado
+e autópsia. Sem sweep, rerun, M025, extensão, dia2, conta, Testnet ou live.
+
 ## Autoridade OWNER mais recente — M020 zonal ping-pong 5h, 2026-09-08
 
 Seguir `docs/microstructure/STABLECOIN_ZONAL_PING_PONG_OWNER_DIRECTIVE.md`.

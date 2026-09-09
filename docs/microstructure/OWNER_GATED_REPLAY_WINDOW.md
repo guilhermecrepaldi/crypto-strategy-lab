@@ -8,8 +8,27 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=false
-AUTHORIZED_MODEL=NONE_M023_3H_COMPLETE
+NEW_REPLAY_AUTHORIZED_NOW=true
+AUTHORIZED_MODEL=M024
+
+## Latest authority — M024 triangular pre-aged queue, three hours only
+
+OWNER_DIRECTIVE=M024_TRIANGULAR_PRE_AGED_QUEUE_OWNER_DIRECTIVE.md
+CURRENT_EXECUTION_WINDOW=2025-01-01T00:00:00Z/2025-01-01T03:00:00Z_EXCLUSIVE
+ORDER_MODE=NORMALIZED_1_USDC_NON_EXECUTABLE_PRE_AGED_FIFO
+INITIAL_FREE_ENTRY_ORDERS=150
+MAX_SIMULTANEOUS_NONTERMINAL_ORDERS=200
+ECONOMIC_RUN_AUTHORIZED_ONLY_AFTER_PUBLISHED_PREREG_AND_SOURCE_REVIEW=true
+DAY2_AUTHORIZED=false
+AUTOMATIC_SUCCESSOR_AUTHORIZED=false
+
+The OWNER authorized exactly one M024 run after registration, tests, independent
+source-bound Astra review and publication. M024 preserves M023 and tests shared-public
+same-price FIFO groups with a second independently funded order already aging behind
+the first. Initial capital is74.9900USDT plus75USDC; the normalized one-USDC orders
+remain below Binance minimum notional. The machine gate permits only the first three
+hours of2025-01-01 and closes after the single physical run. No repeat, parameter
+sweep, M025, extension, executable notional or live action is authorized.
 
 ## Latest authority — adaptive stablecoin ladder V1
 
