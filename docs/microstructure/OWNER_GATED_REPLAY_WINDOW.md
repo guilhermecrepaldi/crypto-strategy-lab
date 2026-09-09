@@ -8,8 +8,29 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=false
-AUTHORIZED_MODEL=NONE_M024_COMPLETE
+NEW_REPLAY_AUTHORIZED_NOW=true
+AUTHORIZED_MODEL=M025
+AUTHORIZED_SCENARIO_COUNT=11
+
+## Latest authority — M025 order-size capacity curve, three hours only
+
+OWNER_DIRECTIVE=M025_ORDER_SIZE_CAPACITY_OWNER_DIRECTIVE.md
+CURRENT_EXECUTION_WINDOW=2025-01-01T00:00:00Z/2025-01-01T03:00:00Z_EXCLUSIVE
+SCENARIO_Q_USDC=10,50,100,250,500,750,1000,1500,2000,3000,5000
+ONLY_INDEPENDENT_VARIABLE=ORDER_QUANTITY_USDC
+SCENARIOS_INDEPENDENT=true
+RUNS_PER_SCENARIO=1
+GROWTH_STRUCTURAL_EXPANSION=false
+ENDOGENOUS_MARKET_IMPACT=false
+DAY2_AUTHORIZED=false
+AUTOMATIC_SUCCESSOR_AUTHORIZED=false
+
+OWNER authorized one controlled M025 capacity campaign over the exact M024 three-hour
+tape. Each of the eleven quantities receives proportional real simulated capital and
+an independent copy of the unchanged exogenous tape; book/trade liquidity is not
+scaled. Full Q entry plus full Q profitable return is one cycle. Partials are not
+cycles. Source, tests and Astra review must be published before any event. On technical
+failure after events, preserve and stop without rerun. No M026, day2, live or tuning.
 
 ## Latest authority — M024 triangular pre-aged queue, three hours only
 

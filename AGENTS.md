@@ -1,5 +1,19 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER mais recente — M025 order-size capacity curve, 2026-09-09
+
+Seguir `docs/microstructure/M025_ORDER_SIZE_CAPACITY_OWNER_DIRECTIVE.md` e o
+pré-registro M025. M024 e toda sua evidência permanecem imutáveis. M025 executa uma
+única campanha no mesmo prefixo `2025-01-01T00:00Z–03:00Z`, com onze cenários
+independentes `Q=10,50,100,250,500,750,1000,1500,2000,3000,5000USDC`, cada um uma
+vez e em ordem crescente. A única variável é Q; capital escala das reservas físicas,
+mas tape, book, trades, fila, latência, manager e fees não escalam. Ciclo exige entrada
+Q completa e retorno Q completo positivo. Partiais nunca são ciclos. Growth pool é
+medido, mas expansão estrutural fica desabilitada. Knee exige queda adjacente >=20% e
+confirmação ortogonal por parcial, full-fill rate ou tempo. Endogenous impact é ausente
+e queue rank real é desconhecido. Publicar source/review Astra antes do primeiro evento;
+falha técnica após eventos preserva o prefixo e proíbe rerun. Sem M026, dia2 ou live.
+
 ## Autoridade OWNER mais recente — M024 triangular pre-aged queue, 2026-09-09
 
 Seguir `docs/microstructure/M024_TRIANGULAR_PRE_AGED_QUEUE_OWNER_DIRECTIVE.md`.
