@@ -8,10 +8,27 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=false
-AUTHORIZED_MODEL=NONE_M022_5H_COMPLETE
+NEW_REPLAY_AUTHORIZED_NOW=true
+AUTHORIZED_MODEL=M023
 
 ## Latest authority — adaptive stablecoin ladder V1
+
+## Latest authority — M023 serial hot-line three-hour mechanics test
+
+OWNER_DIRECTIVE=M023_SERIAL_HOT_LINE_OWNER_DIRECTIVE.md
+CURRENT_EXECUTION_WINDOW=2025-01-01T00:00:00Z/2025-01-01T03:00:00Z_EXCLUSIVE
+MAX_SIMULTANEOUS_NONTERMINAL_ORDERS=1
+ECONOMIC_SEQUENCE=BUY_THEN_SELL_STRICTLY_ALTERNATING
+VIRTUAL_BUY_DECK=100
+VIRTUAL_SELL_DECK=100
+DAY2_AUTHORIZED=false
+
+The OWNER authorized exactly one three-hour first-day L2 mechanics replay. Two virtual
+decks keep candidate capacity ready, but only one physical order may reserve capital,
+queue or fill. Executed middle cards are replaced from their same-side edge; unfilled
+cancels do not rotate the deck. Expansion remains closed after this one run.
+
+## Preserved M019 authority
 
 OWNER_DIRECTIVE=ADAPTIVE_STABLECOIN_LADDER_OWNER_DIRECTIVE.md
 PROPOSED_MODEL=M019
