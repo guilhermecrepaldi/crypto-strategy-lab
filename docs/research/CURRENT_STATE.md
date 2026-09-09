@@ -1,14 +1,14 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=M023_SERIAL_HOT_LINE_3H
-CAMPAIGN_STATUS=M023_PREREGISTERED; IMPLEMENTED; PRE_RUN_REVIEW_PASS; REGISTRY_CREATED
-CAMPAIGN_EXECUTION_SOURCE_SHA=PENDING_PUBLISHED_PREREG_COMMIT
+CAMPAIGN_STATUS=M023_COMPLETE; INCONCLUSIVE_FOR_EFFICACY; MECHANISM_OBSERVED
+CAMPAIGN_EXECUTION_SOURCE_SHA=68841b11f2bb27bc819d8f60715a8bf45e6dd7a4
 CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
-CAMPAIGN_VERDICT=PENDING
-CAMPAIGN_PROGRESS_FILE=docs/research/M023_JOURNAL.md
+CAMPAIGN_VERDICT=4_COMPLETE_POSITIVE_CYCLES_IN_3H; NORMALIZED_NOT_LIVE_EXECUTABLE
+CAMPAIGN_PROGRESS_FILE=reports/usdcusdt/M023-3h-result.json
 CAMPAIGN_JOURNAL=docs/research/M023_JOURNAL.md
-CAMPAIGN_SCOREBOARD=PENDING_FIRST_RUN
+CAMPAIGN_SCOREBOARD=reports/usdcusdt/M023-3h-result.json
 CURRENT_OWNER_WINDOW=docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
@@ -24,7 +24,7 @@ MONTHLY_CONTINUOUS_WEEK_2_AUTHORIZED=false
 
 OWNER_NEXT_RESEARCH=SERIAL_HOT_LINE_PING_PONG_V1
 OWNER_DIRECTIVE=docs/microstructure/M023_SERIAL_HOT_LINE_OWNER_DIRECTIVE.md
-NEXT_CAMPAIGN_STATUS=M023_CREATED; SOURCE_REVIEW_PASS; PUBLICATION_PENDING
+NEXT_CAMPAIGN_STATUS=M023_INCONCLUSIVE; NO_EXTENSION_AUTHORIZED
 NEXT_CAMPAIGN_MODEL_HASH=05e2674c64c3698b8d7725b7f24ee21724918067111c9207939c95fa1d2c8733
 NEXT_CAMPAIGN_WINDOW=2025-01-01T00:00:00Z/2025-01-01T03:00:00Z_EXCLUSIVE
 NEXT_CAMPAIGN_ORDER_MODE=NORMALIZED_1_USDC_NON_EXECUTABLE_SERIAL_HOT_LINE
@@ -38,9 +38,16 @@ must alternate BUY then profitable SELL. When an executed card leaves the hot li
 the same-side edge card fills its address; unfilled cancels do not rotate. The one-USDC
 quantity is below Binance minimum notional and remains non-live-executable. M022 and
 all earlier published results stay immutable. Source-bound independent review passed
-after two explicit BLOCK rounds and the registry now records model hash
-05e2674c64c3698b8d7725b7f24ee21724918067111c9207939c95fa1d2c8733. A published
-clean HEAD remains required before the single authorized run.
+after two explicit BLOCK rounds. The one published-source run completed4 positive
+cycles in3h (1.3333/h), with1USDC open at cutoff. Marked equity moved from1.0019 to
+1.0022USDT equivalent: realized+0.0004 and unrealized-0.0001. There were no order
+rejections or parallel fills, but3,397 queue-flow events consumed9,287,955USDC ahead
+of the serial orders. Astra's factual review passed and recommends INCONCLUSIVE for
+efficacy: the mechanism completed, but throughput is low and one-USDC is below Binance
+minimum notional. Model hash remains
+05e2674c64c3698b8d7725b7f24ee21724918067111c9207939c95fa1d2c8733; physical run
+hash is8ad59193b69e8df88101a91f3a97a72fe003993f87f9b997cacbe09c2855c074.
+Gate closed; no repeat, extension, successor or live execution is authorized.
 
 Latest OWNER authority created M022 as a controlled order-manager comparison against
 immutable M021. The single published-source run completed19 cycles in5h, exactly the

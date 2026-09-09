@@ -62,3 +62,25 @@ Append-only journal for `M023_SERIAL_HOT_LINE_PING_PONG_V1`.
 - M023 registered `CREATED` with model hash
   `05e2674c64c3698b8d7725b7f24ee21724918067111c9207939c95fa1d2c8733`.
 - No economic replay has started. Published clean HEAD remains the last gate.
+
+## 2026-09-09 — single three-hour run complete
+
+- Pre-run source was published at
+  `68841b11f2bb27bc819d8f60715a8bf45e6dd7a4`, with clean local/remote equality.
+- Exactly one authorized run covered2025-01-01T00:00:00Z through03:00:00Z exclusive.
+  It delivered29,538 canonical trades and was not repeated.
+- Result:4 complete positive BUY→SELL cycles (1.3333333333/hour), from5 BUY and4
+  SELL full fills. Nine completed legs produced nine same-side deck rotations.
+- Final holdings:0USDT and1USDC bought at1.0023, marked at1.0022. Total marked
+  equity1.0022 versus1.0019 initial; realized PnL+0.0004 and unrealized PnL-0.0001.
+- One profitable SELL remained active at1.0024 at cutoff. No forced liquidation,
+  partial fill, negative exit, post-only rejection or coverage rejection occurred.
+- The physical audit passed. The manager had an order for99.9128% of the window, but
+  completed only4 cycles:3,397 FIFO queue flows consumed9,287,955USDC ahead. Longest
+  completed BUY wait was3429.131043s and SELL wait2860.726199s.
+- GPT-6 Astra post-run factual review passed. Scientific status is `INCONCLUSIVE`:
+  mechanism observed, but low throughput and normalized one-USDC orders do not prove
+  efficacy or Binance executability.
+- Physical run hash:
+  `8ad59193b69e8df88101a91f3a97a72fe003993f87f9b997cacbe09c2855c074`.
+- Gate closed. No repeat, new period, parameter change or live action is authorized.

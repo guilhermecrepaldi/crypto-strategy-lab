@@ -10242,6 +10242,146 @@
         "schema_version": "usdcusdt-model-registry-v2",
         "status": "CREATED"
       }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-09T12:02:03.334395+00:00",
+      "payload": {
+        "SCENARIO_HASH": "85ed90cd83a9c207652690c3f8a8a145e1d6e3749c7b2acf590470df4944b636",
+        "label": null,
+        "model_id": "M023",
+        "scenario": {
+          "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "initial_usdc": "0",
+          "initial_usdt": "1.0019",
+          "name": "M023_SERIAL_HOT_LINE_3H_NORMALIZED_MECHANICS",
+          "physical_run_hash": "8ad59193b69e8df88101a91f3a97a72fe003993f87f9b997cacbe09c2855c074"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-09T12:02:05.035811+00:00",
+      "payload": {
+        "MODEL_HASH": "05e2674c64c3698b8d7725b7f24ee21724918067111c9207939c95fa1d2c8733",
+        "RUN_HASH": "ec7d2d3177d28935bf726270405e3c7f20a72c93dc084bfbdeafd8f1e46550e2",
+        "SCENARIO_HASH": "85ed90cd83a9c207652690c3f8a8a145e1d6e3749c7b2acf590470df4944b636",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M023\\runs\\ec7d2d3177d28935bf726270405e3c7f20a72c93dc084bfbdeafd8f1e46550e2",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "8ad59193b69e8df88101a91f3a97a72fe003993f87f9b997cacbe09c2855c074",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "68841b11f2bb27bc819d8f60715a8bf45e6dd7a4",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "1.0019",
+        "interval": {
+          "end_exclusive": "2025-01-01T03:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M023",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M023\\OWNER_GATED_3H\\PRICE_PRIORITY",
+          "audit_status": "PASS_M023_SERIAL_HOT_LINE_LEDGER",
+          "identity_run_hash": "9a3c978b9440b546339e1c2ba7965664881c80ab1fe7dc6243dd2fab413f8d15",
+          "physical_run_hash": "8ad59193b69e8df88101a91f3a97a72fe003993f87f9b997cacbe09c2855c074"
+        },
+        "technical_revision": "SERIAL_HOT_LINE_PING_PONG_V1"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-09T12:02:06.950211+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M023",
+        "reason": "Register immutable completed OWNER-authorized M023 physical evidence",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-09T12:02:08.900796+00:00",
+      "payload": {
+        "EVALUATION_HASH": "87f92821173852a33d25deaed7bccb7d2f7cd58028f5788a8f8c8b6494ea1b04",
+        "EVIDENCE_HASH": "5e3fe23584985855b2bbd90828faac811b4344986514a80abb5e8e8f0e783a33",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M023\\runs\\ec7d2d3177d28935bf726270405e3c7f20a72c93dc084bfbdeafd8f1e46550e2\\evaluations\\87f92821173852a33d25deaed7bccb7d2f7cd58028f5788a8f8c8b6494ea1b04",
+        "campaign_snapshot_id": "8ad59193b69e8df88101a91f3a97a72fe003993f87f9b997cacbe09c2855c074",
+        "comparison": {
+          "direct_financial_comparison_valid": false,
+          "parent": "M022",
+          "reason": "Different capital and three-hour versus five-hour window"
+        },
+        "criteria": {
+          "live_executable": false,
+          "mechanism_observed": true,
+          "owner_1000_cycle_goal_met": false,
+          "preregistered_minimum_cycle_gate": null,
+          "strategy_pass": false
+        },
+        "decision": {
+          "campaign_snapshot_id": "8ad59193b69e8df88101a91f3a97a72fe003993f87f9b997cacbe09c2855c074",
+          "comparison": {
+            "direct_financial_comparison_valid": false,
+            "parent": "M022",
+            "reason": "Different capital and three-hour versus five-hour window"
+          },
+          "criteria": {
+            "live_executable": false,
+            "mechanism_observed": true,
+            "owner_1000_cycle_goal_met": false,
+            "preregistered_minimum_cycle_gate": null,
+            "strategy_pass": false
+          },
+          "mechanism_observed": true,
+          "reason": "Four cycles establish that the serial mechanism can complete, but the normalized non-executable probe and low three-hour throughput do not establish strategy efficacy or justify automatic expansion.",
+          "run_hash": "ec7d2d3177d28935bf726270405e3c7f20a72c93dc084bfbdeafd8f1e46550e2",
+          "scenario_hash": "85ed90cd83a9c207652690c3f8a8a145e1d6e3749c7b2acf590470df4944b636",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "audit_status": "PASS_M023_SERIAL_HOT_LINE_LEDGER",
+          "cycles_per_hour": "1.333333333333333333333333333",
+          "main_limiter": "SERIAL_FIFO_QUEUE_AND_PRICE_RECOVERY_WAIT",
+          "realized_net_pnl": "0.00040000",
+          "total_complete_cycles": 4,
+          "total_marked_equity": "1.00220000",
+          "unrealized_pnl": "-0.00010000"
+        },
+        "model_id": "M023",
+        "run_hash": "ec7d2d3177d28935bf726270405e3c7f20a72c93dc084bfbdeafd8f1e46550e2",
+        "scenario_hash": "85ed90cd83a9c207652690c3f8a8a145e1d6e3749c7b2acf590470df4944b636"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-09T12:02:11.696614+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M023",
+        "reason": "Three-hour physical result and post-run audit reconciled",
+        "to": "EVALUATED"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-09T12:02:14.360343+00:00",
+      "payload": {
+        "from": "EVALUATED",
+        "model_id": "M023",
+        "reason": "Mechanism observed, but throughput low and one-USDC result non-executable",
+        "to": "INCONCLUSIVE"
+      }
     }
   ],
   "models": [
@@ -12586,8 +12726,8 @@
         "monthly": null,
         "run_manifest": null
       },
-      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
-      "capital_mode": "COMPOUNDING",
+      "capital_evidence": "NORMALIZED_NONEXECUTABLE_RUN_MANIFEST",
+      "capital_mode": "NORMALIZED_MECHANICS_PROBE",
       "created_at": "2026-09-09T11:52:46.822200Z",
       "currency": "USDT",
       "hypothesis": {
@@ -12597,7 +12737,7 @@
         "observation": "M022 maintained nearly 160 open orders yet matched M021 at 19 cycles and generated 18,492 post-only EXIT rejections.",
         "reason_for_new_model": "Serial capital, virtual candidates, hot-line pricing and strict side alternation materially change M022 order management."
       },
-      "initial_capital": "100",
+      "initial_capital": "1.0019",
       "lineage": {
         "ancestor_chain": [
           "M005",
@@ -12683,7 +12823,7 @@
       "model_id": "M023",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "INCONCLUSIVE"
     }
   ],
   "pair": "USDCUSDT",

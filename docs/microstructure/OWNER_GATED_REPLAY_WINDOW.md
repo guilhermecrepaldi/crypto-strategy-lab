@@ -8,8 +8,8 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=true
-AUTHORIZED_MODEL=M023
+NEW_REPLAY_AUTHORIZED_NOW=false
+AUTHORIZED_MODEL=NONE_M023_3H_COMPLETE
 
 ## Latest authority — adaptive stablecoin ladder V1
 
@@ -26,7 +26,9 @@ DAY2_AUTHORIZED=false
 The OWNER authorized exactly one three-hour first-day L2 mechanics replay. Two virtual
 decks keep candidate capacity ready, but only one physical order may reserve capital,
 queue or fill. Executed middle cards are replaced from their same-side edge; unfilled
-cancels do not rotate the deck. Expansion remains closed after this one run.
+cancels do not rotate the deck. The one run completed4 cycles and is preserved under
+published source68841b1. Expansion remains closed; a new explicit OWNER decision is
+required for any additional window or changed strategy.
 
 ## Preserved M019 authority
 

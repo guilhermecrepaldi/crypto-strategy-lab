@@ -5044,7 +5044,7 @@ M022,REJECTED,199.88500000,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXECUTA
   ""scenario_hash"": ""509737c53f4bd76daaaf5bbf75ae2418502f02a9ccd2168d3565e9f031e3ff5c"",
   ""status"": ""REJECTED""
 }","Return claims, preemption, moving free addresses and the 160-order manager materially change order management while M021 stays immutable.",,,,,,,,,
-M023,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,05e2674c64c3698b8d7725b7f24ee21724918067111c9207939c95fa1d2c8733,M022,2026-09-09T11:52:46.822200Z,A broad virtual radar plus exactly one causal real order and strict BUY-SELL alternation can remove internal execution impediments.,"M022 maintained nearly 160 open orders yet matched M021 at 19 cycles and generated 18,492 post-only EXIT rejections.",Replace parallel lanes with one serial economic sequence; select the hot-line price causally and treat profitable SELL as an economic floor.,Eliminate self-competition and repeated unchanged-context rejection while measuring physically achievable three-hour serial throughput.,"{
+M023,INCONCLUSIVE,1.0019,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXECUTABLE_RUN_MANIFEST,05e2674c64c3698b8d7725b7f24ee21724918067111c9207939c95fa1d2c8733,M022,2026-09-09T11:52:46.822200Z,A broad virtual radar plus exactly one causal real order and strict BUY-SELL alternation can remove internal execution impediments.,"M022 maintained nearly 160 open orders yet matched M021 at 19 cycles and generated 18,492 post-only EXIT rejections.",Replace parallel lanes with one serial economic sequence; select the hot-line price causally and treat profitable SELL as an economic floor.,Eliminate self-competition and repeated unchanged-context rejection while measuring physically achievable three-hour serial throughput.,"{
   ""automatic_successor_authorized"": false,
   ""breakeven_positive_cycle"": false,
   ""buy_deck_cards"": 100,
@@ -5102,4 +5102,31 @@ M023,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,05e2674c64c3698b8d7
   ""start"": ""2025-01-01T00:00:00Z"",
   ""strategy"": ""SERIAL_HOT_LINE_PING_PONG_V1"",
   ""virtual_filter_override"": ""MIN_NOTIONAL_ONLY""
-}",,,"Serial capital, virtual candidates, hot-line pricing and strict side alternation materially change M022 order management.",,,,,,,,,
+}","{
+  ""audit_status"": ""PASS_M023_SERIAL_HOT_LINE_LEDGER"",
+  ""cycles_per_hour"": ""1.333333333333333333333333333"",
+  ""main_limiter"": ""SERIAL_FIFO_QUEUE_AND_PRICE_RECOVERY_WAIT"",
+  ""realized_net_pnl"": ""0.00040000"",
+  ""total_complete_cycles"": 4,
+  ""total_marked_equity"": ""1.00220000"",
+  ""unrealized_pnl"": ""-0.00010000""
+}","{
+  ""campaign_snapshot_id"": ""8ad59193b69e8df88101a91f3a97a72fe003993f87f9b997cacbe09c2855c074"",
+  ""comparison"": {
+    ""direct_financial_comparison_valid"": false,
+    ""parent"": ""M022"",
+    ""reason"": ""Different capital and three-hour versus five-hour window""
+  },
+  ""criteria"": {
+    ""live_executable"": false,
+    ""mechanism_observed"": true,
+    ""owner_1000_cycle_goal_met"": false,
+    ""preregistered_minimum_cycle_gate"": null,
+    ""strategy_pass"": false
+  },
+  ""mechanism_observed"": true,
+  ""reason"": ""Four cycles establish that the serial mechanism can complete, but the normalized non-executable probe and low three-hour throughput do not establish strategy efficacy or justify automatic expansion."",
+  ""run_hash"": ""ec7d2d3177d28935bf726270405e3c7f20a72c93dc084bfbdeafd8f1e46550e2"",
+  ""scenario_hash"": ""85ed90cd83a9c207652690c3f8a8a145e1d6e3749c7b2acf590470df4944b636"",
+  ""status"": ""INCONCLUSIVE""
+}","Serial capital, virtual candidates, hot-line pricing and strict side alternation materially change M022 order management.",,,,,,,,,
