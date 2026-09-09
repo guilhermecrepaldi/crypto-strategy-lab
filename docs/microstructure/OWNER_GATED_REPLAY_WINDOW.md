@@ -8,8 +8,8 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=true
-AUTHORIZED_MODEL=M022
+NEW_REPLAY_AUTHORIZED_NOW=false
+AUTHORIZED_MODEL=NONE_M022_5H_COMPLETE
 
 ## Latest authority — adaptive stablecoin ladder V1
 
@@ -101,7 +101,7 @@ parameter adjustment is authorized by this result.
 
 OWNER_DIRECTIVE=M022_ORDER_MANAGER_OWNER_DIRECTIVE.md
 MODEL_ID=M022
-STATUS=M022_CREATED_SOURCE_REVIEW_PASS_AWAITING_SINGLE_RUN
+STATUS=M022_5H_COMPLETE_REJECTED_NO_THROUGHPUT_IMPROVEMENT
 AUTHORIZED_START=2025-01-01T00:00:00Z
 AUTHORIZED_END_EXCLUSIVE=2025-01-01T05:00:00Z
 ORDER_MODE=NORMALIZED_1_USDC_NON_EXECUTABLE_ORDER_MANAGER_PROBE
@@ -117,6 +117,20 @@ quote window on the fixed M021 lattice. Data, capital, queue, latency, one-tick
 economics and the five-hour cutoff remain frozen. The machine gate above permits
 exactly one run after HEAD equals origin/main and the worktree is clean. It does not
 authorize a rerun, Day2, M023, executable notional, account access or live execution.
+
+POST_RUN_CYCLES=19
+POST_RUN_CYCLES_PER_HOUR=3.8
+POST_RUN_DELTA_VS_M021=0
+POST_RUN_AUDIT=PASS_M022_MANAGER_LEDGER_EXECUTION_LIQUIDITY
+POST_RUN_PHYSICAL_HASH=389fef14f694c2e0af549fd1a23b03b96390d09243a32989dd90087396b05e35
+POST_RUN_STATUS=REJECTED
+
+The one authorized run is complete. The manager kept almost160 orders open and
+changed placement activity, but produced exactly the same19 cycles as M021. Fixed
+owned returns generated18,492 EXIT post-only rejections and return preemption was
+never exercised. The process raised a stdout serialization error only after all
+artifacts were written; no replay was repeated. The gate is closed. Day2, M023,
+parameter changes and executable/live runs require a new explicit OWNER authority.
 
 ## Superseded preparation — three ranges
 

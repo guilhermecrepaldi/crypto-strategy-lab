@@ -4944,7 +4944,7 @@ M021,INCONCLUSIVE,199.88500000,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXE
   ""status"": ""FACTUAL_CORRECTION"",
   ""supersedes_claim"": ""ACTIVE_TIME_US_ONLY_REPORTING_CORRECTION""
 }","The causal anchor, 200 slots, capital near 200 and one-tick bilateral state machines materially differ from M020.",,,,,,,,,
-M022,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,3e6c7588e944b63af577e23d21ec4461d0cbf44c55179cd7e71a5a9c75d5e8d8,M021,2026-09-09T01:58:20.414625Z,Owned-return priority plus a causal floating free-quote window can increase five-hour throughput under otherwise frozen M021 controls.,M021 completed 19 cycles but owned returns were repeatedly blocked by free entries and most free quotes rested far from the market.,"Keep 200 economic lanes but cap open orders at 160, preempt only unfilled free entries for returns, and float free entries over the fixed M021 lattice near the causal midpoint.","Reduce free-entry return conflicts and distant inactive quoting while preserving queue, latency, capital, liquidity and one-tick economics.","{
+M022,REJECTED,199.88500000,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXECUTABLE_RUN_MANIFEST,3e6c7588e944b63af577e23d21ec4461d0cbf44c55179cd7e71a5a9c75d5e8d8,M021,2026-09-09T01:58:20.414625Z,Owned-return priority plus a causal floating free-quote window can increase five-hour throughput under otherwise frozen M021 controls.,M021 completed 19 cycles but owned returns were repeatedly blocked by free entries and most free quotes rested far from the market.,"Keep 200 economic lanes but cap open orders at 160, preempt only unfilled free entries for returns, and float free entries over the fixed M021 lattice near the causal midpoint.","Reduce free-entry return conflicts and distant inactive quoting while preserving queue, latency, capital, liquidity and one-tick economics.","{
   ""automatic_successor_authorized"": false,
   ""breakeven_positive_cycle"": false,
   ""buy_first_lanes"": 100,
@@ -5011,4 +5011,36 @@ M022,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,3e6c7588e944b63af57
   ""total_economic_lanes"": 200,
   ""virtual_filter_override"": ""MIN_NOTIONAL_ONLY"",
   ""warmup_end"": ""FIRST_ACTIVATION_EVALUATION""
-}",,,"Return claims, preemption, moving free addresses and the 160-order manager materially change order management while M021 stays immutable.",,,,,,,,,
+}","{
+  ""audit_status"": ""PASS_M022_MANAGER_LEDGER_EXECUTION_LIQUIDITY"",
+  ""buy_first_cycles"": 5,
+  ""cycles_per_hour"": ""3.8"",
+  ""delta_vs_m021"": 0,
+  ""main_limiter"": ""FIXED_RETURN_PUBLIC_POST_ONLY_CONFLICT_WITH_QUEUE_LIMITED_REMAINDER"",
+  ""realized_net_pnl"": ""0.00560000"",
+  ""sell_first_cycles"": 14,
+  ""total_complete_cycles"": 19,
+  ""total_marked_equity"": ""199.90840000"",
+  ""unrealized_pnl"": ""0.01780000""
+}","{
+  ""campaign_snapshot_id"": ""389fef14f694c2e0af549fd1a23b03b96390d09243a32989dd90087396b05e35"",
+  ""comparison"": {
+    ""controlled_throughput_comparison"": true,
+    ""delta_cycles"": 0,
+    ""m021_cycles"": 19,
+    ""m022_cycles"": 19,
+    ""multiplier"": ""1"",
+    ""parent"": ""M021""
+  },
+  ""criteria"": {
+    ""live_executable"": false,
+    ""primary_gate"": ""TOTAL_COMPLETE_CYCLES_GT_M021_19"",
+    ""primary_gate_pass"": false,
+    ""strategy_pass"": false
+  },
+  ""did_order_management_improve_throughput"": false,
+  ""reason"": ""The controlled manager package produced the same 19 cycles as M021. It changed quote activity but did not improve the primary metric."",
+  ""run_hash"": ""5f326c52d423f63f94ec52cad7c67451b5ea86a50c56c0b5b70a9bf967783c9d"",
+  ""scenario_hash"": ""509737c53f4bd76daaaf5bbf75ae2418502f02a9ccd2168d3565e9f031e3ff5c"",
+  ""status"": ""REJECTED""
+}","Return claims, preemption, moving free addresses and the 160-order manager materially change order management while M021 stays immutable.",,,,,,,,,

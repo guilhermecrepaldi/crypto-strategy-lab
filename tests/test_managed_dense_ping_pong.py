@@ -40,6 +40,7 @@ def ready(end: int = END) -> ManagedDensePingPongProbe:
 
 def test_a_to_f_managed_window_and_cap() -> None:
     value = ready()
+    assert value.normalized_label.startswith("M022 DENSE PING-PONG ORDER MANAGER V2")
     assert len(value.active_orders) == 160
     assert len(value.active_buys) == 80
     assert len(value.active_sells) == 80

@@ -1,11 +1,11 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=M022_DENSE_PING_PONG_ORDER_MANAGER_5H
-CAMPAIGN_STATUS=M022_PREREGISTERED; SOURCE_REVIEW_PASS; ECONOMIC_RUN_NOT_STARTED
-CAMPAIGN_EXECUTION_SOURCE_SHA=PENDING_PUBLISHED_PRE_RUN_COMMIT
-CAMPAIGN_ACTIVE_ENVELOPE=PRICE_PRIORITY
+CAMPAIGN_STATUS=M022_COMPLETE; REJECTED_NO_THROUGHPUT_IMPROVEMENT
+CAMPAIGN_EXECUTION_SOURCE_SHA=f826b1c09368457c9252874e3dcf85f67ba64ef6
+CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
-CAMPAIGN_VERDICT=PENDING
+CAMPAIGN_VERDICT=19_COMPLETE_CYCLES_IN_5H; DELTA_VS_M021=0; NORMALIZED_NOT_LIVE_EXECUTABLE
 CAMPAIGN_PROGRESS_FILE=reports/usdcusdt/M022-5h-result.json
 CAMPAIGN_JOURNAL=docs/research/M022_JOURNAL.md
 CAMPAIGN_SCOREBOARD=reports/usdcusdt/M022-5h-result.json
@@ -19,29 +19,32 @@ MONTHLY_CSV_AVAILABLE=21
 MONTHLY_VALIDATED_AT_OWNER_SELECTION=12
 MONTHLY_SELECTED_FOR_CONSECUTIVE_REPLAY=1
 MONTHLY_INITIALIZATION=ONCE_100_OPERATING_PLUS_10_RESERVE_PER_ENVELOPE
-MONTHLY_ECONOMIC_REPLAYS_STARTED=5
+MONTHLY_ECONOMIC_REPLAYS_STARTED=6
 MONTHLY_CONTINUOUS_WEEK_2_AUTHORIZED=false
 
 OWNER_NEXT_RESEARCH=DENSE_PING_PONG_ORDER_MANAGER_V2
 OWNER_DIRECTIVE=docs/microstructure/M022_ORDER_MANAGER_OWNER_DIRECTIVE.md
-NEXT_CAMPAIGN_STATUS=M022_CREATED; ONE_5H_RUN_AUTHORIZED_AFTER_PUBLISHED_CLEAN_HEAD
+NEXT_CAMPAIGN_STATUS=M022_REJECTED; NO_FURTHER_RUN_AUTHORIZED
 NEXT_CAMPAIGN_MODEL_HASH=3e6c7588e944b63af577e23d21ec4461d0cbf44c55179cd7e71a5a9c75d5e8d8
 NEXT_CAMPAIGN_WINDOW=2025-01-01T00:00:00Z/2025-01-01T05:00:00Z_EXCLUSIVE
 NEXT_CAMPAIGN_ORDER_MODE=NORMALIZED_1_USDC_NON_EXECUTABLE_ORDER_MANAGER_PROBE
 NEXT_CAMPAIGN_FUNDING=0; RESERVE=0; RELEASE_DISABLED
 NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=199.88500000_USDT_EQUIVALENT; 99.6950_USDT_PLUS_100_USDC
 
-Latest OWNER authority creates M022 as a controlled order-manager comparison against
-immutable M021. The five-hour data window, one-USDC normalized quantity, one-tick
-economics, capital, queue, latency and execution rules remain frozen. The single
-change package gives owned returns priority over unfilled free entries and floats a
-free-quote window over the fixed M021 lattice under a hard160-open-order cap. The
-identity is registered as CREATED. GPT-6 Astra's source-bound review passed after
-adversarial ownership, cancellation-race, wait and audit repairs;90 focused tests and
-the full suite passed. No M022 economic event has been processed. The gate authorizes
-exactly one published-source run from00:00 through05:00UTC; Day2, M023, sweeps and live
-remain closed. This is below Binance minimum notional and cannot establish live
-performance.
+Latest OWNER authority created M022 as a controlled order-manager comparison against
+immutable M021. The single published-source run completed19 cycles in5h, exactly the
+M021 baseline(delta0, multiplier1), so the manager hypothesis is REJECTED for its
+primary throughput gate. BUY-first/SELL-first were5/14, with43 fill events. Final
+balances were104.7089USDT plus95USDC; marked equity199.9084, realized PnL0.0056 and
+unrealized PnL0.0178. The physical and independent audits pass. The main limiter was
+18,492 EXIT post-only rejections: fixed S005-S007 return buys crossed the public ask;
+the manager performed zero return preemptions. Only4.77% of active order-time was
+within5 ticks of mid and11.01% within10. A final stdout serialization error occurred
+after all physical artifacts were written; it is a presentation failure, not a replay
+failure, and no rerun occurred. Physical run hash
+389fef14f694c2e0af549fd1a23b03b96390d09243a32989dd90087396b05e35. Gate closed;
+Day2, M023, sweeps and live remain unauthorized. The one-USDC orders are below Binance
+minimum notional and cannot establish live performance.
 
 Latest OWNER authority creates M021 as a new dense mechanical probe and leaves M020
 immutable/REJECTED. M021 freezes anchor1.0020 from the first causal bridged L2 book,

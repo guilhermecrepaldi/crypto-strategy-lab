@@ -1764,6 +1764,10 @@ class DensePingPongProbe(ZonalPingPong):
 class ManagedDensePingPongProbe(DensePingPongProbe):
     """M022 order manager over the unchanged M021 economic lanes."""
 
+    normalized_label = (
+        "M022 DENSE PING-PONG ORDER MANAGER V2. NORMALIZED 1-USDC ORDERS "
+        "ARE NOT LIVE-EXECUTABLE."
+    )
     MAX_OPEN_ORDERS = 160
     TARGET_FREE_PER_SIDE = 80
 

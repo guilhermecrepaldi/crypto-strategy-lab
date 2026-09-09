@@ -36,3 +36,32 @@ Append-only journal for `DENSE_PING_PONG_ORDER_MANAGER_V2`.
 - The OWNER gate now authorizes exactly one run of2025-01-01T00:00:00Z through
   05:00:00Z exclusive after this source is committed and pushed. No economic replay
   has started; Day2 and automatic successors remain closed.
+
+## 2026-09-08 — single five-hour result and autopsy
+
+- Published execution source: `f826b1c09368457c9252874e3dcf85f67ba64ef6`.
+  Exactly one economic replay ran through the authorized cutoff; it was not repeated.
+- Result:19 complete positive cycles(3.8/hour),5 BUY-first and14 SELL-first.
+  M021 also produced19, so delta=0 and multiplier=1. The order-management package did
+  not improve the primary throughput metric and M022 is `REJECTED`.
+- Final balances:104.70890000USDT and95USDC; final marked equity199.90840000;
+  realized PnL0.00560000 and unrealized PnL0.01780000. Audit status is
+  `PASS_M022_MANAGER_LEDGER_EXECUTION_LIQUIDITY`.
+- Main limiter:18,492 EXIT post-only rejections. Fixed return BUYs for S005-S007
+  crossed the public ask and were correctly rejected. There were18,516 return
+  submissions,19 return fills,0 return preemptions and0 free cancels for return.
+  Floating placement canceled84 and reposted80 free entries, without increasing cycles.
+- Mean open orders were159.8497, but only4.77% of active order-time was within5
+  ticks of midpoint and11.01% within10;9 lanes produced cycles. Five return claims
+  remained censored at cutoff, with maximum age about2.261hours.
+- The physical `SUM_ROUNDTRIP_CYCLE_PROFIT=0.0014` inherited a reverse-only
+  accumulator. Summing all19 immutable CYCLE events yields0.0019(0.0005 BUY-first +
+  0.0014 SELL-first). The tracked derived report corrects the label/value without
+  changing balances, cycles or physical artifacts.
+- After every artifact had been written, the command's final stdout serialization
+  raised on a `Decimal`. Classified `POST_WRITE_PRESENTATION_FAILURE`; no rerun was
+  warranted. The canonical presentation path was fixed after the run and is not the
+  source that produced the evidence.
+- GPT-6 Astra issued `PASS_FACTUAL_EXECUTION_WITH_REPORTING_CAVEAT`. Physical run
+  hash: `389fef14f694c2e0af549fd1a23b03b96390d09243a32989dd90087396b05e35`.
+  The gate is closed; Day2, M023, sweep and live remain unauthorized.

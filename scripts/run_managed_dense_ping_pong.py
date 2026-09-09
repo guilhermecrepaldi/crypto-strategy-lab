@@ -667,4 +667,4 @@ def run() -> dict[str, Any]:
 
 
 if __name__ == "__main__":
-    print(json.dumps(run(), sort_keys=True))
+    print(json.dumps(run(), sort_keys=True, default=str))
