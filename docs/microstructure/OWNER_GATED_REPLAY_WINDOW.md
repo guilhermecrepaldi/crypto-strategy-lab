@@ -8,8 +8,8 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=false
-AUTHORIZED_MODEL=NONE_M021_5H_COMPLETE
+NEW_REPLAY_AUTHORIZED_NOW=true
+AUTHORIZED_MODEL=M022
 
 ## Latest authority — adaptive stablecoin ladder V1
 
@@ -96,6 +96,27 @@ The single run is complete and the gate is closed. The normalized ping-pong
 mechanic was observed, but its3.8cycles/hour is not high throughput and the
 one-USDC unit remains below exchange minimum notional. No rerun, Day2, M022 or
 parameter adjustment is authorized by this result.
+
+## Active successor authority — M022 order manager V2, five hours only
+
+OWNER_DIRECTIVE=M022_ORDER_MANAGER_OWNER_DIRECTIVE.md
+MODEL_ID=M022
+STATUS=M022_CREATED_SOURCE_REVIEW_PASS_AWAITING_SINGLE_RUN
+AUTHORIZED_START=2025-01-01T00:00:00Z
+AUTHORIZED_END_EXCLUSIVE=2025-01-01T05:00:00Z
+ORDER_MODE=NORMALIZED_1_USDC_NON_EXECUTABLE_ORDER_MANAGER_PROBE
+M021_BASELINE_CYCLES=19
+MAX_SIMULTANEOUS_OPEN_ORDERS=160
+DAY2_AUTHORIZED=false
+AUTOMATIC_SUCCESSOR_AUTHORIZED=false
+
+The OWNER authorized one M022 controlled comparison after exact pre-registration,
+tests, a source-bound GPT-6 Astra review, CREATED registry identity and publication.
+Only order management changes: owned-return priority plus a causal floating free-
+quote window on the fixed M021 lattice. Data, capital, queue, latency, one-tick
+economics and the five-hour cutoff remain frozen. The machine gate above permits
+exactly one run after HEAD equals origin/main and the worktree is clean. It does not
+authorize a rerun, Day2, M023, executable notional, account access or live execution.
 
 ## Superseded preparation — three ranges
 

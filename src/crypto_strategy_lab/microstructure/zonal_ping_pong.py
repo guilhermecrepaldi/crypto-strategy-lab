@@ -7,7 +7,7 @@ or replay launcher.  A caller supplies causal books and trades.
 
 from __future__ import annotations
 
-from collections import deque
+from collections import Counter, deque
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, Decimal
@@ -245,11 +245,7 @@ class ZonalPingPong:
         )
 
     def _lots_for_band(self, band_id: str) -> list[ZonalLot]:
-        return [
-            lot
-            for lot in self.lots
-            if lot.band_id == band_id and lot.remaining > ZERO
-        ]
+        return [lot for lot in self.lots if lot.band_id == band_id and lot.remaining > ZERO]
 
     def initialize_endowment(self, first_bid: D, *, time_us: int | None = None) -> None:
         if self._endowed:
@@ -323,9 +319,7 @@ class ZonalPingPong:
             ):
                 available = self.endowment_free_quantity
                 basis = (
-                    self._endowment_layers[0][1]
-                    if self._endowment_layers
-                    else self.endowment_basis
+                    self._endowment_layers[0][1] if self._endowment_layers else self.endowment_basis
                 )
                 if available > ZERO and band.price_high > basis:
                     free_candidates.append(
@@ -341,9 +335,7 @@ class ZonalPingPong:
         free_candidates.sort(key=lambda row: (abs(row[2] - mark), row[0], row[1]))
         sells = [row for row in free_candidates if row[0] == "SELL"][:MIN_ACTIVE_SELLS]
         used = {row[1] for row in owned_exits + sells}
-        buys = [
-            row for row in free_candidates if row[0] == "BUY" and row[1] not in used
-        ][
+        buys = [row for row in free_candidates if row[0] == "BUY" and row[1] not in used][
             :MIN_ACTIVE_BUYS
         ]
         return owned_exits + buys + sells
@@ -648,11 +640,7 @@ class ZonalPingPong:
     def _price_covered(self, side: str, price: D) -> bool:
         if self._known_bid_floor is None or self._known_ask_ceiling is None:
             return False
-        return (
-            price >= self._known_bid_floor
-            if side == "BUY"
-            else price <= self._known_ask_ceiling
-        )
+        return price >= self._known_bid_floor if side == "BUY" else price <= self._known_ask_ceiling
 
     def receive_book(self, book: Any, *, capture_time_us: int | None = None) -> None:
         raw_native = (
@@ -694,9 +682,7 @@ class ZonalPingPong:
             if isinstance(book, dict)
             else getattr(book, "exchange_upper_us", native)
         )
-        self._last_native_book_upper_us = int(
-            native if raw_upper is None else raw_upper
-        )
+        self._last_native_book_upper_us = int(native if raw_upper is None else raw_upper)
         raw_floor = (
             book.get("known_bid_floor")
             if isinstance(book, dict)
@@ -954,9 +940,7 @@ class ZonalPingPong:
                     and lot.source_order_id == order.order_id
                 ]
                 restored = sum((lot.remaining for lot in reentry_lots), ZERO)
-                restored_cost = sum(
-                    (lot.remaining_cost for lot in reentry_lots), ZERO
-                )
+                restored_cost = sum((lot.remaining_cost for lot in reentry_lots), ZERO)
                 total_free = self.endowment_free_quantity + restored
                 if total_free > ZERO:
                     self.endowment_cost += restored_cost
@@ -1016,11 +1000,7 @@ class ZonalPingPong:
             )
             return ZERO
         orders = sorted(
-            [
-                order
-                for order in self.active_orders
-                if order.status in {"ACTIVE", "CANCEL_PENDING"}
-            ],
+            [order for order in self.active_orders if order.status in {"ACTIVE", "CANCEL_PENDING"}],
             key=lambda order: (
                 (-order.price if order.side == "BUY" else order.price),
                 order.active_us,
@@ -1114,9 +1094,10 @@ class ZonalPingPong:
             self.endowment_free_quantity
         ):
             raise ValueError("M020_ENDOWMENT_LAYER_QUANTITY_DRIFT")
-        if sum(
-            (quantity * basis for quantity, basis in self._endowment_layers), ZERO
-        ) != self.endowment_cost:
+        if (
+            sum((quantity * basis for quantity, basis in self._endowment_layers), ZERO)
+            != self.endowment_cost
+        ):
             raise ValueError("M020_ENDOWMENT_LAYER_COST_DRIFT")
         reconstructed_inventory = self.endowment_free_quantity + sum(
             (lot.remaining for lot in self.lots), ZERO
@@ -1483,9 +1464,7 @@ class DensePingPongProbe(ZonalPingPong):
         provisional = anchor_value or D("1")
         bands = self._make_grid(provisional)
         total_capital = (
-            _dec(initial_capital)
-            if initial_capital is not None
-            else D("200") * provisional
+            _dec(initial_capital) if initial_capital is not None else D("200") * provisional
         )
         super().__init__(
             bands,
@@ -1682,17 +1661,14 @@ class DensePingPongProbe(ZonalPingPong):
                 "buy_slot_count": M021_BUY_SLOTS,
                 "sell_slot_count": M021_SELL_SLOTS,
                 "initial_usdt": (
-                    None
-                    if self._dense_initial_usdt is None
-                    else _s(self._dense_initial_usdt)
+                    None if self._dense_initial_usdt is None else _s(self._dense_initial_usdt)
                 ),
                 "initial_usdc": _s(self._dense_initial_usdc),
                 "initial_marked_equity": (
                     None
                     if self._dense_initial_usdt is None or self._dense_first_bid is None
                     else _s(
-                        self._dense_initial_usdt
-                        + self._dense_initial_usdc * self._dense_first_bid
+                        self._dense_initial_usdt + self._dense_initial_usdc * self._dense_first_bid
                     )
                 ),
                 "buy_first_cycles": self._cycles_by_direction["BUY_SELL"],
@@ -1776,9 +1752,1210 @@ class DensePingPongProbe(ZonalPingPong):
             end_us=config["end_us"] if end_us is None else end_us,
             latency_us=config["latency_us"] if latency_us is None else latency_us,
             cancel_latency_us=(
-                config["cancel_latency_us"]
-                if cancel_latency_us is None
-                else cancel_latency_us
+                config["cancel_latency_us"] if cancel_latency_us is None else cancel_latency_us
+            ),
+            anchor=None if state.get("dense_anchor") is None else D(state["dense_anchor"]),
+            initial_capital=D(config["initial_capital"]),
+        )
+        value.restore(checkpoint)
+        return value
+
+
+class ManagedDensePingPongProbe(DensePingPongProbe):
+    """M022 order manager over the unchanged M021 economic lanes."""
+
+    MAX_OPEN_ORDERS = 160
+    TARGET_FREE_PER_SIDE = 80
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._manager_claims: dict[str, tuple[str, D]] = {}
+        self._manager_claim_times: dict[str, int] = {}
+        self._manager_claim_source_order_ids: dict[str, int] = {}
+        self._manager_lane_profit = {band.band_id: ZERO for band in self.bands}
+        self._manager_lane_cycles = {band.band_id: 0 for band in self.bands}
+        self._manager_lane_ownership = self._build_lane_ownership()
+        self._manager_s_free: dict[str, dict[str, D]] = {
+            band.band_id: {"quantity": ZERO, "cost": ZERO}
+            for band in self.bands
+            if band.band_id.startswith("S")
+        }
+        self._manager_reservation_lane: str | None = None
+        self._manager_return_preemptions = 0
+        self._manager_free_canceled_return = 0
+        self._manager_free_canceled_float = 0
+        self._manager_free_reposted = 0
+        self._manager_return_submissions = 0
+        self._manager_return_fills = 0
+        self._manager_return_wait_us: list[int] = []
+        self._manager_return_submission_wait_us: list[int] = []
+        self._manager_return_activation_wait_us: list[int] = []
+        self._manager_return_submission_claims: set[tuple[str, int, int]] = set()
+        self._manager_return_activation_claims: set[tuple[str, int, int]] = set()
+        self._manager_return_order_claim_tokens: dict[int, tuple[str, int, int]] = {}
+        self._manager_return_completed_order_ids: set[int] = set()
+        self._manager_partial_residual_order_ids: set[int] = set()
+        self._manager_blocked_free = 0
+        self._manager_blocked_owned = 0
+        self._manager_reconcile_cap_blocks = 0
+        self._manager_last_sample_us: int | None = None
+        self._manager_observation_us = 0
+        self._manager_weighted_active = ZERO
+        self._manager_weighted_parked = ZERO
+        self._manager_weighted_distance = ZERO
+        self._manager_within5 = ZERO
+        self._manager_within10 = ZERO
+        self._manager_min_active_after_warmup: int | None = None
+        self._manager_repost_lanes: set[str] = set()
+        self._manager_repost_reasons: dict[str, str] = {}
+        self._manager_return_order_ids: set[int] = set()
+        self._manager_cycle_prices: list[D] = []
+        self._manager_active_order_time = ZERO
+        self._manager_snapshot_mid: D | None = None
+        self._manager_snapshot_prices: tuple[D, ...] = ()
+        self._manager_snapshot_active_count = 0
+        self._manager_snapshot_open_count = 0
+        self._manager_snapshot_active_prices: tuple[D, ...] = ()
+        self._manager_snapshot_parked_free_count = 0
+        self._manager_warmup_started = False
+
+    def _build_lane_ownership(self) -> dict[str, dict[str, str]]:
+        return {
+            band.band_id: {
+                "initial_usdt": _s(band.buy_price if band.band_id.startswith("B") else ZERO),
+                "initial_usdc": _s(ONE if band.band_id.startswith("S") else ZERO),
+                "profit": _s(self._manager_lane_profit.get(band.band_id, ZERO)),
+            }
+            for band in self.bands
+        }
+
+    def _replace_grid(self, anchor: D) -> None:
+        super()._replace_grid(anchor)
+        self._manager_lane_ownership = self._build_lane_ownership()
+
+    def _manager_lane_budget(self, lane: str) -> D:
+        ownership = self._manager_lane_ownership.get(lane, {})
+        return D(ownership.get("initial_usdt", "0")) + self._manager_lane_profit.get(lane, ZERO)
+
+    def _manager_lane_can_fund(self, lane: str, side: str, price: D) -> bool:
+        if side == "BUY":
+            return self._manager_lane_budget(lane) >= price
+        return self._manager_s_free.get(lane, {}).get("quantity", ZERO) >= ONE
+
+    def initialize_endowment(self, first_bid: D, *, time_us: int | None = None) -> None:
+        super().initialize_endowment(first_bid, time_us=time_us)
+        basis = _dec(first_bid)
+        self._manager_s_free = {
+            band.band_id: {"quantity": ONE, "cost": basis}
+            for band in self.bands
+            if band.band_id.startswith("S")
+        }
+
+    def _reserve_lot(self, band_id: str, quantity: D) -> list[tuple[str, D]]:
+        lane = self._manager_reservation_lane
+        if not band_id.startswith("S") or lane != band_id:
+            return super()._reserve_lot(band_id, quantity)
+        mirror = self._manager_s_free.get(band_id)
+        if mirror is None or mirror["quantity"] < quantity:
+            return []
+        if quantity != ONE:
+            return []
+        basis = mirror["cost"] / mirror["quantity"]
+        remaining = quantity
+        allocated_cost = ZERO
+        rebuilt: deque[tuple[D, D]] = deque()
+        for layer_quantity, layer_basis in self._endowment_layers:
+            amount = ZERO
+            if remaining > ZERO and layer_basis == basis:
+                amount = min(remaining, layer_quantity)
+                allocated_cost += amount * layer_basis
+                remaining -= amount
+                layer_quantity -= amount
+            if layer_quantity > ZERO:
+                rebuilt.append((layer_quantity, layer_basis))
+        if remaining > ZERO:
+            raise ValueError("M022_S_LANE_BASIS_LAYER_MISSING")
+        self._endowment_layers = rebuilt
+        self.endowment_free_quantity -= quantity
+        self.endowment_cost -= allocated_cost
+        self.endowment_basis = (
+            self.endowment_cost / self.endowment_free_quantity
+            if self.endowment_free_quantity > ZERO
+            else ZERO
+        )
+        self.endowment_reserved_quantity += quantity
+        lot = ZonalLot(
+            lot_id=f"endowment-{self._next_lot_id}",
+            band_id=band_id,
+            quantity=quantity,
+            remaining=quantity,
+            unit_basis=basis,
+            remaining_cost=allocated_cost,
+            entry_us=self._last_logical_us,
+            origin="ENDOWMENT_SELL_BUY",
+            reserved=quantity,
+            source_order_id=None,
+        )
+        self._next_lot_id += 1
+        self.lots.append(lot)
+        mirror["quantity"] -= quantity
+        mirror["cost"] -= allocated_cost
+        return [(lot.lot_id, quantity)]
+
+    def _release(self, order: ZonalOrder) -> None:
+        mirror_release: list[tuple[D, D]] = []
+        if order.side == "SELL" and order.band_id.startswith("S"):
+            for lot_id, amount in order.reserved_lots:
+                lot = next((item for item in self.lots if item.lot_id == lot_id), None)
+                if lot is not None and lot.origin == "ENDOWMENT_SELL_BUY":
+                    mirror_release.append((amount, lot.unit_basis))
+        super()._release(order)
+        mirror = self._manager_s_free.get(order.band_id)
+        if mirror is not None:
+            for amount, basis in mirror_release:
+                mirror["quantity"] += amount
+                mirror["cost"] += amount * basis
+
+    @property
+    def manager_lattice(self) -> tuple[D, ...]:
+        return tuple(
+            sorted(
+                {band.buy_price for band in self.bands if band.band_id.startswith("B")}
+                | {band.sell_price for band in self.bands if band.band_id.startswith("S")}
+            )
+        )
+
+    def _manager_active(self) -> list[ZonalOrder]:
+        return list(self.active_orders)
+
+    def _manager_owned_returns(self) -> list[tuple[str, str, D, D]]:
+        desired: list[tuple[str, str, D, D]] = []
+        for band in self.bands:
+            state = self._band_state[band.band_id]
+            lots = self._lots_for_band(band.band_id)
+            if band.band_id.startswith("B"):
+                if (
+                    state == "USDC_INVENTORY"
+                    and lots
+                ):
+                    claim = self._manager_claims.get(band.band_id)
+                    if claim is not None and claim[0] == "SELL":
+                        price = claim[1]
+                        if price > max(lot.unit_basis for lot in lots):
+                            desired.append(("SELL", band.band_id, price, ONE))
+            elif state == "READY_FOR_BUY" and self._sell_proceeds[band.band_id] > ZERO:
+                quantity = self._sell_quantity[band.band_id]
+                claim = self._manager_claims.get(band.band_id)
+                if (
+                    claim is not None
+                    and claim[0] == "BUY"
+                    and claim[1] * quantity < self._sell_proceeds[band.band_id]
+                ):
+                    desired.append(("BUY", band.band_id, claim[1], quantity))
+        return desired
+
+    def _manager_free_lanes(self, side: str) -> list[str]:
+        prefix = "B" if side == "BUY" else "S"
+        occupied = {order.band_id for order in self.active_orders}
+        result = []
+        for band in self.bands:
+            if not band.band_id.startswith(prefix) or band.band_id in occupied:
+                continue
+            if (
+                self._band_state[band.band_id] == "READY_FOR_BUY"
+                and not self._lots_for_band(band.band_id)
+                and self._sell_proceeds[band.band_id] == ZERO
+            ):
+                result.append(band.band_id)
+        return result
+
+    def _manager_order_crosses(self, side: str, price: D, other: ZonalOrder) -> bool:
+        return (side == "BUY" and other.side == "SELL" and price >= other.price) or (
+            side == "SELL" and other.side == "BUY" and price <= other.price
+        )
+
+    @staticmethod
+    def _manager_prices_cross(side: str, price: D, other_side: str, other_price: D) -> bool:
+        return (side == "BUY" and other_side == "SELL" and price >= other_price) or (
+            side == "SELL" and other_side == "BUY" and price <= other_price
+        )
+
+    def _manager_cancel_free(
+        self,
+        order: ZonalOrder,
+        now: int,
+        *,
+        for_return: bool,
+        return_side: str | None = None,
+        return_price: D | None = None,
+        return_lane: str | None = None,
+    ) -> bool:
+        if order.role != "ENTRY" or order.filled != ZERO:
+            return False
+        if order.status not in {"PENDING", "ACTIVE"}:
+            return False
+        self.cancel(order.order_id, time_us=now)
+        if order.status == "CANCEL_PENDING":
+            self._manager_repost_lanes.add(order.band_id)
+            cancel_kind = "RETURN" if for_return else "FLOAT"
+            self._manager_repost_reasons[order.band_id] = cancel_kind
+            self._record(
+                f"FREE_ORDER_CANCELED_FOR_{cancel_kind}",
+                now,
+                order_id=order.order_id,
+                band_id=order.band_id,
+                side=order.side,
+                price=_s(order.price),
+            )
+            if for_return:
+                self._manager_return_preemptions += 1
+                self._manager_free_canceled_return += 1
+                self._manager_blocked_free += 1
+                self._record(
+                    "RETURN_PREEMPTION",
+                    now,
+                    free_order_id=order.order_id,
+                    return_lane=return_lane,
+                    return_side=return_side,
+                    return_price=None if return_price is None else _s(return_price),
+                    reason="FREE_ENTRY_CONFLICT",
+                )
+            else:
+                self._manager_free_canceled_float += 1
+            return True
+        return False
+
+    def _manager_return_plan(
+        self,
+        desired: list[tuple[str, str, D, D]],
+        now: int,
+    ) -> tuple[list[tuple[str, str, D, D]], set[tuple[str, str]]]:
+        active = self._manager_active()
+        accepted: list[tuple[str, str, D, D]] = []
+        blocked: set[tuple[str, str]] = set()
+        ordered = sorted(
+            desired,
+            key=lambda row: (
+                self._manager_claim_times.get(row[1], self.start_us),
+                next(
+                    (
+                        order.activation_evaluated_us
+                        if order.activation_evaluated_us is not None
+                        else order.active_us
+                        for order in self.orders
+                        if order.order_id == self._manager_claim_source_order_ids.get(row[1])
+                    ),
+                    self.start_us,
+                ),
+                row[1],
+                self._manager_claim_source_order_ids.get(row[1], -1),
+            ),
+        )
+        for side, lane, price, quantity in ordered:
+            key = (side, lane)
+            free_conflicts = [
+                order
+                for order in active
+                if order.band_id != lane
+                and self._manager_order_crosses(side, price, order)
+                and order.side != side
+                and order.role == "ENTRY"
+                and order.filled == ZERO
+            ]
+            owned_conflicts = [
+                order
+                for order in active
+                if order.band_id != lane
+                and self._manager_order_crosses(side, price, order)
+                and order.side != side
+                and order.role == "EXIT"
+            ]
+            for conflict in sorted(free_conflicts, key=lambda order: order.order_id):
+                self._manager_cancel_free(
+                    conflict,
+                    now,
+                    for_return=True,
+                    return_side=side,
+                    return_price=price,
+                    return_lane=lane,
+                )
+            if owned_conflicts:
+                conflict = owned_conflicts[0]
+                if self._manager_prices_cross(side, price, conflict.side, conflict.price):
+                    self._manager_blocked_owned += 1
+                    self._record(
+                        "OWNED_RETURN_CONFLICT",
+                        now,
+                        return_lane=lane,
+                        return_side=side,
+                        return_price=_s(price),
+                        blocking_order_id=(
+                            None if conflict.order_id == -1 else conflict.order_id
+                        ),
+                    )
+                    blocked.add(key)
+                continue
+            if free_conflicts:
+                blocked.add(key)
+                continue
+            accepted_conflicts = [
+                row
+                for row in accepted
+                if self._manager_prices_cross(side, price, row[0], row[2])
+            ]
+            if accepted_conflicts:
+                self._manager_blocked_owned += 1
+                blocking = accepted_conflicts[0]
+                self._record(
+                    "OWNED_RETURN_CONFLICT",
+                    now,
+                    return_lane=lane,
+                    return_side=side,
+                    return_price=_s(price),
+                    blocking_order_id=None,
+                    blocking_lane=blocking[1],
+                    blocking_side=blocking[0],
+                    blocking_price=_s(blocking[2]),
+                )
+                blocked.add(key)
+                continue
+            accepted.append((side, lane, price, quantity))
+        return accepted, blocked
+
+    def _manager_free_plan(
+        self,
+        mid: D,
+        return_count: int,
+        return_keys: set[tuple[str, str]],
+    ) -> list[tuple[str, str, D, D]]:
+        capacity = max(0, self.MAX_OPEN_ORDERS - return_count)
+        buy_target = min(self.TARGET_FREE_PER_SIDE, (capacity + 1) // 2)
+        sell_target = min(self.TARGET_FREE_PER_SIDE, capacity - buy_target)
+        claims = tuple(self._manager_claims.values())
+        buys = [
+            price
+            for price in self.manager_lattice
+            if price < mid
+            and not any(
+                side == "SELL" and price >= claim_price
+                for side, claim_price in claims
+            )
+        ]
+        sells = [
+            price
+            for price in self.manager_lattice
+            if price > mid
+            and not any(
+                side == "BUY" and price <= claim_price
+                for side, claim_price in claims
+            )
+        ]
+        buys.sort(reverse=True)
+        sells.sort()
+        result: list[tuple[str, str, D, D]] = []
+        active = self._manager_active()
+        for side, prices, target in (("BUY", buys, buy_target), ("SELL", sells, sell_target)):
+            free_orders = [
+                order
+                for order in active
+                if order.role == "ENTRY" and order.filled == ZERO and order.side == side
+            ]
+            target_prices = set(prices[:target])
+            keep = sorted(
+                (
+                    order
+                    for order in free_orders
+                    if order.price in target_prices
+                    and (
+                        side == "SELL"
+                        or self._manager_lane_can_fund(order.band_id, side, order.price)
+                    )
+                ),
+                key=lambda order: (abs(order.price - mid), order.active_us, order.order_id),
+            )[:target]
+            used_prices = {order.price for order in keep}
+            used_lanes = {order.band_id for order in keep}
+            result.extend((side, order.band_id, order.price, ONE) for order in keep)
+            available_lanes = [
+                lane for lane in self._manager_free_lanes(side) if lane not in used_lanes
+            ]
+            for price in prices[:target]:
+                if len(keep) >= target or price in used_prices:
+                    continue
+                lane = next(
+                    (
+                        candidate
+                        for candidate in available_lanes
+                        if self._manager_lane_can_fund(candidate, side, price)
+                    ),
+                    None,
+                )
+                if lane is None:
+                    continue
+                available_lanes.remove(lane)
+                result.append((side, lane, price, ONE))
+                used_prices.add(price)
+                keep.append(
+                    ZonalOrder(
+                        -1,
+                        lane,
+                        side,
+                        price,
+                        ONE,
+                        ONE,
+                        self._last_logical_us,
+                        self._last_logical_us,
+                    )
+                )
+        return result
+
+    def _manager_sample(self, now: int) -> None:
+        self._manager_integrate_to(now)
+        self._manager_capture_snapshot(now)
+
+    def _manager_parked_free_count(self) -> int:
+        occupied = {order.band_id for order in self._manager_active()}
+        return sum(
+            self._band_state[band.band_id] == "READY_FOR_BUY"
+            and not self._lots_for_band(band.band_id)
+            and self._sell_proceeds[band.band_id] == ZERO
+            and band.band_id not in occupied
+            for band in self.bands
+        )
+
+    def _manager_integrate_to(self, now: int) -> None:
+        """Integrate the state held during the preceding causal interval."""
+        if self._manager_last_sample_us is None or self._manager_snapshot_mid is None:
+            return
+        elapsed = max(0, now - self._manager_last_sample_us)
+        if not elapsed:
+            return
+        open_count = self._manager_snapshot_open_count
+        self._manager_observation_us += elapsed
+        self._manager_weighted_active += D(open_count) * elapsed
+        self._manager_weighted_parked += (
+            D(self._manager_snapshot_parked_free_count) * elapsed
+        )
+        active_prices = self._manager_snapshot_active_prices
+        self._manager_active_order_time += D(len(active_prices)) * elapsed
+        distances = [
+            abs(price - self._manager_snapshot_mid) / M021_TICK_SIZE
+            for price in active_prices
+        ]
+        self._manager_weighted_distance += sum(distances, ZERO) * elapsed
+        self._manager_within5 += D(sum(distance <= D("5") for distance in distances)) * elapsed
+        self._manager_within10 += D(
+            sum(distance <= D("10") for distance in distances)
+        ) * elapsed
+        if self._manager_warmup_started:
+            self._manager_min_active_after_warmup = (
+                open_count
+                if self._manager_min_active_after_warmup is None
+                else min(self._manager_min_active_after_warmup, open_count)
+            )
+        self._manager_last_sample_us = now
+
+    def _manager_capture_snapshot(self, now: int) -> None:
+        if self._last_book is None:
+            return
+        mid = (self._last_book["bids"][0][0] + self._last_book["asks"][0][0]) / D("2")
+        open_orders = self._manager_active()
+        active = [
+            order
+            for order in open_orders
+            if order.status == "ACTIVE"
+            or (order.status == "CANCEL_PENDING" and order.activation_evaluated_us is not None)
+        ]
+        self._manager_snapshot_mid = mid
+        self._manager_snapshot_prices = tuple(order.price for order in active)
+        self._manager_snapshot_active_count = len(open_orders)
+        self._manager_snapshot_open_count = len(open_orders)
+        self._manager_snapshot_active_prices = tuple(order.price for order in active)
+        self._manager_snapshot_parked_free_count = self._manager_parked_free_count()
+        if any(order.activation_evaluated_us is not None for order in active):
+            self._manager_warmup_started = True
+        if self._manager_warmup_started:
+            self._manager_min_active_after_warmup = (
+                self._manager_snapshot_open_count
+                if self._manager_min_active_after_warmup is None
+                else min(
+                    self._manager_min_active_after_warmup,
+                    self._manager_snapshot_open_count,
+                )
+            )
+        self._manager_last_sample_us = now
+
+    @staticmethod
+    def _event_logical(event: Any, capture_time_us: int | None, *, trade: bool) -> int:
+        if capture_time_us is not None:
+            return int(capture_time_us)
+        key = "time_us" if trade else "capture_time_us"
+        if isinstance(event, dict):
+            return int(event.get(key, event.get("exchange_time_us", 0)))
+        return int(getattr(event, key, getattr(event, "exchange_time_us", 0)))
+
+    def receive_book(self, book: Any, *, capture_time_us: int | None = None) -> None:
+        logical = self._event_logical(book, capture_time_us, trade=False)
+        self._check_time(logical)
+        self._manager_integrate_to(logical)
+        super().receive_book(book, capture_time_us=capture_time_us)
+
+    def receive_trade(self, trade: Any, *, capture_time_us: int | None = None) -> D:
+        logical = self._event_logical(trade, capture_time_us, trade=True)
+        self._check_time(logical)
+        trade_id = str(trade["trade_id"] if isinstance(trade, dict) else trade.trade_id)
+        if trade_id not in self.processed_trades:
+            self._manager_integrate_to(logical)
+        return super().receive_trade(trade, capture_time_us=capture_time_us)
+
+    def _advance(self, now: int) -> None:
+        cancel_pending = {
+            order.order_id
+            for order in self.active_orders
+            if order.status == "CANCEL_PENDING"
+        }
+        activated_before = {
+            order.order_id
+            for order in self.orders
+            if order.activation_evaluated_us is not None
+        }
+        super()._advance(now)
+        for order in self.orders:
+            if (
+                order.role == "EXIT"
+                and order.activation_evaluated_us is not None
+                and order.order_id not in activated_before
+                and order.order_id in self._manager_return_order_claim_tokens
+            ):
+                token = self._manager_return_order_claim_tokens[order.order_id]
+                if token not in self._manager_return_activation_claims:
+                    self._manager_return_activation_claims.add(token)
+                    wait_us = max(0, now - token[1])
+                    self._manager_return_activation_wait_us.append(wait_us)
+                    self._record(
+                        "RETURN_ACTIVATED",
+                        now,
+                        lane=order.band_id,
+                        order_id=order.order_id,
+                        claim_time_us=token[1],
+                        wait_us=wait_us,
+                    )
+            if (
+                order.order_id in cancel_pending
+                and order.status == "CANCELED"
+                and order.filled > ZERO
+                and order.order_id not in self._manager_partial_residual_order_ids
+            ):
+                self._manager_partial_residual_order_ids.add(order.order_id)
+                self._record(
+                    "PARTIAL_RESIDUAL_BLOCKED",
+                    now,
+                    order_id=order.order_id,
+                    band_id=order.band_id,
+                    side=order.side,
+                    filled=_s(order.filled),
+                    residual_quantity=_s(order.remaining),
+                    reason="BELOW_HISTORICAL_STEP_AFTER_CANCEL_ACK",
+                )
+
+    def _reconcile(self, logical: int) -> None:
+        if self._last_book is None or not self._endowed:
+            return
+        mid = (self._last_book["bids"][0][0] + self._last_book["asks"][0][0]) / D("2")
+        owned = self._manager_owned_returns()
+        accepted_returns, blocked_returns = self._manager_return_plan(owned, logical)
+        return_keys = {(side, lane) for side, lane, _, _ in accepted_returns}
+        return_keys.update(blocked_returns)
+        free = self._manager_free_plan(mid, len(accepted_returns), return_keys)
+        desired = accepted_returns + free
+        desired_exact = {(side, lane, price) for side, lane, price, _ in desired}
+        for order in self.active_orders:
+            if order.role != "ENTRY" or order.filled != ZERO:
+                continue
+            if (order.side, order.band_id, order.price) not in desired_exact:
+                self._manager_cancel_free(
+                    order,
+                    logical,
+                    for_return=(order.band_id in {lane for _, lane, _, _ in accepted_returns}),
+                )
+        existing = {(order.side, order.band_id, order.price): order for order in self.active_orders}
+        occupied = {order.band_id for order in self.active_orders}
+        for side, lane, price, quantity in desired:
+            if (side, lane, price) in existing or lane in occupied:
+                continue
+            if len(self.active_orders) >= self.MAX_OPEN_ORDERS:
+                self._manager_reconcile_cap_blocks += 1
+                continue
+            self._submit(side, lane, price, quantity, logical)
+            if self.orders and self.orders[-1].band_id == lane and self.orders[-1].price == price:
+                occupied.add(lane)
+        self._window_shortage_events += int(len(self.active_orders) < self.MAX_OPEN_ORDERS)
+        self.validate_invariants()
+        self._manager_capture_snapshot(logical)
+
+    def _submit(self, side: str, band_id: str, price: D, quantity: D, now: int) -> None:
+        if len(self.active_orders) >= self.MAX_OPEN_ORDERS:
+            self._manager_reconcile_cap_blocks += 1
+            return
+        before = len(self.orders)
+        self._manager_reservation_lane = band_id if side == "SELL" else None
+        try:
+            super()._submit(side, band_id, price, quantity, now)
+        finally:
+            self._manager_reservation_lane = None
+        if len(self.orders) == before:
+            return
+        order = self.orders[-1]
+        if order.role == "EXIT":
+            self._manager_return_submissions += 1
+            self._manager_return_order_ids.add(order.order_id)
+            claim = self._manager_claims.get(band_id)
+            claim_time = self._manager_claim_times.get(band_id)
+            source_order_id = self._manager_claim_source_order_ids.get(band_id, -1)
+            claim_token = (
+                band_id,
+                claim_time if claim_time is not None else now,
+                source_order_id,
+            )
+            self._manager_return_order_claim_tokens[order.order_id] = claim_token
+            if claim_token not in self._manager_return_submission_claims:
+                self._manager_return_submission_claims.add(claim_token)
+                wait_us = max(0, now - claim_token[1])
+                self._manager_return_submission_wait_us.append(wait_us)
+            else:
+                wait_us = None
+            self._record(
+                "RETURN_SUBMISSION",
+                now,
+                lane=band_id,
+                order_id=order.order_id,
+                side=side,
+                price=_s(price),
+                claim_side=None if claim is None else claim[0],
+                claim_price=None if claim is None else _s(claim[1]),
+                claim_time_us=claim_time,
+                wait_us=wait_us,
+            )
+        elif band_id in self._manager_repost_lanes:
+            self._manager_free_reposted += 1
+            self._manager_repost_lanes.discard(band_id)
+            self._record(
+                "FREE_ORDER_REPOSTED",
+                now,
+                order_id=order.order_id,
+                band_id=band_id,
+                side=side,
+                price=_s(price),
+                reason=self._manager_repost_reasons.pop(band_id, "UNKNOWN"),
+            )
+
+    def validate_invariants(self) -> None:
+        super().validate_invariants()
+        for order in self.active_orders:
+            if (
+                order.role == "ENTRY"
+                and order.filled == ZERO
+                and order.side == "BUY"
+                and order.price > self._manager_lane_budget(order.band_id)
+            ):
+                raise ValueError("M022_LANE_BUY_BUDGET_DRIFT")
+        for lane, ownership in self._manager_lane_ownership.items():
+            if lane.startswith("S") and D(ownership.get("initial_usdc", "0")) != ONE:
+                raise ValueError("M022_S_LANE_OWNERSHIP_DRIFT")
+        mirror_quantity = sum(
+            (value["quantity"] for value in self._manager_s_free.values()), ZERO
+        )
+        mirror_cost = sum((value["cost"] for value in self._manager_s_free.values()), ZERO)
+        if mirror_quantity != self.endowment_free_quantity:
+            raise ValueError("M022_S_FREE_QUANTITY_DRIFT")
+        if mirror_cost != self.endowment_cost:
+            raise ValueError("M022_S_FREE_COST_DRIFT")
+
+    def _fill(self, order: ZonalOrder, quantity: D, time_us: int, *, source_id: str) -> D:
+        before_audit = len(self.audit)
+        filled = super()._fill(order, quantity, time_us, source_id=source_id)
+        if filled <= ZERO:
+            return filled
+        if (
+            order.role == "ENTRY"
+            and order.filled > ZERO
+            and order.band_id not in self._manager_claims
+        ):
+            return_side = "SELL" if order.side == "BUY" else "BUY"
+            return_price = (
+                order.price + M021_TICK_SIZE
+                if order.side == "BUY"
+                else order.price - M021_TICK_SIZE
+            )
+            self._manager_claims[order.band_id] = (return_side, return_price)
+            self._manager_claim_times[order.band_id] = time_us
+            self._manager_claim_source_order_ids[order.band_id] = order.order_id
+            self._record(
+                "RETURN_PRICE_CLAIM",
+                time_us,
+                lane=order.band_id,
+                source_order_id=order.order_id,
+                return_side=return_side,
+                return_price=_s(return_price),
+                quantity=_s(filled),
+            )
+        if order.role == "EXIT":
+            self._manager_return_fills += 1
+            claim = self._manager_claims.get(order.band_id)
+            self._record(
+                "RETURN_FILL",
+                time_us,
+                lane=order.band_id,
+                order_id=order.order_id,
+                side=order.side,
+                quantity=_s(filled),
+                price=_s(order.price),
+                claim_side=None if claim is None else claim[0],
+                claim_price=None if claim is None else _s(claim[1]),
+                claim_time_us=self._manager_claim_times.get(order.band_id),
+                complete=order.status == "FILLED",
+            )
+            claim_time = self._manager_claim_times.get(order.band_id, time_us)
+            if (
+                order.status == "FILLED"
+                and order.order_id not in self._manager_return_completed_order_ids
+            ):
+                self._manager_return_completed_order_ids.add(order.order_id)
+                self._manager_return_wait_us.append(max(0, time_us - claim_time))
+        for row in self.audit[before_audit:]:
+            if row.get("event") == "CYCLE":
+                lane = row["band_id"]
+                self._manager_lane_profit[lane] += D(row["profit"])
+                self._manager_lane_cycles[lane] += 1
+                cycle_order = next(
+                    (
+                        item
+                        for item in self.orders
+                        if item.order_id
+                        == int(
+                            row.get("entry_sell_order_id", row.get("source_order_id", -1))
+                        )
+                    ),
+                    None,
+                )
+                if cycle_order is not None:
+                    self._manager_cycle_prices.append(cycle_order.price)
+                if (
+                    cycle_order is not None
+                    and lane.startswith("S")
+                    and row.get("direction") == "SELL_BUY"
+                ):
+                    quantity = D(row["quantity"])
+                    mirror = self._manager_s_free[lane]
+                    mirror["quantity"] += quantity
+                    mirror["cost"] += quantity * order.price
+                self._manager_claims.pop(lane, None)
+                self._manager_claim_times.pop(lane, None)
+                self._manager_claim_source_order_ids.pop(lane, None)
+        return filled
+
+    @staticmethod
+    def _manager_wait_stats(values: list[int]) -> tuple[D | None, D | None, int | None]:
+        if not values:
+            return None, None, None
+        ordered = sorted(values)
+        count = len(ordered)
+        mean = D(sum(ordered)) / D(count)
+        if count % 2:
+            median = D(ordered[count // 2])
+        else:
+            median = D(ordered[count // 2 - 1] + ordered[count // 2]) / D("2")
+        p95 = ordered[(count * 95 + 99) // 100 - 1]
+        return mean, median, p95
+
+    def metrics(self) -> dict[str, Any]:
+        result = super().metrics()
+        observation = D(self._manager_observation_us)
+        mean_wait, median_wait, p95_wait = self._manager_wait_stats(
+            self._manager_return_wait_us
+        )
+        submission_stats = self._manager_wait_stats(self._manager_return_submission_wait_us)
+        activation_stats = self._manager_wait_stats(self._manager_return_activation_wait_us)
+        unique_lanes = {order.band_id for order in self.orders}
+        now = self._manager_last_sample_us or self._last_logical_us
+        censored_ages = sorted(
+            max(0, now - claim_time) for claim_time in self._manager_claim_times.values()
+        )
+        productive = {lane for lane, count in self._manager_lane_cycles.items() if count > 0}
+        prices = {_s(order.price) for order in self.orders}
+        result.update(
+            {
+                "model": "M022",
+                "order_notional_mode": "NORMALIZED_1_USDC_NON_EXECUTABLE_ORDER_MANAGER_PROBE",
+                "max_open_orders": self.MAX_OPEN_ORDERS,
+                "return_preemptions": self._manager_return_preemptions,
+                "free_orders_canceled_for_return": self._manager_free_canceled_return,
+                "free_orders_canceled_for_float": self._manager_free_canceled_float,
+                "free_orders_reposted": self._manager_free_reposted,
+                "return_submissions": self._manager_return_submissions,
+                "return_fills": self._manager_return_fills,
+                "return_wait_time_mean": mean_wait,
+                "return_wait_time_median": median_wait,
+                "return_wait_time_p95": p95_wait,
+                "return_completion_wait_time_mean_us": mean_wait,
+                "return_completion_wait_time_median_us": median_wait,
+                "return_completion_wait_time_p95_us": p95_wait,
+                "return_submission_wait_time_mean_us": submission_stats[0],
+                "return_submission_wait_time_median_us": submission_stats[1],
+                "return_submission_wait_time_p95_us": submission_stats[2],
+                "return_activation_wait_time_mean_us": activation_stats[0],
+                "return_activation_wait_time_median_us": activation_stats[1],
+                "return_activation_wait_time_p95_us": activation_stats[2],
+                "censored_return_claim_count": len(censored_ages),
+                "censored_return_claim_max_age_us": (
+                    censored_ages[-1] if censored_ages else None
+                ),
+                "return_blocked_by_free_order_count": self._manager_free_canceled_return,
+                "return_blocked_by_owned_return_count": self._manager_blocked_owned,
+                "return_blocked_free_count": self._manager_blocked_free,
+                "manager_blocked_free": self._manager_blocked_free,
+                "active_order_time_us": _s(self._manager_active_order_time),
+                "partial_residual_blocked_count": len(
+                    self._manager_partial_residual_order_ids
+                ),
+                "partial_residual_blocked_order_ids": sorted(
+                    self._manager_partial_residual_order_ids
+                ),
+                "self_cross_rechecks": sum(
+                    row.get("event") == "SELF_CROSS_BLOCKED" for row in self.audit
+                ),
+                "post_only_rejections": sum(
+                    row.get("event") == "REJECTED_POST_ONLY" for row in self.audit
+                ),
+                "mean_active_open_orders": (
+                    None if observation == ZERO else _s(self._manager_weighted_active / observation)
+                ),
+                "min_active_open_orders_after_warmup": self._manager_min_active_after_warmup,
+                "parked_lanes_mean": (
+                    None if observation == ZERO else _s(self._manager_weighted_parked / observation)
+                ),
+                "unique_lanes_used": len(unique_lanes),
+                "unique_price_levels_used": len(prices),
+                "unique_productive_lanes": len(productive),
+                "percent_active_orders_within_5_ticks_of_mid": (
+                    None
+                    if self._manager_active_order_time == ZERO
+                    else _s(
+                        self._manager_within5
+                        / self._manager_active_order_time
+                        * D("100")
+                    )
+                ),
+                "percent_active_orders_within_10_ticks_of_mid": (
+                    None
+                    if self._manager_active_order_time == ZERO
+                    else _s(
+                        self._manager_within10
+                        / self._manager_active_order_time
+                        * D("100")
+                    )
+                ),
+                "time_weighted_distance_from_mid": (
+                    None
+                    if self._manager_active_order_time == ZERO
+                    else _s(self._manager_weighted_distance / self._manager_active_order_time)
+                ),
+                "lane_profit": {
+                    lane: _s(value) for lane, value in self._manager_lane_profit.items()
+                },
+                "lane_cycles": dict(self._manager_lane_cycles),
+                "lane_ownership": {
+                    lane: {
+                        **ownership,
+                        "profit": _s(self._manager_lane_profit.get(lane, ZERO)),
+                        **(
+                            {
+                                "free_usdc": _s(self._manager_s_free[lane]["quantity"]),
+                                "free_usdc_cost": _s(self._manager_s_free[lane]["cost"]),
+                            }
+                            if lane in self._manager_s_free
+                            else {}
+                        ),
+                    }
+                    for lane, ownership in self._manager_lane_ownership.items()
+                },
+                "return_claims": {
+                    lane: {"side": side, "price": _s(price)}
+                    for lane, (side, price) in self._manager_claims.items()
+                },
+                "return_blocked_cap_events": self._manager_reconcile_cap_blocks,
+                "top_10_lanes_by_cycles": sorted(
+                    self._manager_lane_cycles.items(), key=lambda item: (-item[1], item[0])
+                )[:10],
+                "top_10_price_levels_by_cycles": [
+                    {"price": _s(price), "cycles": count}
+                    for price, count in sorted(
+                        Counter(self._manager_cycle_prices).items(),
+                        key=lambda item: (-item[1], item[0]),
+                    )[:10]
+                ],
+            }
+        )
+        for key in (
+            "return_preemptions",
+            "free_orders_canceled_for_return",
+            "free_orders_canceled_for_float",
+            "free_orders_reposted",
+            "return_submissions",
+            "return_fills",
+            "return_wait_time_mean",
+            "return_wait_time_median",
+            "return_wait_time_p95",
+            "return_blocked_by_free_order_count",
+            "return_blocked_by_owned_return_count",
+            "return_blocked_free_count",
+            "manager_blocked_free",
+        ):
+            result[key.upper()] = result[key]
+        for key in (
+            "self_cross_rechecks",
+            "post_only_rejections",
+            "queue_blocked_events",
+            "max_simultaneous_open_orders",
+            "mean_active_open_orders",
+            "min_active_open_orders_after_warmup",
+            "parked_lanes_mean",
+            "unique_lanes_used",
+            "unique_price_levels_used",
+            "unique_productive_lanes",
+            "time_weighted_distance_from_mid",
+        ):
+            result[key.upper()] = result[key]
+        return result
+
+    def finish(self, *, time_us: int) -> dict[str, Any]:
+        if time_us != self.end_us:
+            self._check_time(time_us)
+        self._manager_integrate_to(time_us)
+        return super().finish(time_us=time_us)
+
+    def _state(self) -> dict[str, Any]:
+        state = super()._state()
+        state.update(
+            {
+                "manager_claims": {
+                    lane: {"side": side, "price": _s(price)}
+                    for lane, (side, price) in self._manager_claims.items()
+                },
+                "manager_claim_times": dict(self._manager_claim_times),
+                "manager_claim_source_order_ids": dict(self._manager_claim_source_order_ids),
+                "manager_lane_profit": {
+                    lane: _s(value) for lane, value in self._manager_lane_profit.items()
+                },
+                "manager_lane_cycles": dict(self._manager_lane_cycles),
+                "manager_cycle_prices": [_s(price) for price in self._manager_cycle_prices],
+                "manager_lane_ownership": self._manager_lane_ownership,
+                "manager_s_free": {
+                    lane: {key: _s(value) for key, value in mirror.items()}
+                    for lane, mirror in self._manager_s_free.items()
+                },
+                "manager_return_preemptions": self._manager_return_preemptions,
+                "manager_free_canceled_return": self._manager_free_canceled_return,
+                "manager_free_canceled_float": self._manager_free_canceled_float,
+                "manager_free_reposted": self._manager_free_reposted,
+                "manager_return_submissions": self._manager_return_submissions,
+                "manager_return_fills": self._manager_return_fills,
+                "manager_return_wait_us": list(self._manager_return_wait_us),
+                "manager_return_submission_wait_us": list(
+                    self._manager_return_submission_wait_us
+                ),
+                "manager_return_activation_wait_us": list(
+                    self._manager_return_activation_wait_us
+                ),
+                "manager_return_submission_claims": [
+                    list(token) for token in sorted(self._manager_return_submission_claims)
+                ],
+                "manager_return_activation_claims": [
+                    list(token) for token in sorted(self._manager_return_activation_claims)
+                ],
+                "manager_return_order_claim_tokens": {
+                    str(order_id): list(token)
+                    for order_id, token in self._manager_return_order_claim_tokens.items()
+                },
+                "manager_return_completed_order_ids": sorted(
+                    self._manager_return_completed_order_ids
+                ),
+                "manager_partial_residual_order_ids": sorted(
+                    self._manager_partial_residual_order_ids
+                ),
+                "manager_blocked_free": self._manager_blocked_free,
+                "manager_blocked_owned": self._manager_blocked_owned,
+                "manager_reconcile_cap_blocks": self._manager_reconcile_cap_blocks,
+                "manager_last_sample_us": self._manager_last_sample_us,
+                "manager_observation_us": self._manager_observation_us,
+                "manager_weighted_active": _s(self._manager_weighted_active),
+                "manager_weighted_parked": _s(self._manager_weighted_parked),
+                "manager_weighted_distance": _s(self._manager_weighted_distance),
+                "manager_within5": _s(self._manager_within5),
+                "manager_within10": _s(self._manager_within10),
+                "manager_min_active_after_warmup": self._manager_min_active_after_warmup,
+                "manager_repost_lanes": sorted(self._manager_repost_lanes),
+                "manager_repost_reasons": dict(self._manager_repost_reasons),
+                "manager_return_order_ids": sorted(self._manager_return_order_ids),
+                "manager_active_order_time": _s(self._manager_active_order_time),
+                "manager_snapshot_mid": (
+                    None if self._manager_snapshot_mid is None else _s(self._manager_snapshot_mid)
+                ),
+                "manager_snapshot_prices": [_s(price) for price in self._manager_snapshot_prices],
+                "manager_snapshot_active_count": self._manager_snapshot_active_count,
+                "manager_snapshot_open_count": self._manager_snapshot_open_count,
+                "manager_snapshot_active_prices": [
+                    _s(price) for price in self._manager_snapshot_active_prices
+                ],
+                "manager_snapshot_parked_free_count": self._manager_snapshot_parked_free_count,
+                "manager_warmup_started": self._manager_warmup_started,
+            }
+        )
+        return state
+
+    def checkpoint(self) -> dict[str, Any]:
+        state = self._state()
+        return {
+            "schema": "M022_MANAGED_DENSE_PING_PONG_V1",
+            "state": state,
+            "sha256": canonical_hash(state),
+        }
+
+    def restore(self, checkpoint: dict[str, Any]) -> None:
+        if checkpoint.get("schema") != "M022_MANAGED_DENSE_PING_PONG_V1":
+            raise ValueError("INVALID_M022_CHECKPOINT")
+        state = checkpoint.get("state")
+        if not isinstance(state, dict) or checkpoint.get("sha256") != canonical_hash(state):
+            raise ValueError("M022_CHECKPOINT_HASH_MISMATCH")
+        super().restore(
+            {"schema": "M021_DENSE_PING_PONG_V1", "state": state, "sha256": checkpoint["sha256"]}
+        )
+        self._manager_claims = {
+            lane: (value["side"], D(value["price"]))
+            for lane, value in state.get("manager_claims", {}).items()
+        }
+        self._manager_claim_times = {
+            lane: int(value) for lane, value in state.get("manager_claim_times", {}).items()
+        }
+        self._manager_claim_source_order_ids = {
+            lane: int(value)
+            for lane, value in state.get("manager_claim_source_order_ids", {}).items()
+        }
+        self._manager_lane_profit = {
+            lane: D(value) for lane, value in state.get("manager_lane_profit", {}).items()
+        }
+        self._manager_lane_cycles = {
+            lane: int(value) for lane, value in state.get("manager_lane_cycles", {}).items()
+        }
+        self._manager_cycle_prices = [
+            D(value) for value in state.get("manager_cycle_prices", [])
+        ]
+        self._manager_lane_ownership = {
+            lane: dict(value)
+            for lane, value in state.get(
+                "manager_lane_ownership", self._build_lane_ownership()
+            ).items()
+        }
+        raw_s_free = state.get("manager_s_free")
+        if raw_s_free is not None:
+            self._manager_s_free = {
+                lane: {key: D(value) for key, value in mirror.items()}
+                for lane, mirror in raw_s_free.items()
+            }
+        self._manager_return_preemptions = int(state.get("manager_return_preemptions", 0))
+        self._manager_free_canceled_return = int(state.get("manager_free_canceled_return", 0))
+        self._manager_free_canceled_float = int(state.get("manager_free_canceled_float", 0))
+        self._manager_free_reposted = int(state.get("manager_free_reposted", 0))
+        self._manager_return_submissions = int(state.get("manager_return_submissions", 0))
+        self._manager_return_fills = int(state.get("manager_return_fills", 0))
+        self._manager_return_wait_us = [
+            int(value) for value in state.get("manager_return_wait_us", [])
+        ]
+        self._manager_return_submission_wait_us = [
+            int(value) for value in state.get("manager_return_submission_wait_us", [])
+        ]
+        self._manager_return_activation_wait_us = [
+            int(value) for value in state.get("manager_return_activation_wait_us", [])
+        ]
+        self._manager_return_submission_claims = {
+            (str(token[0]), int(token[1]), int(token[2]))
+            for token in state.get("manager_return_submission_claims", [])
+        }
+        self._manager_return_activation_claims = {
+            (str(token[0]), int(token[1]), int(token[2]))
+            for token in state.get("manager_return_activation_claims", [])
+        }
+        self._manager_return_order_claim_tokens = {
+            int(order_id): (str(token[0]), int(token[1]), int(token[2]))
+            for order_id, token in state.get("manager_return_order_claim_tokens", {}).items()
+        }
+        self._manager_return_completed_order_ids = set(
+            int(value) for value in state.get("manager_return_completed_order_ids", [])
+        )
+        self._manager_partial_residual_order_ids = set(
+            int(value) for value in state.get("manager_partial_residual_order_ids", [])
+        )
+        self._manager_blocked_free = int(state.get("manager_blocked_free", 0))
+        self._manager_blocked_owned = int(state.get("manager_blocked_owned", 0))
+        self._manager_reconcile_cap_blocks = int(state.get("manager_reconcile_cap_blocks", 0))
+        self._manager_last_sample_us = state.get("manager_last_sample_us")
+        self._manager_observation_us = int(state.get("manager_observation_us", 0))
+        self._manager_weighted_active = D(state.get("manager_weighted_active", "0"))
+        self._manager_weighted_parked = D(state.get("manager_weighted_parked", "0"))
+        self._manager_weighted_distance = D(state.get("manager_weighted_distance", "0"))
+        self._manager_within5 = D(state.get("manager_within5", "0"))
+        self._manager_within10 = D(state.get("manager_within10", "0"))
+        self._manager_min_active_after_warmup = state.get("manager_min_active_after_warmup")
+        self._manager_repost_lanes = set(state.get("manager_repost_lanes", []))
+        self._manager_repost_reasons = dict(state.get("manager_repost_reasons", {}))
+        self._manager_return_order_ids = set(
+            int(value) for value in state.get("manager_return_order_ids", [])
+        )
+        self._manager_active_order_time = D(state.get("manager_active_order_time", "0"))
+        self._manager_snapshot_mid = (
+            None
+            if state.get("manager_snapshot_mid") is None
+            else D(state["manager_snapshot_mid"])
+        )
+        self._manager_snapshot_prices = tuple(
+            D(value) for value in state.get("manager_snapshot_prices", [])
+        )
+        self._manager_snapshot_active_count = int(
+            state.get("manager_snapshot_active_count", 0)
+        )
+        self._manager_snapshot_open_count = int(
+            state.get("manager_snapshot_open_count", self._manager_snapshot_active_count)
+        )
+        self._manager_snapshot_active_prices = tuple(
+            D(value)
+            for value in state.get(
+                "manager_snapshot_active_prices",
+                state.get("manager_snapshot_prices", []),
+            )
+        )
+        self._manager_snapshot_parked_free_count = int(
+            state.get("manager_snapshot_parked_free_count", 0)
+        )
+        self._manager_warmup_started = bool(state.get("manager_warmup_started", False))
+
+    @classmethod
+    def from_checkpoint(
+        cls,
+        checkpoint: dict[str, Any],
+        *,
+        start_us: int | None = None,
+        end_us: int | None = None,
+        latency_us: int | None = None,
+        cancel_latency_us: int | None = None,
+    ) -> ManagedDensePingPongProbe:
+        state = checkpoint.get("state", {})
+        config = state.get("config", {})
+        value = cls(
+            start_us=config["start_us"] if start_us is None else start_us,
+            end_us=config["end_us"] if end_us is None else end_us,
+            latency_us=config["latency_us"] if latency_us is None else latency_us,
+            cancel_latency_us=(
+                config["cancel_latency_us"] if cancel_latency_us is None else cancel_latency_us
             ),
             anchor=None if state.get("dense_anchor") is None else D(state["dense_anchor"]),
             initial_capital=D(config["initial_capital"]),
@@ -1798,6 +2975,7 @@ __all__ = [
     "NORMALIZED_ORDER_NOTIONAL",
     "VIRTUAL_STEP",
     "DensePingPongProbe",
+    "ManagedDensePingPongProbe",
     "ZonalBand",
     "ZonalLot",
     "ZonalOrder",
