@@ -353,7 +353,12 @@ def independent_execution_audit(rows, terminal, canonical, metrics):
         elif event == "ACTIVATED":
             oid = int(row["order_id"])
             order = orders[oid]
-            require(order["status"] == "PENDING" and now >= order["active_us"], "ACTIVATION")
+            cancel_was_pending = order["status"] == "CANCEL_PENDING"
+            require(
+                order["status"] in {"PENDING", "CANCEL_PENDING"}
+                and now >= order["active_us"],
+                "ACTIVATION",
+            )
             require(group_key(row) == group_key(order), "ACTIVATION_PRICE")
             require(
                 row["native_book_upper_us"] is not None and row["native_book_upper_us"] <= now,
@@ -373,7 +378,10 @@ def independent_execution_audit(rows, terminal, canonical, metrics):
                 and D(row["queue_ahead_at_activation"]) == represented + added + predecessor,
                 "QUEUE_AT_ACTIVATION",
             )
-            order.update(status="ACTIVE", activation=row)
+            order.update(
+                status="CANCEL_PENDING" if cancel_was_pending else "ACTIVE",
+                activation=row,
+            )
         elif event == "PUBLIC_QUEUE_CONSUMED":
             trade, quantity = physical_trade(row)
             key = group_key(row)
@@ -506,7 +514,11 @@ def independent_execution_audit(rows, terminal, canonical, metrics):
                     "CANCEL_ACK_CLOCK",
                 )
             else:
-                require(order["status"] == "PENDING" and now >= order["active_us"], "REJECTION")
+                require(
+                    order["status"] in {"PENDING", "CANCEL_PENDING"}
+                    and now >= order["active_us"],
+                    "REJECTION",
+                )
             quote, base = order["reserved_quote"], order["reserved_base"]
             reserved_quote -= quote
             reserved_base -= base

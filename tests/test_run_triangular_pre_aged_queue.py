@@ -293,6 +293,53 @@ def test_physical_audit_reconstructs_both_directions_and_partial_assets(buy_firs
     assert result["complete_positive_cycles"] == int(complete)
 
 
+def test_physical_audit_preserves_cancel_pending_during_later_activation():
+    latency = 1179525
+    engine = TriangularPreAgedQueueProbe(
+        start_us=runner.START_US,
+        end_us=runner.END_US,
+        latency_us=latency,
+        cancel_latency_us=latency,
+    )
+
+    def book(at, bid, ask):
+        engine.receive_book(
+            {
+                "exchange_time_us": at,
+                "exchange_upper_us": at,
+                "capture_time_us": at,
+                "bids": [[bid, "2"]],
+                "asks": [[ask, "2"]],
+                "known_bid_floor": ".99",
+                "known_ask_ceiling": "1.02",
+            }
+        )
+
+    start = runner.START_US + 1
+    book(start, "1.0019", "1.0020")
+    book(start + 1, "1.0021", "1.0022")
+    book(start + latency, "1.0021", "1.0022")
+    pending_activation = next(
+        row
+        for row in engine.audit
+        if row["event"] == "ACTIVATED"
+        and any(
+            earlier["event"] == "CANCEL_REQUEST"
+            and earlier["order_id"] == row["order_id"]
+            and earlier["time_us"] < row["time_us"]
+            for earlier in engine.audit
+        )
+    )
+    assert next(
+        order for order in engine.orders if order.order_id == pending_activation["order_id"]
+    ).status == "CANCEL_PENDING"
+    metrics = engine.finish(time_us=runner.END_US)
+    result = runner.independent_execution_audit(
+        deepcopy(engine.audit), deepcopy(engine.checkpoint()), {}, deepcopy(metrics)
+    )
+    assert result["status"] == "PASS_M024_PHYSICAL_LEDGER"
+
+
 @pytest.mark.parametrize("field", ["cash", "free_usdc", "inventory_qty", "growth_pool"])
 def test_physical_audit_rejects_rehashed_financial_tampering(field):
     rows, terminal, canonical, metrics = physical_fixture()
