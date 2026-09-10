@@ -8,9 +8,33 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=false
-AUTHORIZED_MODEL=NONE_M026_COMPLETE
-AUTHORIZED_SCENARIO_COUNT=0
+NEW_REPLAY_AUTHORIZED_NOW=true
+AUTHORIZED_MODEL=M027
+AUTHORIZED_SCENARIO_COUNT=2
+
+## Latest authority — M027 micro-hot controlled A/B, three hours only
+
+OWNER_DIRECTIVE=M027_MICRO_HOT_REALLOCATION_OWNER_DIRECTIVE.md
+CURRENT_EXECUTION_WINDOW=2026-05-01T00:00:00Z/2026-05-01T03:00:00Z_EXCLUSIVE
+SCENARIOS=CONTROL,TREATMENT
+RUNS_PER_SCENARIO=1
+VALIDATED_TICK_SIZE_REQUIRED=0.00001
+COARSE_GRID_SPACING=0.0001
+MICRO_OFFSET=0.00005
+INITIAL_PHYSICAL_ENTRY_ORDERS=60
+INITIAL_OPERATIONAL_SLOT_UNITS=140
+MOBILITY_SLOT_UNITS_PER_ASSET_SIDE=8
+MAX_SIMULTANEOUS_NONTERMINAL_ORDERS=200
+DAY2_AUTHORIZED=false
+AUTOMATIC_SUCCESSOR_AUTHORIZED=false
+
+The OWNER authorizes one matched M027 A/B after the fine-tick data, tests,
+independent Astra source review and published-source gates pass. CONTROL uses the
+unchanged M026 15-level coarse geometry on the new tape. TREATMENT replaces only
+FAR14/FAR15 with two one-slot MICRO columns at hotline ±0.00005. Both preserve 60
+initial orders, 140 operational and 16 mobility slot-units; initial marked-capital
+mismatch must be <=0.01%. M026 remains immutable. No rerun, another day, M028,
+extension, account, Testnet or live action is authorized.
 
 ## Latest authority — M026 dynamic hotline 3/2/1, three hours only
 

@@ -12297,6 +12297,95 @@
         "reason": "Physical gate failed; slot gate alone cannot establish physical acceleration",
         "to": "INCONCLUSIVE"
       }
+    },
+    {
+      "event_type": "MODEL_CREATED",
+      "occurred_at": "2026-09-10T02:15:26.739400+00:00",
+      "payload": {
+        "MODEL_HASH": "80c8961e3ac9faaf1c2094e42a719a9d9b2853287178fcb214f99858f4e667ca",
+        "artifacts": {
+          "config": "artifacts\\usdcusdt\\models\\M027\\config.json",
+          "daily": null,
+          "decision": null,
+          "directory": "artifacts\\usdcusdt\\models\\M027",
+          "hypothesis": "artifacts\\usdcusdt\\models\\M027\\hypothesis.json",
+          "lineage": "artifacts\\usdcusdt\\models\\M027\\lineage.json",
+          "metrics": null,
+          "model_spec": "artifacts\\usdcusdt\\models\\M027\\MODEL_SPEC.md",
+          "monthly": null,
+          "run_manifest": null
+        },
+        "created_at": "2026-09-10T02:15:26.739400Z",
+        "hypothesis": {
+          "change": "Treatment only: remove FAR14/FAR15 and add two one-slot columns at hotline +/-0.00005; matched control keeps M026 geometry.",
+          "expected_effect": "Treatment physical cycles exceed control; 1.20x is a strong-evidence ruler, not a result-preservation gate.",
+          "hypothesis": "Reallocating FAR14/FAR15 slot capital to a legal two-column micro-hot line increases physical roundtrips without added capital.",
+          "observation": "M026 produced all 30 physical cycles in HOT; MID/FAR produced zero.",
+          "reason_for_new_model": "Fine-price geometry and a controlled two-scenario tape materially change experimental meaning."
+        },
+        "lineage": {
+          "ancestor_chain": [
+            "M005",
+            "M006",
+            "M007",
+            "M014",
+            "M015",
+            "M019",
+            "M020",
+            "M021",
+            "M022",
+            "M023",
+            "M024",
+            "M026"
+          ],
+          "change_category": "OWNER_MICRO_HOT_CAPITAL_REALLOCATION",
+          "change_summary": "Matched A/B of FAR14/FAR15 versus two-column micro-hot on validated fine-tick L2.",
+          "parent_model_id": "M026",
+          "parent_run_hash": null,
+          "references": {
+            "owner_directive": "docs\\microstructure\\M027_MICRO_HOT_REALLOCATION_OWNER_DIRECTIVE.md",
+            "parent_result": "reports/usdcusdt/M026-3h-result.json",
+            "preregistration": "docs\\microstructure\\M027_MICRO_HOT_REALLOCATION_PREREGISTRATION.md"
+          }
+        },
+        "model": {
+          "automatic_successor_authorized": false,
+          "capital_injection": false,
+          "capital_match_max_error_pct": "0.01",
+          "coarse_grid_spacing": "0.0001",
+          "day2_authorized": false,
+          "end_exclusive": "2026-05-01T03:00:00Z",
+          "extension_authorized": false,
+          "hard_simulated_open_order_cap": 200,
+          "initial_architectural_slot_units": 156,
+          "initial_operational_slot_units": 140,
+          "initial_physical_orders": 60,
+          "micro_columns": 2,
+          "micro_offset": "0.00005",
+          "micro_slots_per_order": 1,
+          "mobility_slot_units_per_asset_side": 8,
+          "model_id": "M027",
+          "negative_exit_allowed": false,
+          "owner_directive_sha256_lf": "215a84fdb0541a65822d08fa1945577a6b679300751c586dd90966d023622e24",
+          "parent_model_id": "M026",
+          "preregistration_sha256_lf": "4e2befc53020653011d334a5ef3e85e283360d5d508f059250a5c96e0d672d6c",
+          "runs_per_scenario": 1,
+          "scenarios": [
+            "CONTROL",
+            "TREATMENT"
+          ],
+          "source_day": "2026-05-01",
+          "spec_sha256_lf": "af5a804338858e3ffb896e5923c751cd73f5dc294f11d4911e97a4ba04e1c674",
+          "start": "2026-05-01T00:00:00Z",
+          "strategy": "MICRO_HOT_REALLOCATION_CONTROLLED_AB_V1",
+          "validated_tick_size": "0.00001"
+        },
+        "model_hash": "80c8961e3ac9faaf1c2094e42a719a9d9b2853287178fcb214f99858f4e667ca",
+        "model_id": "M027",
+        "pair": "USDCUSDT",
+        "schema_version": "usdcusdt-model-registry-v2",
+        "status": "CREATED"
+      }
     }
   ],
   "models": [
@@ -15147,6 +15236,103 @@
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
       "status": "INCONCLUSIVE"
+    },
+    {
+      "BEST_1D_CYCLES": null,
+      "BEST_30D_CYCLES": null,
+      "BEST_7D_CYCLES": null,
+      "BEST_MONTH": null,
+      "BEST_REGIME": null,
+      "HOT_PERIOD_COUNT": null,
+      "LONGEST_COLD_STREAK": null,
+      "LONGEST_HOT_STREAK": null,
+      "WORST_MONTH": null,
+      "artifacts": {
+        "config": "artifacts\\usdcusdt\\models\\M027\\config.json",
+        "daily": null,
+        "decision": null,
+        "directory": "artifacts\\usdcusdt\\models\\M027",
+        "hypothesis": "artifacts\\usdcusdt\\models\\M027\\hypothesis.json",
+        "lineage": "artifacts\\usdcusdt\\models\\M027\\lineage.json",
+        "metrics": null,
+        "model_spec": "artifacts\\usdcusdt\\models\\M027\\MODEL_SPEC.md",
+        "monthly": null,
+        "run_manifest": null
+      },
+      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
+      "capital_mode": "COMPOUNDING",
+      "created_at": "2026-09-10T02:15:26.739400Z",
+      "currency": "USDT",
+      "hypothesis": {
+        "change": "Treatment only: remove FAR14/FAR15 and add two one-slot columns at hotline +/-0.00005; matched control keeps M026 geometry.",
+        "expected_effect": "Treatment physical cycles exceed control; 1.20x is a strong-evidence ruler, not a result-preservation gate.",
+        "hypothesis": "Reallocating FAR14/FAR15 slot capital to a legal two-column micro-hot line increases physical roundtrips without added capital.",
+        "observation": "M026 produced all 30 physical cycles in HOT; MID/FAR produced zero.",
+        "reason_for_new_model": "Fine-price geometry and a controlled two-scenario tape materially change experimental meaning."
+      },
+      "initial_capital": "100",
+      "lineage": {
+        "ancestor_chain": [
+          "M005",
+          "M006",
+          "M007",
+          "M014",
+          "M015",
+          "M019",
+          "M020",
+          "M021",
+          "M022",
+          "M023",
+          "M024",
+          "M026"
+        ],
+        "change_category": "OWNER_MICRO_HOT_CAPITAL_REALLOCATION",
+        "change_summary": "Matched A/B of FAR14/FAR15 versus two-column micro-hot on validated fine-tick L2.",
+        "parent_model_id": "M026",
+        "parent_run_hash": null,
+        "references": {
+          "owner_directive": "docs\\microstructure\\M027_MICRO_HOT_REALLOCATION_OWNER_DIRECTIVE.md",
+          "parent_result": "reports/usdcusdt/M026-3h-result.json",
+          "preregistration": "docs\\microstructure\\M027_MICRO_HOT_REALLOCATION_PREREGISTRATION.md"
+        }
+      },
+      "model": {
+        "automatic_successor_authorized": false,
+        "capital_injection": false,
+        "capital_match_max_error_pct": "0.01",
+        "coarse_grid_spacing": "0.0001",
+        "day2_authorized": false,
+        "end_exclusive": "2026-05-01T03:00:00Z",
+        "extension_authorized": false,
+        "hard_simulated_open_order_cap": 200,
+        "initial_architectural_slot_units": 156,
+        "initial_operational_slot_units": 140,
+        "initial_physical_orders": 60,
+        "micro_columns": 2,
+        "micro_offset": "0.00005",
+        "micro_slots_per_order": 1,
+        "mobility_slot_units_per_asset_side": 8,
+        "model_id": "M027",
+        "negative_exit_allowed": false,
+        "owner_directive_sha256_lf": "215a84fdb0541a65822d08fa1945577a6b679300751c586dd90966d023622e24",
+        "parent_model_id": "M026",
+        "preregistration_sha256_lf": "4e2befc53020653011d334a5ef3e85e283360d5d508f059250a5c96e0d672d6c",
+        "runs_per_scenario": 1,
+        "scenarios": [
+          "CONTROL",
+          "TREATMENT"
+        ],
+        "source_day": "2026-05-01",
+        "spec_sha256_lf": "af5a804338858e3ffb896e5923c751cd73f5dc294f11d4911e97a4ba04e1c674",
+        "start": "2026-05-01T00:00:00Z",
+        "strategy": "MICRO_HOT_REALLOCATION_CONTROLLED_AB_V1",
+        "validated_tick_size": "0.00001"
+      },
+      "model_hash": "80c8961e3ac9faaf1c2094e42a719a9d9b2853287178fcb214f99858f4e667ca",
+      "model_id": "M027",
+      "pair": "USDCUSDT",
+      "schema_version": "usdcusdt-model-registry-v2",
+      "status": "CREATED"
     }
   ],
   "pair": "USDCUSDT",

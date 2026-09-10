@@ -1,0 +1,29 @@
+{
+  "automatic_successor_authorized": false,
+  "capital_injection": false,
+  "capital_match_max_error_pct": "0.01",
+  "coarse_grid_spacing": "0.0001",
+  "day2_authorized": false,
+  "end_exclusive": "2026-05-01T03:00:00Z",
+  "extension_authorized": false,
+  "hard_simulated_open_order_cap": 200,
+  "initial_architectural_slot_units": 156,
+  "initial_operational_slot_units": 140,
+  "initial_physical_orders": 60,
+  "micro_columns": 2,
+  "micro_offset": "0.00005",
+  "micro_slots_per_order": 1,
+  "mobility_slot_units_per_asset_side": 8,
+  "model_id": "M027",
+  "negative_exit_allowed": false,
+  "parent_model_id": "M026",
+  "runs_per_scenario": 1,
+  "scenarios": [
+    "CONTROL",
+    "TREATMENT"
+  ],
+  "source_day": "2026-05-01",
+  "start": "2026-05-01T00:00:00Z",
+  "strategy": "MICRO_HOT_REALLOCATION_CONTROLLED_AB_V1",
+  "validated_tick_size": "0.00001"
+}
