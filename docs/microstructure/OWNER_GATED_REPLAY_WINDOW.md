@@ -8,11 +8,33 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=false
-AUTHORIZED_MODEL=NONE_M025_COMPLETE
-AUTHORIZED_SCENARIO_COUNT=0
+NEW_REPLAY_AUTHORIZED_NOW=true
+AUTHORIZED_MODEL=M026
+AUTHORIZED_SCENARIO_COUNT=1
 
-## Latest authority — M025 order-size capacity curve, three hours only
+## Latest authority — M026 dynamic hotline 3/2/1, three hours only
+
+OWNER_DIRECTIVE=M026_DYNAMIC_HOTLINE_321_OWNER_DIRECTIVE.md
+CURRENT_EXECUTION_WINDOW=2025-01-01T00:00:00Z/2025-01-01T03:00:00Z_EXCLUSIVE
+ORDER_MODE=NORMALIZED_SLOT_BASE_1_USDT_EQ_WHOLE_USDC_NON_EXECUTABLE
+INITIAL_PHYSICAL_ENTRY_ORDERS=60
+INITIAL_OPERATIONAL_SLOT_UNITS=140
+MOBILITY_SLOT_UNITS_PER_ASSET_SIDE=8
+MAX_SIMULTANEOUS_NONTERMINAL_ORDERS=200
+RUNS_AUTHORIZED=1
+DAY2_AUTHORIZED=false
+AUTOMATIC_SUCCESSOR_AUTHORIZED=false
+
+The OWNER authorized one M026 mechanics run after registration, tests, Astra
+source review and publication. M024 remains the scientific parent and M025 only
+supplies the best observed 37-cycle comparison. M026 uses a causal whole-tick
+hotline, 15 levels per side and HOT/MID/FAR 3/2/1 physical-column and slot sizing.
+Old order price, size, FIFO age, basis and epoch remain immutable. Promotions
+need real per-asset mobility capital; demotions drain. Physical and slot cycles
+are reported separately. The gates are >=38 physical and >=60 slot-equivalent
+cycles in three hours. No rerun, M027, day2, sweep or live action is authorized.
+
+## Previous authority — M025 order-size capacity curve, three hours only
 
 OWNER_DIRECTIVE=M025_ORDER_SIZE_CAPACITY_OWNER_DIRECTIVE.md
 CURRENT_EXECUTION_WINDOW=2025-01-01T00:00:00Z/2025-01-01T03:00:00Z_EXCLUSIVE

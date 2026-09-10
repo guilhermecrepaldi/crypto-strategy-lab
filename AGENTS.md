@@ -1,5 +1,18 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER mais recente — M026 dynamic hotline 3/2/1, 2026-09-09
+
+Seguir `docs/microstructure/M026_DYNAMIC_HOTLINE_321_OWNER_DIRECTIVE.md` e o
+pré-registro M026. M024 permanece pai imutável; M025 é somente diagnóstico. Um
+único replay está autorizado em 2025-01-01T00:00Z–03:00Z: 15 níveis por lado,
+HOT/MID/FAR com 3/2/1 colunas e 3/2/1 slot units, 60 ordens e 140 slots operacionais,
+mais 8 slots reais de mobilidade por ativo. Hotline causal em ticks inteiros; ordens
+antigas não movem, não redimensionam e não perdem FIFO/epoch. Promoção requer capital
+real, demotion é drain-only. Quantidade whole-USDC usa regra pré-registrada e o banco
+inicial físico é derivado, não “156 USDT” presumidos. Gates separados: >=38 ciclos
+físicos e >=60 slot-equivalentes em 3h. Fonte/testes/revisão Astra/push antes do run;
+resultado/autópsia/revisão/registry/journal/push depois. Sem rerun, M027, dia2 ou live.
+
 ## Autoridade OWNER mais recente — M025 order-size capacity curve, 2026-09-09
 
 Seguir `docs/microstructure/M025_ORDER_SIZE_CAPACITY_OWNER_DIRECTIVE.md` e o

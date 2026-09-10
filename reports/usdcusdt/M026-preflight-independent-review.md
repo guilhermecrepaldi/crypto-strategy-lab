@@ -1,0 +1,76 @@
+# M026 — independent source-bound preflight review
+
+STATUS=PASS_CONDITIONAL_PRE_RUN
+REVIEWER_MODEL=gpt-6-astra
+
+## Verdict
+
+The reviewed snapshot implements the OWNER-authorized M026 normalized three-hour
+mechanics probe without a remaining blocking defect. This is not a strategy,
+profitability, live-execution or target-throughput approval. Publication, registry,
+clean-HEAD and exactly-one-run gates remain mandatory. TEST_SUITE_PASS != STRATEGY_PASS.
+
+The review covered the causal whole-tick hotline, immutable old-order identity,
+3/2/1 zone geometry, real asset-specific mobility ownership, drain-only demotion,
+shared public/own FIFO, return priority, whole-USDC entry quantization, return-quantity
+preservation, physical/slot cycle separation and exact financial reconciliation.
+
+## Blocking defects repaired before PASS
+
+1. Native books sharing an exchange timestamp were incorrectly deduplicated; distinct
+   causal book events now remain distinct.
+2. Partial fragmentation exposed Decimal residuals in averaged USDC cost and
+   proportional reserve-lock allocation. The final kernel carries homogeneous cost
+   layers, consumes them FIFO, derives remaining mobility from physical reservations
+   and uses a disclosed conservative eight-decimal normalized balance quantum for
+   future slot-base growth. No epsilon or audit tolerance was added.
+3. The first independent auditor requantized RETURN orders. It now quantizes ENTRY
+   orders only and proves every RETURN preserves its source entry quantity.
+4. A rejected BUY funding attempt could leave asset-cost metadata for a nonexistent
+   order. Funding validation now precedes those writes; adversarial seed 3 ends with
+   1,249 orders and exactly the same 1,249 metadata identities.
+
+## Verification
+
+The focused M026 suite passed 31 tests. The combined M024/M025/M026 review suite
+passed 172 tests. Deterministic fragmentation probes included a 14-cycle sequence
+and a 22-cycle sequence; both had exact zero PnL-identity residual, and the latter
+passed the complete independent terminal/ledger audit. Ruff and diff checks passed.
+
+The normalized one-USDT-equivalent slots remain below Binance minNotional. True L3
+rank and endogenous market impact remain unknown. Zero fees are a conditional frozen
+profile assumption, not an account fact. No historical replay, live action, account
+access, registration, commit or push was performed by the reviewer.
+
+## Exact reviewed source closure — LF SHA256
+
+REVIEWED_SOURCE_SHA256_LF[scripts/run_dynamic_hotline_321.py]=21c0e5597455a0d0037c78b37d7d7fe4ea929ae59795b6e4fcc2b0889637a2cd
+REVIEWED_SOURCE_SHA256_LF[scripts/audit_dynamic_hotline_321.py]=77e61999a0033fa0a03ec408194c2847a5db6be5899ce2b1f930b2f05c5f6cea
+REVIEWED_SOURCE_SHA256_LF[scripts/register_dynamic_hotline_321.py]=81f1e4876ee7316e88dc43ddb851d87f60fa1f106f4f38da1c855d85b8898257
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/dynamic_hotline_321.py]=f31ff158222e23d748e13d5db6e234534fb89d9954c5b73fed286eb88641be74
+REVIEWED_SOURCE_SHA256_LF[tests/test_dynamic_hotline_321.py]=3166ff6e3d2bde5c1f3b422b57c51358fad5a6097095c11daf090decdca677ff
+REVIEWED_SOURCE_SHA256_LF[tests/test_run_dynamic_hotline_321.py]=3e4597d16777307aa5944871ee7ba51568172ed573e3fb4a8d12c565d4e07fa5
+REVIEWED_SOURCE_SHA256_LF[scripts/run_triangular_pre_aged_queue.py]=102c768517c6febe551ebe56dea4d372e72e59b0d6ce142c779161c5efa6fa4d
+REVIEWED_SOURCE_SHA256_LF[scripts/register_triangular_pre_aged_queue.py]=ee8dea913c7747cb6240fc97268be12cd1605a926ff5cfaa19009b99dec72729
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/triangular_pre_aged_queue.py]=88419e1615299d2d9847fb160dd4192fbcba94f91c87acb4b215fb062e25f601
+REVIEWED_SOURCE_SHA256_LF[tests/test_triangular_pre_aged_queue.py]=941a56fd7c3c2df407338d04b68e654e1f191f333b23f79210bc3a943c9aa5bd
+REVIEWED_SOURCE_SHA256_LF[tests/test_run_triangular_pre_aged_queue.py]=c41cc102f5e485c6e3f8b83cdb7d61a30296b159e29fbeb9ed5b17a09a0b0bdc
+REVIEWED_SOURCE_SHA256_LF[scripts/run_b10_reality.py]=90f6852a773ca678570c2347a95e6caa348f11b30811066155e1b18b96a33ff7
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/b10_reality.py]=4345ef764299d5414c29a9411fe00e613e02dac542f147e29064cf48b31bd4cb
+REVIEWED_SOURCE_SHA256_LF[scripts/run_serial_hot_line.py]=23c80fe05ef36ba90e3f9cc10abf7ee493aa8cccfca297a231645f1ce330fc32
+REVIEWED_SOURCE_SHA256_LF[scripts/register_serial_hot_line.py]=37037603d83b12a2f73dee1823376f38a4efcfd9f2a95098bd4a041112b9ecfa
+REVIEWED_SOURCE_SHA256_LF[scripts/run_zonal_ping_pong.py]=b310fbbb781f89d41bb69bc09d09b922960570d99c9aae136953f6fbc3ab90d8
+REVIEWED_SOURCE_SHA256_LF[scripts/validate_tardis_l2_samples.py]=6e6d2c799293da4fc6ef5debbf890236fbaa62f7420a047d71f11c532b037f99
+REVIEWED_SOURCE_SHA256_LF[scripts/run_l2_monthly_samples.py]=68aafca8598cb70eb34fa4761c3111eac4f39ac33a7f2f482677714d7ec49c80
+REVIEWED_SOURCE_SHA256_LF[scripts/run_high_uptime_recovery.py]=4ce00d03fd86d1c4c09db523e6b1c6fd4b6f01edd72899585151a0b8aa2e8186
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/serial_hot_line.py]=f9bbb431755940c6c1094eb2399b5caef8b9377590c0083383ed33b6ad6c5cad
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/zonal_ping_pong.py]=d8e91f08adc1a0e5a218f1e6feef9ac7543daac3e5a69f3d6d7af500262347ef
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/data.py]=311de231b02c72f02b5e2e2444c74f7017e9e81b56f3977e5056b57cb4d19922
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/tardis_l2.py]=1899a0b0d968296b2b9d9a6bba8a1f1602e0b34162b4ca4b7ecfdbe665f9490d
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/recovery_reserve_study.py]=6a702dfcfd5130e5cb0308472f5e4237ced54abeff1670ec3623c6591e4045f9
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/microstructure/serial_replay.py]=8515862b88842565cfb99295da651521a27eef28290f0e2b0ca742851b924ab0
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/domain.py]=fa3a7839429b6b98a11c971ec79d796fc09207fa182f1629d527a86c7e77c5f5
+REVIEWED_SOURCE_SHA256_LF[src/crypto_strategy_lab/ml/model_registry.py]=864e96864911cc56cf1233a09a91a0287592cf44225c2b9c0d65e1dbe6ab94c2
+REVIEWED_SOURCE_SHA256_LF[tests/test_serial_hot_line.py]=8da294b90824354d5676b84aba8b805d5f5ddb6075199a810c520e6b33b78743
+REVIEWED_SOURCE_SHA256_LF[tests/test_run_serial_hot_line.py]=85ccbc28f788eaf35942e7aa725c5d7eecadab737ba9803a02b3a5729a6e12df
+REVIEWED_SOURCE_SHA256_LF[tests/test_model_registry.py]=ec75f26af7430e6b52d6414f233e44cc5ca767bf56ccca3ece328c7bd8cc9e3a
