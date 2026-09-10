@@ -12,6 +12,28 @@ NEW_REPLAY_AUTHORIZED_NOW=false
 AUTHORIZED_MODEL=NONE
 AUTHORIZED_SCENARIO_COUNT=0
 
+## Latest authority — M031 concentrated 10-level 4x4 core
+
+OWNER_DIRECTIVE=M031_10_LEVEL_4X4_CORE_OWNER_DIRECTIVE.md
+MODEL=M031
+PARENT_MODEL=M030
+SELECTED_DATES=2025-02-01,2025-08-01,2025-06-01
+DATE_SELECTION_SEED=14895920518136483619
+SCORED_HOUR_EACH=12:00-13:00_UTC
+STATUS=BLOCKED_PRE_RUN_CAPITAL_IDENTITY
+MODEL_REGISTERED=false
+ECONOMIC_EVENTS_PROCESSED=0
+
+The five candidate dates passed renewed physical validation and the single date
+draw is frozen. Pre-run capital reconstruction then proved that equal slot counts
+do not create equal cash reservations: M031 needs exactly0.0125USDT more than
+M030 to open the complete proposed geometry under unchanged whole-USDC sizing.
+Exact M030 bank,48 funded M031 entries, unchanged pricing/sizing and mobility8
+cannot all hold simultaneously. GPT-6 Astra blocked the run. OWNER must explicitly
+authorize a common higher matched bank or incomplete M031 initialization. No
+historical replay, registration, redraw, M032, account, Testnet or live action is
+authorized while this gate remains unresolved.
+
 ## Latest authority — M030 hotline-first reallocation
 
 OWNER_DIRECTIVE=M030_HOTLINE_FIRST_REALLOCATION_OWNER_DIRECTIVE.md

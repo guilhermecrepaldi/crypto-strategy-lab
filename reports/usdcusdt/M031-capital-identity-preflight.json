@@ -1,0 +1,28 @@
+{
+  "model": "M031",
+  "status": "BLOCKED_PRE_RUN_CAPITAL_IDENTITY",
+  "economic_events_processed": 0,
+  "m030_buy_rank_weight_ticks": 360,
+  "m031_buy_rank_weight_ticks": 235,
+  "difference_ticks": 125,
+  "coarse_tick": "0.0001",
+  "m031_extra_usdt_required": "0.0125",
+  "synthetic_same_book": {
+    "best_bid": "1.0019",
+    "best_ask_and_hotline": "1.0020",
+    "m030_initial_usdt": "78.1040",
+    "m031_initial_usdt": "78.1165",
+    "m030_initial_usdc": "78",
+    "m031_initial_usdc": "78",
+    "m030_initial_marked_equity": "156.2522",
+    "m031_initial_marked_equity": "156.2647"
+  },
+  "mutually_incompatible_without_owner_override": [
+    "exact M030 starting bank",
+    "all 48 M031 initial orders fully funded",
+    "unchanged whole-USDC sizing and prices",
+    "8-slot-unit mobility reserve per asset side"
+  ],
+  "astra_review": "BLOCK_PRE_RUN",
+  "owner_decision_required": "Authorize a common matched bank of 78.1165 USDT + 78 USDC, or authorize incomplete initial M031 funding under the original M030 bank."
+}
