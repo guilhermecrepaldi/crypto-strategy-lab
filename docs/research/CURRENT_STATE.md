@@ -2,7 +2,7 @@
 
 ACTIVE_EXECUTION_CAMPAIGN=NONE
 CAMPAIGN_STATUS=M032_BLOCKED_PRE_REPLAY_DATA
-CAMPAIGN_EXECUTION_SOURCE_SHA=UNPUBLISHED_ARCHITECTURE_SOURCE
+CAMPAIGN_EXECUTION_SOURCE_SHA=25273367e6d2146a71d0308a423415320e3da8c0
 CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
 CAMPAIGN_VERDICT=BLOCKED_PRE_RUN
@@ -19,8 +19,9 @@ NEXT_CAMPAIGN_ORDER_MODE=PHYSICAL_EXECUTABLE_SLOT_BASE_UNRESOLVED
 NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=UNRESOLVED_NOT_TO_EXCEED_200_USD_EQ
 
 M032 is the OWNER-authorized adaptive multi-stable capital-manager architecture.
-Its reusable components and deterministic synthetic tests are implemented, but it
-is deliberately not registered and no economic replay ran. The physical evidence
+Its reusable components and deterministic synthetic tests passed source-bound
+GPT-6 Astra review at `25273367...`, but it is deliberately not registered and no
+economic replay ran. The physical evidence
 audit found validated L2 plus canonical trades only for USDCUSDT; the common
 multi-book date pool is empty. Historical symbol-rule and fee profiles are also
 not proven for a selected multi-book interval. Therefore stablecoins, books,

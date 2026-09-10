@@ -6,6 +6,10 @@ not an executable campaign preregistration and does not register M032.
 Draft model-spec hash:
 `fb35f67e414cce9cb03b0e83824304f9b4286617b679785663e941fca6e11215`.
 
+Reusable architecture source:
+`25273367e6d2146a71d0308a423415320e3da8c0`, independently reviewed `PASS`.
+This does not close the evidence or integrated-runner gates below.
+
 ## Frozen architecture
 
 - maximum initial equity: 200 USD-equivalent;
