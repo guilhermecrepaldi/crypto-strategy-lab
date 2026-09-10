@@ -1,5 +1,18 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER mais recente — M028, M026 por um dia, 2026-09-10
+
+Seguir `docs/microstructure/M028_M026_24H_EXTENSION_OWNER_DIRECTIVE.md` e o
+pré-registro M028. OWNER escolheu manter exatamente a estratégia M026 e autorizou
+um único replay contínuo em2025-01-01T00:00Z–2025-01-02T00:00Z. M026/M027 ficam
+imutáveis; duração nova exige identidade M028. Não alterar geometria3/2/1, engine,
+capital, fila, latência, sizing, returns ou compounding; nenhum reset às03:00. O
+prefixo00–03h deve reproduzir ledger e estado econômico M026, normalizando apenas
+`end_us`, antes de consumir a extensão. Reportar equity antes/depois, ganho absoluto
+e percentual, ganho adicional após03:00, ciclos totais e por hora. Continua
+normalizado abaixo do minNotional, não live-executable. Preregister/testar/revisar
+com Astra/publicar antes do único run; sem rerun, outro dia, M029 ou live.
+
 ## Autoridade OWNER mais recente — M027 micro-hot realocation, 2026-09-09
 
 Seguir `docs/microstructure/M027_MICRO_HOT_REALLOCATION_OWNER_DIRECTIVE.md` e o

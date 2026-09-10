@@ -8,9 +8,26 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=false
-AUTHORIZED_MODEL=NONE_M027_COMPLETE
-AUTHORIZED_SCENARIO_COUNT=0
+NEW_REPLAY_AUTHORIZED_NOW=true
+AUTHORIZED_MODEL=M028
+AUTHORIZED_SCENARIO_COUNT=1
+
+## Latest authority — M028 unchanged M026 strategy, full January 1 day
+
+OWNER_DIRECTIVE=M028_M026_24H_EXTENSION_OWNER_DIRECTIVE.md
+CURRENT_EXECUTION_WINDOW=2025-01-01T00:00:00Z/2025-01-02T00:00:00Z_EXCLUSIVE
+PARENT_MODEL=M026
+ONLY_CHANGE_FROM_PARENT=END_EXCLUSIVE_3H_TO_24H
+RUNS_AUTHORIZED=1
+PREFIX_EQUIVALENCE_REQUIRED=true
+ANOTHER_DAY_AUTHORIZED=false
+AUTOMATIC_SUCCESSOR_AUTHORIZED=false
+
+The OWNER explicitly selected M026 and authorized one full-day test with marked
+before/after equity and percentage gain. M026 remains immutable; the duration change
+is M028. The exact M026 strategy starts once at midnight and runs continuously to
+the next midnight, with a hard 00:00–03:00 prefix-equivalence gate. No tuning,
+M027 MICRO geometry, reset, capital injection, cutoff liquidation or live action.
 
 ## Latest authority — M027 micro-hot controlled A/B, three hours only
 
