@@ -8,9 +8,29 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=false
-AUTHORIZED_MODEL=NONE
-AUTHORIZED_SCENARIO_COUNT=0
+NEW_REPLAY_AUTHORIZED_NOW=true
+AUTHORIZED_MODEL=M030
+AUTHORIZED_SCENARIO_COUNT=1
+
+## Latest authority — M030 hotline-first reallocation
+
+OWNER_DIRECTIVE=M030_HOTLINE_FIRST_REALLOCATION_OWNER_DIRECTIVE.md
+CURRENT_EXECUTION_WINDOW=2025-01-01T00:00:00Z/2025-01-02T00:00:00Z_EXCLUSIVE
+PRIMARY_RANDOM_HOURS_UTC=06,12,13
+RANDOM_EVALUATION_SEED=13525809254189156280
+PARENT_MODEL=M026
+IMMUTABLE_BASELINE=M029
+RUNS_AUTHORIZED=1
+ANOTHER_DAY_AUTHORIZED=false
+AUTOMATIC_SUCCESSOR_AUTHORIZED=false
+
+The OWNER authorized M030 to change only management: owned returns remain first,
+then current HOT, MID, FAR and old zero-fill entries. Reclaim is same-asset and only
+after causal cancel ACK; fills and partials are protected. A multi-tick causal book
+jumps directly to its final hotline and receives one physical reconciliation. The
+engine processes the full day continuously; the frozen reporting-only random mask is
+[06,07), [12,13), [13,14). M029 is read-only baseline and is not rerun. Publish
+source/tests/Astra review before the sole run. No reroll, rerun, M031 or live action.
 
 ## Latest authority — M029 corrected M026 full-day retry
 

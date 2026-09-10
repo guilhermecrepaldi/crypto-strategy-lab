@@ -1,5 +1,18 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER mais recente — M030 hotline-first, 2026-09-10
+
+Seguir `docs/microstructure/M030_HOTLINE_FIRST_REALLOCATION_OWNER_DIRECTIVE.md` e
+o pré-registro M030. M026/M029 são imutáveis. M030 preserva geometria3/2/1, capital,
+fila, latência, sizing, returns positivos e mobility8/side, alterando só management:
+RETURN>HOT>MID>FAR>old zero-fill. ENTRY sem fill é reclamável pelo mesmo ativo; parcial
+ou fill é protegido; saldo libera somente no cancel ACK. Livro causal multi-tick salta
+direto ao hotline final e faz uma reconciliação, registrando ticks evitados. Engine
+contínuo00–24h sem reset; avaliação primária somente nas horas aleatórias06,12,13 UTC,
+seed CSPRNG único13525809254189156280, mask reporting-only. M029 é baseline físico
+read-only, sem rerun. Source/testes/revisão Astra/push antes do único run. Normalizado
+abaixo do minNotional, não live. Sem reroll, rerun, M031, outro dia, conta/Testnet/live.
+
 ## Autoridade OWNER mais recente — M029 retry técnico M026 por24h, 2026-09-10
 
 Seguir `docs/microstructure/M029_M026_24H_TECHNICAL_RETRY_OWNER_DIRECTIVE.md` e
