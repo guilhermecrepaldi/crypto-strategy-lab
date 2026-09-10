@@ -188,6 +188,19 @@ def reconstruct_m029_hot_coverage(
     move_times: Counter[int] = Counter()
     pending_reclaims: dict[int, str] = {}
 
+    def zero_fill_reclaimable(order: dict[str, Any], side: str) -> bool:
+        if not order["open"] or order["role"] != "ENTRY" or order["side"] != side:
+            return False
+        if order["filled"] != 0:
+            return False
+        distance = (
+            hotline - order["line_price"]
+            if side == "BUY"
+            else order["line_price"] - hotline
+        )
+        rank = int(distance / TICK) if distance > 0 and distance % TICK == 0 else None
+        return not (rank in range(1, 6) and int(order["slot_count"]) == 3)
+
     def observe(now: int) -> None:
         nonlocal last, missing_time, stranded_time, eval_missing_time, eval_stranded_time
         elapsed = max(0, now - last)
@@ -207,18 +220,7 @@ def reconstruct_m029_hot_coverage(
                     if funded[side] >= HOT_TARGET:
                         continue
                     reclaimable = any(
-                        order["open"]
-                        and order["role"] == "ENTRY"
-                        and order["side"] == side
-                        and order["filled"] == 0
-                        and (
-                            (side == "BUY" and not D(0) < hotline - order["line_price"] <= 5 * TICK)
-                            or (
-                                side == "SELL"
-                                and not D(0) < order["line_price"] - hotline <= 5 * TICK
-                            )
-                        )
-                        for order in orders.values()
+                        zero_fill_reclaimable(order, side) for order in orders.values()
                     )
                     if reclaimable or side in pending_reclaims.values():
                         administrative = True
@@ -308,6 +310,317 @@ def reconstruct_m029_hot_coverage(
     }
 
 
+def reconstruct_m030_administrative_capacity(
+    rows: list[dict[str, Any]], windows: tuple[tuple[int, int], ...]
+) -> dict[str, str]:
+    """Rebuild M030's broad administrative-capacity predicate from its ledger."""
+    initialized = [row for row in rows if row["event"] == "DYNAMIC_GRID_INITIALIZED"]
+    if len(initialized) != 1:
+        raise ValueError("M030_ADMIN_RECONSTRUCTION_INITIALIZATION")
+    initial = initialized[0]
+    slot_base = D(initial["initial_slot_base"])
+    mobility_units = D(initial["mobility_slot_units"]) / D(2)
+    cash = D(initial["initial_usdt"])
+    buy_mobility = mobility_units * slot_base
+    sell_mobility = mobility_units
+    operational_usdc = D(initial["initial_usdc"]) - sell_mobility
+    hotline: D | None = None
+    orders: dict[int, dict[str, Any]] = {}
+    latest_entries: dict[str, int] = {}
+    pending_reclaims: dict[int, str] = {}
+    sell_lots: dict[int, dict[str, Any]] = {}
+    last = START_US
+    administrative_time = 0
+    eval_administrative_time = 0
+
+    def desired_cells(side: str) -> list[tuple[D, int]]:
+        if hotline is None:
+            return []
+        sign = D(-1) if side == "BUY" else D(1)
+        return [
+            (hotline + sign * TICK * D(rank), column)
+            for rank in range(1, 6)
+            for column in range(1, 4)
+        ]
+
+    def desired_quantity(price: D) -> D:
+        return max(
+            D(1),
+            (slot_base * D(3) / price).to_integral_value(rounding=ROUND_HALF_UP),
+        )
+
+    def hot_state(side: str) -> tuple[D, D]:
+        funded_slots = D(0)
+        asset_deficit = D(0)
+        for price, column in desired_cells(side):
+            order_id = latest_entries.get(f"{side}:P{price}:C{column}")
+            order = orders.get(order_id) if order_id is not None else None
+            quantity = desired_quantity(price)
+            funded_quantity = D(0)
+            if (
+                order is not None
+                and order["role"] == "ENTRY"
+                and order["status"] in {"PENDING", "ACTIVE", "CANCEL_PENDING"}
+            ):
+                funded_quantity = min(order["quantity"] - order["filled"], quantity)
+                funded_slots += (
+                    D(order["slot_count"])
+                    * (order["quantity"] - order["filled"])
+                    / order["quantity"]
+                )
+            missing = max(D(0), quantity - funded_quantity)
+            asset_deficit += missing * price if side == "BUY" else missing
+        return min(HOT_TARGET, funded_slots), asset_deficit
+
+    def reclaimable_exists(side: str) -> bool:
+        for order_id, order in orders.items():
+            if (
+                order["side"] != side
+                or order["role"] != "ENTRY"
+                or order["filled"] != 0
+                or order["status"] not in {"PENDING", "ACTIVE"}
+                or order_id in pending_reclaims
+            ):
+                continue
+            line = order["line_price"]
+            distance = hotline - line if side == "BUY" else line - hotline
+            rank = int(distance / TICK) if distance > 0 and distance % TICK == 0 else None
+            if not (rank in range(1, 6) and order["slot_count"] == 3):
+                return True
+        return False
+
+    def locked_sell_proceeds() -> D:
+        open_returns = {
+            int(order["source_order_id"])
+            for order in orders.values()
+            if order["role"] == "RETURN"
+            and order["direction"] == "SELL_FIRST"
+            and order["source_order_id"] is not None
+            and order["status"] in {"PENDING", "ACTIVE", "CANCEL_PENDING"}
+        }
+        return sum(
+            (
+                lot["quantity"] * lot["basis"]
+                for source_id, lot in sell_lots.items()
+                if not lot["restored"] and source_id not in open_returns
+            ),
+            D(0),
+        )
+
+    def observe(now: int) -> None:
+        nonlocal last, administrative_time, eval_administrative_time
+        elapsed = max(0, now - last)
+        if elapsed and hotline is not None:
+            evaluated = _overlap(last, now, windows)
+            hot = {side: hot_state(side) for side in ("BUY", "SELL")}
+            if any(hot[side][0] < HOT_TARGET for side in ("BUY", "SELL")):
+                administrative = False
+                for side in ("BUY", "SELL"):
+                    funded, deficit = hot[side]
+                    if funded >= HOT_TARGET:
+                        continue
+                    pending = any(value == side for value in pending_reclaims.values())
+                    if side == "BUY":
+                        available = max(D(0), cash - buy_mobility - locked_sell_proceeds())
+                        mobility = buy_mobility
+                    else:
+                        available = operational_usdc
+                        mobility = sell_mobility
+                    if reclaimable_exists(side) or pending or available + mobility >= deficit:
+                        administrative = True
+                if administrative:
+                    administrative_time += elapsed
+                    eval_administrative_time += evaluated
+        last = max(last, now)
+
+    terminal_events = {
+        "CANCEL_ACK",
+        "REJECTED_POST_ONLY",
+        "REJECTED_SELF_CROSS",
+        "REJECTED_COVERAGE",
+        "REJECTED_NEGATIVE_EXIT",
+    }
+    for row in rows:
+        now = int(row["time_us"])
+        observe(now)
+        event = row["event"]
+        if event == "SUBMIT":
+            order_id = int(row["order_id"])
+            quantity, price = D(row["quantity"]), D(row["price"])
+            layers = [
+                {
+                    "quantity": D(layer["quantity"]),
+                    "mobility": bool(layer["mobility"]),
+                }
+                for layer in row["asset_cost_layers"]
+            ]
+            orders[order_id] = {
+                "side": row["side"],
+                "role": row["role"],
+                "direction": row["direction"],
+                "source_order_id": row["source_order_id"],
+                "quantity": quantity,
+                "price": price,
+                "filled": D(0),
+                "status": "PENDING",
+                "cell_id": row["cell_id"],
+                "line_price": D(row["line_price"]),
+                "slot_count": int(row["slot_count"]),
+                "asset_cost_layers": layers,
+                "usdt_lock_original": D(row["mobility_usdt_locked"]),
+                "usdt_lock": D(row["mobility_usdt_locked"]),
+            }
+            if row["role"] == "ENTRY":
+                latest_entries[row["cell_id"]] = order_id
+            if row["side"] == "BUY":
+                cash -= quantity * price
+                buy_mobility -= D(row["mobility_usdt_locked"])
+            elif not (row["role"] == "RETURN" and row["direction"] == "BUY_FIRST"):
+                operational_usdc -= sum(
+                    (layer["quantity"] for layer in layers if not layer["mobility"]),
+                    D(0),
+                )
+                sell_mobility -= D(row["mobility_usdc_locked"])
+        elif event == "ACTIVATED":
+            orders[int(row["order_id"])]["status"] = "ACTIVE"
+        elif event == "CANCEL_REQUEST":
+            orders[int(row["order_id"])]["status"] = "CANCEL_PENDING"
+        elif event == "FILL":
+            order = orders[int(row["order_id"])]
+            amount = D(row["quantity"])
+            order["filled"] += amount
+            remaining = order["quantity"] - order["filled"]
+            if order["side"] == "BUY":
+                order["usdt_lock"] = min(
+                    order["usdt_lock_original"], remaining * order["price"]
+                )
+                if order["role"] == "RETURN" and order["direction"] == "SELL_FIRST":
+                    operational_usdc += amount
+                    if remaining == 0:
+                        sell_lots[int(order["source_order_id"])]["restored"] = True
+            else:
+                cash += amount * order["price"]
+                remaining_to_consume = amount
+                while remaining_to_consume > 0:
+                    layer = order["asset_cost_layers"][0]
+                    take = min(layer["quantity"], remaining_to_consume)
+                    layer["quantity"] -= take
+                    remaining_to_consume -= take
+                    if layer["quantity"] == 0:
+                        order["asset_cost_layers"].pop(0)
+                if order["role"] == "ENTRY" and order["direction"] == "SELL_FIRST":
+                    lot = sell_lots.setdefault(
+                        int(row["order_id"]),
+                        {"quantity": D(0), "basis": order["price"], "restored": False},
+                    )
+                    lot["quantity"] += amount
+            if remaining == 0:
+                order["status"] = "FILLED"
+        elif event in terminal_events:
+            order = orders[int(row["order_id"])]
+            remaining = order["quantity"] - order["filled"]
+            if order["side"] == "BUY":
+                cash += remaining * order["price"]
+                buy_mobility += order["usdt_lock"]
+            elif not (order["role"] == "RETURN" and order["direction"] == "BUY_FIRST"):
+                operational_usdc += sum(
+                    (
+                        layer["quantity"]
+                        for layer in order["asset_cost_layers"]
+                        if not layer["mobility"]
+                    ),
+                    D(0),
+                )
+                sell_mobility += sum(
+                    (
+                        layer["quantity"]
+                        for layer in order["asset_cost_layers"]
+                        if layer["mobility"]
+                    ),
+                    D(0),
+                )
+            order["asset_cost_layers"] = []
+            order["usdt_lock"] = D(0)
+            order["status"] = "CANCELED" if event == "CANCEL_ACK" else "REJECTED"
+        elif event == "BUY_MOBILITY_RESERVE_RESTORED":
+            buy_mobility += D(row["amount"])
+        elif event == "SELL_MOBILITY_RESERVE_RESTORED":
+            amount = D(row["quantity"])
+            operational_usdc -= amount
+            sell_mobility += amount
+        elif event == "DYNAMIC_GRID_INITIALIZED":
+            hotline = D(row["hotline"])
+            slot_base = D(row["initial_slot_base"])
+        elif event == "HOTLINE_FINAL_TARGET_MOVED":
+            hotline = D(row["new_price"])
+        elif event == "SLOT_BASE_ADVANCED":
+            slot_base = D(row["slot_base"])
+        elif event == "HOT_REALLOCATION_CANCEL_REQUESTED":
+            pending_reclaims[int(row["order_id"])] = row["side"]
+        elif event in {
+            "HOT_REALLOCATION_CANCEL_ACKED",
+            "HOT_REALLOCATION_CANCEL_TERMINATED_BY_REJECTION",
+            "HOT_REALLOCATION_CANCEL_SUPERSEDED_BY_FULL_FILL",
+        }:
+            pending_reclaims.pop(int(row["order_id"]), None)
+        if min(cash, operational_usdc, buy_mobility, sell_mobility) < 0:
+            raise ValueError("M030_ADMIN_RECONSTRUCTION_NEGATIVE_CAPITAL")
+    observe(END_US)
+    total = D(END_US - START_US)
+    evaluated = D(sum(right - left for left, right in windows))
+    return {
+        "FULL_DAY_TIME_PCT": str(D(administrative_time) / total * D(100)),
+        "RANDOM_3H_TIME_PCT": str(D(eval_administrative_time) / evaluated * D(100)),
+        "METHOD": "INDEPENDENT_LEDGER_ACCOUNT_AND_HOT_PREDICATE_RECONSTRUCTION",
+    }
+
+
+def normalize_m030_reporting_metrics(
+    metrics: dict[str, Any],
+    rows: list[dict[str, Any]],
+    windows: tuple[tuple[int, int], ...],
+) -> dict[str, Any]:
+    """Separate literal stranded zero-fill capital from the engine's broad predicate.
+
+    This is a reporting-only normalization.  It does not mutate engine state and it
+    does not replay any market event.
+    """
+    value = dict(metrics)
+    literal = reconstruct_m029_hot_coverage(rows, windows)
+    broad = reconstruct_m030_administrative_capacity(rows, windows)
+    raw_full = str(value["RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT"])
+    raw_eval = str(value["RANDOM_3H_RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT"])
+    if D(raw_full) != D(broad["FULL_DAY_TIME_PCT"]):
+        raise ValueError("M030_REPORTING_RAW_FULL_ADMINISTRATIVE_MISMATCH")
+    if D(raw_eval) != D(broad["RANDOM_3H_TIME_PCT"]):
+        raise ValueError("M030_REPORTING_RAW_RANDOM_ADMINISTRATIVE_MISMATCH")
+    value.update(
+        {
+            "RAW_ENGINE_RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT": raw_full,
+            "RAW_ENGINE_RANDOM_3H_RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT": raw_eval,
+            "HOT_INCOMPLETE_WITH_ADMINISTRATIVE_CAPACITY_TIME_PCT": broad[
+                "FULL_DAY_TIME_PCT"
+            ],
+            "RANDOM_3H_HOT_INCOMPLETE_WITH_ADMINISTRATIVE_CAPACITY_TIME_PCT": broad[
+                "RANDOM_3H_TIME_PCT"
+            ],
+            "RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT": literal[
+                "RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT"
+            ],
+            "RANDOM_3H_RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT": literal[
+                "RANDOM_3H_RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT"
+            ],
+            "M030_REPORTING_CORRECTION": (
+                "Official reclaimable-stranded metrics are independently rebuilt from "
+                "literal zero-fill reclaimable/pending orders. The preserved raw engine "
+                "counter is broader and is relabeled as HOT incomplete with administrative "
+                "capacity; neither metric changes execution."
+            ),
+        }
+    )
+    return value
+
+
 def independent_m030_audit(
     rows: list[dict[str, Any]],
     terminal: dict[str, Any],
@@ -350,6 +663,7 @@ def independent_m030_audit(
     profit_floor_blocks = [row for row in rows if row["event"] == "ENTRY_PROFIT_FLOOR_BLOCK"]
     shortfall_events = [row for row in rows if row["event"] == "TRUE_CAPITAL_SHORTFALL"]
     reconstructed = reconstruct_m029_hot_coverage(rows, windows)
+    administrative = reconstruct_m030_administrative_capacity(rows, windows)
     extra = terminal["state"]["m026"].get("m030")
     require(extra is not None, "TERMINAL_INSTRUMENTATION")
     actual_epochs = terminal["state"]["m026"]["hotline_epochs"]
@@ -589,6 +903,11 @@ def independent_m030_audit(
         "RANDOM_STRANDED",
     )
     require(
+        D(metrics["RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT"])
+        == D(reconstructed["RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT"]),
+        "FULL_DAY_LITERAL_STRANDED",
+    )
+    require(
         D(metrics["HOT_UNDERFUNDED_TIME_PCT"]) == D(reconstructed["HOT_UNDERFUNDED_TIME_PCT"]),
         "FULL_DAY_UNDERFUNDED",
     )
@@ -654,9 +973,24 @@ def independent_m030_audit(
         "SHORTFALL_EXCEEDS_INDEPENDENT_UNDERFUNDED_TIME",
     )
     require(
-        D(metrics["RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT"])
+        D(metrics["RAW_ENGINE_RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT"])
         == D(extra["reclaimable_stranded_time_us"]) / total_time * D(100),
-        "STRANDED_TIME",
+        "RAW_STRANDED_TIME",
+    )
+    require(
+        D(metrics["RAW_ENGINE_RANDOM_3H_RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT"])
+        == D(extra["eval_reclaimable_stranded_time_us"]) / eval_time * D(100),
+        "RAW_RANDOM_STRANDED_TIME",
+    )
+    require(
+        D(metrics["HOT_INCOMPLETE_WITH_ADMINISTRATIVE_CAPACITY_TIME_PCT"])
+        == D(administrative["FULL_DAY_TIME_PCT"]),
+        "FULL_DAY_ADMINISTRATIVE_CAPACITY",
+    )
+    require(
+        D(metrics["RANDOM_3H_HOT_INCOMPLETE_WITH_ADMINISTRATIVE_CAPACITY_TIME_PCT"])
+        == D(administrative["RANDOM_3H_TIME_PCT"]),
+        "RANDOM_ADMINISTRATIVE_CAPACITY",
     )
     require(
         D(metrics["RANDOM_3H_TRUE_CAPITAL_SHORTFALL_TIME_PCT"])
@@ -697,10 +1031,16 @@ def independent_m030_audit(
         "hotline_jump_reconciled": True,
         "cancel_ack_reconciled": True,
         "coverage_reconstructed_from_ledger": reconstructed,
+        "administrative_capacity_reconstructed_from_ledger": administrative,
         "reclaim_lifecycle_reconciled": True,
         "reclaimed_capital_reconciled": True,
         "protected_economic_positions": True,
     }
 
 
-__all__ = ["independent_m030_audit", "reconstruct_m029_hot_coverage"]
+__all__ = [
+    "independent_m030_audit",
+    "normalize_m030_reporting_metrics",
+    "reconstruct_m029_hot_coverage",
+    "reconstruct_m030_administrative_capacity",
+]

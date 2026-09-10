@@ -50,3 +50,34 @@ Append-only journal for hotline-first capital reallocation.
 - The source-bound review is `reports/usdcusdt/M030-preflight-independent-review.md`.
 - This is a software/scientific preflight pass, not a strategy pass. No historical
   M030 event had been replayed at this checkpoint.
+
+## 2026-09-10 — sole physical run and reporting recovery
+
+- The only authorized continuous 24-hour M030 engine run used published source
+  `459d0237ae9005fd272a91e00de744c21da71435` and consumed all 254,205 canonical
+  trades through the exact cutoff. No rerun occurred.
+- The engine completed physically, then the first post-run audit stopped on
+  `M030_AUDIT_RANDOM_STRANDED`. The immutable ledger, terminal, manifest and failure
+  were preserved. Root cause: one raw engine counter combined literal zero-fill
+  reclaimable/pending capital with broader free/mobility administrative capacity.
+- Reporting-only recovery restored the terminal, invoked only `checkpoint()` and
+  `metrics()`, independently reconstructed both definitions from the ledger and
+  repeated the full physical audit. It delivered zero market events and changed no
+  execution, fill, cycle, balance or PnL.
+- The matched random hours were 06–07, 12–13 and 13–14 UTC. M029 closed 6 physical
+  cycles; M030 closed 13: +7, or +116.6667%. HOT coverage rose from 67.4125% to
+  94.2835% (+26.8711 percentage points).
+- Literal reclaimable-stranded time fell from 100% to 59.2785%, a 40.7215%
+  reduction. This missed the frozen 50% management threshold. Frequency and
+  coverage gates passed; the combined management gate failed.
+- Full-day diagnostic: 170 physical cycles, 509 slot cycles. Initial marked equity
+  156.25220000 became 156.3188000000000000: +0.0666000000000000, or +0.0426234%.
+  Final assets were 51.1088 USDT and 105 USDC. Realized cycle PnL was +0.0642;
+  realized disposal PnL +0.0810014422; unrealized PnL -0.0144014422.
+- Independent audit and GPT-6 Astra factual review passed. No filled-order forced
+  cancel, negative realized exit, cost-basis rewrite or owned-return capital theft
+  occurred. Verdict remains `INCONCLUSIVE`: normalized below minNotional,
+  conditional zero-fee, no endogenous impact/live L3 rank, management gate miss and
+  far below 1,000 cycles/day.
+- Gate consumed. No rerun, M031, another day, account, Testnet or live action is
+  authorized.

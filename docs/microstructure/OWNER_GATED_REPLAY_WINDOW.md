@@ -8,9 +8,9 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=true
-AUTHORIZED_MODEL=M030
-AUTHORIZED_SCENARIO_COUNT=1
+NEW_REPLAY_AUTHORIZED_NOW=false
+AUTHORIZED_MODEL=NONE
+AUTHORIZED_SCENARIO_COUNT=0
 
 ## Latest authority — M030 hotline-first reallocation
 
@@ -31,6 +31,13 @@ jumps directly to its final hotline and receives one physical reconciliation. Th
 engine processes the full day continuously; the frozen reporting-only random mask is
 [06,07), [12,13), [13,14). M029 is read-only baseline and is not rerun. Publish
 source/tests/Astra review before the sole run. No reroll, rerun, M031 or live action.
+
+The sole M030 run is consumed. Its complete physical ledger was recovered only at
+the reporting layer after an auditor-label mismatch; no event replay occurred.
+Matched random3h cycles improved6→13 (+116.6667%) and HOT coverage improved by
+26.8711 percentage points, but literal reclaimable-stranded time fell only40.7215%,
+below the frozen50% management gate. M030 is `INCONCLUSIVE`. No successor, rerun,
+another day, account, Testnet or live action is authorized.
 
 ## Latest authority — M029 corrected M026 full-day retry
 

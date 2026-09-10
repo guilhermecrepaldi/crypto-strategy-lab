@@ -13,6 +13,15 @@ seed CSPRNG único13525809254189156280, mask reporting-only. M029 é baseline f�
 read-only, sem rerun. Source/testes/revisão Astra/push antes do único run. Normalizado
 abaixo do minNotional, não live. Sem reroll, rerun, M031, outro dia, conta/Testnet/live.
 
+O único run M030 usou source publicado `459d023`, processou24h/254.205 trades e
+teve seu ledger físico auditado após uma correção somente de relatório, sem replay.
+Nas horas aleatórias06,12,13UTC: M029=6 ciclos, M030=13 (+116,67%); cobertura HOT
+67,41%→94,28%. O stranded literal caiu100%→59,28% (redução40,72%), abaixo do gate
+pré-registrado50%; management falhou. No dia:170 ciclos físicos,509 slot cycles;
+equity156,2522→156,3188 (+0,0666; +0,04262%), final51,1088USDT+105USDC. Auditoria
+passou, porém M030=`INCONCLUSIVE`, normalizado/não live-executable. Gate consumido;
+sem rerun, M031, outro dia, conta, Testnet ou live.
+
 ## Autoridade OWNER mais recente — M029 retry técnico M026 por24h, 2026-09-10
 
 Seguir `docs/microstructure/M029_M026_24H_TECHNICAL_RETRY_OWNER_DIRECTIVE.md` e

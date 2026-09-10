@@ -17,6 +17,7 @@ from crypto_strategy_lab.ml.model_registry import ModelRegistry, ModelStatus, co
 from scripts import run_m026_24h_extension as base
 from scripts.audit_hotline_first_reallocation import (
     independent_m030_audit,
+    normalize_m030_reporting_metrics,
     reconstruct_m029_hot_coverage,
 )
 from scripts.audit_m026_24h_extension import normalize_full_day_metrics
@@ -241,6 +242,9 @@ def execute(engine, canonical, slices, identity, evidence):
         if seen != {trade.trade_id for trade in canonical.values()}:
             raise ValueError("M030_CANONICAL_24H_NOT_FULLY_DELIVERED")
         metrics = normalize_full_day_metrics(engine.finish(time_us=base.END_US), model_id=MODEL_ID)
+        metrics = normalize_m030_reporting_metrics(
+            metrics, engine.audit, DEFAULT_EVALUATION_WINDOWS
+        )
         terminal = engine.checkpoint()
         base._write_ledger(audit_file, engine.audit)
         base.write_json(OUTPUT / "terminal-engine-state.json", terminal)

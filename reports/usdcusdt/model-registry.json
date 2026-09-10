@@ -13289,6 +13289,177 @@
         "schema_version": "usdcusdt-model-registry-v2",
         "status": "CREATED"
       }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-10T18:12:45.961792+00:00",
+      "payload": {
+        "SCENARIO_HASH": "78162aaec64929b4cb023518e6b85ec10e143643ed49635e229aafe6c3669220",
+        "label": null,
+        "model_id": "M030",
+        "scenario": {
+          "campaign_run_hash": "83483b9bfaaeae68f49c23504650a93f7e5701017a7c37a05d416d6095d376ee",
+          "capital_mode": "PHYSICAL_DYNAMIC_NORMALIZED_MECHANICS_BANK",
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "initial_marked_equity": "156.25220000",
+          "name": "M030_HOTLINE_FIRST_RANDOM_3H_FULL_DAY_ENGINE",
+          "normalized_non_executable": true,
+          "random_hours_utc": [
+            6,
+            12,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-10T18:13:27.923845+00:00",
+      "payload": {
+        "MODEL_HASH": "9b7e9c8b6471243a65e0f298397e29790fa49ec4c5211c34b97d1bda6b16c7b5",
+        "RUN_HASH": "3fc483734601e55fd0faf9382433ecf145baea2936164991ee90d15b0369e105",
+        "SCENARIO_HASH": "78162aaec64929b4cb023518e6b85ec10e143643ed49635e229aafe6c3669220",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M030\\runs\\3fc483734601e55fd0faf9382433ecf145baea2936164991ee90d15b0369e105",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "883c7af2fce336a7d0c15f534bf1af3f8373def0fe669f2ec5317ac3d1a2018d",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "459d0237ae9005fd272a91e00de744c21da71435",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "156.25220000",
+        "interval": {
+          "end_exclusive": "2025-01-02T00:00:00Z",
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "model_id": "M030",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M030\\OWNER_GATED_24H\\PRICE_PRIORITY",
+          "audit_status": "PASS_M030_HOTLINE_FIRST_LEDGER_TERMINAL_AND_MASK_AUDIT",
+          "campaign_run_hash": "83483b9bfaaeae68f49c23504650a93f7e5701017a7c37a05d416d6095d376ee",
+          "event_replay_during_finalization": false,
+          "reporting_recovery_events_delivered": 0
+        },
+        "technical_revision": "M030_REPORTING_RECOVERY_NO_EVENT_REPLAY_V1"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-10T18:13:28.471369+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M030",
+        "reason": "Register the sole completed physical M030 run",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "EVALUATION_RECORDED",
+      "occurred_at": "2026-09-10T18:13:29.023562+00:00",
+      "payload": {
+        "EVALUATION_HASH": "f52fe3e0be565f9a3b8f00048fb963374a4c099e597fbeaf42bd1c0763c9550b",
+        "EVIDENCE_HASH": "5531bd098161420df5446b5defdc4b26b75ae4a83970b285ce5999209dbee1a6",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M030\\runs\\3fc483734601e55fd0faf9382433ecf145baea2936164991ee90d15b0369e105\\evaluations\\f52fe3e0be565f9a3b8f00048fb963374a4c099e597fbeaf42bd1c0763c9550b",
+        "campaign_snapshot_id": "883c7af2fce336a7d0c15f534bf1af3f8373def0fe669f2ec5317ac3d1a2018d",
+        "comparison": {
+          "baseline": "M029",
+          "m029_matched_physical_cycles": 6,
+          "m030_matched_physical_cycles": 13,
+          "physical_cycle_improvement_pct": "116.6666666666666666666666667",
+          "random_hours_utc": [
+            6,
+            12,
+            13
+          ]
+        },
+        "criteria": {
+          "coverage_pass": true,
+          "event_rerun_performed": false,
+          "frequency_improvement_pass": true,
+          "live_executable_result": false,
+          "management_success_pass": false,
+          "physical_audit_pass": true,
+          "stranded_reduction_pass": false,
+          "strategy_pass": false,
+          "strong_improvement_pass": true
+        },
+        "decision": {
+          "campaign_snapshot_id": "883c7af2fce336a7d0c15f534bf1af3f8373def0fe669f2ec5317ac3d1a2018d",
+          "comparison": {
+            "baseline": "M029",
+            "m029_matched_physical_cycles": 6,
+            "m030_matched_physical_cycles": 13,
+            "physical_cycle_improvement_pct": "116.6666666666666666666666667",
+            "random_hours_utc": [
+              6,
+              12,
+              13
+            ]
+          },
+          "criteria": {
+            "coverage_pass": true,
+            "event_rerun_performed": false,
+            "frequency_improvement_pass": true,
+            "live_executable_result": false,
+            "management_success_pass": false,
+            "physical_audit_pass": true,
+            "stranded_reduction_pass": false,
+            "strategy_pass": false,
+            "strong_improvement_pass": true
+          },
+          "reason": "Matched frequency and HOT coverage improved, but literal stranded-time reduction was 40.72%, below the frozen 50% management gate; the result is normalized below minNotional and not live-executable.",
+          "run_hash": "3fc483734601e55fd0faf9382433ecf145baea2936164991ee90d15b0369e105",
+          "scenario_hash": "78162aaec64929b4cb023518e6b85ec10e143643ed49635e229aafe6c3669220",
+          "status": "INCONCLUSIVE"
+        },
+        "metrics": {
+          "final_marked_equity": "156.3188000000000000",
+          "full_day_physical_cycles": 170,
+          "full_day_slot_cycles": 509,
+          "hot_coverage_random_3h": "0.9428353611388888888888888889",
+          "initial_marked_equity": "156.25220000",
+          "literal_reclaimable_stranded_random_3h_pct": "59.27846257407407407407407407",
+          "marked_gain": "0.0666000000000000",
+          "marked_gain_pct": "0.04262339986252993557850705462",
+          "random_3h_physical_cycles": 13,
+          "random_3h_slot_cycles": 39,
+          "realized_cycle_pnl": "0.0642000000000000",
+          "realized_disposal_pnl": "0.0810014422000000",
+          "unrealized_pnl": "-0.0144014422000000"
+        },
+        "model_id": "M030",
+        "run_hash": "3fc483734601e55fd0faf9382433ecf145baea2936164991ee90d15b0369e105",
+        "scenario_hash": "78162aaec64929b4cb023518e6b85ec10e143643ed49635e229aafe6c3669220"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-10T18:13:29.590379+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M030",
+        "reason": "Physical and reporting-recovery audits passed",
+        "to": "EVALUATED"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-10T18:13:30.128493+00:00",
+      "payload": {
+        "from": "EVALUATED",
+        "model_id": "M030",
+        "reason": "Frequency improved 6 to 13 in matched random3h, but the complete management gate failed and live-executable evidence is absent",
+        "to": "INCONCLUSIVE"
+      }
     }
   ],
   "models": [
@@ -16528,8 +16699,8 @@
         "monthly": null,
         "run_manifest": null
       },
-      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
-      "capital_mode": "COMPOUNDING",
+      "capital_evidence": "NORMALIZED_NONEXECUTABLE_RUN_MANIFEST",
+      "capital_mode": "NORMALIZED_MECHANICS_PROBE",
       "created_at": "2026-09-10T14:48:31.276005Z",
       "currency": "USDT",
       "hypothesis": {
@@ -16539,7 +16710,7 @@
         "observation": "M029 moved the hotline through 72 ticks but recorded 1907 underfunded promotions and only 98 physical cycles in 24 hours.",
         "reason_for_new_model": "OWNER explicitly authorized a material manager change."
       },
-      "initial_capital": "100",
+      "initial_capital": "156.25220000",
       "lineage": {
         "ancestor_chain": [
           "M005",
@@ -16669,7 +16840,7 @@
       "model_id": "M030",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "INCONCLUSIVE"
     }
   ],
   "pair": "USDCUSDT",

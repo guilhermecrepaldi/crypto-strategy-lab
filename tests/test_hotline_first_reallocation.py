@@ -9,7 +9,10 @@ from crypto_strategy_lab.domain import canonical_hash
 from crypto_strategy_lab.microstructure.hotline_first_reallocation import (
     HotlineFirstDynamic321Probe,
 )
-from scripts.audit_hotline_first_reallocation import independent_m030_audit
+from scripts.audit_hotline_first_reallocation import (
+    independent_m030_audit,
+    normalize_m030_reporting_metrics,
+)
 
 
 def book(time_us: int, bid: str = "1.0019", ask: str = "1.0020") -> dict:
@@ -289,7 +292,9 @@ def full_day_audit_fixture() -> tuple[HotlineFirstDynamic321Probe, dict, dict]:
             "known_ask_ceiling": "1.02",
         }
     )
-    metrics = value.finish(time_us=end)
+    metrics = normalize_m030_reporting_metrics(
+        value.finish(time_us=end), value.audit, value.evaluation_windows
+    )
     terminal = value.checkpoint()
     return value, metrics, terminal
 
@@ -306,6 +311,22 @@ def test_independent_audit_rejects_falsified_coverage_metric() -> None:
             {},
             value.evaluation_windows,
         )
+
+
+def test_independent_audit_rejects_falsified_literal_stranded_metric() -> None:
+    value, metrics, terminal = full_day_audit_fixture()
+    bad = deepcopy(metrics)
+    bad["RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT"] = "99"
+    with pytest.raises(ValueError, match="M030_AUDIT_FULL_DAY_LITERAL_STRANDED"):
+        independent_m030_audit(value.audit, terminal, bad, {}, value.evaluation_windows)
+
+
+def test_independent_audit_rejects_falsified_raw_administrative_metric() -> None:
+    value, metrics, terminal = full_day_audit_fixture()
+    bad = deepcopy(metrics)
+    bad["RAW_ENGINE_RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT"] = "99"
+    with pytest.raises(ValueError, match="M030_AUDIT_RAW_STRANDED_TIME"):
+        independent_m030_audit(value.audit, terminal, bad, {}, value.evaluation_windows)
 
 
 def test_independent_audit_rejects_jointly_falsified_shortfall() -> None:
@@ -410,7 +431,9 @@ def test_independent_audit_accepts_direct_five_tick_jump() -> None:
             "known_ask_ceiling": "1.02",
         }
     )
-    metrics = value.finish(time_us=end)
+    metrics = normalize_m030_reporting_metrics(
+        value.finish(time_us=end), value.audit, value.evaluation_windows
+    )
     audit = independent_m030_audit(
         value.audit,
         value.checkpoint(),
@@ -445,7 +468,9 @@ def test_independent_audit_rejects_fictitious_ack_release() -> None:
                 "known_ask_ceiling": "1.02",
             }
         )
-    metrics = value.finish(time_us=end)
+    metrics = normalize_m030_reporting_metrics(
+        value.finish(time_us=end), value.audit, value.evaluation_windows
+    )
     terminal = value.checkpoint()
     bad_rows = deepcopy(value.audit)
     ack = next(row for row in bad_rows if row["event"] == "HOT_REALLOCATION_CANCEL_ACKED")

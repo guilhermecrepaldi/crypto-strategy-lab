@@ -5698,7 +5698,7 @@ M029,INCONCLUSIVE,156.25220000,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXE
   ""scenario_hash"": ""6068b994097bc0e4ad7ae26b33f6d7212dfac67dbed364a0086ccc24a1865d19"",
   ""status"": ""INCONCLUSIVE""
 }",M028 is terminal INVALIDATED_TECHNICAL and its one-run gate is consumed.,,,,,,,,,
-M030,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,9b7e9c8b6471243a65e0f298397e29790fa49ec4c5211c34b97d1bda6b16c7b5,M026,2026-09-10T14:48:31.276005Z,"Reclaiming zero-fill legacy reservations for current HOT after causal cancel ACK, while jumping directly to each book's final hotline, improves matched random-hour throughput and HOT funding coverage.",M029 moved the hotline through 72 ticks but recorded 1907 underfunded promotions and only 98 physical cycles in 24 hours.,Priority becomes RETURN>HOT>MID>FAR>old zero-fill; multi-tick books perform one final-target reconciliation.,More complete current HOT coverage and more physical cycles in the frozen matched hours without violating economic ownership.,"{
+M030,INCONCLUSIVE,156.25220000,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXECUTABLE_RUN_MANIFEST,9b7e9c8b6471243a65e0f298397e29790fa49ec4c5211c34b97d1bda6b16c7b5,M026,2026-09-10T14:48:31.276005Z,"Reclaiming zero-fill legacy reservations for current HOT after causal cancel ACK, while jumping directly to each book's final hotline, improves matched random-hour throughput and HOT funding coverage.",M029 moved the hotline through 72 ticks but recorded 1907 underfunded promotions and only 98 physical cycles in 24 hours.,Priority becomes RETURN>HOT>MID>FAR>old zero-fill; multi-tick books perform one final-target reconciliation.,More complete current HOT coverage and more physical cycles in the frozen matched hours without violating economic ownership.,"{
   ""another_day_authorized"": false,
   ""automatic_successor_authorized"": false,
   ""breakeven_positive_cycle"": false,
@@ -5796,4 +5796,46 @@ M030,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,9b7e9c8b6471243a65e
       ""slots"": 2
     }
   }
-}",,,OWNER explicitly authorized a material manager change.,,,,,,,,,
+}","{
+  ""final_marked_equity"": ""156.3188000000000000"",
+  ""full_day_physical_cycles"": 170,
+  ""full_day_slot_cycles"": 509,
+  ""hot_coverage_random_3h"": ""0.9428353611388888888888888889"",
+  ""initial_marked_equity"": ""156.25220000"",
+  ""literal_reclaimable_stranded_random_3h_pct"": ""59.27846257407407407407407407"",
+  ""marked_gain"": ""0.0666000000000000"",
+  ""marked_gain_pct"": ""0.04262339986252993557850705462"",
+  ""random_3h_physical_cycles"": 13,
+  ""random_3h_slot_cycles"": 39,
+  ""realized_cycle_pnl"": ""0.0642000000000000"",
+  ""realized_disposal_pnl"": ""0.0810014422000000"",
+  ""unrealized_pnl"": ""-0.0144014422000000""
+}","{
+  ""campaign_snapshot_id"": ""883c7af2fce336a7d0c15f534bf1af3f8373def0fe669f2ec5317ac3d1a2018d"",
+  ""comparison"": {
+    ""baseline"": ""M029"",
+    ""m029_matched_physical_cycles"": 6,
+    ""m030_matched_physical_cycles"": 13,
+    ""physical_cycle_improvement_pct"": ""116.6666666666666666666666667"",
+    ""random_hours_utc"": [
+      6,
+      12,
+      13
+    ]
+  },
+  ""criteria"": {
+    ""coverage_pass"": true,
+    ""event_rerun_performed"": false,
+    ""frequency_improvement_pass"": true,
+    ""live_executable_result"": false,
+    ""management_success_pass"": false,
+    ""physical_audit_pass"": true,
+    ""stranded_reduction_pass"": false,
+    ""strategy_pass"": false,
+    ""strong_improvement_pass"": true
+  },
+  ""reason"": ""Matched frequency and HOT coverage improved, but literal stranded-time reduction was 40.72%, below the frozen 50% management gate; the result is normalized below minNotional and not live-executable."",
+  ""run_hash"": ""3fc483734601e55fd0faf9382433ecf145baea2936164991ee90d15b0369e105"",
+  ""scenario_hash"": ""78162aaec64929b4cb023518e6b85ec10e143643ed49635e229aafe6c3669220"",
+  ""status"": ""INCONCLUSIVE""
+}",OWNER explicitly authorized a material manager change.,,,,,,,,,
