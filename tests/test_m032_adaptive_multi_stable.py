@@ -427,6 +427,32 @@ def test_same_price_replacement_gets_new_public_queue_epoch() -> None:
     assert queue.queue_ahead("NEW") == D("100")
 
 
+def test_same_timestamp_uses_activation_sequence_not_lexical_order() -> None:
+    queue = CausalQueueEstimator()
+    queue.activate(
+        book="B",
+        side="BUY",
+        price=D("1"),
+        order_id="Z_FIRST",
+        column=1,
+        quantity=D("1"),
+        observed_public_queue=D("0"),
+        now_us=10,
+    )
+    queue.activate(
+        book="B",
+        side="BUY",
+        price=D("1"),
+        order_id="A_SECOND",
+        column=2,
+        quantity=D("1"),
+        observed_public_queue=D("100"),
+        now_us=10,
+    )
+    assert queue.queue_ahead("Z_FIRST") == 0
+    assert queue.queue_ahead("A_SECOND") == D("101")
+
+
 def test_causal_queue_score_rejects_future_reordering() -> None:
     queue = CausalQueueEstimator()
     queue.activate(

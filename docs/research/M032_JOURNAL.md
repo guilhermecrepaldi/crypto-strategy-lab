@@ -60,3 +60,10 @@ fee in the input asset as part of the leg's consumed capital, does not deduct it
 second time from PnL, and reserves separate origin-value attribution for fees paid
 in a third asset. Post-correction validation passed 50 M032 tests plus 85 inherited
 regressions (135 total), Ruff and strict mypy. A fourth source-bound review is required.
+
+The fourth review on `8d96ddd...` confirmed input-fee correctness but found that
+same-timestamp activations used lexical order ID as the FIFO tie-break. This could
+place later C2/public cohort ahead of earlier C1. The queue now assigns a monotonic
+causal activation ordinal and orders by timestamp then ordinal. Post-correction
+validation passed 51 M032 tests plus 85 inherited regressions (136 total), Ruff and
+strict mypy. A fifth source-bound review is required.

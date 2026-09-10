@@ -17,6 +17,7 @@ class OwnQueueOrder:
     quantity: D
     remaining: D
     activated_at_us: int
+    activation_sequence: int
     public_barrier_before: D = ZERO
     first_fill_at_us: int | None = None
     filled_at_us: int | None = None
@@ -56,6 +57,7 @@ class CausalQueueEstimator:
         self.first_fill_waits_us: dict[tuple[str, str, D], list[int]] = {}
         self.full_fill_waits_us: dict[tuple[str, str, D], list[int]] = {}
         self.last_time_us = -1
+        self.next_activation_sequence = 0
 
     def activate(
         self,
@@ -95,16 +97,21 @@ class CausalQueueEstimator:
         if any(row.column == column for row in group.own_orders if row.remaining > ZERO):
             raise ValueError("M032_DUPLICATE_COLUMN_AT_PRICE")
         order = OwnQueueOrder(
-            order_id,
-            column,
-            quantity,
-            quantity,
-            now_us,
+            order_id=order_id,
+            column=column,
+            quantity=quantity,
+            remaining=quantity,
+            activated_at_us=now_us,
+            activation_sequence=self.next_activation_sequence,
             public_barrier_before=later_public_cohort,
         )
+        self.next_activation_sequence += 1
         group.own_orders.append(order)
         group.own_orders = deque(
-            sorted(group.own_orders, key=lambda row: (row.activated_at_us, row.order_id))
+            sorted(
+                group.own_orders,
+                key=lambda row: (row.activated_at_us, row.activation_sequence),
+            )
         )
         self.order_group[order_id] = key
         self._validate_group(group)
@@ -242,7 +249,10 @@ class CausalQueueEstimator:
         active = [row for row in group.own_orders if row.remaining > ZERO]
         if len(active) > 2:
             raise ValueError("M032_MAX_TWO_COLUMNS_PER_PRICE")
-        ordered = sorted(active, key=lambda row: (row.activated_at_us, row.order_id))
+        ordered = sorted(
+            active,
+            key=lambda row: (row.activated_at_us, row.activation_sequence),
+        )
         if active != ordered:
             raise ValueError("M032_OWN_FIFO_ORDER_DRIFT")
         if len({row.column for row in active}) != len(active):
