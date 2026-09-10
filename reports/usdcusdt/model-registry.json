@@ -12777,6 +12777,85 @@
         "schema_version": "usdcusdt-model-registry-v2",
         "status": "CREATED"
       }
+    },
+    {
+      "event_type": "SCENARIO_REGISTERED",
+      "occurred_at": "2026-09-10T03:38:13.859434+00:00",
+      "payload": {
+        "SCENARIO_HASH": "4d4c8f2bd2763fd44e5efac58c9e10ca94f780c3498a87469a3caa43466b964d",
+        "label": null,
+        "model_id": "M028",
+        "scenario": {
+          "campaign_run_hash": "cd0870708011efd12dd807b06cc68ad7fc025744b402459dcd3b50a4d1f025a3",
+          "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+          "completed": false,
+          "execution_envelope": "PRICE_PRIORITY",
+          "execution_profile": "B_REALISTIC_CONSERVATIVE",
+          "initial_marked_equity": "156.25220000",
+          "name": "M028_M026_FULL_DAY_ATTEMPT_INVALIDATED_AT_3H_GATE"
+        }
+      }
+    },
+    {
+      "event_type": "RUN_REGISTERED",
+      "occurred_at": "2026-09-10T03:38:14.318365+00:00",
+      "payload": {
+        "MODEL_HASH": "76305edc1bab271d5358ad6954195ff01ad77319a4a9f5dc7bc4b1c9d46be301",
+        "RUN_HASH": "6cef8071f05738fbdce2790fa7bd09b208c748cc996c0f5221169b9bd593c62d",
+        "SCENARIO_HASH": "4d4c8f2bd2763fd44e5efac58c9e10ca94f780c3498a87469a3caa43466b964d",
+        "artifact_directory": "artifacts\\usdcusdt\\models\\M028\\runs\\6cef8071f05738fbdce2790fa7bd09b208c748cc996c0f5221169b9bd593c62d",
+        "backend": {
+          "backend": "CPU",
+          "batch_size": null,
+          "benchmark_hash": null,
+          "device": null,
+          "driver": null,
+          "library": null,
+          "library_version": null,
+          "runtime": null
+        },
+        "campaign_snapshot_id": "f28ecfa84b0f42640432bb86da5426e92b7ebab49e90552d0ce1dfc4f8ae7375",
+        "capital_mode": "NORMALIZED_MECHANICS_PROBE",
+        "code_commit": "915cc44c3957dba467bc758dbe9adf81e484b468",
+        "currency": "USDT",
+        "dataset_hash": "c9d19382d3aa2593b9e80f3238fda1d0cd9f22a7fd9eaaf002969fa8de87b579",
+        "initial_capital": "156.25220000",
+        "interval": {
+          "authorized_end_exclusive": "2025-01-02T00:00:00Z",
+          "authorized_start": "2025-01-01T00:00:00Z",
+          "complete": false,
+          "reached_end_exclusive": "2025-01-01T03:00:00Z"
+        },
+        "model_id": "M028",
+        "run": {
+          "artifact_directory": "artifacts\\usdcusdt\\l2-monthly-samples\\M028\\OWNER_GATED_24H\\PRICE_PRIORITY",
+          "campaign_run_hash": "cd0870708011efd12dd807b06cc68ad7fc025744b402459dcd3b50a4d1f025a3",
+          "classification": "INVALIDATED_TECHNICAL",
+          "event_replay_during_finalization": false,
+          "post_03h_events_processed": 0
+        },
+        "technical_revision": "M028_PREFIX_CHECKPOINT_TYPE_COMPARATOR_FAILURE"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-10T03:38:14.766241+00:00",
+      "payload": {
+        "from": "CREATED",
+        "model_id": "M028",
+        "reason": "Register the preserved prefix reached by the only authorized M028 attempt",
+        "to": "RUNNING"
+      }
+    },
+    {
+      "event_type": "STATUS_CHANGED",
+      "occurred_at": "2026-09-10T03:38:15.224482+00:00",
+      "payload": {
+        "from": "RUNNING",
+        "model_id": "M028",
+        "reason": "Prefix economic ledger matched M026 exactly, but a Decimal/int-key versus JSON string-type checkpoint comparison falsely rejected the state before 03h+",
+        "to": "INVALIDATED_TECHNICAL"
+      }
     }
   ],
   "models": [
@@ -15747,8 +15826,8 @@
         "monthly": null,
         "run_manifest": null
       },
-      "capital_evidence": "PLANNED_CANONICAL_CONTRACT",
-      "capital_mode": "COMPOUNDING",
+      "capital_evidence": "NORMALIZED_NONEXECUTABLE_RUN_MANIFEST",
+      "capital_mode": "NORMALIZED_MECHANICS_PROBE",
       "created_at": "2026-09-10T03:10:32.251408Z",
       "currency": "USDT",
       "hypothesis": {
@@ -15758,7 +15837,7 @@
         "observation": "M026 completed 30 physical cycles and increased marked equity by 0.0287996% in its frozen first three hours.",
         "reason_for_new_model": "Replay duration is part of the immutable M026 model identity."
       },
-      "initial_capital": "100",
+      "initial_capital": "156.25220000",
       "lineage": {
         "ancestor_chain": [
           "M005",
@@ -15856,7 +15935,7 @@
       "model_id": "M028",
       "pair": "USDCUSDT",
       "schema_version": "usdcusdt-model-registry-v2",
-      "status": "CREATED"
+      "status": "INVALIDATED_TECHNICAL"
     }
   ],
   "pair": "USDCUSDT",

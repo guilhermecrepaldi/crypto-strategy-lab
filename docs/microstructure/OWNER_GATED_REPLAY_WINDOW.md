@@ -8,9 +8,9 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=true
-AUTHORIZED_MODEL=M028
-AUTHORIZED_SCENARIO_COUNT=1
+NEW_REPLAY_AUTHORIZED_NOW=false
+AUTHORIZED_MODEL=NONE
+AUTHORIZED_SCENARIO_COUNT=0
 
 ## Latest authority — M028 unchanged M026 strategy, full January 1 day
 
@@ -28,6 +28,14 @@ before/after equity and percentage gain. M026 remains immutable; the duration ch
 is M028. The exact M026 strategy starts once at midnight and runs continuously to
 the next midnight, with a hard 00:00–03:00 prefix-equivalence gate. No tuning,
 M027 MICRO geometry, reset, capital injection, cutoff liquidation or live action.
+
+The only M028 attempt stopped at the prefix gate before any event at or after03:00.
+Its audit ledger is byte-identical to M026. The strongest reproduced diagnosis is
+that the raw checkpoint comparison treated in-memory `Decimal`/integer-key state as
+different from its JSON string representation; the rejected checkpoint was not saved,
+so this is not proven to be the only non-ledger difference.
+M028 is `INVALIDATED_TECHNICAL`; the24h result is unavailable and the gate is closed.
+No rerun, resume, M029, another day or live action is authorized.
 
 ## Latest authority — M027 micro-hot controlled A/B, three hours only
 

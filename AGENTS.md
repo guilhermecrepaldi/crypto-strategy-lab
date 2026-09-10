@@ -11,7 +11,13 @@ prefixo00–03h deve reproduzir ledger e estado econômico M026, normalizando ap
 `end_us`, antes de consumir a extensão. Reportar equity antes/depois, ganho absoluto
 e percentual, ganho adicional após03:00, ciclos totais e por hora. Continua
 normalizado abaixo do minNotional, não live-executable. Preregister/testar/revisar
-com Astra/publicar antes do único run; sem rerun, outro dia, M029 ou live.
+com Astra/publicar antes do único run; sem rerun, outro dia, M029 ou live. O único
+run M028 foi bloqueado antes do primeiro evento pós-03h: ledger do prefixo idêntico
+ao M026. O diagnóstico reproduzido aponta comparação crua de `Decimal`/chaves
+inteiras em memória contra strings JSON; o checkpoint rejeitado não foi persistido,
+logo não se prova que essa era a única diferença fora do ledger.
+M028=`INVALIDATED_TECHNICAL`; não existe resultado24h. O gate está consumido e um
+retry corrigido exige nova autorização/identidade.
 
 ## Autoridade OWNER mais recente — M027 micro-hot realocation, 2026-09-09
 

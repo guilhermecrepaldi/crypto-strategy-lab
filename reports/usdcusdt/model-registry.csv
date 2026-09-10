@@ -5527,7 +5527,7 @@ M027,INCONCLUSIVE,155.98674000,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXE
   ""scenario_hash"": ""d17124461a1ef519db8f401a150343be73a983c7ce79d530bcc02df997ed9d6d"",
   ""status"": ""INCONCLUSIVE""
 }",Fine-price geometry and a controlled two-scenario tape materially change experimental meaning.,,,,,,,,,
-M028,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,76305edc1bab271d5358ad6954195ff01ad77319a4a9f5dc7bc4b1c9d46be301,M026,2026-09-10T03:10:32.251408Z,The unchanged M026 engine can continue operating for the full January 1 tape without a reset while preserving positive marked return.,M026 completed 30 physical cycles and increased marked equity by 0.0287996% in its frozen first three hours.,Change only the replay end from 03:00 to 24:00 UTC; preserve all M026 strategy and execution parameters.,"Measure full-day cycles, cycles/hour and marked equity before/after; no minimum return is assumed.","{
+M028,INVALIDATED_TECHNICAL,156.25220000,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXECUTABLE_RUN_MANIFEST,76305edc1bab271d5358ad6954195ff01ad77319a4a9f5dc7bc4b1c9d46be301,M026,2026-09-10T03:10:32.251408Z,The unchanged M026 engine can continue operating for the full January 1 tape without a reset while preserving positive marked return.,M026 completed 30 physical cycles and increased marked equity by 0.0287996% in its frozen first three hours.,Change only the replay end from 03:00 to 24:00 UTC; preserve all M026 strategy and execution parameters.,"Measure full-day cycles, cycles/hour and marked equity before/after; no minimum return is assumed.","{
   ""another_day_authorized"": false,
   ""automatic_successor_authorized"": false,
   ""auxiliary_physical_ruler_24h"": 304,

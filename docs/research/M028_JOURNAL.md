@@ -42,3 +42,31 @@ Append-only journal for the M026 full-day temporal replication.
   the exact test-only hash exception, strict economic/physical bindings, 24h result
   reconciliation and real-kernel no-reset fixture. The review binds all 35 source
   files. Publication and clean-HEAD checks remain before the single run.
+
+## 2026-09-10 — only authorized run invalidated at the prefix gate
+
+- Pre-run source was committed and pushed as `915cc44`; `HEAD==origin/main`, the
+  source-bound Astra review and all preflight gates passed before execution.
+- The run reached the exact 03:00 boundary, then failed closed with
+  `M028_M026_PREFIX_ECONOMIC_STATE_MISMATCH` before any later event was delivered.
+- `EVENTS_AFTER_03H_PROCESSED=0`; the 21-hour extension was not consumed and no
+  24-hour result exists.
+- The preserved M028 ledger is byte-for-byte identical to the published M026 ledger:
+  43,372 rows and SHA-256
+  `7d3fc1e67a41395c353009e829d1288562f8f25eb4554c3f2cf4db9743fd4bb8`.
+  Fills, cycles and ledgered economics through03:00 therefore matched.
+- Strongest reproduced diagnosis is a type-sensitive checkpoint comparison: the
+  live object retained `Decimal` values and integer dictionary keys while published
+  JSON restored strings. The failed process did not persist the rejected checkpoint,
+  so the artifacts cannot prove this was the only non-ledger state difference. It
+  remains a technical failure, not a strategy/economic result.
+- M028 is `INVALIDATED_TECHNICAL`. Its one-run gate is consumed; no rerun, resume,
+  M029 or post-03:00 replay is authorized. A corrected retry requires a new OWNER
+  authorization and identity.
+- The immutable reached reference remains M026: marked equity156.2522→156.2972,
+  gain0.0450 or0.0287995945%,30 physical and90 slot-equivalent cycles in3h.
+- Failure finalization registered only preserved artifacts and performed no market
+  event replay.
+- Final GPT-6 Astra post-failure review: `PASS` for technical closure, with the
+  limitation above. It independently confirmed43,372 ledger rows,29,538 trades,
+  78 fills,30 cycles, the identical ledger hash and no economic event at/after03:00.

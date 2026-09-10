@@ -1,0 +1,41 @@
+{
+  "AUTHORIZED_PERIOD": "2025-01-01T00:00:00Z/2025-01-02T00:00:00Z",
+  "CAMPAIGN_SNAPSHOT_ID": "f28ecfa84b0f42640432bb86da5426e92b7ebab49e90552d0ce1dfc4f8ae7375",
+  "CLASSIFICATION": "BUG_TECNICO_NO_COMPARADOR_DE_CHECKPOINT",
+  "CORRECTIVE_ACTION_NOT_EXECUTED": "Canonicalize both checkpoint states through the same JSON representation before the semantic equality check. A new authorized identity is required.",
+  "DIAGNOSTIC_LIMITATION": "The failed process did not persist the rejected in-memory checkpoint, so the preserved physical artifacts cannot prove that representation differences were the only non-ledger state differences.",
+  "EVENTS_AFTER_03H_PROCESSED": 0,
+  "EVENT_REPLAY_DURING_FINALIZATION": false,
+  "FAILURE": {
+    "RUN_STATUS": "INCOMPLETE_PRESERVED",
+    "error": "M028_M026_PREFIX_ECONOMIC_STATE_MISMATCH",
+    "exception_type": "ValueError",
+    "ledger_sha256": "7d3fc1e67a41395c353009e829d1288562f8f25eb4554c3f2cf4db9743fd4bb8",
+    "run_hash": "cd0870708011efd12dd807b06cc68ad7fc025744b402459dcd3b50a4d1f025a3"
+  },
+  "FULL_DAY_FINAL_MARKED_EQUITY": null,
+  "FULL_DAY_GAIN_ABSOLUTE": null,
+  "FULL_DAY_GAIN_PERCENT": null,
+  "FULL_DAY_INITIAL_MARKED_EQUITY": "156.25220000",
+  "FULL_DAY_RESULT_AVAILABLE": false,
+  "M026_PREFIX_FINAL_MARKED_EQUITY": "156.2972000000000000",
+  "M026_PREFIX_GAIN_ABSOLUTE": "0.0450000000000000",
+  "M026_PREFIX_GAIN_PERCENT": "0.028799594501709415931423700",
+  "M026_PREFIX_INITIAL_MARKED_EQUITY": "156.25220000",
+  "M026_PREFIX_PHYSICAL_CYCLES": 30,
+  "M026_PREFIX_SLOT_EQUIVALENT_CYCLES": 90,
+  "MODEL": "M028",
+  "MODEL_STATUS": "INVALIDATED_TECHNICAL",
+  "PHYSICAL_FILE_SHA256": {
+    "artifacts\\usdcusdt\\l2-monthly-samples\\M028\\OWNER_GATED_24H\\PRICE_PRIORITY\\execution-audit.jsonl": "7d3fc1e67a41395c353009e829d1288562f8f25eb4554c3f2cf4db9743fd4bb8",
+    "artifacts\\usdcusdt\\l2-monthly-samples\\M028\\OWNER_GATED_24H\\PRICE_PRIORITY\\failure.json": "45e76d17fc9f5472755816ef3af3c3c0b1fc613a8507970848ac807e8eb9bb22",
+    "artifacts\\usdcusdt\\l2-monthly-samples\\M028\\OWNER_GATED_24H\\PRICE_PRIORITY\\run-manifest.json": "ef7cb5c985df34b4b3248ead945dfeb2c07e33e5d86b58318898acf4a7d60d98"
+  },
+  "PREFIX_LEDGER_EXACT_BYTE_MATCH": true,
+  "PREFIX_LEDGER_SHA256": "7d3fc1e67a41395c353009e829d1288562f8f25eb4554c3f2cf4db9743fd4bb8",
+  "REACHED_PERIOD": "2025-01-01T00:00:00Z/2025-01-01T03:00:00Z",
+  "REGISTRY_RUN_HASH": "6cef8071f05738fbdce2790fa7bd09b208c748cc996c0f5221169b9bd593c62d",
+  "RERUN_PERFORMED": false,
+  "ROOT_CAUSE_DIAGNOSIS": "The prefix gate compared an in-memory checkpoint containing Decimal values and integer dictionary keys with its JSON-deserialized published checkpoint, where those values and keys are strings. This representation defect was reproduced diagnostically and the economic ledger is byte-identical.",
+  "RUN_STATUS": "INCOMPLETE_PRESERVED_PREFIX_GATE_FAILURE"
+}
