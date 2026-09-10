@@ -25,7 +25,21 @@ Draft `MODEL_HASH=fb35f67e414cce9cb03b0e83824304f9b4286617b679785663e941fca6e112
 It identifies the blocked model specification only; it is not a registry identity
 or an executed strategy result.
 
-Validation: 38 M032 tests and 85 inherited FIFO/hotline-manager regression tests
-passed (123 total). Ruff and strict mypy passed for the new source. The historical
+Initial validation: 38 M032 tests and 85 inherited FIFO/hotline-manager regression
+tests passed (123 total). Ruff and strict mypy passed for the new source. The historical
 test harness requires the repository root on `PYTHONPATH` for tests importing
 `scripts`; this environment detail did not alter source or results.
+
+The first source-bound GPT-6 Astra review on published source `a80fbd75...` returned
+`BLOCK`. Reproduced findings were non-atomic fill validation, cancel/fill race and
+causal ACK defects, same-price replacement inheriting an empty queue epoch, route
+fills detached from ledger ownership, and manager safeguards not enforced at the
+configuration/allocation boundary.
+
+Corrections validate before mutation, enforce lifecycle time/state, preserve owned
+fills during cancel races while releasing only residual on ACK, segment later public
+cohorts, reset an empty queue epoch, bind every route fragment to a unique ledger
+fill/reservation, close cycles through the ledger, protect obligations in allocation,
+and validate safety/hotline/rank/cell uniqueness. The data audit now hashes physical
+L2 and trade files. Post-correction validation passed 45 M032 tests plus 85 inherited
+regressions (130 total), Ruff and strict mypy. A second source-bound review is required.

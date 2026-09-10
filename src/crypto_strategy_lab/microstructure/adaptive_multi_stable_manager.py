@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from decimal import ROUND_FLOOR
+from decimal import ROUND_HALF_UP
 
 from crypto_strategy_lab.microstructure.multi_stable_ledger import SlotLedger
 from crypto_strategy_lab.microstructure.multi_stable_models import (
@@ -123,6 +123,12 @@ class AdaptiveColumnAllocator:
         selected: list[ScoreBreakdown] = []
         left = available_capital
         for row in self.scorer.rank(opportunities):
+            if row.priority_class == 1:
+                if row.capital > left:
+                    break
+                selected.append(row)
+                left -= row.capital
+                continue
             if row.score <= ZERO or row.capital > left:
                 continue
             selected.append(row)
@@ -151,7 +157,7 @@ class AdaptiveCapitalOrderManager:
     def update_hotline(self, symbol: str, *, midpoint: D, now_us: int) -> BookState:
         rule = self.rules[symbol]
         target = (midpoint / rule.tick_size).to_integral_value(
-            rounding=ROUND_FLOOR
+            rounding=ROUND_HALF_UP
         ) * rule.tick_size
         current = self.books.get(symbol)
         if current is None:
@@ -179,10 +185,49 @@ class AdaptiveCapitalOrderManager:
         column: int,
         quantity: D,
         now_us: int,
+        peg_deviation: D,
+        spread: D,
+        depth_usd: D,
+        data_gap: bool,
     ) -> EconomicSlot:
         rule = self.rules[symbol]
         rule.validate_order(price=price, quantity=quantity, time_us=now_us)
         slot = self.ledger.slots[slot_id]
+        if (
+            slot.state != SlotState.FREE
+            or slot.reservation_id is not None
+            or slot.filled_qty > ZERO
+        ):
+            raise ValueError("M032_ACTIVE_SLOT_CELL_IMMUTABLE")
+        if not {rule.base_asset, rule.quote_asset}.issubset(self.universe.eligible_assets):
+            raise ValueError("M032_BOOK_ASSET_NOT_ELIGIBLE")
+        if not self.peg_guard.allows_entry(
+            peg_deviation=peg_deviation,
+            spread=spread,
+            depth_usd=depth_usd,
+            data_gap=data_gap,
+        ):
+            raise ValueError("M032_SAFETY_GUARD_BLOCK")
+        if side not in {"BUY", "SELL"}:
+            raise ValueError("M032_INVALID_SIDE")
+        hotline = self.books.get(symbol)
+        if hotline is None:
+            raise ValueError("M032_HOTLINE_NOT_INITIALIZED")
+        expected_price = hotline.hotline + (
+            -rule.tick_size * D(rank) if side == "BUY" else rule.tick_size * D(rank)
+        )
+        if price != expected_price:
+            raise ValueError("M032_PRICE_RANK_HOTLINE_MISMATCH")
+        for other_id, other in self.ledger.slots.items():
+            if other_id == slot_id or other.state in {SlotState.CLOSED}:
+                continue
+            if (other.book, other.side, other.price, other.column) == (
+                symbol,
+                side,
+                price,
+                column,
+            ):
+                raise ValueError("M032_DUPLICATE_PHYSICAL_CELL")
         slot.book = symbol
         slot.side = side
         slot.price = price

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -9,12 +10,30 @@ from crypto_strategy_lab.microstructure.multi_stable_data import build_report
 def write_validation(root: Path, symbol: str, date: str, *, valid: bool = True) -> None:
     path = root / "data" / "l2" / "tardis" / "binance" / symbol.lower() / date
     path.mkdir(parents=True)
+    l2_bytes = b"physical-l2"
+    trade_bytes = b"physical-trades"
+    (path / "incremental_book_L2.csv.gz").write_bytes(l2_bytes)
+    trade_path = (
+        root
+        / "data"
+        / "raw"
+        / "binance-microstructure"
+        / symbol.upper()
+        / "trades"
+        / f"{symbol.upper()}-trades-{date}.zip"
+    )
+    trade_path.parent.mkdir(parents=True, exist_ok=True)
+    trade_path.write_bytes(trade_bytes)
     payload = {
         "L2_DAY_VALID": valid,
         "CSV_ROWS": 10,
         "TRADES": 5,
         "binding": {"normalized_binding_gate": "PASS"},
         "coverage": {"gate": "PASS"},
+        "input_binding": {
+            "csv_sha256": hashlib.sha256(l2_bytes).hexdigest(),
+            "canonical_archive_sha256": hashlib.sha256(trade_bytes).hexdigest(),
+        },
     }
     (path / "validation.json").write_text(json.dumps(payload), encoding="utf-8")
 

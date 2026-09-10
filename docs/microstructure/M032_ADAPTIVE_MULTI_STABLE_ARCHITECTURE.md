@@ -43,10 +43,17 @@ No M030 result or M031 draft code is mutated.
 ## Known pre-replay limitations
 
 The architecture is a deterministic library, not yet wired to a historical
-multi-book event runner. Public-depth increases arriving after C1/C2 activation
-need the existing segmented-cohort semantics at integration time; M032 V1 never
-places an unprovable later increase ahead of an order. The causal probability
-estimator is descriptive, not a deterministic fill rule. Historical rule and fee
-profiles remain unresolved until books and dates are eligible.
+multi-book event runner. Same-price queue state separates the initial public
+barrier from later public cohorts observed before a younger own order; a fully
+empty own queue begins a new public-depth epoch. The causal probability estimator
+is an uncalibrated descriptive heuristic, not a deterministic fill rule, and route
+leg probabilities must not be treated as statistically independent evidence
+without calibration. Score penalties use the same expected-PnL unit before
+capital-time normalization. Historical rule and fee profiles remain unresolved
+until books and dates are eligible.
+
+Initial hotline quantization uses nearest historical tick (`ROUND_HALF_UP`) from
+the causal midpoint. This is explicit M032 semantics, not a claim of bit-equivalence
+to M030's initial ask and half-tick movement state machine.
 
 These limits do not authorize an economic replay.

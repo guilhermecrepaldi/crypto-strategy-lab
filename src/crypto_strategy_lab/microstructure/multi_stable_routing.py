@@ -45,6 +45,8 @@ class PairProductivityScorer:
         )
         if any(value < ZERO or value > D(1) for value in unit_values):
             raise ValueError("M032_SCORE_COMPONENT_OUT_OF_RANGE")
+        if opportunity.lost_fifo_value < ZERO:
+            raise ValueError("M032_NEGATIVE_FIFO_VALUE")
         if opportunity.capital <= ZERO or opportunity.expected_lock_seconds <= ZERO:
             raise ValueError("M032_INVALID_SCORE_DENOMINATOR")
         gross = (
@@ -157,47 +159,60 @@ class CycleManager:
         self,
         candidate: RouteCandidate,
         *,
+        execution_id: str,
         slot_id: str,
         quantity: D,
         now_us: int,
     ) -> RouteProgress:
-        if candidate.route_id in self.routes:
-            raise ValueError("M032_DUPLICATE_ROUTE_ID")
+        if execution_id in self.routes:
+            raise ValueError("M032_DUPLICATE_ROUTE_EXECUTION_ID")
         if self.ledger.slots[slot_id].origin_asset != candidate.origin_asset:
             raise ValueError("M032_ROUTE_SLOT_ORIGIN_MISMATCH")
         progress = RouteProgress(
+            execution_id=execution_id,
             candidate=candidate,
             slot_id=slot_id,
             initial_quantity=quantity,
             current_asset=candidate.origin_asset,
             current_quantity=quantity,
             started_at_us=now_us,
+            leg_input_remaining=quantity,
         )
-        self.routes[candidate.route_id] = progress
-        self.ledger.slots[slot_id].route_id = candidate.route_id
+        self.routes[execution_id] = progress
+        self.ledger.slots[slot_id].route_id = execution_id
         return progress
 
-    def record_fill(self, route_id: str, fill: PhysicalFill) -> bool:
-        progress = self.routes[route_id]
+    def record_fill(self, execution_id: str, reservation_id: str, fill: PhysicalFill) -> bool:
+        progress = self.routes[execution_id]
         if progress.next_leg_index >= len(progress.candidate.legs):
             raise ValueError("M032_ROUTE_ALREADY_CLOSED")
         leg = progress.candidate.legs[progress.next_leg_index]
+        reservation = self.ledger.reservations[reservation_id]
         if (
             fill.fill_id in progress.completed_fill_ids
+            or reservation.slot_id != progress.slot_id
             or fill.symbol != leg.symbol
             or fill.from_asset != progress.current_asset
             or fill.to_asset != leg.to_asset
-            or fill.input_quantity != progress.current_quantity
+            or fill.input_quantity > progress.leg_input_remaining
+            or fill.time_us < progress.started_at_us
         ):
             raise ValueError("M032_ROUTE_FILL_DOES_NOT_MATCH_NEXT_LEG")
+        self.ledger.apply_fill(reservation_id, fill)
         progress.completed_fill_ids.append(fill.fill_id)
         progress.fees_by_asset[fill.fee_asset] = (
             progress.fees_by_asset.get(fill.fee_asset, ZERO) + fill.fee_quantity
         )
+        progress.leg_input_remaining -= fill.input_quantity
+        progress.leg_output_accumulated += fill.output_quantity_net
+        if progress.leg_input_remaining > ZERO:
+            return False
         progress.current_asset = fill.to_asset
-        progress.current_quantity = fill.output_quantity_net
+        progress.current_quantity = progress.leg_output_accumulated
         progress.next_leg_index += 1
         if progress.next_leg_index < len(progress.candidate.legs):
+            progress.leg_input_remaining = progress.current_quantity
+            progress.leg_output_accumulated = ZERO
             return False
         if progress.current_asset != progress.candidate.origin_asset:
             raise ValueError("M032_COMPLETED_ROUTE_NOT_IN_ORIGIN_ASSET")
@@ -206,7 +221,13 @@ class CycleManager:
             raise ValueError("M032_NEGATIVE_REALIZED_EXIT_PROHIBITED")
         progress.realized_pnl_origin = pnl
         progress.closed_at_us = fill.time_us
-        self.closed_cycles.append(route_id)
+        self.ledger.close_slot(
+            progress.slot_id,
+            origin_quantity=progress.initial_quantity,
+            now_us=fill.time_us,
+            cycle_id=execution_id,
+        )
+        self.closed_cycles.append(execution_id)
         return True
 
 

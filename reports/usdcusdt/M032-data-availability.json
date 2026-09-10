@@ -14,72 +14,96 @@
       {
         "date": "2025-01-01",
         "l2_rows": 828955,
+        "l2_sha256": "cd1fd61021c74911bb73104353b23ac31e8cf3c958e16dcfcd1258d80a819305",
+        "trade_archive_sha256": "80e7138acd1ad8255bb2dac1d1a1c7d60ef0c104f4979da70e15d1af27b2e572",
         "trades": 254205,
         "validation_sha256": "9eb8bf9bad9b0664b184b57d9dc6894f2aabdfb2c91c7bc178bb58229a917ccd"
       },
       {
         "date": "2025-02-01",
         "l2_rows": 934812,
+        "l2_sha256": "6f6ed77db85acfc053c1b2302121647861b0e620a36e13be1cc6f1070e970915",
+        "trade_archive_sha256": "295d6977fe72aac758802dccfd2f6ec27f7a03db84e5f1ea3bab56226626ad1d",
         "trades": 326480,
         "validation_sha256": "c593549c61fb5241298841d5eaa5a52d439627675cb2ec5b506c04c917be7dc7"
       },
       {
         "date": "2025-03-01",
         "l2_rows": 969097,
+        "l2_sha256": "219200fade787e5393014d8fa31dd60ed8e04ad555eea96fa7c69990c27f5acb",
+        "trade_archive_sha256": "9bb9eeeba6ba2b94801622238be241627583d0ff559975ee8777455cb92686f8",
         "trades": 347113,
         "validation_sha256": "4146f720210f5788aa9e42b793adda4523d49bfe08ac119cc7a45af3d19aeb9e"
       },
       {
         "date": "2025-04-01",
         "l2_rows": 1225694,
+        "l2_sha256": "c1f969dd011b2214d2bfcf47de8af5717437d7e1d597c78eb90414522c490c5c",
+        "trade_archive_sha256": "32cfb269bf4719ccf92ce2f0fecd4abaf25aa405ed3529533a935a6dfc29b2c6",
         "trades": 600715,
         "validation_sha256": "a15147486153cfb2fb30287d0678e9775ac25253aae5dc7306c4c27732cf4dc1"
       },
       {
         "date": "2025-06-01",
         "l2_rows": 942763,
+        "l2_sha256": "0c1ff28cb7abc7a88a4953a078cfc991ff84d3979e26801081e25c4c6644d602",
+        "trade_archive_sha256": "b5bdede6a069eeda804afad45e1e383f362993c77884dc863c5f5de6d4c637eb",
         "trades": 179921,
         "validation_sha256": "f543fbbeb7c7ebe1212713bdb2338b2c0ae47a7a5f8442f4e2bad1369a88723b"
       },
       {
         "date": "2025-08-01",
         "l2_rows": 1102002,
+        "l2_sha256": "42aa756f110cb1f241e32915851e8f8f4195f23d9dc7ebef9d3d316abf3d1836",
+        "trade_archive_sha256": "20c2ac3c67bb5c7cbd92d58cf023e8dedd3018077e3a02f7babee5119a4e2e7e",
         "trades": 535551,
         "validation_sha256": "9ba12401fae1a4f5f05a9a25407041f7dc60ea1168ef90714a3fb85c7e62cb27"
       },
       {
         "date": "2026-01-01",
         "l2_rows": 1223832,
+        "l2_sha256": "2b03fa8b1b352fa7658b1c1c053533c75eb588c141d149f1284d677a55a4ab8b",
+        "trade_archive_sha256": "a7d8a5f44fffecc1e29294926a23f936e82c82b87915ad40c740504edfe391a4",
         "trades": 305359,
         "validation_sha256": "18b45067498be779645e0b8b7c5cf8ff1e4c7fdfe60d3433eca4ea94a70e173c"
       },
       {
         "date": "2026-02-01",
         "l2_rows": 1216978,
+        "l2_sha256": "e8ddf2cd7da1cb7f2793b490d442862a0bab97961bd26fa9f93d039afdab71eb",
+        "trade_archive_sha256": "46c17975b798a2edeeec607ef145f4886ab202e6cab4db0ee45acdf6623a0c46",
         "trades": 428821,
         "validation_sha256": "1007915fae7fe901b6de1c27b26db1cf3af24e1a350e7c5c96e5affa1e8cd31f"
       },
       {
         "date": "2026-03-01",
         "l2_rows": 494318,
+        "l2_sha256": "feb71cd15841dfe4fa2020d445b395e5c34cf062a675a2ff1e8d696c8a590cf4",
+        "trade_archive_sha256": "683bd2da10880362a34ee20dda4e8496e703d483433c2e6effc45e58dd7f2096",
         "trades": 383704,
         "validation_sha256": "ff46aa238705f40c22c11c2c2dd9378cb0372040ab432ae83f543772575bf9f6"
       },
       {
         "date": "2026-04-01",
         "l2_rows": 1164580,
+        "l2_sha256": "ac6ee757432aec7267587bb8f793280ec6a3df5c59db0cd49c387951286038ba",
+        "trade_archive_sha256": "f7e00f523b07d6d0511bcc642a1ecb2b6717714055002acab9e1be0578814a95",
         "trades": 337571,
         "validation_sha256": "f019f0e19d08c3f668a09f91ff2ed67a4da896d00626f423a6900822bb5fd9ca"
       },
       {
         "date": "2026-05-01",
         "l2_rows": 957184,
+        "l2_sha256": "3854b37148f4a9197d71105035781fa8137090723ce8778614570023a511fe63",
+        "trade_archive_sha256": "a81867325ae28405d59455f68441b77834cf57e59b707ec30392a1efe186c99a",
         "trades": 332945,
         "validation_sha256": "1b7ee1a81a4abe262187b12911605fc5f6b6f851998ad56340998c755f2d6d21"
       },
       {
         "date": "2026-07-01",
         "l2_rows": 1286008,
+        "l2_sha256": "d3c5e3c660afe30f283187e4a145d0f76ccfba9c409772896e65c6fa28bd2789",
+        "trade_archive_sha256": "18544775f1e6ad4d00540f31f09d987559e9dffdcc7fd2c1d3a779a94f87549b",
         "trades": 503449,
         "validation_sha256": "14f99d9571309032847b3ffc011142455793c3ec201e40c1ecc9e8c51e16cec7"
       }

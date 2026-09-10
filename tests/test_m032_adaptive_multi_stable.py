@@ -45,6 +45,7 @@ def slot_ledger() -> tuple[SlotLedger, str]:
     value = ledger()
     value.create_slot("S1", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
     value.reserve_free("S1", "R1", asset="USDT", quantity=D("5"), now_us=1)
+    value.activate("R1", now_us=1)
     return value, "S1"
 
 
@@ -81,7 +82,7 @@ def test_max_bankroll_is_200_and_capital_never_duplicates() -> None:
 
 def test_one_reservation_belongs_to_one_slot() -> None:
     value, _ = slot_ledger()
-    value.create_slot("S2", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
+    value.create_slot("S2", origin_asset="USDT", usd_equivalent=D("5"), now_us=1)
     with pytest.raises(ValueError, match="RESERVATION_ALREADY_OWNED"):
         value.reserve_free("S2", "R1", asset="USDT", quantity=D("5"), now_us=2)
     with pytest.raises(ValueError, match="RESERVATION_ALREADY_OWNED"):
@@ -114,6 +115,79 @@ def test_duplicate_fill_is_hard_failure() -> None:
     value.apply_fill("R1", fill)
     with pytest.raises(ValueError, match="DUPLICATE_FILL"):
         value.apply_fill("R1", fill)
+
+
+def test_invalid_fill_and_unfunded_fee_are_atomic() -> None:
+    value, _ = slot_ledger()
+    before = (
+        value.asset_totals(),
+        value.reservations["R1"].remaining,
+        value.slots["S1"].filled_qty,
+    )
+    with pytest.raises(ValueError, match="FILL_EXCEEDS"):
+        value.apply_fill(
+            "R1",
+            PhysicalFill(
+                "NEG",
+                "USDCUSDT",
+                "USDT",
+                "USDC",
+                D("-1"),
+                D("100"),
+                "USDC",
+                D("0"),
+                2,
+            ),
+        )
+    assert (
+        value.asset_totals(),
+        value.reservations["R1"].remaining,
+        value.slots["S1"].filled_qty,
+    ) == before
+    with pytest.raises(ValueError, match="FEE_EXCEEDS"):
+        value.apply_fill(
+            "R1",
+            PhysicalFill(
+                "FEE",
+                "USDCUSDT",
+                "USDT",
+                "USDC",
+                D("5"),
+                D("5"),
+                "USDT",
+                D("0.1"),
+                2,
+            ),
+        )
+    assert (
+        value.asset_totals(),
+        value.reservations["R1"].remaining,
+        value.slots["S1"].filled_qty,
+    ) == before
+
+
+def test_cancel_fill_race_preserves_owned_fill_and_releases_only_residual() -> None:
+    value, _ = slot_ledger()
+    value.request_cancel("R1", now_us=2)
+    value.apply_fill(
+        "R1",
+        PhysicalFill("F1", "USDCUSDT", "USDT", "USDC", D("2"), D("2"), "USDC", D("0"), 3),
+    )
+    assert value.free["USDT"] == D("95")
+    assert value.owned["S1"]["USDC"] == D("2")
+    assert value.acknowledge_cancel("R1", now_us=4) == D("3")
+    assert value.free["USDT"] == D("98")
+    assert value.owned["S1"]["USDC"] == D("2")
+    assert value.slots["S1"].state == SlotState.FILLED
+
+
+def test_ack_before_request_and_activate_after_cancel_are_rejected() -> None:
+    value, _ = slot_ledger()
+    value.request_cancel("R1", now_us=20)
+    with pytest.raises(ValueError, match="NONCAUSAL_LEDGER_EVENT"):
+        value.acknowledge_cancel("R1", now_us=10)
+    with pytest.raises(ValueError, match="INVALID_ACTIVATION"):
+        value.activate("R1", now_us=21)
 
 
 def test_marked_pnl_does_not_become_realized_pnl() -> None:
@@ -315,6 +389,32 @@ def test_replacement_order_is_younger_and_cannot_inherit_priority() -> None:
     assert queue.queue_ahead("REPLACEMENT") == D("3")
 
 
+def test_same_price_replacement_gets_new_public_queue_epoch() -> None:
+    queue = CausalQueueEstimator()
+    queue.activate(
+        book="B",
+        side="BUY",
+        price=D("1"),
+        order_id="OLD",
+        column=1,
+        quantity=D("1"),
+        observed_public_queue=D("0"),
+        now_us=1,
+    )
+    queue.cancel_ack("OLD", now_us=2)
+    queue.activate(
+        book="B",
+        side="BUY",
+        price=D("1"),
+        order_id="NEW",
+        column=1,
+        quantity=D("1"),
+        observed_public_queue=D("100"),
+        now_us=3,
+    )
+    assert queue.queue_ahead("NEW") == D("100")
+
+
 def test_causal_queue_score_rejects_future_reordering() -> None:
     queue = CausalQueueEstimator()
     queue.activate(
@@ -365,6 +465,39 @@ def test_hotline_multi_tick_jump_reconciles_once_without_reset() -> None:
     moved = manager.update_hotline("USDCUSDT", midpoint=D("1.0005"), now_us=2)
     assert moved.crossed_ticks == 5
     assert moved.reconciliations == 2
+
+
+def test_cell_configuration_requires_hotline_rank_safety_and_free_unique_slot() -> None:
+    value = ledger()
+    value.create_slot("S1", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
+    value.create_slot("S2", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
+    universe = StablecoinUniverse([evidence("USDT"), evidence("USDC")], minimum_safety=D("0.5"))
+    manager = AdaptiveCapitalOrderManager(
+        ledger=value,
+        rules={"USDCUSDT": rule()},
+        universe=universe,
+        peg_guard=PegGuard(D("0.02"), D("0.001"), D("100")),
+    )
+    manager.update_hotline("USDCUSDT", midpoint=D("1"), now_us=1)
+    kwargs = {
+        "symbol": "USDCUSDT",
+        "side": "BUY",
+        "price": D("0.9999"),
+        "rank": 1,
+        "column": 1,
+        "quantity": D("6"),
+        "now_us": 1,
+        "peg_deviation": D("0"),
+        "spread": D("0.0001"),
+        "depth_usd": D("200"),
+        "data_gap": False,
+    }
+    manager.configure_slot_cell("S1", **kwargs)
+    with pytest.raises(ValueError, match="DUPLICATE_PHYSICAL_CELL"):
+        manager.configure_slot_cell("S2", **kwargs)
+    value.reserve_free("S1", "R1", asset="USDT", quantity=D("5"), now_us=2)
+    with pytest.raises(ValueError, match="ACTIVE_SLOT_CELL_IMMUTABLE"):
+        manager.configure_slot_cell("S1", **{**kwargs, "now_us": 2})
 
 
 def test_aged_c1_is_preserved_unless_reallocation_value_wins() -> None:
@@ -460,16 +593,51 @@ def test_allocator_respects_priority_then_score_and_real_capital() -> None:
     assert [row.candidate_id for row in chosen] == ["C1"]
 
 
+def test_allocator_funds_obligation_even_with_negative_score_and_stops_on_shortfall() -> None:
+    obligation = MarginalOpportunity("RETURN", 1, D("-0.01"), D("1"), D("5"), D("1"), D("1"))
+    entry = MarginalOpportunity("ENTRY", 2, D("1"), D("1"), D("1"), D("1"), D("1"))
+    assert [
+        row.candidate_id
+        for row in AdaptiveColumnAllocator().choose([entry, obligation], available_capital=D("5"))
+    ] == ["RETURN"]
+    assert AdaptiveColumnAllocator().choose([entry, obligation], available_capital=D("4")) == []
+
+
 def test_route_2_asset_closes_only_after_second_physical_fill() -> None:
     manager = CycleManager(ledger())
     value = manager.ledger
     value.create_slot("S1", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
-    manager.start(two_asset_route(), slot_id="S1", quantity=D("5"), now_us=1)
+    manager.start(two_asset_route(), execution_id="E1", slot_id="S1", quantity=D("5"), now_us=1)
+    value.reserve_free("S1", "R1", asset="USDT", quantity=D("5"), now_us=1)
+    value.activate("R1", now_us=1)
     first = PhysicalFill("F1", "USDCUSDT", "USDT", "USDC", D("5"), D("5.01"), "USDC", D("0"), 2)
     second = PhysicalFill("F2", "USDCUSDT", "USDC", "USDT", D("5.01"), D("5.02"), "USDT", D("0"), 3)
-    assert manager.record_fill(two_asset_route().route_id, first) is False
+    assert manager.record_fill("E1", "R1", first) is False
     assert manager.closed_cycles == []
-    assert manager.record_fill(two_asset_route().route_id, second) is True
+    value.reserve_owned("S1", "R2", asset="USDC", quantity=D("5.01"), now_us=2)
+    value.activate("R2", now_us=2)
+    assert manager.record_fill("E1", "R2", second) is True
+    assert value.free["USDT"] == D("100.02")
+
+
+def test_route_leg_aggregates_physical_partial_fragments() -> None:
+    value = ledger()
+    value.create_slot("S1", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
+    manager = CycleManager(value)
+    manager.start(two_asset_route(), execution_id="E1", slot_id="S1", quantity=D("5"), now_us=1)
+    value.reserve_free("S1", "R1", asset="USDT", quantity=D("5"), now_us=1)
+    value.activate("R1", now_us=1)
+    first_fragment = PhysicalFill(
+        "F1", "USDCUSDT", "USDT", "USDC", D("2"), D("2.01"), "USDC", D("0"), 2
+    )
+    second_fragment = PhysicalFill(
+        "F2", "USDCUSDT", "USDT", "USDC", D("3"), D("3.01"), "USDC", D("0"), 3
+    )
+    assert manager.record_fill("E1", "R1", first_fragment) is False
+    assert manager.routes["E1"].next_leg_index == 0
+    assert manager.record_fill("E1", "R1", second_fragment) is False
+    assert manager.routes["E1"].next_leg_index == 1
+    assert manager.routes["E1"].current_quantity == D("5.02")
 
 
 @pytest.mark.parametrize(
@@ -488,13 +656,24 @@ def test_route_3_and_4_asset_close_correctly(assets: tuple[str, ...], legs: int)
     value = ledger()
     value.create_slot("S1", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
     manager = CycleManager(value)
-    manager.start(candidate, slot_id="S1", quantity=D("5"), now_us=1)
+    manager.start(candidate, execution_id="E1", slot_id="S1", quantity=D("5"), now_us=1)
     quantity = D("5")
     for index, leg in enumerate(candidate.legs):
+        reservation_id = f"R{index}"
+        if index == 0:
+            value.reserve_free(
+                "S1", reservation_id, asset=leg.from_asset, quantity=quantity, now_us=1
+            )
+        else:
+            value.reserve_owned(
+                "S1", reservation_id, asset=leg.from_asset, quantity=quantity, now_us=index + 1
+            )
+        value.activate(reservation_id, now_us=index + 1)
         is_last = index == legs - 1
         output = quantity + D("0.01") if is_last else quantity
         closed = manager.record_fill(
-            candidate.route_id,
+            "E1",
+            reservation_id,
             PhysicalFill(
                 f"F{index}",
                 leg.symbol,
@@ -509,7 +688,7 @@ def test_route_3_and_4_asset_close_correctly(assets: tuple[str, ...], legs: int)
         )
         assert closed is is_last
         quantity = output
-    assert manager.closed_cycles == [candidate.route_id]
+    assert manager.closed_cycles == ["E1"]
 
 
 def test_route_enumerator_never_repeats_middle_asset() -> None:
@@ -525,9 +704,12 @@ def test_route_incomplete_never_counts_as_realized_cycle() -> None:
     value.create_slot("S1", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
     manager = CycleManager(value)
     route = two_asset_route()
-    manager.start(route, slot_id="S1", quantity=D("5"), now_us=1)
+    manager.start(route, execution_id="E1", slot_id="S1", quantity=D("5"), now_us=1)
+    value.reserve_free("S1", "R1", asset="USDT", quantity=D("5"), now_us=1)
+    value.activate("R1", now_us=1)
     manager.record_fill(
-        route.route_id,
+        "E1",
+        "R1",
         PhysicalFill("F1", "USDCUSDT", "USDT", "USDC", D("5"), D("5"), "USDC", D("0"), 2),
     )
     assert manager.closed_cycles == []

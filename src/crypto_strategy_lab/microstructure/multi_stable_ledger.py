@@ -47,6 +47,14 @@ class SlotLedger:
         self.turnover_us: list[int] = []
         self.realized_pnl_by_asset: dict[str, D] = {asset: ZERO for asset in self.free}
         self.audit: list[dict[str, object]] = []
+        self.last_event_us = -1
+
+    def _causal(self, now_us: int) -> None:
+        if now_us < self.last_event_us:
+            raise ValueError("M032_NONCAUSAL_LEDGER_EVENT")
+
+    def _commit_time(self, now_us: int) -> None:
+        self.last_event_us = now_us
 
     def create_slot(
         self,
@@ -57,6 +65,7 @@ class SlotLedger:
         now_us: int,
         slot_epoch: int = 1,
     ) -> EconomicSlot:
+        self._causal(now_us)
         if slot_id in self.slots:
             raise ValueError("M032_DUPLICATE_SLOT_ID")
         if origin_asset not in self.free or usd_equivalent <= ZERO:
@@ -72,6 +81,7 @@ class SlotLedger:
         )
         self.slots[slot_id] = slot
         self.owned[slot_id] = {}
+        self._commit_time(now_us)
         return slot
 
     def reserve_free(
@@ -83,6 +93,7 @@ class SlotLedger:
         quantity: D,
         now_us: int,
     ) -> CapitalReservation:
+        self._causal(now_us)
         slot = self.slots[slot_id]
         if reservation_id in self.reservations or slot.reservation_id is not None:
             raise ValueError("M032_RESERVATION_ALREADY_OWNED")
@@ -100,6 +111,7 @@ class SlotLedger:
         quantity: D,
         now_us: int,
     ) -> CapitalReservation:
+        self._causal(now_us)
         slot = self.slots[slot_id]
         if reservation_id in self.reservations or slot.reservation_id is not None:
             raise ValueError("M032_RESERVATION_ALREADY_OWNED")
@@ -137,12 +149,16 @@ class SlotLedger:
                 "quantity": str(quantity),
             }
         )
+        self._commit_time(now_us)
         self.reconcile()
         return reservation
 
     def activate(self, reservation_id: str, *, now_us: int) -> None:
+        self._causal(now_us)
         reservation = self.reservations[reservation_id]
         slot = self.slots[reservation.slot_id]
+        if slot.state != SlotState.RESERVED or reservation.cancel_requested_at_us is not None:
+            raise ValueError("M032_INVALID_ACTIVATION_LIFECYCLE")
         slot.state = SlotState.LIVE
         slot.activated_at_us = now_us
         self.audit.append(
@@ -153,12 +169,16 @@ class SlotLedger:
                 "reservation_id": reservation_id,
             }
         )
+        self._commit_time(now_us)
 
     def request_cancel(self, reservation_id: str, *, now_us: int) -> None:
+        self._causal(now_us)
         reservation = self.reservations[reservation_id]
         slot = self.slots[reservation.slot_id]
         if slot.filled_qty > ZERO:
             raise ValueError("M032_PARTIAL_OR_FILLED_NOT_RECLAIMABLE")
+        if reservation.cancel_requested_at_us is not None:
+            raise ValueError("M032_DUPLICATE_CANCEL_REQUEST")
         reservation.cancel_requested_at_us = now_us
         slot.state = SlotState.CANCEL_PENDING
         self.audit.append(
@@ -169,14 +189,16 @@ class SlotLedger:
                 "slot_id": slot.slot_id,
             }
         )
+        self._commit_time(now_us)
 
     def acknowledge_cancel(self, reservation_id: str, *, now_us: int) -> D:
+        self._causal(now_us)
         reservation = self.reservations[reservation_id]
         slot = self.slots[reservation.slot_id]
         if reservation.cancel_requested_at_us is None:
             raise ValueError("M032_CANCEL_ACK_WITHOUT_REQUEST")
-        if slot.filled_qty > ZERO:
-            raise ValueError("M032_PARTIAL_OR_FILLED_NOT_RECLAIMABLE")
+        if now_us < reservation.cancel_requested_at_us:
+            raise ValueError("M032_CANCEL_ACK_BEFORE_REQUEST")
         released = reservation.remaining
         self.free[reservation.asset] += released
         reservation.remaining = ZERO
@@ -184,7 +206,7 @@ class SlotLedger:
         slot.reservation_id = None
         slot.reserved_value = ZERO
         slot.remaining_qty = ZERO
-        slot.state = SlotState.FREE
+        slot.state = SlotState.FILLED if slot.filled_qty > ZERO else SlotState.FREE
         self.audit.append(
             {
                 "event": "CANCEL_ACK",
@@ -195,18 +217,45 @@ class SlotLedger:
             }
         )
         del self.reservations[reservation_id]
+        self._commit_time(now_us)
         self.reconcile()
         return released
 
     def apply_fill(self, reservation_id: str, fill: PhysicalFill) -> None:
+        self._causal(fill.time_us)
         if fill.fill_id in self.processed_fill_ids:
             raise ValueError("M032_DUPLICATE_FILL")
         reservation = self.reservations[reservation_id]
         slot = self.slots[reservation.slot_id]
-        if fill.from_asset != reservation.asset or fill.input_quantity > reservation.remaining:
+        if slot.state not in {SlotState.LIVE, SlotState.PARTIAL, SlotState.CANCEL_PENDING}:
+            raise ValueError("M032_FILL_BEFORE_ACTIVATION")
+        if fill.time_us < reservation.created_at_us or (
+            slot.activated_at_us is not None and fill.time_us < slot.activated_at_us
+        ):
+            raise ValueError("M032_NONCAUSAL_FILL")
+        if (
+            fill.from_asset != reservation.asset
+            or fill.input_quantity <= ZERO
+            or fill.input_quantity > reservation.remaining
+        ):
             raise ValueError("M032_FILL_EXCEEDS_RESERVATION")
-        if fill.fee_quantity < ZERO or fill.output_quantity_net < ZERO:
+        if (
+            fill.output_quantity_gross < ZERO
+            or fill.fee_quantity < ZERO
+            or fill.output_quantity_net < ZERO
+        ):
             raise ValueError("M032_INVALID_FEE_OR_OUTPUT")
+        remaining_after_input = reservation.remaining - fill.input_quantity
+        if fill.fee_asset == fill.from_asset and remaining_after_input < fill.fee_quantity:
+            raise ValueError("M032_FEE_EXCEEDS_REMAINING_RESERVATION")
+        if (
+            fill.fee_asset not in {fill.from_asset, fill.to_asset}
+            and fill.fee_quantity > ZERO
+            and self.free.get(fill.fee_asset, ZERO) < fill.fee_quantity
+        ):
+            raise ValueError("M032_FEE_ASSET_INSUFFICIENT")
+
+        # All failure-prone validation above precedes mutation, preserving atomicity.
         reservation.remaining -= fill.input_quantity
         slot.reserved_value = reservation.remaining
         slot.remaining_qty = reservation.remaining
@@ -215,8 +264,6 @@ class SlotLedger:
         self._asset_totals.setdefault(fill.to_asset, ZERO)
         self._asset_totals[fill.to_asset] += fill.output_quantity_gross
         if fill.fee_asset == fill.from_asset:
-            if reservation.remaining < fill.fee_quantity:
-                raise ValueError("M032_FEE_EXCEEDS_REMAINING_RESERVATION")
             reservation.remaining -= fill.fee_quantity
             slot.reserved_value = reservation.remaining
             self._asset_totals[fill.from_asset] -= fill.fee_quantity
@@ -231,7 +278,10 @@ class SlotLedger:
             self.owned[slot.slot_id].get(fill.to_asset, ZERO) + fill.output_quantity_net
         )
         slot.current_asset = fill.to_asset
-        slot.state = SlotState.FILLED if reservation.remaining == ZERO else SlotState.PARTIAL
+        if reservation.cancel_requested_at_us is not None:
+            slot.state = SlotState.CANCEL_PENDING
+        else:
+            slot.state = SlotState.FILLED if reservation.remaining == ZERO else SlotState.PARTIAL
         self.processed_fill_ids.add(fill.fill_id)
         self.audit.append(
             {
@@ -245,9 +295,10 @@ class SlotLedger:
                 "to": fill.to_asset,
             }
         )
-        if reservation.remaining == ZERO:
+        if reservation.remaining == ZERO and reservation.cancel_requested_at_us is None:
             slot.reservation_id = None
             del self.reservations[reservation_id]
+        self._commit_time(fill.time_us)
         self.reconcile()
 
     def close_slot(
@@ -258,7 +309,10 @@ class SlotLedger:
         now_us: int,
         cycle_id: str,
     ) -> D:
+        self._causal(now_us)
         slot = self.slots[slot_id]
+        if slot.reservation_id is not None:
+            raise ValueError("M032_SLOT_CLOSE_WITH_OPEN_RESERVATION")
         final_quantity = self.owned[slot_id].get(slot.origin_asset, ZERO)
         pnl = final_quantity - origin_quantity
         if pnl < ZERO:
@@ -287,6 +341,7 @@ class SlotLedger:
                 "realized_pnl": str(pnl),
             }
         )
+        self._commit_time(now_us)
         self.reconcile()
         return pnl
 

@@ -34,16 +34,35 @@ def valid_l2_dates(root: Path, symbol: str) -> list[dict[str, str | int]]:
         payload = json.loads(validation_path.read_text(encoding="utf-8"))
         binding = payload.get("binding", {})
         coverage = payload.get("coverage", {})
+        input_binding = payload.get("input_binding", {})
+        date = validation_path.parent.name
+        l2_path = validation_path.parent / "incremental_book_L2.csv.gz"
+        trade_path = (
+            root
+            / "data"
+            / "raw"
+            / "binance-microstructure"
+            / symbol.upper()
+            / "trades"
+            / f"{symbol.upper()}-trades-{date}.zip"
+        )
+        l2_hash = sha256(l2_path) if l2_path.is_file() else None
+        trade_hash = sha256(trade_path) if trade_path.is_file() else None
         if not (
             payload.get("L2_DAY_VALID") is True
             and binding.get("normalized_binding_gate") == "PASS"
             and coverage.get("gate") == "PASS"
+            and l2_hash == input_binding.get("csv_sha256")
+            and trade_hash == input_binding.get("canonical_archive_sha256")
         ):
             continue
+        assert l2_hash is not None and trade_hash is not None
         rows.append(
             {
-                "date": validation_path.parent.name,
+                "date": date,
                 "validation_sha256": sha256(validation_path),
+                "l2_sha256": l2_hash,
+                "trade_archive_sha256": trade_hash,
                 "l2_rows": int(payload.get("CSV_ROWS", 0)),
                 "trades": int(payload.get("TRADES", 0)),
             }

@@ -4,7 +4,9 @@ The reproducible audit is `scripts/audit_m032_data_availability.py`; its output 
 `reports/usdcusdt/M032-data-availability.json`.
 
 Only `USDCUSDT` has locally validated physical L2 plus canonical trades, covering
-12 currently passing monthly samples. `FDUSDUSDC` has an extensive canonical
+12 currently passing monthly samples. The audit now verifies both physical files
+against the L2 and canonical trade SHA-256 values bound in each passing validation,
+instead of trusting flags alone. `FDUSDUSDC` has an extensive canonical
 `aggTrades` archive, but no local L2; the other candidate books also have no
 validated local L2. Trades or candles cannot establish public FIFO.
 

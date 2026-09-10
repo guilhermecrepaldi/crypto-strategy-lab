@@ -17,6 +17,7 @@ class OwnQueueOrder:
     quantity: D
     remaining: D
     activated_at_us: int
+    public_barrier_before: D = ZERO
     first_fill_at_us: int | None = None
     filled_at_us: int | None = None
 
@@ -78,13 +79,29 @@ class CausalQueueEstimator:
         if group is None:
             group = QueueGroup(book, side, price, max(ZERO, observed_public_queue))
             self.groups[key] = group
-        # An already represented public barrier is never copied for C2.  A
-        # later public-depth increase needs a separate causal cohort model;
-        # this V1 keeps the existing conservative barrier and records no
-        # unprovable placement of that increase ahead of our own C1.
+        active_orders = [row for row in group.own_orders if row.remaining > ZERO]
+        if not active_orders:
+            # A completely new queue epoch has no inherited priority.
+            group.public_remaining = max(ZERO, observed_public_queue)
+        # Public depth newly observed after an existing own order is represented
+        # as a later cohort. It is ahead of the new order, but never jumps ahead
+        # of an older surviving own order.
+        represented_public = group.public_remaining + sum(
+            (row.public_barrier_before for row in active_orders), ZERO
+        )
+        later_public_cohort = (
+            max(ZERO, observed_public_queue - represented_public) if active_orders else ZERO
+        )
         if any(row.column == column for row in group.own_orders if row.remaining > ZERO):
             raise ValueError("M032_DUPLICATE_COLUMN_AT_PRICE")
-        order = OwnQueueOrder(order_id, column, quantity, quantity, now_us)
+        order = OwnQueueOrder(
+            order_id,
+            column,
+            quantity,
+            quantity,
+            now_us,
+            public_barrier_before=later_public_cohort,
+        )
         group.own_orders.append(order)
         group.own_orders = deque(
             sorted(group.own_orders, key=lambda row: (row.activated_at_us, row.order_id))
@@ -133,6 +150,11 @@ class CausalQueueEstimator:
         for order in group.own_orders:
             if remaining <= ZERO:
                 break
+            public = min(remaining, order.public_barrier_before)
+            order.public_barrier_before -= public
+            remaining -= public
+            if remaining <= ZERO:
+                break
             amount = min(order.remaining, remaining)
             order.remaining -= amount
             remaining -= amount
@@ -153,6 +175,7 @@ class CausalQueueEstimator:
         group = self.groups[self.order_group[order_id]]
         ahead = group.public_remaining
         for order in group.own_orders:
+            ahead += order.public_barrier_before
             if order.order_id == order_id:
                 return ahead
             ahead += order.remaining

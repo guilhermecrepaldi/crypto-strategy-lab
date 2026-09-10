@@ -184,6 +184,7 @@ class RouteCandidate:
 
 @dataclass
 class RouteProgress:
+    execution_id: str
     candidate: RouteCandidate
     slot_id: str
     initial_quantity: D
@@ -191,6 +192,8 @@ class RouteProgress:
     current_quantity: D
     started_at_us: int
     next_leg_index: int = 0
+    leg_input_remaining: D = ZERO
+    leg_output_accumulated: D = ZERO
     completed_fill_ids: list[str] = field(default_factory=list)
     fees_by_asset: dict[str, D] = field(default_factory=dict)
     closed_at_us: int | None = None
