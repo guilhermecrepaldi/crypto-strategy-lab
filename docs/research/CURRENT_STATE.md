@@ -1,6 +1,35 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=NONE
+CAMPAIGN_STATUS=M033_BLOCKED_PRE_REPLAY_FEE_L3_AUTHORITY
+CAMPAIGN_EXECUTION_SOURCE_SHA=PENDING_SOURCE_BOUND_REVIEW
+CAMPAIGN_ACTIVE_ENVELOPE=NONE
+CAMPAIGN_QUEUED_ENVELOPE=NONE
+CAMPAIGN_VERDICT=BLOCKED_PRE_RUN
+CAMPAIGN_PROGRESS_FILE=docs/research/M033_JOURNAL.md
+CAMPAIGN_JOURNAL=docs/research/M033_JOURNAL.md
+CAMPAIGN_SCOREBOARD=reports/usdcusdt/BINANCE_KRAKEN_COMMON_DATE_POOL.json
+CURRENT_ACTIVE_RESEARCH_MODEL=NONE_AWAITING_EVIDENCE_AND_AUTHORITY
+OWNER_NEXT_RESEARCH=M033_FEE_PROVENANCE_OR_L3_CAPTURE_AUTHORITY_DECISION
+OWNER_DIRECTIVE=docs/microstructure/M033_MULTI_VENUE_KRAKEN_L3_OWNER_DIRECTIVE.md
+NEXT_CAMPAIGN_STATUS=BLOCKED_PRE_REPLAY_FEE_L3_AUTHORITY
+NEXT_CAMPAIGN_MODEL_HASH=b5e9c00ac628a4998cc08856e27cc075c35c91252828d3c224b03316fb406c1f_UNREGISTERED
+NEXT_CAMPAIGN_WINDOW=UNSELECTED_NO_CSPRNG_DRAW
+NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=UP_TO_200_USD_EQ_PER_INDEPENDENT_VENUE_ARM
+
+M033 generalizes the reviewed M032 architecture to explicit venue+symbol physical
+identity while preserving the M032 economic policy. Binance and Kraken ledgers,
+queues, rules, fees and reservations are independent; cross-venue routes and remote
+funding fail closed. Twelve dates have a physical L2+trade intersection, but the
+economic eligible pool is empty because Kraken's historical fee profile is not
+proven for any candidate date. Historical Kraken Spot L3 was not found, and the
+current L3 channel requires an authenticated token that this authority forbids.
+No date/window was drawn and no economic replay or forward capture ran. M032 and
+all prior published evidence remain unchanged. `TEST_SUITE_PASS != STRATEGY_PASS`.
+
+<!-- Historical state below is retained as provenance. -->
+
+ACTIVE_EXECUTION_CAMPAIGN=NONE
 CAMPAIGN_STATUS=M032_BLOCKED_PRE_REPLAY_DATA
 CAMPAIGN_EXECUTION_SOURCE_SHA=25273367e6d2146a71d0308a423415320e3da8c0
 CAMPAIGN_ACTIVE_ENVELOPE=NONE

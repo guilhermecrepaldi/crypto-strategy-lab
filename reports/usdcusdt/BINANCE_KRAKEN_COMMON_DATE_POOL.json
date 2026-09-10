@@ -1,0 +1,376 @@
+{
+  "BINANCE_NATIVE_SYMBOL": "USDCUSDT",
+  "BINANCE_VALIDATED_DATES": [
+    {
+      "date": "2025-01-01",
+      "l2_rows": 828955,
+      "l2_sha256": "cd1fd61021c74911bb73104353b23ac31e8cf3c958e16dcfcd1258d80a819305",
+      "trade_archive_sha256": "80e7138acd1ad8255bb2dac1d1a1c7d60ef0c104f4979da70e15d1af27b2e572",
+      "trades": 254205,
+      "validation_sha256": "9eb8bf9bad9b0664b184b57d9dc6894f2aabdfb2c91c7bc178bb58229a917ccd"
+    },
+    {
+      "date": "2025-02-01",
+      "l2_rows": 934812,
+      "l2_sha256": "6f6ed77db85acfc053c1b2302121647861b0e620a36e13be1cc6f1070e970915",
+      "trade_archive_sha256": "295d6977fe72aac758802dccfd2f6ec27f7a03db84e5f1ea3bab56226626ad1d",
+      "trades": 326480,
+      "validation_sha256": "c593549c61fb5241298841d5eaa5a52d439627675cb2ec5b506c04c917be7dc7"
+    },
+    {
+      "date": "2025-03-01",
+      "l2_rows": 969097,
+      "l2_sha256": "219200fade787e5393014d8fa31dd60ed8e04ad555eea96fa7c69990c27f5acb",
+      "trade_archive_sha256": "9bb9eeeba6ba2b94801622238be241627583d0ff559975ee8777455cb92686f8",
+      "trades": 347113,
+      "validation_sha256": "4146f720210f5788aa9e42b793adda4523d49bfe08ac119cc7a45af3d19aeb9e"
+    },
+    {
+      "date": "2025-04-01",
+      "l2_rows": 1225694,
+      "l2_sha256": "c1f969dd011b2214d2bfcf47de8af5717437d7e1d597c78eb90414522c490c5c",
+      "trade_archive_sha256": "32cfb269bf4719ccf92ce2f0fecd4abaf25aa405ed3529533a935a6dfc29b2c6",
+      "trades": 600715,
+      "validation_sha256": "a15147486153cfb2fb30287d0678e9775ac25253aae5dc7306c4c27732cf4dc1"
+    },
+    {
+      "date": "2025-06-01",
+      "l2_rows": 942763,
+      "l2_sha256": "0c1ff28cb7abc7a88a4953a078cfc991ff84d3979e26801081e25c4c6644d602",
+      "trade_archive_sha256": "b5bdede6a069eeda804afad45e1e383f362993c77884dc863c5f5de6d4c637eb",
+      "trades": 179921,
+      "validation_sha256": "f543fbbeb7c7ebe1212713bdb2338b2c0ae47a7a5f8442f4e2bad1369a88723b"
+    },
+    {
+      "date": "2025-08-01",
+      "l2_rows": 1102002,
+      "l2_sha256": "42aa756f110cb1f241e32915851e8f8f4195f23d9dc7ebef9d3d316abf3d1836",
+      "trade_archive_sha256": "20c2ac3c67bb5c7cbd92d58cf023e8dedd3018077e3a02f7babee5119a4e2e7e",
+      "trades": 535551,
+      "validation_sha256": "9ba12401fae1a4f5f05a9a25407041f7dc60ea1168ef90714a3fb85c7e62cb27"
+    },
+    {
+      "date": "2026-01-01",
+      "l2_rows": 1223832,
+      "l2_sha256": "2b03fa8b1b352fa7658b1c1c053533c75eb588c141d149f1284d677a55a4ab8b",
+      "trade_archive_sha256": "a7d8a5f44fffecc1e29294926a23f936e82c82b87915ad40c740504edfe391a4",
+      "trades": 305359,
+      "validation_sha256": "18b45067498be779645e0b8b7c5cf8ff1e4c7fdfe60d3433eca4ea94a70e173c"
+    },
+    {
+      "date": "2026-02-01",
+      "l2_rows": 1216978,
+      "l2_sha256": "e8ddf2cd7da1cb7f2793b490d442862a0bab97961bd26fa9f93d039afdab71eb",
+      "trade_archive_sha256": "46c17975b798a2edeeec607ef145f4886ab202e6cab4db0ee45acdf6623a0c46",
+      "trades": 428821,
+      "validation_sha256": "1007915fae7fe901b6de1c27b26db1cf3af24e1a350e7c5c96e5affa1e8cd31f"
+    },
+    {
+      "date": "2026-03-01",
+      "l2_rows": 494318,
+      "l2_sha256": "feb71cd15841dfe4fa2020d445b395e5c34cf062a675a2ff1e8d696c8a590cf4",
+      "trade_archive_sha256": "683bd2da10880362a34ee20dda4e8496e703d483433c2e6effc45e58dd7f2096",
+      "trades": 383704,
+      "validation_sha256": "ff46aa238705f40c22c11c2c2dd9378cb0372040ab432ae83f543772575bf9f6"
+    },
+    {
+      "date": "2026-04-01",
+      "l2_rows": 1164580,
+      "l2_sha256": "ac6ee757432aec7267587bb8f793280ec6a3df5c59db0cd49c387951286038ba",
+      "trade_archive_sha256": "f7e00f523b07d6d0511bcc642a1ecb2b6717714055002acab9e1be0578814a95",
+      "trades": 337571,
+      "validation_sha256": "f019f0e19d08c3f668a09f91ff2ed67a4da896d00626f423a6900822bb5fd9ca"
+    },
+    {
+      "date": "2026-05-01",
+      "l2_rows": 957184,
+      "l2_sha256": "3854b37148f4a9197d71105035781fa8137090723ce8778614570023a511fe63",
+      "trade_archive_sha256": "a81867325ae28405d59455f68441b77834cf57e59b707ec30392a1efe186c99a",
+      "trades": 332945,
+      "validation_sha256": "1b7ee1a81a4abe262187b12911605fc5f6b6f851998ad56340998c755f2d6d21"
+    },
+    {
+      "date": "2026-07-01",
+      "l2_rows": 1286008,
+      "l2_sha256": "d3c5e3c660afe30f283187e4a145d0f76ccfba9c409772896e65c6fa28bd2789",
+      "trade_archive_sha256": "18544775f1e6ad4d00540f31f09d987559e9dffdcc7fd2c1d3a779a94f87549b",
+      "trades": 503449,
+      "validation_sha256": "14f99d9571309032847b3ffc011142455793c3ec201e40c1ecc9e8c51e16cec7"
+    }
+  ],
+  "BLOCKER": "KRAKEN_HISTORICAL_FEE_PROFILE_NOT_PROVEN_FOR_CANDIDATE_DATES",
+  "ELIGIBLE_COMMON_DATE_POOL": [],
+  "HISTORICAL_FEE_PROVEN_DATES": [],
+  "KRAKEN_NATIVE_SYMBOL": "USDC/USDT",
+  "KRAKEN_VALIDATED_DATES": [
+    {
+      "date": "2025-01-01",
+      "l2": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1735689602214647,
+        "last_timestamp": 1735775999937878,
+        "rows": 490199,
+        "sha256": "2effb29775ab14d993f2d50cfab824aa2e7f5fc1326ba68d1674cc93273e0dec",
+        "valid": true
+      },
+      "trades": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1735689669615735,
+        "last_timestamp": 1735775988449033,
+        "rows": 3417,
+        "sha256": "5e6adf62ecb9e5b58154c19e265e2b1217338fbc3ff35603c046ed65d52e67e1",
+        "valid": true
+      }
+    },
+    {
+      "date": "2025-02-01",
+      "l2": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1738368002499765,
+        "last_timestamp": 1738454399582349,
+        "rows": 541921,
+        "sha256": "cb316d4b100667328e47559b9d80b6078ccf2c935a1a6ac0268eb6fbd85ca268",
+        "valid": true
+      },
+      "trades": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1738368056710791,
+        "last_timestamp": 1738454362822954,
+        "rows": 8508,
+        "sha256": "a048f2b3c2c9631d867be43134197b5d205ac5ac2f41b2177a49138d23d34649",
+        "valid": true
+      }
+    },
+    {
+      "date": "2025-03-01",
+      "l2": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1740787204391404,
+        "last_timestamp": 1740873595027947,
+        "rows": 382030,
+        "sha256": "6e64803675552848354e5580e4da66131d878e574ec524aae1d128e91c3138e4",
+        "valid": true
+      },
+      "trades": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1740787575278822,
+        "last_timestamp": 1740872480609652,
+        "rows": 3192,
+        "sha256": "94a7ae33cf2981c02f95bb1e701d0043ed1a147513764f49368acdcfc7b812ee",
+        "valid": true
+      }
+    },
+    {
+      "date": "2025-04-01",
+      "l2": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1743465602461959,
+        "last_timestamp": 1743551999798219,
+        "rows": 144240,
+        "sha256": "d715953e32c06779af4a75a9029cfffcbc72c93e8c1287bd8e0078c9bf261a68",
+        "valid": true
+      },
+      "trades": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1743465848281047,
+        "last_timestamp": 1743551999795069,
+        "rows": 6307,
+        "sha256": "8fba459b7f666ec596bc161f366947d61e850177c3a36edf8df07d17f4e9ad07",
+        "valid": true
+      }
+    },
+    {
+      "date": "2025-06-01",
+      "l2": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1748736002132707,
+        "last_timestamp": 1748822397729322,
+        "rows": 182235,
+        "sha256": "2e487f734ba7caa1f34e7bf1a28f5613b6ef75de8e2b0b586faccf1fb6b68e9e",
+        "valid": true
+      },
+      "trades": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1748736080128607,
+        "last_timestamp": 1748822351779826,
+        "rows": 3386,
+        "sha256": "387c99b6e298a511ba6293d7d340c3a40d89f10b1b90a1e6cb11dbae449595b1",
+        "valid": true
+      }
+    },
+    {
+      "date": "2025-08-01",
+      "l2": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1754006402557430,
+        "last_timestamp": 1754092799924610,
+        "rows": 469986,
+        "sha256": "aac752bf0a1d1ec9933f1b36cdd226e6f692e26d5be967c63e3f04d77706f930",
+        "valid": true
+      },
+      "trades": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1754006408294741,
+        "last_timestamp": 1754092715867189,
+        "rows": 11590,
+        "sha256": "12000c6c902ab7e1cfadb3cdc87d907309f51ea0a6c185501d4cf5b6dc2f95a4",
+        "valid": true
+      }
+    },
+    {
+      "date": "2026-01-01",
+      "l2": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1767225602880657,
+        "last_timestamp": 1767311999503496,
+        "rows": 357662,
+        "sha256": "15e57b545139f0fdf76db85eeef1b8783a612ac92f8146b0db57035b36c55def",
+        "valid": true
+      },
+      "trades": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1767225609898960,
+        "last_timestamp": 1767311974239523,
+        "rows": 1540,
+        "sha256": "396d61521b6d8d536640440bc429d3e5becfbf46899dfe7a1871f2dfc1bfaaea",
+        "valid": true
+      }
+    },
+    {
+      "date": "2026-02-01",
+      "l2": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 2,
+        "first_timestamp": 1769904002302138,
+        "last_timestamp": 1769990399087214,
+        "rows": 463112,
+        "sha256": "4b3ae3f0f8577c56cad97e628f158c71d6051c9c35f141dab2895485043e6280",
+        "valid": true
+      },
+      "trades": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1769904075292524,
+        "last_timestamp": 1769990374286876,
+        "rows": 4863,
+        "sha256": "de128cb78ce1215b5a090724ba2244a9e3412fc59b96ede0d51a0f69895d609f",
+        "valid": true
+      }
+    },
+    {
+      "date": "2026-03-01",
+      "l2": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 3,
+        "first_timestamp": 1772323204967747,
+        "last_timestamp": 1772409599971434,
+        "rows": 346260,
+        "sha256": "eedbc41dba2f7dd933f386ed23838468fbaff4545aaeb8009bf62ddb415992a2",
+        "valid": true
+      },
+      "trades": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1772323205653700,
+        "last_timestamp": 1772409562582514,
+        "rows": 7281,
+        "sha256": "4e01b7d3d30ac9f729188d1ac13d3570ce1b187bc07a3baad42a9b84c59cb5c1",
+        "valid": true
+      }
+    },
+    {
+      "date": "2026-04-01",
+      "l2": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1775001602300409,
+        "last_timestamp": 1775087999943231,
+        "rows": 717673,
+        "sha256": "ac9a872c7d88c3fcf1de096cc37c0afd99348a2346b7acc4740c849e161fd074",
+        "valid": true
+      },
+      "trades": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1775001607884610,
+        "last_timestamp": 1775087998262498,
+        "rows": 5205,
+        "sha256": "1de76bbf80b6bb38b184fa21f3762ec4a1e1890a53978b9d46b3cf1c8aa98e39",
+        "valid": true
+      }
+    },
+    {
+      "date": "2026-05-01",
+      "l2": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1777593603313785,
+        "last_timestamp": 1777679999994063,
+        "rows": 386623,
+        "sha256": "8328469468e5919ff834fe2b381800f6dd6629713f7876eeaa8f6718a1bb54c6",
+        "valid": true
+      },
+      "trades": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1777593822685602,
+        "last_timestamp": 1777679994549790,
+        "rows": 3728,
+        "sha256": "ee341127f5369d5e6b7d6e848a94ee465a31418cfe62aba8a58b6fb1bb576901",
+        "valid": true
+      }
+    },
+    {
+      "date": "2026-07-01",
+      "l2": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1782864002022295,
+        "last_timestamp": 1782950399773447,
+        "rows": 380786,
+        "sha256": "80ad1bcb14130c8ae200aef06111901a6610e210a1c93da098758ca9964d4af9",
+        "valid": true
+      },
+      "trades": {
+        "delivery_monotonic": true,
+        "exchange_timestamp_reorders": 0,
+        "first_timestamp": 1782864007729491,
+        "last_timestamp": 1782950338399958,
+        "rows": 3065,
+        "sha256": "07f16a4dcf44db475f374e31f5c7cd5ff7e25c48999618b740b2a2b6db121da8",
+        "valid": true
+      }
+    }
+  ],
+  "MODEL": "M033_MULTI_VENUE_KRAKEN_L3_VALIDATION_V1",
+  "PAIR": "USDC/USDT",
+  "PHYSICAL_L2_TRADES_COMMON_DATE_POOL": [
+    "2025-01-01",
+    "2025-02-01",
+    "2025-03-01",
+    "2025-04-01",
+    "2025-06-01",
+    "2025-08-01",
+    "2026-01-01",
+    "2026-02-01",
+    "2026-03-01",
+    "2026-04-01",
+    "2026-05-01",
+    "2026-07-01"
+  ],
+  "READY_FOR_HISTORICAL_REPLAY": false
+}
