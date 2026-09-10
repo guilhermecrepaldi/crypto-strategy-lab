@@ -1,5 +1,18 @@
 # Crypto Strategy Lab — instruções do repositório
 
+## Autoridade OWNER mais recente — M029 retry técnico M026 por24h, 2026-09-10
+
+Seguir `docs/microstructure/M029_M026_24H_TECHNICAL_RETRY_OWNER_DIRECTIVE.md` e
+o pré-registro M029. OWNER respondeu “autorizado” ao pedido exato de retry técnico
+corrigido do M026 por24h. Preservar M026/M027/M028. M029 mantém toda economia,
+geometria3/2/1, capital, fila, latência, sizing, returns e compounding do M026; a
+única correção frente ao M028 é canonicalizar ambos checkpoints via JSON antes da
+comparação estrita das03h. Ledger/trades/métricas continuam exatos e o gate ocorre
+antes do primeiro evento da extensão. Um run somente, sem reset, tuning, capital
+novo, liquidação forçada, M030, outro dia ou live. Publicar source/revisão Astra antes
+do run e resultado/auditoria depois. Resultado continua normalizado abaixo do
+minNotional e não live-executable.
+
 ## Autoridade OWNER mais recente — M028, M026 por um dia, 2026-09-10
 
 Seguir `docs/microstructure/M028_M026_24H_EXTENSION_OWNER_DIRECTIVE.md` e o

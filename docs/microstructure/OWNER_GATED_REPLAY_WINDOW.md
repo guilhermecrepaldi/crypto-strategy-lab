@@ -8,9 +8,25 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=false
-AUTHORIZED_MODEL=NONE
-AUTHORIZED_SCENARIO_COUNT=0
+NEW_REPLAY_AUTHORIZED_NOW=true
+AUTHORIZED_MODEL=M029
+AUTHORIZED_SCENARIO_COUNT=1
+
+## Latest authority — M029 corrected M026 full-day retry
+
+OWNER_DIRECTIVE=M029_M026_24H_TECHNICAL_RETRY_OWNER_DIRECTIVE.md
+CURRENT_EXECUTION_WINDOW=2025-01-01T00:00:00Z/2025-01-02T00:00:00Z_EXCLUSIVE
+PARENT_MODEL=M026
+TECHNICAL_FAILURE_PREDECESSOR=M028
+ONLY_TECHNICAL_CHANGE=CANONICAL_JSON_CHECKPOINT_STATE_COMPARISON
+RUNS_AUTHORIZED=1
+ANOTHER_DAY_AUTHORIZED=false
+AUTOMATIC_SUCCESSOR_AUTHORIZED=false
+
+The OWNER answered “autorizado” to the exact request for M029 as a corrected24-hour
+retry. It preserves M026 economics and changes only checkpoint representation
+comparison. Register, test, review with Astra and publish before the sole run. No
+reset at03:00, tuning, rerun, M030, another day, account, Testnet or live action.
 
 ## Latest authority — M028 unchanged M026 strategy, full January 1 day
 

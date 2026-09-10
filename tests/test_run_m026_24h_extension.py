@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal as D
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -41,7 +42,10 @@ def test_prefix_gate_requires_exact_ledger_and_normalized_state(
     ledger.write_text(json.dumps(rows[0]) + "\n", encoding="utf-8")
     state = {
         "parent": {"config": {"end_us": runner.M026_END_US}},
-        "m026": {"value": 1},
+        "m026": {
+            "value": 1,
+            "order_waits": {"1": "2.50000000"},
+        },
     }
     terminal = tmp_path / "terminal.json"
     terminal.write_text(
@@ -78,7 +82,10 @@ def test_prefix_gate_requires_exact_ledger_and_normalized_state(
         def checkpoint(self):
             actual = {
                 "parent": {"config": {"end_us": runner.END_US}},
-                "m026": {"value": 1},
+                "m026": {
+                    "value": 1,
+                    "order_waits": {1: D("2.50000000")},
+                },
             }
             return {"state": actual, "sha256": canonical_hash(actual)}
 
@@ -110,6 +117,14 @@ def test_prefix_gate_rejects_ledger_drift(tmp_path: Path, monkeypatch) -> None:
 def test_bounded_native_events_rejects_incomplete_slice_set() -> None:
     with pytest.raises(ValueError, match="M028_ALL_SLICES_REQUIRED"):
         list(runner.bounded_native_events(tuple()))
+
+
+def test_checkpoint_canonicalization_preserves_semantic_differences() -> None:
+    normalized = runner._canonical_checkpoint_state({"queue": {1: D("2.50000000")}})
+    assert normalized == {"queue": {"1": "2.50000000"}}
+    assert normalized != runner._canonical_checkpoint_state(
+        {"queue": {1: D("2.50000001")}}
+    )
 
 
 def test_real_kernel_crosses_three_hour_boundary_without_reset() -> None:

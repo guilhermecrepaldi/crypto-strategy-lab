@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import copy
 import hashlib
 import json
 import os
@@ -272,7 +271,18 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
 
 
-def verify_m026_prefix(engine, seen: set[str], canonical: dict[int, Trade]) -> dict[str, Any]:
+def _canonical_checkpoint_state(state: dict[str, Any]) -> dict[str, Any]:
+    """Normalize in-memory and JSON-restored checkpoint values identically."""
+    return json.loads(json.dumps(state, sort_keys=True, default=str))
+
+
+def verify_m026_prefix(
+    engine,
+    seen: set[str],
+    canonical: dict[int, Trade],
+    *,
+    model_id: str = MODEL_ID,
+) -> dict[str, Any]:
     """Fail closed before the first post-03:00 event if M026's prefix diverges."""
     # M026's own finish observes its configured boundary without advancing the
     # event clock. Mirror that exact behavior so end_us is the sole normalized
@@ -282,18 +292,19 @@ def verify_m026_prefix(engine, seen: set[str], canonical: dict[int, Trade]) -> d
     expected_result = json.loads(PARENT_RESULT.read_bytes())
     expected_ledger = _read_jsonl(PARENT_LEDGER)
     if engine.audit != expected_ledger:
-        raise ValueError("M028_M026_PREFIX_LEDGER_MISMATCH")
+        raise ValueError(f"{model_id}_M026_PREFIX_LEDGER_MISMATCH")
     expected_ids = {
         trade.trade_id for trade in canonical.values() if trade.time_us < M026_END_US
     }
     if seen != expected_ids or len(seen) != expected_result["expected_trade_count"]:
-        raise ValueError("M028_M026_PREFIX_TRADE_SET_MISMATCH")
+        raise ValueError(f"{model_id}_M026_PREFIX_TRADE_SET_MISMATCH")
     actual_terminal = engine.checkpoint()
     expected_terminal = json.loads(PARENT_TERMINAL.read_bytes())
-    normalized_state = copy.deepcopy(actual_terminal["state"])
+    normalized_state = _canonical_checkpoint_state(actual_terminal["state"])
     normalized_state["parent"]["config"]["end_us"] = M026_END_US
-    if normalized_state != expected_terminal["state"]:
-        raise ValueError("M028_M026_PREFIX_ECONOMIC_STATE_MISMATCH")
+    expected_state = _canonical_checkpoint_state(expected_terminal["state"])
+    if normalized_state != expected_state:
+        raise ValueError(f"{model_id}_M026_PREFIX_ECONOMIC_STATE_MISMATCH")
     parent_metrics = expected_result["METRICS"]
     fields = (
         "PHYSICAL_CYCLES",
@@ -309,7 +320,7 @@ def verify_m026_prefix(engine, seen: set[str], canonical: dict[int, Trade]) -> d
         "HOTLINE_EPOCHS",
     )
     if any(metrics[field] != parent_metrics[field] for field in fields):
-        raise ValueError("M028_M026_PREFIX_METRIC_MISMATCH")
+        raise ValueError(f"{model_id}_M026_PREFIX_METRIC_MISMATCH")
     return {
         "STATUS": "PASS_EXACT_M026_3H_PREFIX_EQUIVALENCE",
         "LEDGER_EXACT_MATCH": True,
@@ -329,7 +340,17 @@ def _write_ledger(path: Path, rows: list[dict[str, Any]]) -> None:
         os.fsync(stream.fileno())
 
 
-def execute(engine, canonical, slices, identity, evidence, output=OUTPUT, result_path=RESULT):
+def execute(
+    engine,
+    canonical,
+    slices,
+    identity,
+    evidence,
+    output=OUTPUT,
+    result_path=RESULT,
+    *,
+    model_id: str = MODEL_ID,
+):
     _assert_unused_output(output, result_path)
     output.mkdir(parents=True, exist_ok=False)
     write_json(output / "run-manifest.json", {**identity, "evidence": evidence})
@@ -339,7 +360,7 @@ def execute(engine, canonical, slices, identity, evidence, output=OUTPUT, result
         prefix: dict[str, Any] | None = None
         for event in bounded_native_events(slices):
             if prefix is None and event["local_us"] >= M026_END_US:
-                prefix = verify_m026_prefix(engine, seen, canonical)
+                prefix = verify_m026_prefix(engine, seen, canonical, model_id=model_id)
             if event["kind"] == "BOOK":
                 if event["sequence_validated"]:
                     engine.receive_book(
@@ -355,7 +376,7 @@ def execute(engine, canonical, slices, identity, evidence, output=OUTPUT, result
                     )
                 continue
             if event["kind"] != "TRADE":
-                raise ValueError("M028_UNKNOWN_NATIVE_EVENT")
+                raise ValueError(f"{model_id}_UNKNOWN_NATIVE_EVENT")
             native = event["data"]
             trade = canonical.get(native["t"])
             if (
@@ -366,26 +387,33 @@ def execute(engine, canonical, slices, identity, evidence, output=OUTPUT, result
                 or native["m"] is not trade.buyer_maker
                 or not trade_timestamp_matches(trade.time_us, native["T"])
             ):
-                raise ValueError("M028_CANONICAL_TRADE_BINDING_CHANGED")
+                raise ValueError(f"{model_id}_CANONICAL_TRADE_BINDING_CHANGED")
             consumed = engine.receive_trade(trade, capture_time_us=event["local_us"])
             if not D(0) <= consumed <= trade.quantity:
-                raise ValueError("M028_GLOBAL_TRADE_BUDGET_EXCEEDED")
+                raise ValueError(f"{model_id}_GLOBAL_TRADE_BUDGET_EXCEEDED")
             seen.add(trade.trade_id)
         if prefix is None:
-            prefix = verify_m026_prefix(engine, seen, canonical)
+            prefix = verify_m026_prefix(engine, seen, canonical, model_id=model_id)
         if seen != {trade.trade_id for trade in canonical.values()}:
-            raise ValueError("M028_CANONICAL_24H_NOT_FULLY_DELIVERED")
-        metrics = normalize_full_day_metrics(engine.finish(time_us=END_US))
+            raise ValueError(f"{model_id}_CANONICAL_24H_NOT_FULLY_DELIVERED")
+        metrics = normalize_full_day_metrics(engine.finish(time_us=END_US), model_id=model_id)
         terminal = engine.checkpoint()
         _write_ledger(audit_file, engine.audit)
         write_json(output / "terminal-engine-state.json", terminal)
-        audit = independent_m026_24h_audit(engine.audit, terminal, metrics, canonical, prefix)
+        audit = independent_m026_24h_audit(
+            engine.audit,
+            terminal,
+            metrics,
+            canonical,
+            prefix,
+            model_id=model_id,
+        )
         audit.update(terminal_sha256=terminal["sha256"], ledger_sha256=file_sha(audit_file))
         metrics["AUDIT"] = audit["status"]
         metrics["STATUS"] = "COMPLETE"
         result = {
             **identity,
-            "MODEL": MODEL_ID,
+            "MODEL": model_id,
             "PARENT_STRATEGY": "M026",
             "PERIOD": "24H",
             "RUN_STATUS": "COMPLETE",

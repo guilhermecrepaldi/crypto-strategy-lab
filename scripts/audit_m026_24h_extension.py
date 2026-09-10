@@ -18,18 +18,20 @@ def _s(value: D) -> str:
     return format(value, "f")
 
 
-def normalize_full_day_metrics(metrics: dict[str, Any]) -> dict[str, Any]:
+def normalize_full_day_metrics(
+    metrics: dict[str, Any], *, model_id: str = "M028"
+) -> dict[str, Any]:
     """Replace M026's frozen 3h report labels without changing engine economics."""
     value = dict(metrics)
     initial = D(value["INITIAL_TOTAL_MARKED"])
     final = D(value["FINAL_TOTAL_MARKED"])
     if initial != M026_3H_INITIAL:
-        raise ValueError("M028_INITIAL_CAPITAL_DIVERGED_FROM_M026")
+        raise ValueError(f"{model_id}_INITIAL_CAPITAL_DIVERGED_FROM_M026")
     gain = final - initial
     post_3h_gain = final - M026_3H_FINAL
     value.update(
         {
-            "MODEL": "M028",
+            "MODEL": model_id,
             "PARENT_STRATEGY": "M026",
             "PERIOD": "24H",
             "PHYSICAL_CYCLES_PER_HOUR": _s(D(value["PHYSICAL_CYCLES"]) / HOURS),
@@ -63,18 +65,20 @@ def independent_m026_24h_audit(
     metrics: dict[str, Any],
     canonical: dict[int, Any],
     prefix: dict[str, Any],
+    *,
+    model_id: str = "M028",
 ) -> dict[str, Any]:
     """Reuse the physical M026 audit, then independently verify 24h reporting."""
     base = independent_dynamic_hotline_audit(rows, terminal, metrics, canonical)
 
     def require(condition: bool, reason: str) -> None:
         if not condition:
-            raise ValueError(f"M028_AUDIT_{reason}")
+            raise ValueError(f"{model_id}_AUDIT_{reason}")
 
     initial = D(metrics["INITIAL_TOTAL_MARKED"])
     final = D(metrics["FINAL_TOTAL_MARKED"])
     config = terminal.get("state", {}).get("parent", {}).get("config", {})
-    require(metrics["MODEL"] == "M028", "MODEL")
+    require(metrics["MODEL"] == model_id, "MODEL")
     require(metrics["PARENT_STRATEGY"] == "M026", "PARENT")
     require(metrics["PERIOD"] == "24H", "PERIOD")
     require(config.get("start_us") == START_US, "TERMINAL_START")
@@ -122,7 +126,7 @@ def independent_m026_24h_audit(
     require(prefix.get("ECONOMIC_STATE_MATCH") is True, "PREFIX_STATE")
     return {
         **base,
-        "status": "PASS_M028_M026_24H_LEDGER_TERMINAL_PREFIX_AND_RETURN_AUDIT",
+        "status": f"PASS_{model_id}_M026_24H_LEDGER_TERMINAL_PREFIX_AND_RETURN_AUDIT",
         "prefix_equivalence": True,
         "full_day_reporting_reconciled": True,
         "marked_gain_reconciled": True,
