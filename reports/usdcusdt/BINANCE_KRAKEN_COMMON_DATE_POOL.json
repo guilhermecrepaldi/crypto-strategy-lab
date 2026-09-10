@@ -98,7 +98,10 @@
       "validation_sha256": "14f99d9571309032847b3ffc011142455793c3ec201e40c1ecc9e8c51e16cec7"
     }
   ],
-  "BLOCKER": "KRAKEN_HISTORICAL_FEE_PROFILE_NOT_PROVEN_FOR_CANDIDATE_DATES",
+  "BLOCKERS": [
+    "KRAKEN_SOURCE_CONTINUITY_NOT_PROVEN",
+    "KRAKEN_HISTORICAL_FEE_PROFILE_NOT_PROVEN_FOR_CANDIDATE_DATES"
+  ],
   "ELIGIBLE_COMMON_DATE_POOL": [],
   "HISTORICAL_FEE_PROVEN_DATES": [],
   "KRAKEN_NATIVE_SYMBOL": "USDC/USDT",
@@ -106,259 +109,489 @@
     {
       "date": "2025-01-01",
       "l2": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1735689602214647,
         "last_timestamp": 1735775999937878,
         "rows": 490199,
         "sha256": "2effb29775ab14d993f2d50cfab824aa2e7f5fc1326ba68d1674cc93273e0dec",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 397,
+        "snapshot_sides": [
+          "ask",
+          "bid"
+        ],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       },
       "trades": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1735689669615735,
         "last_timestamp": 1735775988449033,
         "rows": 3417,
         "sha256": "5e6adf62ecb9e5b58154c19e265e2b1217338fbc3ff35603c046ed65d52e67e1",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 0,
+        "snapshot_sides": [],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       }
     },
     {
       "date": "2025-02-01",
       "l2": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1738368002499765,
         "last_timestamp": 1738454399582349,
         "rows": 541921,
         "sha256": "cb316d4b100667328e47559b9d80b6078ccf2c935a1a6ac0268eb6fbd85ca268",
-        "valid": true
+        "snapshot_reset_count": 1,
+        "snapshot_rows": 799,
+        "snapshot_sides": [
+          "ask",
+          "bid"
+        ],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       },
       "trades": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1738368056710791,
         "last_timestamp": 1738454362822954,
         "rows": 8508,
         "sha256": "a048f2b3c2c9631d867be43134197b5d205ac5ac2f41b2177a49138d23d34649",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 0,
+        "snapshot_sides": [],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       }
     },
     {
       "date": "2025-03-01",
       "l2": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1740787204391404,
         "last_timestamp": 1740873595027947,
         "rows": 382030,
         "sha256": "6e64803675552848354e5580e4da66131d878e574ec524aae1d128e91c3138e4",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 378,
+        "snapshot_sides": [
+          "ask",
+          "bid"
+        ],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       },
       "trades": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1740787575278822,
         "last_timestamp": 1740872480609652,
         "rows": 3192,
         "sha256": "94a7ae33cf2981c02f95bb1e701d0043ed1a147513764f49368acdcfc7b812ee",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 0,
+        "snapshot_sides": [],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       }
     },
     {
       "date": "2025-04-01",
       "l2": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1743465602461959,
         "last_timestamp": 1743551999798219,
         "rows": 144240,
         "sha256": "d715953e32c06779af4a75a9029cfffcbc72c93e8c1287bd8e0078c9bf261a68",
-        "valid": true
+        "snapshot_reset_count": 30,
+        "snapshot_rows": 7265,
+        "snapshot_sides": [
+          "ask",
+          "bid"
+        ],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       },
       "trades": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1743465848281047,
         "last_timestamp": 1743551999795069,
         "rows": 6307,
         "sha256": "8fba459b7f666ec596bc161f366947d61e850177c3a36edf8df07d17f4e9ad07",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 0,
+        "snapshot_sides": [],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       }
     },
     {
       "date": "2025-06-01",
       "l2": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 154,
         "first_timestamp": 1748736002132707,
         "last_timestamp": 1748822397729322,
         "rows": 182235,
         "sha256": "2e487f734ba7caa1f34e7bf1a28f5613b6ef75de8e2b0b586faccf1fb6b68e9e",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 154,
+        "snapshot_sides": [
+          "ask",
+          "bid"
+        ],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       },
       "trades": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1748736080128607,
         "last_timestamp": 1748822351779826,
         "rows": 3386,
         "sha256": "387c99b6e298a511ba6293d7d340c3a40d89f10b1b90a1e6cb11dbae449595b1",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 0,
+        "snapshot_sides": [],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       }
     },
     {
       "date": "2025-08-01",
       "l2": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 193,
         "first_timestamp": 1754006402557430,
         "last_timestamp": 1754092799924610,
         "rows": 469986,
         "sha256": "aac752bf0a1d1ec9933f1b36cdd226e6f692e26d5be967c63e3f04d77706f930",
-        "valid": true
+        "snapshot_reset_count": 15,
+        "snapshot_rows": 3150,
+        "snapshot_sides": [
+          "ask",
+          "bid"
+        ],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       },
       "trades": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1754006408294741,
         "last_timestamp": 1754092715867189,
         "rows": 11590,
         "sha256": "12000c6c902ab7e1cfadb3cdc87d907309f51ea0a6c185501d4cf5b6dc2f95a4",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 0,
+        "snapshot_sides": [],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       }
     },
     {
       "date": "2026-01-01",
       "l2": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1767225602880657,
         "last_timestamp": 1767311999503496,
         "rows": 357662,
         "sha256": "15e57b545139f0fdf76db85eeef1b8783a612ac92f8146b0db57035b36c55def",
-        "valid": true
+        "snapshot_reset_count": 358,
+        "snapshot_rows": 55806,
+        "snapshot_sides": [
+          "ask",
+          "bid"
+        ],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       },
       "trades": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1767225609898960,
         "last_timestamp": 1767311974239523,
         "rows": 1540,
         "sha256": "396d61521b6d8d536640440bc429d3e5becfbf46899dfe7a1871f2dfc1bfaaea",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 0,
+        "snapshot_sides": [],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       }
     },
     {
       "date": "2026-02-01",
       "l2": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 2,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1769904002302138,
         "last_timestamp": 1769990399087214,
         "rows": 463112,
         "sha256": "4b3ae3f0f8577c56cad97e628f158c71d6051c9c35f141dab2895485043e6280",
-        "valid": true
+        "snapshot_reset_count": 358,
+        "snapshot_rows": 105201,
+        "snapshot_sides": [
+          "ask",
+          "bid"
+        ],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       },
       "trades": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1769904075292524,
         "last_timestamp": 1769990374286876,
         "rows": 4863,
         "sha256": "de128cb78ce1215b5a090724ba2244a9e3412fc59b96ede0d51a0f69895d609f",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 0,
+        "snapshot_sides": [],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       }
     },
     {
       "date": "2026-03-01",
       "l2": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 3,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1772323204967747,
         "last_timestamp": 1772409599971434,
         "rows": 346260,
         "sha256": "eedbc41dba2f7dd933f386ed23838468fbaff4545aaeb8009bf62ddb415992a2",
-        "valid": true
+        "snapshot_reset_count": 358,
+        "snapshot_rows": 100817,
+        "snapshot_sides": [
+          "ask",
+          "bid"
+        ],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       },
       "trades": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1772323205653700,
         "last_timestamp": 1772409562582514,
         "rows": 7281,
         "sha256": "4e01b7d3d30ac9f729188d1ac13d3570ce1b187bc07a3baad42a9b84c59cb5c1",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 0,
+        "snapshot_sides": [],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       }
     },
     {
       "date": "2026-04-01",
       "l2": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1775001602300409,
         "last_timestamp": 1775087999943231,
         "rows": 717673,
         "sha256": "ac9a872c7d88c3fcf1de096cc37c0afd99348a2346b7acc4740c849e161fd074",
-        "valid": true
+        "snapshot_reset_count": 30,
+        "snapshot_rows": 9341,
+        "snapshot_sides": [
+          "ask",
+          "bid"
+        ],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       },
       "trades": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1775001607884610,
         "last_timestamp": 1775087998262498,
         "rows": 5205,
         "sha256": "1de76bbf80b6bb38b184fa21f3762ec4a1e1890a53978b9d46b3cf1c8aa98e39",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 0,
+        "snapshot_sides": [],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       }
     },
     {
       "date": "2026-05-01",
       "l2": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1777593603313785,
         "last_timestamp": 1777679999994063,
         "rows": 386623,
         "sha256": "8328469468e5919ff834fe2b381800f6dd6629713f7876eeaa8f6718a1bb54c6",
-        "valid": true
+        "snapshot_reset_count": 20,
+        "snapshot_rows": 3919,
+        "snapshot_sides": [
+          "ask",
+          "bid"
+        ],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       },
       "trades": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1777593822685602,
         "last_timestamp": 1777679994549790,
         "rows": 3728,
         "sha256": "ee341127f5369d5e6b7d6e848a94ee465a31418cfe62aba8a58b6fb1bb576901",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 0,
+        "snapshot_sides": [],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       }
     },
     {
       "date": "2026-07-01",
       "l2": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1782864002022295,
         "last_timestamp": 1782950399773447,
         "rows": 380786,
         "sha256": "80ad1bcb14130c8ae200aef06111901a6610e210a1c93da098758ca9964d4af9",
-        "valid": true
+        "snapshot_reset_count": 64,
+        "snapshot_rows": 13937,
+        "snapshot_sides": [
+          "ask",
+          "bid"
+        ],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       },
       "trades": {
+        "book_continuity_proven": false,
         "delivery_monotonic": true,
         "exchange_timestamp_reorders": 0,
+        "exchange_timestamps_outside_delivery_day": 0,
         "first_timestamp": 1782864007729491,
         "last_timestamp": 1782950338399958,
         "rows": 3065,
         "sha256": "07f16a4dcf44db475f374e31f5c7cd5ff7e25c48999618b740b2a2b6db121da8",
-        "valid": true
+        "snapshot_reset_count": 0,
+        "snapshot_rows": 0,
+        "snapshot_sides": [],
+        "source_sequence_available": false,
+        "structural_errors": [],
+        "valid": true,
+        "validation_class": "INITIAL_SNAPSHOT_AND_TYPED_EVENTS_VALIDATED_CONTINUITY_UNPROVEN"
       }
     }
   ],
   "MODEL": "M033_MULTI_VENUE_KRAKEN_L3_VALIDATION_V1",
   "PAIR": "USDC/USDT",
-  "PHYSICAL_L2_TRADES_COMMON_DATE_POOL": [
+  "PHYSICAL_REPLAY_READY_COMMON_DATE_POOL": [],
+  "READY_FOR_HISTORICAL_REPLAY": false,
+  "STRUCTURAL_FILE_COMMON_DATE_POOL": [
     "2025-01-01",
     "2025-02-01",
     "2025-03-01",
@@ -371,6 +604,5 @@
     "2026-04-01",
     "2026-05-01",
     "2026-07-01"
-  ],
-  "READY_FOR_HISTORICAL_REPLAY": false
+  ]
 }

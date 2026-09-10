@@ -7,14 +7,19 @@ Tardis documents Kraken spot coverage from 2019-06-04 and provides normalized
 without an API key. Its Kraken channel inventory contains L2 `book`, not L3.
 
 All twelve dates already validated locally for Binance USDCUSDT were downloaded
-and physically validated for Kraken USDC-USDT without inspecting strategy
-performance:
+for Kraken USDC-USDT and passed file-level structural checks without inspecting
+strategy performance:
 
 `2025-01-01, 2025-02-01, 2025-03-01, 2025-04-01, 2025-06-01,
 2025-08-01, 2026-01-01, 2026-02-01, 2026-03-01, 2026-04-01,
 2026-05-01, 2026-07-01`.
 
-Hashes, row counts and delivery-order checks are in
+The checks enforce venue, symbol, delivery-day, numeric domains, sides and an
+initial two-sided snapshot. Later snapshot resets and exchange timestamps outside
+the delivery-day boundary are recorded. Kraken/Tardis exposes no source sequence
+or checksum in these normalized CSVs, so continuous reconstructability is not
+proven and none of the twelve dates is replay-ready. Hashes, row counts and checks
+are in
 `reports/usdcusdt/BINANCE_KRAKEN_COMMON_DATE_POOL.json`. Raw files remain ignored
 locally. Exchange timestamps can regress slightly while Tardis local-delivery
 timestamps remain monotonic; both facts are recorded rather than reordered.

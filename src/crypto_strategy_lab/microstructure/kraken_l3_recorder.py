@@ -26,7 +26,9 @@ class CaptureManifest:
     raw_sha256: str | None = None
     normalized_sha256: str | None = None
     event_count: int = 0
+    normalized_event_count: int = 0
     sequence_valid: bool = True
+    capture_valid: bool = True
     gaps: list[dict[str, object]] = field(default_factory=list)
     reconnects: list[dict[str, object]] = field(default_factory=list)
 
@@ -53,6 +55,9 @@ class KrakenL3RawRecorder:
             started_at_us=started_at_us,
         )
         self._last_sequence: int | None = None
+        self._raw_hash_by_sequence: dict[int, str] = {}
+        self._normalized_bindings: set[tuple[int, int]] = set()
+        self._closed = False
 
     @staticmethod
     def require_subscription_token(token: str | None) -> str:
@@ -60,7 +65,10 @@ class KrakenL3RawRecorder:
             raise PermissionError("M033_KRAKEN_L3_AUTH_TOKEN_REQUIRED_NO_PRIVATE_ACCESS")
         return token
 
-    def append_raw(self, raw_message: bytes, *, local_capture_time_us: int, sequence: int) -> None:
+    def append_raw(self, raw_message: bytes, *, local_capture_time_us: int, sequence: int) -> str:
+        self._require_open()
+        if sequence in self._raw_hash_by_sequence:
+            raise ValueError("M033_DUPLICATE_RAW_SEQUENCE")
         if self._last_sequence is not None and sequence != self._last_sequence + 1:
             self.manifest.sequence_valid = False
             self.record_gap(
@@ -68,23 +76,48 @@ class KrakenL3RawRecorder:
                 end_sequence=sequence - 1,
                 detected_at_us=local_capture_time_us,
             )
+        raw_sha256 = hashlib.sha256(raw_message).hexdigest()
         envelope = {
             "local_capture_time_us": local_capture_time_us,
             "recorder_sequence": sequence,
+            "native_message_sha256": raw_sha256,
             "native_message": raw_message.decode("utf-8"),
         }
         with self.raw_path.open("ab") as output:
             output.write(json.dumps(envelope, sort_keys=True).encode("utf-8") + b"\n")
         self._last_sequence = sequence
+        self._raw_hash_by_sequence[sequence] = raw_sha256
         self.manifest.event_count += 1
+        return raw_sha256
 
-    def append_normalized(self, payload: dict[str, object]) -> None:
-        if not self.raw_path.exists():
+    def append_normalized(
+        self,
+        payload: dict[str, object],
+        *,
+        raw_sequence: int,
+        source_event_index: int,
+    ) -> None:
+        self._require_open()
+        if raw_sequence not in self._raw_hash_by_sequence:
             raise ValueError("M033_NORMALIZATION_BEFORE_RAW_PERSISTENCE")
+        binding = (raw_sequence, source_event_index)
+        if binding in self._normalized_bindings:
+            raise ValueError("M033_DUPLICATE_NORMALIZED_SOURCE_BINDING")
+        envelope = {
+            "raw_sequence": raw_sequence,
+            "source_event_index": source_event_index,
+            "native_message_sha256": self._raw_hash_by_sequence[raw_sequence],
+            "normalized_event": payload,
+        }
         with self.normalized_path.open("ab") as output:
-            output.write(json.dumps(payload, sort_keys=True).encode("utf-8") + b"\n")
+            output.write(json.dumps(envelope, sort_keys=True).encode("utf-8") + b"\n")
+        self._normalized_bindings.add(binding)
+        self.manifest.normalized_event_count += 1
 
     def record_gap(self, *, start_sequence: int, end_sequence: int, detected_at_us: int) -> None:
+        self._require_open()
+        self.manifest.sequence_valid = False
+        self.manifest.capture_valid = False
         self.manifest.gaps.append(
             {
                 "start_sequence": start_sequence,
@@ -94,9 +127,12 @@ class KrakenL3RawRecorder:
         )
 
     def record_reconnect(self, *, at_us: int, reason: str) -> None:
+        self._require_open()
+        self.manifest.capture_valid = False
         self.manifest.reconnects.append({"at_us": at_us, "reason": reason})
 
     def close(self, *, ended_at_us: int) -> CaptureManifest:
+        self._require_open()
         self.manifest.ended_at_us = ended_at_us
         self.manifest.raw_sha256 = _sha256(self.raw_path)
         self.manifest.normalized_sha256 = (
@@ -106,7 +142,12 @@ class KrakenL3RawRecorder:
             json.dumps(self.manifest.__dict__, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
+        self._closed = True
         return self.manifest
+
+    def _require_open(self) -> None:
+        if self._closed:
+            raise ValueError("M033_CAPTURE_ALREADY_CLOSED")
 
 
 def _sha256(path: Path) -> str:

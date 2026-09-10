@@ -23,7 +23,7 @@ from crypto_strategy_lab.microstructure.multi_venue_models import (
 from crypto_strategy_lab.microstructure.multi_venue_queue import (
     L2QueueModel,
     L3QueueModel,
-    compare_l3_to_l2,
+    L3ToL2AblationHarness,
 )
 from crypto_strategy_lab.microstructure.venue_adapters import BinanceL2Adapter, KrakenSpotAdapter
 
@@ -335,6 +335,31 @@ def test_l3_queue_ahead_and_c1_c2_insertion() -> None:
     assert model.public_orders_ahead(KRAKEN, "C2") == 1
 
 
+def test_l3_rejects_duplicate_column_at_same_price() -> None:
+    model = L3QueueModel()
+    model.activate_own(
+        KRAKEN, side="BUY", price=D("1"), order_id="C1", quantity=D("1"), column=1, now_us=1
+    )
+    with pytest.raises(ValueError, match="DUPLICATE_ACTIVE_COLUMN"):
+        model.activate_own(
+            KRAKEN,
+            side="BUY",
+            price=D("1"),
+            order_id="ANOTHER_C1",
+            quantity=D("1"),
+            column=1,
+            now_us=2,
+        )
+
+
+def test_l3_rejects_c2_without_c1() -> None:
+    model = L3QueueModel()
+    with pytest.raises(ValueError, match="C2_REQUIRES_ACTIVE_C1"):
+        model.activate_own(
+            KRAKEN, side="BUY", price=D("1"), order_id="C2", quantity=D("1"), column=2, now_us=1
+        )
+
+
 def test_l3_execution_consumes_public_then_own_once_and_partial_blocks_c2() -> None:
     model = L3QueueModel()
     model.apply_public_event(event("A", L3EventType.ADD, "P", "2"))
@@ -401,8 +426,44 @@ def test_cancel_ack_rejects_partial_own_order() -> None:
     model.consume_execution(
         KRAKEN, event_id="T", side="BUY", price=D("1"), quantity=D("1"), exchange_time_us=2
     )
+    model.cancel_request(KRAKEN, "C1", now_us=3)
     with pytest.raises(ValueError, match="NOT_RECLAIMABLE"):
-        model.cancel_ack(KRAKEN, "C1")
+        model.cancel_ack(KRAKEN, "C1", now_us=4)
+
+
+def test_cancel_ack_requires_prior_request_and_causal_time() -> None:
+    model = L3QueueModel()
+    model.activate_own(
+        KRAKEN, side="BUY", price=D("1"), order_id="C1", quantity=D("1"), column=1, now_us=10
+    )
+    with pytest.raises(ValueError, match="NOT_RECLAIMABLE"):
+        model.cancel_ack(KRAKEN, "C1", now_us=11)
+    model.cancel_request(KRAKEN, "C1", now_us=12)
+    assert model.cancel_ack(KRAKEN, "C1", now_us=13) == D("1")
+
+
+def test_execution_before_own_activation_fails_closed() -> None:
+    model = L3QueueModel()
+    model.activate_own(
+        KRAKEN, side="BUY", price=D("1"), order_id="FUTURE", quantity=D("1"), column=1, now_us=100
+    )
+    with pytest.raises(ValueError, match="OUT_OF_ORDER"):
+        model.consume_execution(
+            KRAKEN, event_id="EARLY", side="BUY", price=D("1"), quantity=D("1"), exchange_time_us=1
+        )
+
+
+def test_trade_consumption_reconciles_matching_native_modify_once() -> None:
+    model = L3QueueModel()
+    model.apply_public_event(event("A", L3EventType.ADD, "P", "2"))
+    assert (
+        model.consume_execution(
+            KRAKEN, event_id="T", side="BUY", price=D("1"), quantity=D("1"), exchange_time_us=2
+        )
+        == {}
+    )
+    model.apply_public_event(event("M", L3EventType.MODIFY, "P", "1", exchange_time=2, sequence=2))
+    assert model.aggregate_l2(KRAKEN) == {("BUY", D("1.0000")): D("1")}
 
 
 def test_l3_gap_blocks_new_orders_and_execution() -> None:
@@ -425,19 +486,29 @@ def test_duplicate_and_out_of_order_public_events_fail() -> None:
 
 
 def test_l3_to_l2_aggregation_and_ablation_fixture() -> None:
-    model = L3QueueModel()
-    model.apply_public_event(event("A", L3EventType.ADD, "P1", "2", sequence=1))
-    model.activate_own(
+    harness = L3ToL2AblationHarness()
+    harness.apply_public_event(event("A", L3EventType.ADD, "P1", "2", sequence=1))
+    harness.activate_own(
         KRAKEN, side="BUY", price=D("1"), order_id="C1", quantity=D("1"), column=1, now_us=2
     )
-    model.apply_public_event(
+    harness.apply_public_event(
         event("B", L3EventType.ADD, "P2", "3", order_time=3, exchange_time=3, sequence=2)
     )
-    assert model.aggregate_l2(KRAKEN) == {("BUY", D("1.0000")): D("5")}
-    comparison = compare_l3_to_l2(model, book=KRAKEN, order_id="C1", side="BUY", price=D("1"))
+    assert harness.l3.aggregate_l2(KRAKEN) == {("BUY", D("1.0000")): D("5")}
+    comparison = harness.compare(KRAKEN, "C1")
     assert comparison.l3_queue_ahead == D("2")
-    assert comparison.l2_queue_ahead == D("5")
-    assert comparison.difference == D("3")
+    assert comparison.l2_queue_ahead == D("2")
+    assert comparison.difference == D("0")
+    l3_fills, l2_fills = harness.consume_execution(
+        KRAKEN,
+        event_id="T",
+        side="BUY",
+        price=D("1"),
+        quantity=D("3"),
+        exchange_time_us=4,
+    )
+    assert l3_fills == {"C1": D("1")}
+    assert l2_fills == {"C1": D("1")}
 
 
 def test_recorder_requires_auth_token_without_accessing_account() -> None:
@@ -448,19 +519,35 @@ def test_recorder_requires_auth_token_without_accessing_account() -> None:
 def test_recorder_persists_raw_before_normalized_and_reports_gap(tmp_path) -> None:
     recorder = KrakenL3RawRecorder(tmp_path / "capture", book=KRAKEN, started_at_us=1)
     recorder.append_raw(b'{"channel":"level3"}', local_capture_time_us=2, sequence=1)
-    recorder.append_normalized({"event": "ADD"})
+    recorder.append_normalized({"event": "ADD"}, raw_sequence=1, source_event_index=0)
     recorder.append_raw(b'{"channel":"level3"}', local_capture_time_us=4, sequence=3)
     recorder.record_reconnect(at_us=5, reason="test")
     manifest = recorder.close(ended_at_us=6)
     assert manifest.event_count == 2
     assert manifest.sequence_valid is False
+    assert manifest.capture_valid is False
     assert manifest.gaps == [{"start_sequence": 2, "end_sequence": 2, "detected_at_us": 4}]
     assert manifest.reconnects == [{"at_us": 5, "reason": "test"}]
     payload = json.loads((tmp_path / "capture" / "manifest.json").read_text())
     assert payload["raw_sha256"] and payload["normalized_sha256"]
+    with pytest.raises(ValueError, match="ALREADY_CLOSED"):
+        recorder.append_raw(b"{}", local_capture_time_us=7, sequence=4)
 
 
 def test_normalization_before_raw_is_rejected(tmp_path) -> None:
     recorder = KrakenL3RawRecorder(tmp_path / "capture", book=KRAKEN, started_at_us=1)
     with pytest.raises(ValueError, match="BEFORE_RAW"):
-        recorder.append_normalized({"event": "ADD"})
+        recorder.append_normalized({"event": "ADD"}, raw_sequence=1, source_event_index=0)
+
+
+def test_normalized_event_is_bound_to_exact_raw_message(tmp_path) -> None:
+    recorder = KrakenL3RawRecorder(tmp_path / "capture", book=KRAKEN, started_at_us=1)
+    expected_hash = recorder.append_raw(
+        b'{"channel":"level3"}', local_capture_time_us=2, sequence=7
+    )
+    recorder.append_normalized({"event": "ADD"}, raw_sequence=7, source_event_index=0)
+    row = json.loads(recorder.normalized_path.read_text().strip())
+    assert row["raw_sequence"] == 7
+    assert row["native_message_sha256"] == expected_hash
+    with pytest.raises(ValueError, match="DUPLICATE_NORMALIZED"):
+        recorder.append_normalized({"event": "ADD"}, raw_sequence=7, source_event_index=0)

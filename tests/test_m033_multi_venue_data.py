@@ -18,14 +18,36 @@ def test_tardis_l2_validation_requires_physical_columns_and_monotonic_time(tmp_p
         path,
         "exchange,symbol,timestamp,local_timestamp,is_snapshot,side,price,amount\n"
         "kraken,USDC-USDT,1,2,true,bid,1,5\n"
-        "kraken,USDC-USDT,2,3,false,ask,1.0001,4\n",
+        "kraken,USDC-USDT,1,2,true,ask,1.0001,4\n"
+        "kraken,USDC-USDT,2,3,false,ask,1.0001,3\n",
     )
     result = validate_tardis_csv(
         path,
         required={"exchange", "symbol", "timestamp", "local_timestamp", "side", "price", "amount"},
+        expected_exchange="kraken",
+        expected_symbol="USDC-USDT",
+        data_kind="l2",
     )
     assert result["valid"] is True
-    assert result["rows"] == 2
+    assert result["rows"] == 3
+    assert result["book_continuity_proven"] is False
+
+
+def test_tardis_validation_rejects_wrong_exchange_and_symbol(tmp_path) -> None:
+    path = tmp_path / "trades.csv.gz"
+    write_csv(
+        path,
+        "exchange,symbol,timestamp,local_timestamp,side,price,amount\nbinance,WRONG,1,2,buy,1,1\n",
+    )
+    result = validate_tardis_csv(
+        path,
+        required={"exchange", "symbol", "timestamp", "local_timestamp", "side", "price", "amount"},
+        expected_exchange="kraken",
+        expected_symbol="USDC/USDT",
+        data_kind="trades",
+    )
+    assert result["valid"] is False
+    assert result["structural_errors"] == ["WRONG_EXCHANGE", "WRONG_SYMBOL"]
 
 
 def test_tardis_validation_rejects_reordered_events(tmp_path) -> None:
