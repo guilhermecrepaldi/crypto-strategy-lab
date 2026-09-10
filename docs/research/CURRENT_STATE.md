@@ -1,11 +1,11 @@
 # CURRENT STATE
 
-ACTIVE_EXECUTION_CAMPAIGN=M027_PREPARATION
-CAMPAIGN_STATUS=M027_PREREGISTERED; PRE_RUN_GATES_PENDING
-CAMPAIGN_EXECUTION_SOURCE_SHA=PENDING_PUBLISHED_PREREG_COMMIT
-CAMPAIGN_ACTIVE_ENVELOPE=NONE_PRE_RUN
-CAMPAIGN_QUEUED_ENVELOPE=M027_CONTROL_THEN_TREATMENT
-CAMPAIGN_VERDICT=PENDING
+ACTIVE_EXECUTION_CAMPAIGN=NONE_M027_COMPLETE
+CAMPAIGN_STATUS=M027_COMPLETE_INCONCLUSIVE_NORMALIZED_MECHANICS
+CAMPAIGN_EXECUTION_SOURCE_SHA=c653292c836621def5952b4e7e04b8ed8ce53ea8
+CAMPAIGN_ACTIVE_ENVELOPE=NONE_COMPLETE
+CAMPAIGN_QUEUED_ENVELOPE=NONE_OWNER_GATE_CLOSED
+CAMPAIGN_VERDICT=INCONCLUSIVE
 CAMPAIGN_PROGRESS_FILE=docs/research/M027_JOURNAL.md
 CAMPAIGN_JOURNAL=docs/research/M027_JOURNAL.md
 CAMPAIGN_SCOREBOARD=reports/usdcusdt/M027-3h-control-treatment-result.json
@@ -22,25 +22,26 @@ MONTHLY_INITIALIZATION=ONCE_100_OPERATING_PLUS_10_RESERVE_PER_ENVELOPE
 MONTHLY_ECONOMIC_REPLAYS_STARTED=6
 MONTHLY_CONTINUOUS_WEEK_2_AUTHORIZED=false
 
-OWNER_NEXT_RESEARCH=M027_MICRO_HOT_REALLOCATION_CONTROLLED_AB
+OWNER_NEXT_RESEARCH=AWAIT_OWNER_DIRECTION
 OWNER_DIRECTIVE=docs/microstructure/M027_MICRO_HOT_REALLOCATION_OWNER_DIRECTIVE.md
-NEXT_CAMPAIGN_STATUS=AUTHORIZED_PRE_RUN; CONTROL_AND_TREATMENT_ONCE
+NEXT_CAMPAIGN_STATUS=NOT_AUTHORIZED
 NEXT_CAMPAIGN_MODEL_HASH=80c8961e3ac9faaf1c2094e42a719a9d9b2853287178fcb214f99858f4e667ca
 NEXT_CAMPAIGN_WINDOW=2026-05-01T00:00:00Z/2026-05-01T03:00:00Z_EXCLUSIVE
 NEXT_CAMPAIGN_ORDER_MODE=NORMALIZED_SLOT_BASE_1_USDT_EQ; WHOLE_USDC_QUANTIZED
 NEXT_CAMPAIGN_FUNDING=0; RESERVE=0; RELEASE_DISABLED
 NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=DERIVED_FROM_FIRST_BOOK_PLUS_8_SLOT_UNITS_PER_ASSET_SIDE
 
-Latest OWNER authority creates M027 from immutable M026. A hard physical data gate
-has identified the fixed 2026-05-01 first-three-hour tape as supporting the legal
-0.00001 price grid; the published runner repeats that validation before any economic
-event. M027 runs a matched CONTROL and TREATMENT exactly once each. CONTROL is M026's
-15 coarse levels on the new tape. TREATMENT removes only FAR14/FAR15 and reallocates
-their two slot-units per side to a new ±0.00005 MICRO line with exactly two one-slot
-columns. Both keep 60 orders, 140 operational plus16 mobility slot-units, the same
-queue/latency/return mechanics, and a <=0.01% marked-capital mismatch gate. Source,
-tests, Astra review, registry and push precede the run. No other day, rerun, M028,
-extension or live action is authorized.
+M027 is complete on the fixed 2026-05-01 first-three-hour tape using published
+source `c653292`. CONTROL retained M026's fifteen coarse levels; TREATMENT replaced
+only FAR14/FAR15 with a two-column MICRO line at ±0.00005. Both kept60 orders,
+140 operational plus16 mobility slot-units and passed the <=0.01% capital-match
+gate. Both produced zero fills and zero cycles. The30,552 trades remained between
+1.00013 and1.00015 while hotline stayed1.00014; MICRO entries at1.00009/1.00019
+were never touched. FAR14/FAR15 also produced zero in CONTROL. Both physical ledgers
+and terminal states passed independent audit. M027 is `INCONCLUSIVE`: the tape did
+not exercise the intervention, so it cannot identify its throughput effect. The
+normalized probe is below minNotional and not live evidence. No other day, rerun,
+M028, extension or live action is authorized.
 
 Latest OWNER authority created M026 from immutable M024, with M025 as supporting
 evidence only. Its single three-hour Jan1 run used published source `9e0664f` and

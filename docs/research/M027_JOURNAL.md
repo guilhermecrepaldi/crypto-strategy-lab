@@ -44,3 +44,29 @@ Append-only journal for `MICRO_HOT_REALLOCATION_CONTROLLED_AB_V1`.
 
 Original OWNER attachment SHA-256:
 `3cccac13bac77e440d4350496234b8c8dac8a0be8218e5e5cdc0f1f17d1c74a5`.
+
+## 2026-09-09 — execução única e conclusão
+
+- Configuração/revisão foram publicadas no commit `ddffa07`; o ajuste puramente
+  documental que restaurou os hashes exatos registrados foi publicado em
+  `c653292`, SHA usado pelos dois cenários.
+- Uma tentativa inicial parou antes do replay no gate
+  `M027_REGISTERED_DESIGN_MISMATCH`; nenhum cenário ou evento foi consumido. A
+  causa foi a remoção de whitespace após o registro, que alterou dois hashes
+  documentais. Os bytes registrados foram restaurados e o preflight passou.
+- CONTROL e TREATMENT foram então executados exatamente uma vez cada, na ordem
+  registrada, sobre 30.552 trades canônicos e 18 slices L2.
+- Ambos produziram 0 fills, 0 ciclos físicos e 0 ciclos-slot. MICRO C1/C2
+  produziram zero; o delta físico é zero e a razão é indefinida com controle zero.
+- Os trades ficaram em 1,00013–1,00015, a hotline em 1,00014 e as entradas MICRO
+  em 1,00009/1,00019. Não houve toque nos preços MICRO.
+- FAR14/FAR15 do controle também não produziram fills ou ciclos; portanto a
+  remoção não sacrificou produtividade realizada observável nesta janela.
+- Capital permaneceu inalterado nos dois braços. A diferença inicial entre braços
+  foi 0,0017950566%, dentro do gate de 0,01%, e não representa lucro.
+- Os dois ledgers e estados terminais passaram a auditoria independente. O PASS
+  valida coerência do replay; não valida eficácia ou capacidade live.
+- Revisão científica GPT-6 Astra pós-run recomenda `INCONCLUSIVE`, sem promoção:
+  a fita não alcançou a intervenção, logo o efeito causal ficou não identificado.
+- Registro, autópsia e resultado foram fechados sem rerun. Não há autorização
+  para outro dia, M028, extensão, Testnet, conta ou live.

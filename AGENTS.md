@@ -3,15 +3,14 @@
 ## Autoridade OWNER mais recente — M027 micro-hot realocation, 2026-09-09
 
 Seguir `docs/microstructure/M027_MICRO_HOT_REALLOCATION_OWNER_DIRECTIVE.md` e o
-pré-registro M027. M026 permanece imutável. No tape fixo validado de
-2026-05-01T00:00Z–03:00Z, executar uma vez CONTROL (geometria M026 com spacing
-0.0001) e uma vez TREATMENT, que troca somente FAR14/FAR15 por uma MICRO line a
-±0.00005, exatamente2 colunas de1 slot por lado. Cada cenário mantém60 ordens,
-140 slots operacionais +16 de mobilidade; erro de capital marcado<=0.01%. Tick
-observado0.00001 é hard gate; sem meio-tick falso. Preservar fila/latência/returns,
-cancel ACK, capital/liquidez únicos e no-negative-exit. Publicar source/testes/revisão
-Astra antes dos dois runs; resultado/auditoria depois. Sem sweep, rerun, outro dia,
-M028, extensão, conta, Testnet ou live.
+pré-registro M027. M026 permanece imutável. O A/B autorizado foi executado uma vez
+por braço sobre2026-05-01T00:00Z–03:00Z com source publicado `c653292`. CONTROL
+preservou15 níveis coarse; TREATMENT trocou somente FAR14/FAR15 por MICRO a
+±0.00005,2 colunas de1 slot. Ambos mantiveram60 ordens,140 slots operacionais+16
+de mobilidade e passaram capital-match/auditoria. Ambos produziram0 fills e0 ciclos.
+Trades ficaram1.00013–1.00015; hotline1.00014; MICRO1.00009/1.00019 não foi tocada.
+M027 é `INCONCLUSIVE`, normalizado abaixo do minNotional e não live-executable. Gate
+consumido: sem sweep, rerun, outro dia, M028, extensão, conta, Testnet ou live.
 
 ## Autoridade OWNER mais recente — M026 dynamic hotline 3/2/1, 2026-09-09
 

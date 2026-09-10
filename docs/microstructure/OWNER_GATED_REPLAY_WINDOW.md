@@ -8,9 +8,9 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=true
-AUTHORIZED_MODEL=M027
-AUTHORIZED_SCENARIO_COUNT=2
+NEW_REPLAY_AUTHORIZED_NOW=false
+AUTHORIZED_MODEL=NONE_M027_COMPLETE
+AUTHORIZED_SCENARIO_COUNT=0
 
 ## Latest authority — M027 micro-hot controlled A/B, three hours only
 
@@ -35,6 +35,10 @@ FAR14/FAR15 with two one-slot MICRO columns at hotline ±0.00005. Both preserve 
 initial orders, 140 operational and 16 mobility slot-units; initial marked-capital
 mismatch must be <=0.01%. M026 remains immutable. No rerun, another day, M028,
 extension, account, Testnet or live action is authorized.
+
+The authorized M027 run is now consumed and complete. Both arms produced zero
+fills/cycles because the tape never reached the intervention prices. Audit passed,
+but the causal effect is unidentified; M027 is INCONCLUSIVE. The gate is closed.
 
 ## Latest authority — M026 dynamic hotline 3/2/1, three hours only
 
