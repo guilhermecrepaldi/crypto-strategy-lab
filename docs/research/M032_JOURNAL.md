@@ -52,3 +52,11 @@ external fees in the origin asset using frozen ledger marks, and rejects a
 negative projected final return before physical fill mutation. Validation after
 that correction passed 49 M032 tests plus 85 inherited regressions (134 total),
 Ruff and strict mypy. A third source-bound review is required.
+
+The third review on `1be66f139...` confirmed those corrections but found one final
+input-fee mismatch: 4.9 units traded plus a 0.1-unit fee consumed a 5-unit physical
+reservation while route progress consumed only 4.9. The correction now treats a
+fee in the input asset as part of the leg's consumed capital, does not deduct it a
+second time from PnL, and reserves separate origin-value attribution for fees paid
+in a third asset. Post-correction validation passed 50 M032 tests plus 85 inherited
+regressions (135 total), Ruff and strict mypy. A fourth source-bound review is required.

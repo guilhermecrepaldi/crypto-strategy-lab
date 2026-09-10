@@ -190,6 +190,9 @@ class CycleManager:
             raise ValueError("M032_ROUTE_ALREADY_CLOSED")
         leg = progress.candidate.legs[progress.next_leg_index]
         reservation = self.ledger.reservations[reservation_id]
+        consumed_leg_input = fill.input_quantity + (
+            fill.fee_quantity if fill.fee_asset == fill.from_asset else ZERO
+        )
         if (
             fill.fill_id in progress.completed_fill_ids
             or reservation.slot_id != progress.slot_id
@@ -197,13 +200,17 @@ class CycleManager:
             or fill.from_asset != progress.current_asset
             or fill.to_asset != leg.to_asset
             or fill.input_quantity <= ZERO
+            or consumed_leg_input <= ZERO
             or fill.output_quantity_net < ZERO
-            or fill.input_quantity > progress.leg_input_remaining
+            or consumed_leg_input > progress.leg_input_remaining
             or fill.time_us < progress.started_at_us
         ):
             raise ValueError("M032_ROUTE_FILL_DOES_NOT_MATCH_NEXT_LEG")
         external_fee_increment = ZERO
-        if fill.fee_quantity > ZERO and fill.fee_asset != fill.to_asset:
+        if fill.fee_quantity > ZERO and fill.fee_asset not in {
+            fill.from_asset,
+            fill.to_asset,
+        }:
             marks = self.ledger.marks_usd
             if fill.fee_asset not in marks or progress.candidate.origin_asset not in marks:
                 raise ValueError("M032_FEE_ORIGIN_CONVERSION_MARK_MISSING")
@@ -211,12 +218,12 @@ class CycleManager:
                 fill.fee_quantity * marks[fill.fee_asset] / marks[progress.candidate.origin_asset]
             )
         is_final_leg = progress.next_leg_index == len(progress.candidate.legs) - 1
-        remaining_after_fill = progress.leg_input_remaining - fill.input_quantity
+        remaining_after_fill = progress.leg_input_remaining - consumed_leg_input
         if is_final_leg:
             output_after_fill = progress.leg_output_accumulated + fill.output_quantity_net
             if remaining_after_fill > ZERO:
                 output_after_fill += (
-                    remaining_after_fill * fill.output_quantity_net / fill.input_quantity
+                    remaining_after_fill * fill.output_quantity_net / consumed_leg_input
                 )
             projected_pnl = (
                 output_after_fill
@@ -232,7 +239,7 @@ class CycleManager:
             progress.fees_by_asset.get(fill.fee_asset, ZERO) + fill.fee_quantity
         )
         progress.external_fee_cost_origin += external_fee_increment
-        progress.leg_input_remaining -= fill.input_quantity
+        progress.leg_input_remaining -= consumed_leg_input
         progress.leg_output_accumulated += fill.output_quantity_net
         if progress.leg_input_remaining > ZERO:
             return False

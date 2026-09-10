@@ -721,6 +721,31 @@ def test_third_asset_fee_is_included_in_positive_realized_cycle_pnl() -> None:
     assert value.realized_pnl_by_asset["USDT"] == D("0.01")
 
 
+def test_input_asset_fee_consumes_leg_without_double_deduction() -> None:
+    value = ledger()
+    value.create_slot("S1", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
+    manager = CycleManager(value)
+    manager.start(two_asset_route(), execution_id="E1", slot_id="S1", quantity=D("5"), now_us=1)
+    value.reserve_free("S1", "R1", asset="USDT", quantity=D("5"), now_us=1)
+    value.activate("R1", now_us=1)
+    manager.record_fill(
+        "E1",
+        "R1",
+        PhysicalFill("F1", "USDCUSDT", "USDT", "USDC", D("5"), D("5"), "USDC", D("0"), 2),
+    )
+    value.reserve_owned("S1", "R2", asset="USDC", quantity=D("5"), now_us=2)
+    value.activate("R2", now_us=2)
+    assert manager.record_fill(
+        "E1",
+        "R2",
+        PhysicalFill("F2", "USDCUSDT", "USDC", "USDT", D("4.9"), D("5.2"), "USDC", D("0.1"), 3),
+    )
+    assert manager.routes["E1"].leg_input_remaining == 0
+    assert manager.routes["E1"].realized_pnl_origin == D("0.2")
+    assert value.realized_pnl_by_asset["USDT"] == D("0.2")
+    value.reconcile()
+
+
 @pytest.mark.parametrize(
     ("assets", "legs"),
     [
