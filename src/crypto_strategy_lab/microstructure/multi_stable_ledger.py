@@ -227,6 +227,8 @@ class SlotLedger:
             raise ValueError("M032_DUPLICATE_FILL")
         reservation = self.reservations[reservation_id]
         slot = self.slots[reservation.slot_id]
+        if slot.activated_at_us is None:
+            raise ValueError("M032_FILL_BEFORE_ACTIVATION")
         if slot.state not in {SlotState.LIVE, SlotState.PARTIAL, SlotState.CANCEL_PENDING}:
             raise ValueError("M032_FILL_BEFORE_ACTIVATION")
         if fill.time_us < reservation.created_at_us or (
@@ -266,6 +268,7 @@ class SlotLedger:
         if fill.fee_asset == fill.from_asset:
             reservation.remaining -= fill.fee_quantity
             slot.reserved_value = reservation.remaining
+            slot.remaining_qty = reservation.remaining
             self._asset_totals[fill.from_asset] -= fill.fee_quantity
         elif fill.fee_asset == fill.to_asset:
             self._asset_totals[fill.to_asset] -= fill.fee_quantity
@@ -308,13 +311,16 @@ class SlotLedger:
         origin_quantity: D,
         now_us: int,
         cycle_id: str,
+        additional_cost_origin: D = ZERO,
     ) -> D:
         self._causal(now_us)
         slot = self.slots[slot_id]
         if slot.reservation_id is not None:
             raise ValueError("M032_SLOT_CLOSE_WITH_OPEN_RESERVATION")
         final_quantity = self.owned[slot_id].get(slot.origin_asset, ZERO)
-        pnl = final_quantity - origin_quantity
+        if additional_cost_origin < ZERO:
+            raise ValueError("M032_NEGATIVE_ADDITIONAL_COST")
+        pnl = final_quantity - origin_quantity - additional_cost_origin
         if pnl < ZERO:
             raise ValueError("M032_NEGATIVE_REALIZED_EXIT_PROHIBITED")
         self.free[slot.origin_asset] += final_quantity

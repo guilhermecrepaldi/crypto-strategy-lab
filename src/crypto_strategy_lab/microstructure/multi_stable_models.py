@@ -196,6 +196,7 @@ class RouteProgress:
     leg_output_accumulated: D = ZERO
     completed_fill_ids: list[str] = field(default_factory=list)
     fees_by_asset: dict[str, D] = field(default_factory=dict)
+    external_fee_cost_origin: D = ZERO
     closed_at_us: int | None = None
     realized_pnl_origin: D = ZERO
 

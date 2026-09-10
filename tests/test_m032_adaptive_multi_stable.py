@@ -190,6 +190,18 @@ def test_ack_before_request_and_activate_after_cancel_are_rejected() -> None:
         value.activate("R1", now_us=21)
 
 
+def test_cancel_pending_without_prior_activation_cannot_fill() -> None:
+    value = ledger()
+    value.create_slot("S1", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
+    value.reserve_free("S1", "R1", asset="USDT", quantity=D("5"), now_us=1)
+    value.request_cancel("R1", now_us=2)
+    with pytest.raises(ValueError, match="FILL_BEFORE_ACTIVATION"):
+        value.apply_fill(
+            "R1",
+            PhysicalFill("F1", "USDCUSDT", "USDT", "USDC", D("1"), D("1"), "USDC", D("0"), 3),
+        )
+
+
 def test_marked_pnl_does_not_become_realized_pnl() -> None:
     value, _ = slot_ledger()
     value.apply_fill(
@@ -594,13 +606,29 @@ def test_allocator_respects_priority_then_score_and_real_capital() -> None:
 
 
 def test_allocator_funds_obligation_even_with_negative_score_and_stops_on_shortfall() -> None:
-    obligation = MarginalOpportunity("RETURN", 1, D("-0.01"), D("1"), D("5"), D("1"), D("1"))
+    obligation = MarginalOpportunity(
+        "RETURN",
+        1,
+        D("0.01"),
+        D("1"),
+        D("5"),
+        D("1"),
+        D("1"),
+        inventory_risk_penalty=D("0.02"),
+    )
     entry = MarginalOpportunity("ENTRY", 2, D("1"), D("1"), D("1"), D("1"), D("1"))
     assert [
         row.candidate_id
         for row in AdaptiveColumnAllocator().choose([entry, obligation], available_capital=D("5"))
     ] == ["RETURN"]
     assert AdaptiveColumnAllocator().choose([entry, obligation], available_capital=D("4")) == []
+
+
+def test_negative_expected_exit_is_not_scored() -> None:
+    with pytest.raises(ValueError, match="NEGATIVE_EXPECTED_EXIT"):
+        PairProductivityScorer.score(
+            MarginalOpportunity("LOSS", 1, D("-0.01"), D("1"), D("5"), D("1"), D("1"))
+        )
 
 
 def test_route_2_asset_closes_only_after_second_physical_fill() -> None:
@@ -638,6 +666,59 @@ def test_route_leg_aggregates_physical_partial_fragments() -> None:
     assert manager.record_fill("E1", "R1", second_fragment) is False
     assert manager.routes["E1"].next_leg_index == 1
     assert manager.routes["E1"].current_quantity == D("5.02")
+
+
+def test_third_asset_fee_reduces_cycle_pnl_and_negative_return_is_atomic() -> None:
+    value = SlotLedger(
+        {"USDT": "100", "USDC": "50", "FDUSD": "1"},
+        marks_usd={"USDT": "1", "USDC": "1", "FDUSD": "1"},
+    )
+    value.create_slot("S1", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
+    manager = CycleManager(value)
+    manager.start(two_asset_route(), execution_id="E1", slot_id="S1", quantity=D("5"), now_us=1)
+    value.reserve_free("S1", "R1", asset="USDT", quantity=D("5"), now_us=1)
+    value.activate("R1", now_us=1)
+    manager.record_fill(
+        "E1",
+        "R1",
+        PhysicalFill("F1", "USDCUSDT", "USDT", "USDC", D("5"), D("5"), "FDUSD", D("0.01"), 2),
+    )
+    value.reserve_owned("S1", "R2", asset="USDC", quantity=D("5"), now_us=2)
+    value.activate("R2", now_us=2)
+    before = (value.asset_totals(), value.reservations["R2"].remaining)
+    with pytest.raises(ValueError, match="NEGATIVE_RETURN_FILL_NOT_ADMITTED"):
+        manager.record_fill(
+            "E1",
+            "R2",
+            PhysicalFill("F2", "USDCUSDT", "USDC", "USDT", D("5"), D("5"), "USDT", D("0"), 3),
+        )
+    assert (value.asset_totals(), value.reservations["R2"].remaining) == before
+
+
+def test_third_asset_fee_is_included_in_positive_realized_cycle_pnl() -> None:
+    value = SlotLedger(
+        {"USDT": "100", "USDC": "50", "FDUSD": "1"},
+        marks_usd={"USDT": "1", "USDC": "1", "FDUSD": "1"},
+    )
+    value.create_slot("S1", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
+    manager = CycleManager(value)
+    manager.start(two_asset_route(), execution_id="E1", slot_id="S1", quantity=D("5"), now_us=1)
+    value.reserve_free("S1", "R1", asset="USDT", quantity=D("5"), now_us=1)
+    value.activate("R1", now_us=1)
+    manager.record_fill(
+        "E1",
+        "R1",
+        PhysicalFill("F1", "USDCUSDT", "USDT", "USDC", D("5"), D("5"), "FDUSD", D("0.01"), 2),
+    )
+    value.reserve_owned("S1", "R2", asset="USDC", quantity=D("5"), now_us=2)
+    value.activate("R2", now_us=2)
+    assert manager.record_fill(
+        "E1",
+        "R2",
+        PhysicalFill("F2", "USDCUSDT", "USDC", "USDT", D("5"), D("5.02"), "USDT", D("0"), 3),
+    )
+    assert manager.routes["E1"].realized_pnl_origin == D("0.01")
+    assert value.realized_pnl_by_asset["USDT"] == D("0.01")
 
 
 @pytest.mark.parametrize(

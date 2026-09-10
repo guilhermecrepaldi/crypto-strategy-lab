@@ -45,6 +45,8 @@ class PairProductivityScorer:
         )
         if any(value < ZERO or value > D(1) for value in unit_values):
             raise ValueError("M032_SCORE_COMPONENT_OUT_OF_RANGE")
+        if opportunity.expected_net_pnl < ZERO:
+            raise ValueError("M032_NEGATIVE_EXPECTED_EXIT_PROHIBITED")
         if opportunity.lost_fifo_value < ZERO:
             raise ValueError("M032_NEGATIVE_FIFO_VALUE")
         if opportunity.capital <= ZERO or opportunity.expected_lock_seconds <= ZERO:
@@ -194,15 +196,42 @@ class CycleManager:
             or fill.symbol != leg.symbol
             or fill.from_asset != progress.current_asset
             or fill.to_asset != leg.to_asset
+            or fill.input_quantity <= ZERO
+            or fill.output_quantity_net < ZERO
             or fill.input_quantity > progress.leg_input_remaining
             or fill.time_us < progress.started_at_us
         ):
             raise ValueError("M032_ROUTE_FILL_DOES_NOT_MATCH_NEXT_LEG")
+        external_fee_increment = ZERO
+        if fill.fee_quantity > ZERO and fill.fee_asset != fill.to_asset:
+            marks = self.ledger.marks_usd
+            if fill.fee_asset not in marks or progress.candidate.origin_asset not in marks:
+                raise ValueError("M032_FEE_ORIGIN_CONVERSION_MARK_MISSING")
+            external_fee_increment = (
+                fill.fee_quantity * marks[fill.fee_asset] / marks[progress.candidate.origin_asset]
+            )
+        is_final_leg = progress.next_leg_index == len(progress.candidate.legs) - 1
+        remaining_after_fill = progress.leg_input_remaining - fill.input_quantity
+        if is_final_leg:
+            output_after_fill = progress.leg_output_accumulated + fill.output_quantity_net
+            if remaining_after_fill > ZERO:
+                output_after_fill += (
+                    remaining_after_fill * fill.output_quantity_net / fill.input_quantity
+                )
+            projected_pnl = (
+                output_after_fill
+                - progress.initial_quantity
+                - progress.external_fee_cost_origin
+                - external_fee_increment
+            )
+            if projected_pnl < ZERO:
+                raise ValueError("M032_NEGATIVE_RETURN_FILL_NOT_ADMITTED")
         self.ledger.apply_fill(reservation_id, fill)
         progress.completed_fill_ids.append(fill.fill_id)
         progress.fees_by_asset[fill.fee_asset] = (
             progress.fees_by_asset.get(fill.fee_asset, ZERO) + fill.fee_quantity
         )
+        progress.external_fee_cost_origin += external_fee_increment
         progress.leg_input_remaining -= fill.input_quantity
         progress.leg_output_accumulated += fill.output_quantity_net
         if progress.leg_input_remaining > ZERO:
@@ -216,7 +245,11 @@ class CycleManager:
             return False
         if progress.current_asset != progress.candidate.origin_asset:
             raise ValueError("M032_COMPLETED_ROUTE_NOT_IN_ORIGIN_ASSET")
-        pnl = progress.current_quantity - progress.initial_quantity
+        pnl = (
+            progress.current_quantity
+            - progress.initial_quantity
+            - progress.external_fee_cost_origin
+        )
         if pnl < ZERO:
             raise ValueError("M032_NEGATIVE_REALIZED_EXIT_PROHIBITED")
         progress.realized_pnl_origin = pnl
@@ -226,6 +259,7 @@ class CycleManager:
             origin_quantity=progress.initial_quantity,
             now_us=fill.time_us,
             cycle_id=execution_id,
+            additional_cost_origin=progress.external_fee_cost_origin,
         )
         self.closed_cycles.append(execution_id)
         return True

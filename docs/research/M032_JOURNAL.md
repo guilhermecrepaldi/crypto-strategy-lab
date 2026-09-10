@@ -43,3 +43,12 @@ fill/reservation, close cycles through the ledger, protect obligations in alloca
 and validate safety/hotline/rank/cell uniqueness. The data audit now hashes physical
 L2 and trade files. Post-correction validation passed 45 M032 tests plus 85 inherited
 regressions (130 total), Ruff and strict mypy. A second source-bound review is required.
+
+The second review on published source `4376d932...` again returned `BLOCK`: a
+never-activated cancel-pending reservation could fill, third-asset fees were not
+attributed to cycle PnL, and the final loss gate ran after ledger mutation. The
+next correction requires prior activation regardless of cancel state, values
+external fees in the origin asset using frozen ledger marks, and rejects a
+negative projected final return before physical fill mutation. Validation after
+that correction passed 49 M032 tests plus 85 inherited regressions (134 total),
+Ruff and strict mypy. A third source-bound review is required.

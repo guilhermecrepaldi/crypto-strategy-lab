@@ -1,8 +1,11 @@
 # M032 source-bound independent review — first pass
 
-Reviewer: `gpt-6-astra`  
-Source: `a80fbd75a6e637adf47fdd883767c76bc5fdef7e`  
-Implementation review: `BLOCK`  
+Reviewer: `gpt-6-astra`
+
+Source: `a80fbd75a6e637adf47fdd883767c76bc5fdef7e`
+
+Implementation review: `BLOCK`
+
 Replay readiness: `false`
 
 The review reproduced five P1 defects: non-atomic invalid fills, noncausal
