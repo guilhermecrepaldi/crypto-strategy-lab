@@ -8,9 +8,9 @@ ONE_HOUR_MEANING=HOLD_ALERT_ONLY; OWNER_SELL_HIGH_ONLY_SUPERSEDES_FORCED_EXIT
 INTERPRETATION=“caso eu aprove”; não é aprovação já concedida para ampliar.
 APPROVED_COMPARISON_DAYS=1
 EXTENSION_AUTHORIZED=false
-NEW_REPLAY_AUTHORIZED_NOW=true
-AUTHORIZED_MODEL=M029
-AUTHORIZED_SCENARIO_COUNT=1
+NEW_REPLAY_AUTHORIZED_NOW=false
+AUTHORIZED_MODEL=NONE
+AUTHORIZED_SCENARIO_COUNT=0
 
 ## Latest authority — M029 corrected M026 full-day retry
 
@@ -27,6 +27,13 @@ The OWNER answered “autorizado” to the exact request for M029 as a corrected
 retry. It preserves M026 economics and changes only checkpoint representation
 comparison. Register, test, review with Astra and publish before the sole run. No
 reset at03:00, tuning, rerun, M030, another day, account, Testnet or live action.
+
+The sole M029 run is complete and consumed. The exact M026 prefix and independent
+24-hour audit passed. Marked equity moved from156.25220000 to156.3012000000000000,
+a gain of0.0490000000000000 or0.03135955845741691956977245760%. The run closed98
+physical cycles (4.083333333333333/hour) and289 slot-equivalent cycles. M029 is
+`INCONCLUSIVE` because this normalized development result is not live-executable and
+did not sustain the initial-three-hour rotation rate. No new replay is authorized.
 
 ## Latest authority — M028 unchanged M026 strategy, full January 1 day
 

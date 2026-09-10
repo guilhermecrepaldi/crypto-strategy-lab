@@ -13,6 +13,15 @@ novo, liquidação forçada, M030, outro dia ou live. Publicar source/revisão A
 do run e resultado/auditoria depois. Resultado continua normalizado abaixo do
 minNotional e não live-executable.
 
+O único run M029 foi concluído usando source publicado `9dde81b`. O prefixo00–03h
+reproduziu M026 exatamente e a auditoria física24h passou. Equity marcada inicial
+156.25220000 tornou-se156.3012000000000000: ganho0.0490000000000000, ou
+0.03135955845741691956977245760%. Foram98 ciclos físicos (4.0833/h) e289 ciclos
+slot-equivalentes (12.0417/h); após03h, somente68 ciclos físicos e+0.0040 de equity.
+M029=`INCONCLUSIVE`: normalizado abaixo do minNotional, fee condicional zero, sem
+impacto endógeno/rank live e muito abaixo da meta OWNER. Gate consumido; não há
+autorização para rerun, outro dia, M030, conta, Testnet ou live.
+
 ## Autoridade OWNER mais recente — M028, M026 por um dia, 2026-09-10
 
 Seguir `docs/microstructure/M028_M026_24H_EXTENSION_OWNER_DIRECTIVE.md` e o

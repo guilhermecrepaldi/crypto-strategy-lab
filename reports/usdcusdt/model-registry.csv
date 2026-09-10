@@ -5595,7 +5595,7 @@ M028,INVALIDATED_TECHNICAL,156.25220000,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZ
     }
   }
 }",,,Replay duration is part of the immutable M026 model identity.,,,,,,,,,
-M029,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,6942e5c0475c9ddaf0f7792c4bd7df399b46ed0cf3f49a624712f439d2c79534,M026,2026-09-10T10:47:53.421987Z,The unchanged M026 engine can complete the full January 1 tape once both checkpoint states are compared in one canonical representation.,M028 reproduced M026's byte-identical 3h economic ledger but was technically invalidated before the 21h extension by a raw checkpoint representation comparison.,Canonicalize both 3h checkpoint states through deterministic JSON before equality; change no economic or execution parameter.,Pass the exact M026 prefix gate and measure 24h cycles and marked return.,"{
+M029,INCONCLUSIVE,156.25220000,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXECUTABLE_RUN_MANIFEST,6942e5c0475c9ddaf0f7792c4bd7df399b46ed0cf3f49a624712f439d2c79534,M026,2026-09-10T10:47:53.421987Z,The unchanged M026 engine can complete the full January 1 tape once both checkpoint states are compared in one canonical representation.,M028 reproduced M026's byte-identical 3h economic ledger but was technically invalidated before the 21h extension by a raw checkpoint representation comparison.,Canonicalize both 3h checkpoint states through deterministic JSON before equality; change no economic or execution parameter.,Pass the exact M026 prefix gate and measure 24h cycles and marked return.,"{
   ""another_day_authorized"": false,
   ""automatic_successor_authorized"": false,
   ""auxiliary_physical_ruler_24h"": 304,
@@ -5664,4 +5664,37 @@ M029,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,6942e5c0475c9ddaf0f
       ""slots"": 2
     }
   }
-}",,,M028 is terminal INVALIDATED_TECHNICAL and its one-run gate is consumed.,,,,,,,,,
+}","{
+  ""final_marked_equity"": ""156.3012000000000000"",
+  ""initial_marked_equity"": ""156.25220000"",
+  ""marked_gain"": ""0.0490000000000000"",
+  ""marked_gain_pct"": ""0.03135955845741691956977245760"",
+  ""physical_cycles"": 98,
+  ""physical_cycles_per_hour"": ""4.083333333333333333333333333"",
+  ""post_3h_marked_gain_pct"": ""0.002559226908735409207586572248"",
+  ""realized_cycle_pnl"": ""0.0427000000000000"",
+  ""realized_disposal_pnl"": ""0.0577996784800000"",
+  ""slot_cycles_per_hour"": ""12.04166666666666666666666667"",
+  ""slot_equivalent_cycles"": 289,
+  ""unrealized_pnl"": ""-0.0087996784800000""
+}","{
+  ""campaign_snapshot_id"": ""0f9fa110c3a1495f853bd75077bd30621f40e508411f6e947508382b49532e69"",
+  ""comparison"": {
+    ""m026_3h_marked_equity"": ""156.2972000000000000"",
+    ""m026_3h_physical_cycles"": 30,
+    ""m029_24h_marked_equity"": ""156.3012000000000000"",
+    ""m029_24h_physical_cycles"": 98,
+    ""parent"": ""M026""
+  },
+  ""criteria"": {
+    ""event_rerun_performed"": false,
+    ""live_executable_result"": false,
+    ""physical_audit_pass"": true,
+    ""prefix_equivalence_pass"": true,
+    ""strategy_pass"": false
+  },
+  ""reason"": ""The normalized 24h development replay gained marked equity but produced 98 physical cycles, far below 1000/day; live rank, fees, minimum notional and endogenous impact remain unvalidated."",
+  ""run_hash"": ""7bce8c937e50d6c44c83a4fc27fa5a15a4ca5497bd3eb84aebb8efbbb00cc448"",
+  ""scenario_hash"": ""6068b994097bc0e4ad7ae26b33f6d7212dfac67dbed364a0086ccc24a1865d19"",
+  ""status"": ""INCONCLUSIVE""
+}",M028 is terminal INVALIDATED_TECHNICAL and its one-run gate is consumed.,,,,,,,,,
