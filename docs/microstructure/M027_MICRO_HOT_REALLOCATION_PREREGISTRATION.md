@@ -1,7 +1,7 @@
 # M027 — Micro-Hot Reallocation preregistration
 
-Status: `FROZEN_BEFORE_RUN`
-Parent evidence: M026 (`INCONCLUSIVE`, immutable)
+Status: `FROZEN_BEFORE_RUN`  
+Parent evidence: M026 (`INCONCLUSIVE`, immutable)  
 Purpose: frequency-only controlled A/B; normalized and not live-executable.
 
 ## Physical evidence gate
@@ -73,3 +73,4 @@ source/config/review is committed and pushed; `HEAD==origin/main` and clean;
 then exactly one run per scenario. Results, ledger hashes, terminal state,
 audits, autopsy, journal, registry and CURRENT_STATE are published afterward.
 No M028 or follow-on execution is authorized.
+
