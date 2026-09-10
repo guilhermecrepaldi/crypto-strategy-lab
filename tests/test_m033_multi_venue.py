@@ -418,6 +418,25 @@ def test_own_price_amend_moves_to_back_of_new_price() -> None:
     assert model.queue_ahead(KRAKEN, "C1") == D("3")
 
 
+def test_own_price_amend_cannot_duplicate_column_at_destination() -> None:
+    model = L3QueueModel()
+    model.activate_own(
+        KRAKEN, side="BUY", price=D("1"), order_id="C1_A", quantity=D("1"), column=1, now_us=1
+    )
+    model.activate_own(
+        KRAKEN,
+        side="BUY",
+        price=D("0.9999"),
+        order_id="C1_B",
+        quantity=D("1"),
+        column=1,
+        now_us=2,
+    )
+    with pytest.raises(ValueError, match="AMEND_WOULD_DUPLICATE"):
+        model.amend_own(KRAKEN, "C1_A", new_quantity=D("1"), new_price=D("0.9999"), now_us=3)
+    assert model.queue_ahead(KRAKEN, "C1_A") == D("0")
+
+
 def test_cancel_ack_rejects_partial_own_order() -> None:
     model = L3QueueModel()
     model.activate_own(
@@ -453,6 +472,19 @@ def test_execution_before_own_activation_fails_closed() -> None:
         )
 
 
+def test_same_timestamp_execution_cannot_fill_new_own_order() -> None:
+    model = L3QueueModel()
+    model.activate_own(
+        KRAKEN, side="BUY", price=D("1"), order_id="C1", quantity=D("1"), column=1, now_us=100
+    )
+    assert (
+        model.consume_execution(
+            KRAKEN, event_id="SAME", side="BUY", price=D("1"), quantity=D("1"), exchange_time_us=100
+        )
+        == {}
+    )
+
+
 def test_trade_consumption_reconciles_matching_native_modify_once() -> None:
     model = L3QueueModel()
     model.apply_public_event(event("A", L3EventType.ADD, "P", "2"))
@@ -464,6 +496,32 @@ def test_trade_consumption_reconciles_matching_native_modify_once() -> None:
     )
     model.apply_public_event(event("M", L3EventType.MODIFY, "P", "1", exchange_time=2, sequence=2))
     assert model.aggregate_l2(KRAKEN) == {("BUY", D("1.0000")): D("1")}
+
+
+def test_negative_native_remaining_cannot_create_liquidity() -> None:
+    model = L3QueueModel()
+    model.apply_public_event(event("A", L3EventType.ADD, "P", "2"))
+    model.consume_execution(
+        KRAKEN, event_id="T", side="BUY", price=D("1"), quantity=D("1"), exchange_time_us=2
+    )
+    with pytest.raises(ValueError, match="NEGATIVE_L3_REMAINING"):
+        model.apply_public_event(
+            event("M", L3EventType.MODIFY, "P", "-1", exchange_time=2, sequence=2)
+        )
+    assert model.aggregate_l2(KRAKEN) == {("BUY", D("1.0000")): D("1")}
+
+
+def test_native_delete_before_trade_suppresses_ambiguous_fill_inference() -> None:
+    model = L3QueueModel()
+    model.apply_public_event(event("A", L3EventType.ADD, "P", "1"))
+    model.activate_own(
+        KRAKEN, side="BUY", price=D("1"), order_id="C1", quantity=D("1"), column=1, now_us=2
+    )
+    model.apply_public_event(event("D", L3EventType.DELETE, "P", "0", exchange_time=3, sequence=2))
+    with pytest.raises(ValueError, match="ORDERING_AMBIGUOUS"):
+        model.consume_execution(
+            KRAKEN, event_id="T", side="BUY", price=D("1"), quantity=D("1"), exchange_time_us=3
+        )
 
 
 def test_l3_gap_blocks_new_orders_and_execution() -> None:

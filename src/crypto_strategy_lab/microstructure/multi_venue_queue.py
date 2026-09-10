@@ -97,6 +97,7 @@ class L3QueueModel:
         self.last_exchange_time: dict[BookKey, int] = {}
         self.gapped_books: set[BookKey] = set()
         self.awaiting_native_state: dict[tuple[BookKey, str], D] = {}
+        self.ambiguous_native_removal_levels: set[tuple[BookKey, str, D]] = set()
         self._own_sequence = 1_000_000_000
 
     def mark_gap(self, book: BookKey) -> None:
@@ -135,6 +136,8 @@ class L3QueueModel:
             raise ValueError("M033_L3_NATIVE_UPDATE_CHANGED_PRICE")
         entry = next(row for row in self.levels[level_key] if row.order_id == event.order_id)
         if event.event_type == L3EventType.MODIFY:
+            if event.remaining_quantity < ZERO:
+                raise ValueError("M033_NEGATIVE_L3_REMAINING_QUANTITY")
             if expected is not None:
                 if event.remaining_quantity > expected:
                     raise ValueError("M033_L3_NATIVE_STATE_RESURRECTS_CONSUMED_QUANTITY")
@@ -147,10 +150,13 @@ class L3QueueModel:
             if event.remaining_quantity < ZERO or event.remaining_quantity >= entry.remaining:
                 raise ValueError("M033_L3_MODIFY_MUST_REDUCE_VISIBLE_QUANTITY")
             entry.remaining = event.remaining_quantity
+            self.ambiguous_native_removal_levels.add(level_key)
             return
         self.levels[level_key].remove(entry)
         del self.order_level[order_key]
         self.awaiting_native_state.pop(order_key, None)
+        if expected is None:
+            self.ambiguous_native_removal_levels.add(level_key)
 
     def activate_own(
         self,
@@ -209,14 +215,19 @@ class L3QueueModel:
             or entry.first_fill_time_us is not None
         ):
             raise ValueError("M033_INVALID_OWN_AMEND")
-        self._advance_clock(book, now_us)
         old_quantity = entry.remaining
         target_price = key[2] if new_price is None else new_price
         loses_priority = target_price != key[2] or new_quantity > old_quantity
+        new_key = (book, key[1], target_price)
+        if new_key != key and any(
+            row.is_ours and row.column == entry.column for row in self.levels.get(new_key, [])
+        ):
+            raise ValueError("M033_AMEND_WOULD_DUPLICATE_ACTIVE_COLUMN_AT_PRICE")
+        self._validate_clock(book, now_us)
+        self._advance_clock(book, now_us)
         entry.remaining = new_quantity
         if loses_priority:
             self.levels[key].remove(entry)
-            new_key = (book, key[1], target_price)
             entry.entry_time_us = now_us
             entry.message_sequence = self._own_sequence
             self._own_sequence += 1
@@ -284,12 +295,14 @@ class L3QueueModel:
         self._advance_clock(book, exchange_time_us)
         self.processed_events.add(identity)
         key = (book, side, price)
+        if key in self.ambiguous_native_removal_levels:
+            raise ValueError("M033_L3_EXECUTION_ORDERING_AMBIGUOUS_NO_FILL_INFERENCE")
         remaining = quantity
         fills: dict[str, D] = {}
         for entry in list(self.levels.get(key, [])):
             if remaining <= ZERO:
                 break
-            if entry.entry_time_us > exchange_time_us:
+            if entry.is_ours and entry.entry_time_us >= exchange_time_us:
                 break
             amount = min(entry.remaining, remaining)
             entry.remaining -= amount
@@ -324,10 +337,13 @@ class L3QueueModel:
         )
 
     def _advance_clock(self, book: BookKey, now_us: int) -> None:
+        self._validate_clock(book, now_us)
+        self.last_exchange_time[book] = now_us
+
+    def _validate_clock(self, book: BookKey, now_us: int) -> None:
         previous = self.last_exchange_time.get(book)
         if previous is not None and now_us < previous:
             raise ValueError("M033_OUT_OF_ORDER_L3_EVENT")
-        self.last_exchange_time[book] = now_us
 
 
 @dataclass(frozen=True)

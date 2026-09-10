@@ -41,6 +41,7 @@ def validate_tardis_csv(
     structural_errors: set[str] = set()
     snapshot_rows = 0
     snapshot_sides: set[str] = set()
+    initial_snapshot_sides: set[str] = set()
     saw_delta = False
     saw_snapshot = False
     in_snapshot_batch = False
@@ -97,6 +98,8 @@ def validate_tardis_csv(
                     in_snapshot_batch = True
                     snapshot_rows += 1
                     snapshot_sides.add(side)
+                    if not saw_delta:
+                        initial_snapshot_sides.add(side)
                     if amount <= 0:
                         structural_errors.add("NON_POSITIVE_SNAPSHOT_QUANTITY")
                 else:
@@ -112,7 +115,7 @@ def validate_tardis_csv(
             last_timestamp = timestamp
             last_exchange_timestamp = exchange_timestamp
             rows += 1
-    if data_kind == "l2" and (snapshot_rows == 0 or snapshot_sides != {"bid", "ask"}):
+    if data_kind == "l2" and (snapshot_rows == 0 or initial_snapshot_sides != {"bid", "ask"}):
         structural_errors.add("COMPLETE_TWO_SIDED_INITIAL_SNAPSHOT_NOT_PROVEN")
     structurally_valid = rows > 0 and delivery_monotonic and not structural_errors
     return {
@@ -127,6 +130,7 @@ def validate_tardis_csv(
         "exchange_timestamp_reorders": exchange_timestamp_reorders,
         "snapshot_rows": snapshot_rows,
         "snapshot_sides": sorted(snapshot_sides),
+        "initial_snapshot_sides": sorted(initial_snapshot_sides),
         "snapshot_reset_count": snapshot_reset_count,
         "exchange_timestamps_outside_delivery_day": exchange_timestamps_outside_delivery_day,
         "source_sequence_available": False,

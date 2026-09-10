@@ -46,3 +46,10 @@ individual orders. Later public cohorts remain behind the L3 order and cannot be
 retroactively added to L2 queue-ahead. The same compatible execution budget is then
 delivered once to each counterfactual arm; neither state is derived from the other's
 mutable queue.
+
+Native L3 removal and trade channels do not carry a proven common execution ID.
+When trade arrives first, a subsequent matching native quantity state confirms
+the already-consumed public budget. When native removal arrives first and its
+cause cannot be distinguished from cancel/amend, the level becomes ambiguous and
+the simulator refuses to infer an own fill. This is intentionally conservative;
+it is not a claim that every native removal was a trade.

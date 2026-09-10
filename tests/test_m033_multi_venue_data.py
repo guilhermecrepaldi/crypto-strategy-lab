@@ -50,6 +50,26 @@ def test_tardis_validation_rejects_wrong_exchange_and_symbol(tmp_path) -> None:
     assert result["structural_errors"] == ["WRONG_EXCHANGE", "WRONG_SYMBOL"]
 
 
+def test_later_snapshot_cannot_supply_missing_initial_snapshot_side(tmp_path) -> None:
+    path = tmp_path / "l2.csv.gz"
+    write_csv(
+        path,
+        "exchange,symbol,timestamp,local_timestamp,is_snapshot,side,price,amount\n"
+        "kraken,USDC/USDT,1,1,true,bid,1,2\n"
+        "kraken,USDC/USDT,2,2,false,bid,1,1\n"
+        "kraken,USDC/USDT,3,3,true,ask,1.0001,2\n",
+    )
+    result = validate_tardis_csv(
+        path,
+        required={"exchange", "symbol", "timestamp", "local_timestamp", "side", "price", "amount"},
+        expected_exchange="kraken",
+        expected_symbol="USDC/USDT",
+        data_kind="l2",
+    )
+    assert result["valid"] is False
+    assert result["initial_snapshot_sides"] == ["bid"]
+
+
 def test_tardis_validation_rejects_reordered_events(tmp_path) -> None:
     path = tmp_path / "l2.csv.gz"
     write_csv(path, "timestamp,price\n2,1\n1,1\n")

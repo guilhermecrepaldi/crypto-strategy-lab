@@ -50,3 +50,16 @@ the capture and close seals the writer. The ablation owns independent L3 and L2
 queue states fed from one event stream. Kraken CSVs are now classified only as
 structurally checked files with continuity unproven. Correction validation passes
 39 M033 tests; source-bound rereview is required.
+
+The second Astra review on `3e68a4ca...` returned BLOCK. It reproduced negative
+native remaining quantity creating simulated liquidity, native-delete-before-trade
+reusing one execution, price amend bypassing destination-column uniqueness and an
+optimistic same-timestamp fill. It also showed that bilateral snapshot evidence
+was pooled across later resets rather than isolated to the initial snapshot.
+
+The next correction rejects negative remaining quantity before mutation, fails
+closed on native-removal/trade ordering that cannot be correlated, validates amend
+destination occupancy atomically, requires strict post-activation time for own
+fills, and tracks the initial snapshot sides separately from later reset batches.
+Focused validation now passes 44 M033 tests. A new published source-bound review
+is required; no replay, draw or registry mutation occurred.
