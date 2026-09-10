@@ -5336,7 +5336,7 @@ M025,INCONCLUSIVE,750662.50000000,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NON
   ""scenario_hash"": ""17e87fa5183976156133c729fcba52a148e3fc032ab6547caa6315cf557c8972"",
   ""status"": ""INCONCLUSIVE""
 }","Order quantity materially changes fill completion, residual inventory and capital requirements.",,,,,,,,,
-M026,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,481a9e41dd52b16315b88cc922b8caecdbc49906e4cbae011892549a8cb8a218,M024,2026-09-10T00:41:00.119041Z,A causal moving 3/2/1 grid concentrates real capital near the hotline while retaining useful old FIFO age.,"M024 produced 35 cycles and M025 peaked at 37, with static geometry.",Replace M024's static 50-level triangle with a 15-level dynamic 3/2/1 slot grid and real per-asset mobility buffers.,Exceed 37 physical cycles and produce at least 60 slot-equivalent cycles in the same three hours.,"{
+M026,INCONCLUSIVE,156.25220000,USDT,NORMALIZED_MECHANICS_PROBE,NORMALIZED_NONEXECUTABLE_RUN_MANIFEST,481a9e41dd52b16315b88cc922b8caecdbc49906e4cbae011892549a8cb8a218,M024,2026-09-10T00:41:00.119041Z,A causal moving 3/2/1 grid concentrates real capital near the hotline while retaining useful old FIFO age.,"M024 produced 35 cycles and M025 peaked at 37, with static geometry.",Replace M024's static 50-level triangle with a 15-level dynamic 3/2/1 slot grid and real per-asset mobility buffers.,Exceed 37 physical cycles and produce at least 60 slot-equivalent cycles in the same three hours.,"{
   ""automatic_successor_authorized"": false,
   ""breakeven_positive_cycle"": false,
   ""capital_injection"": false,
@@ -5401,4 +5401,36 @@ M026,CREATED,100,USDT,COMPOUNDING,PLANNED_CANONICAL_CONTRACT,481a9e41dd52b16315b
       ""slots"": 2
     }
   }
-}",,,"Hotline mobility, variable order sizing and slot-weight semantics materially change strategy mechanics.",,,,,,,,,
+}","{
+  ""final_marked_equity"": ""156.2972000000000000"",
+  ""mobility_reserve_exhaustion_events"": 16,
+  ""physical_cycles"": 30,
+  ""physical_cycles_per_hour"": ""10"",
+  ""realized_cycle_pnl"": ""0.01080000"",
+  ""realized_disposal_pnl"": ""0.0380000000000000"",
+  ""slot_equivalent_cycles"": 90,
+  ""slot_equivalent_cycles_per_hour"": ""30"",
+  ""underfunded_promotions"": 605,
+  ""unrealized_pnl"": ""0.0070000000000000""
+}","{
+  ""campaign_snapshot_id"": ""72352a0fc3a75581f365dc7c6d711df0780d176978b17f869b557795d882539d"",
+  ""comparison"": {
+    ""m024_physical_cycles_per_hour"": ""11.6666666666666667"",
+    ""m025_best_physical_cycles_per_hour"": ""12.3333333333333333"",
+    ""m026_physical_cycles_per_hour"": ""10"",
+    ""parent"": ""M024"",
+    ""supporting_reference"": ""M025_BEST_Q5000""
+  },
+  ""criteria"": {
+    ""event_rerun_performed"": false,
+    ""live_executable_result"": false,
+    ""physical_audit_pass"": true,
+    ""physical_gate_pass"": false,
+    ""slot_gate_pass"": true,
+    ""strategy_pass"": false
+  },
+  ""reason"": ""Physical throughput gate failed while the weighted slot ruler passed; the normalized exogenous-tape probe does not establish live capacity."",
+  ""run_hash"": ""cb2b51a1b600b5d2a2062f0fcd0369e975cccfd0335cc823b6c29a29116ec7b1"",
+  ""scenario_hash"": ""c7ef0a102bf254f3e1445922819ff14053a5a52900e2f5d952150e859c7c965a"",
+  ""status"": ""INCONCLUSIVE""
+}","Hotline mobility, variable order sizing and slot-weight semantics materially change strategy mechanics.",,,,,,,,,

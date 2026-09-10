@@ -1,11 +1,11 @@
 # CURRENT STATE
 
-ACTIVE_EXECUTION_CAMPAIGN=M026_DYNAMIC_HOTLINE_321_PREPARATION
-CAMPAIGN_STATUS=M026_REGISTERED_ASTRA_PASS_AWAITING_PRE_RUN_PUBLICATION
-CAMPAIGN_EXECUTION_SOURCE_SHA=PENDING_PRE_RUN_PUBLICATION
-CAMPAIGN_ACTIVE_ENVELOPE=NONE_PRE_RUN
-CAMPAIGN_QUEUED_ENVELOPE=M026_PRICE_PRIORITY_3H_ONCE
-CAMPAIGN_VERDICT=PENDING
+ACTIVE_EXECUTION_CAMPAIGN=NONE_M026_COMPLETE
+CAMPAIGN_STATUS=M026_COMPLETE_INCONCLUSIVE; OWNER_GATE_CLOSED
+CAMPAIGN_EXECUTION_SOURCE_SHA=9e0664faf79d172a2a8a7dc4e800504712983cfd
+CAMPAIGN_ACTIVE_ENVELOPE=NONE_COMPLETE
+CAMPAIGN_QUEUED_ENVELOPE=NONE_OWNER_GATE_REQUIRED
+CAMPAIGN_VERDICT=INCONCLUSIVE_PHYSICAL_GATE_FAILED_SLOT_GATE_PASSED_NORMALIZED_ONLY
 CAMPAIGN_PROGRESS_FILE=reports/usdcusdt/M026-3h-result.json
 CAMPAIGN_JOURNAL=docs/research/M026_JOURNAL.md
 CAMPAIGN_SCOREBOARD=reports/usdcusdt/M026-3h-result.json
@@ -22,24 +22,30 @@ MONTHLY_INITIALIZATION=ONCE_100_OPERATING_PLUS_10_RESERVE_PER_ENVELOPE
 MONTHLY_ECONOMIC_REPLAYS_STARTED=6
 MONTHLY_CONTINUOUS_WEEK_2_AUTHORIZED=false
 
-OWNER_NEXT_RESEARCH=M026_DYNAMIC_HOTLINE_321_SINGLE_RUN
+OWNER_NEXT_RESEARCH=AWAIT_OWNER_DECISION_AFTER_M026
 OWNER_DIRECTIVE=docs/microstructure/M026_DYNAMIC_HOTLINE_321_OWNER_DIRECTIVE.md
-NEXT_CAMPAIGN_STATUS=M026_PREPARATION_AUTHORIZED; ONE_RUN_ONLY
+NEXT_CAMPAIGN_STATUS=NONE; M026_COMPLETE; NO_M027_OR_RERUN_AUTHORIZED
 NEXT_CAMPAIGN_MODEL_HASH=481a9e41dd52b16315b88cc922b8caecdbc49906e4cbae011892549a8cb8a218
 NEXT_CAMPAIGN_WINDOW=2025-01-01T00:00:00Z/2025-01-01T03:00:00Z_EXCLUSIVE
 NEXT_CAMPAIGN_ORDER_MODE=NORMALIZED_SLOT_BASE_1_USDT_EQ; WHOLE_USDC_QUANTIZED
 NEXT_CAMPAIGN_FUNDING=0; RESERVE=0; RELEASE_DISABLED
 NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=DERIVED_FROM_FIRST_BOOK_PLUS_8_SLOT_UNITS_PER_ASSET_SIDE
 
-Latest OWNER authority creates M026 from immutable M024, with M025 as supporting
-evidence only. One three-hour Jan1 run is authorized after a published source-bound
-Astra PASS. The causal hotline uses fifteen levels per side and a 3/2/1 HOT/MID/FAR
+Latest OWNER authority created M026 from immutable M024, with M025 as supporting
+evidence only. Its single three-hour Jan1 run used published source `9e0664f` and
+passed the independent physical-ledger audit. The causal hotline uses fifteen levels
+per side and a 3/2/1 HOT/MID/FAR
 grid: 60 initial physical orders, 140 operating slot units and 8 real mobility slot
 units per asset side. Whole-USDC quantity quantization is frozen and the exact bank
 is derived from actual prices; the normalized result remains below minNotional and
 is not live-executable. Old order price, size, FIFO age, cost and slot epoch cannot
-change. Physical gate is >=38 cycles; slot gate is >=60. No rerun, M027, extension,
-day2, account, Testnet or live action is authorized.
+change. It closed30 physical cycles (10/h) and90 slot-equivalent cycles (30/h).
+The >=38 physical gate failed while the >=60 slot ruler passed because each HOT
+roundtrip carried three slot units. Initial78.104USDT+78USDC became128.2356USDT+
+28USDC, marked156.2972; cycle PnL was+0.0108, disposal PnL+0.0380 and unrealized
+PnL+0.0070. M026 is `INCONCLUSIVE`, normalized below minNotional and not evidence
+of live capacity. No rerun, M027, extension, day2, account, Testnet or live action
+is authorized.
 
 Latest OWNER authority creates M025 as a controlled order-size capacity curve derived
 from immutable M024. Eleven independent scenarios Q=10 through5000USDC use the exact

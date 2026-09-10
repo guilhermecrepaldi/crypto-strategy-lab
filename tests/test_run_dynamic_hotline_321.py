@@ -75,8 +75,9 @@ def canonical_for(value: DynamicHotline321Probe) -> dict[str, SimpleNamespace]:
     }
 
 
-def test_owner_gate_names_exactly_one_m026_run() -> None:
-    require_owner_gate()
+def test_owner_gate_is_closed_after_exactly_one_m026_run() -> None:
+    with pytest.raises(ValueError, match="M026_OWNER_GATE_REQUIRED"):
+        require_owner_gate()
 
 
 def test_independent_audit_accepts_reconciled_cycle() -> None:
