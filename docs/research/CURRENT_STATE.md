@@ -1,6 +1,39 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=NONE
+CAMPAIGN_STATUS=M032_BLOCKED_PRE_REPLAY_DATA
+CAMPAIGN_EXECUTION_SOURCE_SHA=UNPUBLISHED_ARCHITECTURE_SOURCE
+CAMPAIGN_ACTIVE_ENVELOPE=NONE
+CAMPAIGN_QUEUED_ENVELOPE=NONE
+CAMPAIGN_VERDICT=BLOCKED_PRE_RUN
+CAMPAIGN_PROGRESS_FILE=docs/research/M032_JOURNAL.md
+CAMPAIGN_JOURNAL=docs/research/M032_JOURNAL.md
+CAMPAIGN_SCOREBOARD=reports/usdcusdt/M032-data-availability.json
+CURRENT_ACTIVE_RESEARCH_MODEL=NONE_AWAITING_DATA_DECISION
+OWNER_NEXT_RESEARCH=M032_MULTI_BOOK_L2_ACQUISITION_OR_SCOPE_DECISION
+OWNER_DIRECTIVE=docs/microstructure/M032_ADAPTIVE_MULTI_STABLE_CAPITAL_MANAGER_OWNER_DIRECTIVE.md
+NEXT_CAMPAIGN_STATUS=BLOCKED_PRE_REPLAY_DATA
+NEXT_CAMPAIGN_MODEL_HASH=fb35f67e414cce9cb03b0e83824304f9b4286617b679785663e941fca6e11215_UNREGISTERED
+NEXT_CAMPAIGN_WINDOW=UNSELECTED_NO_CSPRNG_DRAW
+NEXT_CAMPAIGN_ORDER_MODE=PHYSICAL_EXECUTABLE_SLOT_BASE_UNRESOLVED
+NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=UNRESOLVED_NOT_TO_EXCEED_200_USD_EQ
+
+M032 is the OWNER-authorized adaptive multi-stable capital-manager architecture.
+Its reusable components and deterministic synthetic tests are implemented, but it
+is deliberately not registered and no economic replay ran. The physical evidence
+audit found validated L2 plus canonical trades only for USDCUSDT; the common
+multi-book date pool is empty. Historical symbol-rule and fee profiles are also
+not proven for a selected multi-book interval. Therefore stablecoins, books,
+SLOT_BASE, bankroll, CSPRNG windows and fee profiles remain unselected. M030's
+published result is unchanged and M031 remains
+`BLOCKED_PRE_RUN_CAPITAL_IDENTITY`. The next OWNER decision is either to authorize
+and provide an acquisition/access path for multi-book L2 plus temporal rules/fees,
+or materially narrow the hypothesis to a single-book USDCUSDT architecture under
+a new frozen protocol. `TEST_SUITE_PASS != STRATEGY_PASS`.
+
+<!-- Historical state below is retained as provenance. -->
+
+ACTIVE_EXECUTION_CAMPAIGN=NONE
 CAMPAIGN_STATUS=M031_BLOCKED_PRE_RUN_CAPITAL_IDENTITY
 CAMPAIGN_EXECUTION_SOURCE_SHA=459d0237ae9005fd272a91e00de744c21da71435
 CAMPAIGN_ACTIVE_ENVELOPE=NONE

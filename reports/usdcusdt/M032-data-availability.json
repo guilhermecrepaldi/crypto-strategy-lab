@@ -1,0 +1,110 @@
+{
+  "AUDIT_KIND": "PHYSICAL_L2_AND_CANONICAL_TRADES_ONLY",
+  "BOOKS_SELECTED_FOR_REPLAY": [],
+  "BOOKS_WITH_VALIDATED_LOCAL_L2": [
+    "USDCUSDT"
+  ],
+  "BOOK_EVIDENCE": {
+    "FDUSDUSDC": [],
+    "FDUSDUSDT": [],
+    "TUSDUSDT": [],
+    "USD1USDC": [],
+    "USD1USDT": [],
+    "USDCUSDT": [
+      {
+        "date": "2025-01-01",
+        "l2_rows": 828955,
+        "trades": 254205,
+        "validation_sha256": "9eb8bf9bad9b0664b184b57d9dc6894f2aabdfb2c91c7bc178bb58229a917ccd"
+      },
+      {
+        "date": "2025-02-01",
+        "l2_rows": 934812,
+        "trades": 326480,
+        "validation_sha256": "c593549c61fb5241298841d5eaa5a52d439627675cb2ec5b506c04c917be7dc7"
+      },
+      {
+        "date": "2025-03-01",
+        "l2_rows": 969097,
+        "trades": 347113,
+        "validation_sha256": "4146f720210f5788aa9e42b793adda4523d49bfe08ac119cc7a45af3d19aeb9e"
+      },
+      {
+        "date": "2025-04-01",
+        "l2_rows": 1225694,
+        "trades": 600715,
+        "validation_sha256": "a15147486153cfb2fb30287d0678e9775ac25253aae5dc7306c4c27732cf4dc1"
+      },
+      {
+        "date": "2025-06-01",
+        "l2_rows": 942763,
+        "trades": 179921,
+        "validation_sha256": "f543fbbeb7c7ebe1212713bdb2338b2c0ae47a7a5f8442f4e2bad1369a88723b"
+      },
+      {
+        "date": "2025-08-01",
+        "l2_rows": 1102002,
+        "trades": 535551,
+        "validation_sha256": "9ba12401fae1a4f5f05a9a25407041f7dc60ea1168ef90714a3fb85c7e62cb27"
+      },
+      {
+        "date": "2026-01-01",
+        "l2_rows": 1223832,
+        "trades": 305359,
+        "validation_sha256": "18b45067498be779645e0b8b7c5cf8ff1e4c7fdfe60d3433eca4ea94a70e173c"
+      },
+      {
+        "date": "2026-02-01",
+        "l2_rows": 1216978,
+        "trades": 428821,
+        "validation_sha256": "1007915fae7fe901b6de1c27b26db1cf3af24e1a350e7c5c96e5affa1e8cd31f"
+      },
+      {
+        "date": "2026-03-01",
+        "l2_rows": 494318,
+        "trades": 383704,
+        "validation_sha256": "ff46aa238705f40c22c11c2c2dd9378cb0372040ab432ae83f543772575bf9f6"
+      },
+      {
+        "date": "2026-04-01",
+        "l2_rows": 1164580,
+        "trades": 337571,
+        "validation_sha256": "f019f0e19d08c3f668a09f91ff2ed67a4da896d00626f423a6900822bb5fd9ca"
+      },
+      {
+        "date": "2026-05-01",
+        "l2_rows": 957184,
+        "trades": 332945,
+        "validation_sha256": "1b7ee1a81a4abe262187b12911605fc5f6b6f851998ad56340998c755f2d6d21"
+      },
+      {
+        "date": "2026-07-01",
+        "l2_rows": 1286008,
+        "trades": 503449,
+        "validation_sha256": "14f99d9571309032847b3ffc011142455793c3ec201e40c1ecc9e8c51e16cec7"
+      }
+    ],
+    "USDPUSDT": []
+  },
+  "CANDIDATE_BOOKS": [
+    "USDCUSDT",
+    "FDUSDUSDT",
+    "FDUSDUSDC",
+    "USD1USDT",
+    "USD1USDC",
+    "TUSDUSDT",
+    "USDPUSDT"
+  ],
+  "DATA_BLOCKER": "MULTI_BOOK_L2_INTERSECTION_EMPTY",
+  "MODEL": "M032_ADAPTIVE_MULTI_STABLE_CAPITAL_MANAGER_V1",
+  "MULTI_BOOK_ELIGIBLE_DATE_POOL": [],
+  "PROHIBITED_SUBSTITUTIONS": [
+    "OHLC_AS_L2",
+    "AGGTRADES_AS_PUBLIC_QUEUE",
+    "CURRENT_EXCHANGE_INFO_AS_UNPROVEN_HISTORICAL_RULES"
+  ],
+  "READY_FOR_REPLAY": false,
+  "SCORING_WINDOWS": [],
+  "SLOT_BASE": "UNRESOLVED_UNTIL_HISTORICAL_RULES_FOR_SELECTED_BOOKS",
+  "STABLECOINS_SELECTED_FOR_REPLAY": []
+}
