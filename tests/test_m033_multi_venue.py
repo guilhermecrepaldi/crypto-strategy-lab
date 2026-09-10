@@ -524,6 +524,38 @@ def test_native_delete_before_trade_suppresses_ambiguous_fill_inference() -> Non
         )
 
 
+def test_native_delete_beyond_pending_confirmation_suppresses_next_fill() -> None:
+    model = L3QueueModel()
+    model.apply_public_event(event("A", L3EventType.ADD, "P", "2"))
+    model.activate_own(
+        KRAKEN, side="BUY", price=D("1"), order_id="C1", quantity=D("1"), column=1, now_us=2
+    )
+    model.consume_execution(
+        KRAKEN, event_id="T1", side="BUY", price=D("1"), quantity=D("1"), exchange_time_us=3
+    )
+    model.apply_public_event(event("D", L3EventType.DELETE, "P", "0", exchange_time=3, sequence=2))
+    with pytest.raises(ValueError, match="ORDERING_AMBIGUOUS"):
+        model.consume_execution(
+            KRAKEN, event_id="T2", side="BUY", price=D("1"), quantity=D("1"), exchange_time_us=3
+        )
+
+
+def test_native_modify_beyond_pending_confirmation_suppresses_next_fill() -> None:
+    model = L3QueueModel()
+    model.apply_public_event(event("A", L3EventType.ADD, "P", "3"))
+    model.activate_own(
+        KRAKEN, side="BUY", price=D("1"), order_id="C1", quantity=D("1"), column=1, now_us=2
+    )
+    model.consume_execution(
+        KRAKEN, event_id="T1", side="BUY", price=D("1"), quantity=D("1"), exchange_time_us=3
+    )
+    model.apply_public_event(event("M", L3EventType.MODIFY, "P", "1", exchange_time=3, sequence=2))
+    with pytest.raises(ValueError, match="ORDERING_AMBIGUOUS"):
+        model.consume_execution(
+            KRAKEN, event_id="T2", side="BUY", price=D("1"), quantity=D("1"), exchange_time_us=3
+        )
+
+
 def test_l3_gap_blocks_new_orders_and_execution() -> None:
     model = L3QueueModel()
     model.mark_gap(KRAKEN)

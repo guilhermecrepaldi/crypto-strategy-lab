@@ -143,6 +143,8 @@ class L3QueueModel:
                     raise ValueError("M033_L3_NATIVE_STATE_RESURRECTS_CONSUMED_QUANTITY")
                 entry.remaining = event.remaining_quantity
                 del self.awaiting_native_state[order_key]
+                if event.remaining_quantity < expected:
+                    self.ambiguous_native_removal_levels.add(level_key)
                 if entry.remaining == ZERO:
                     self.levels[level_key].remove(entry)
                     del self.order_level[order_key]
@@ -155,7 +157,7 @@ class L3QueueModel:
         self.levels[level_key].remove(entry)
         del self.order_level[order_key]
         self.awaiting_native_state.pop(order_key, None)
-        if expected is None:
+        if expected != ZERO:
             self.ambiguous_native_removal_levels.add(level_key)
 
     def activate_own(

@@ -63,3 +63,10 @@ destination occupancy atomically, requires strict post-activation time for own
 fills, and tracks the initial snapshot sides separately from later reset batches.
 Focused validation now passes 44 M033 tests. A new published source-bound review
 is required; no replay, draw or registry mutation occurred.
+
+The third Astra review on `fcc78d3a...` reduced the remaining defect to mixed
+reconciliation: after a trade consumed part of a public order, a native update
+could remove more than the expected remainder and still be treated as exact
+confirmation. The correction now accepts only equal state as confirmation;
+additional native reduction marks the level ambiguous and blocks subsequent own
+fill inference. Two adversarial fixtures cover DELETE and MODIFY variants.
