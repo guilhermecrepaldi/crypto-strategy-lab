@@ -1,0 +1,29 @@
+{
+  "identity": "M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H_V1",
+  "review_type": "INDEPENDENT_POST_RUN_RESULT_AND_RECOVERY_REVIEW",
+  "reviewer_model": "gpt-6-astra",
+  "verdict": "PASS",
+  "pending_p1": 0,
+  "pending_p2": 0,
+  "economic_source_sha": "2a895e5040a9bedd947ad329c1f7c46cfd783b7e",
+  "preserved_prefix_sha256": "1cd9447b39b40f9f1fa36753e3b021a2021ebb6e6b3ba8a3849be23bb41df178",
+  "claim_sha256": "6ea760b06b79feb32bd4cea4fd222686bf52f0a7b8ec5d48aed782ad6c988923",
+  "config_sha256": "ebb5fde6b76d98553e7c9365a1e4cc02266192ac5a5aff91a859b101b26fb221",
+  "result_sha256": "48b0b72f11b972180059283c066575090151e9b3946af68040f70d550c9c72b1",
+  "cycles_sha256": "492a1ff60a7f5a89517c2a1cccb4f77bcd8dd3ec55ef28190db20cb56947f689",
+  "equity_sha256": "1572ea3b46dcf2e2c35b55e78750491f08b77c386f2d450bd57fc30df320493e",
+  "negative_cycles_sha256": "d5948ad4f9296b8b8782694f049fa68af4eda65a89cffaa4912562908c5c4f5c",
+  "findings": {
+    "hash_and_binding": "PASS",
+    "accounting_and_zero_loss": "PASS",
+    "cycle_csv_matches_prefix": "PASS",
+    "equity_csv_matches_prefix": "PASS",
+    "capital_and_inventory_time_reconstruction": "PASS",
+    "break_even_wording": "PASS_NOT_ECONOMICALLY_IDENTIFIED",
+    "m026_comparison": "PASS_DESCRIPTIVE_NOT_CAUSAL",
+    "no_strategy_rerun": "PASS_REPLAY_RERUNS_0",
+    "decimal_comparator_fix": "PASS_POST_RUN_NO_EVIDENCE_CHANGE",
+    "documentation_consistency": "PASS_AFTER_P2_CORRECTION"
+  },
+  "review_note": "Recovery applies only preserved ledger facts and causal marks; it creates no strategy decisions or fills. No replay was executed by the review."
+}

@@ -197,3 +197,37 @@ is `d85a3bbe2017f77446cebfe67ee74eba7901372b9512554939bbdf667d4a185a` and thresh
 hash is `c2b239f6c89efd64ac22f755cbd76be756cd4c764869e6b99da9a7b246bede76`.
 No replay has run at this checkpoint; the claim is absent and the next authorized
 action is the single five-scenario execution after publication of this preregistration.
+
+## 2026-09-11 - zero-loss development backtest result
+
+The canonical one-shot claim was created after preregistration commit `19df09d`. The
+five frozen scenarios each consumed the complete 100,760-event tape (71,222 books and
+29,538 individual trades). The strategy evaluation completed, but the reporter then
+raised `M034_ZERO_LOSS_ACCOUNTING_AUDIT_FAILED` because exact numeric zeros serialized
+with decimal scale were compared to the literal string `"0"`. The failure artifact,
+claim and complete causal prefix were preserved. Prefix SHA-256 is
+`1cd9447b39b40f9f1fa36753e3b021a2021ebb6e6b3ba8a3849be23bb41df178`.
+
+GPT-6 Astra independently reconstructed all assets from fills, fees and cost debits,
+matching ledger totals, physical buckets and terminal checkpoints exactly. Reporting
+was recovered from the complete prefix without strategy decisions or fills being run
+again: `RUN_STATUS=RECOVERED_FROM_COMPLETE_PREFIX`, `REPLAY_RERUNS=0`.
+
+F0 closed 2 positive physical/slot-equivalent cycles, no zero/negative cycles and no
+risk exit. Realized and marked equity ended at `200.007193700`, for `+0.007193700` or
+`+0.00359685%`. Residual inventory and unrealized PnL were zero. Maximum marked capital
+and inventory lock was `18.039600`; final `18.036903510 USDT` remained in unfilled
+entry reservations. Time-weighted utilization was `9.009327%`, inventory lock
+`5.627669%`, and idle capital `90.990673%`.
+
+F1/F2/F5/F10 closed no cycles, used no capital and ended unchanged at 200. Each
+recorded 997,108 `FEE_DUST_PREVENTS_FULL_RETURN` rejections: with received-asset fees,
+whole-unit quantity step and no-residue closure, even 1 bp was structurally ineligible.
+Thus pure economic break-even is not identified; the observed admission boundary lies
+between 0 and 1 bp/leg and 0 bp is the highest tested fee that produced cycles.
+
+Relative to M026's 30 physical cycles, F0 is `-28`/`-93.3333%`; all nonzero-fee
+scenarios are `-30`/`-100%`. No cycle loss was hidden or cross-subsidized. The zero-loss
+boolean held mechanically in every scenario, but the present formulation failed the
+productivity objective. This is calibration-only development evidence;
+`STRATEGY_PASS=false`, no live claim, no rerun and no successor experiment authorized.

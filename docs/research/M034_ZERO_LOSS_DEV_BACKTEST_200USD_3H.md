@@ -2,7 +2,7 @@
 
 Identity: `M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H_V1`.
 
-Status: `PREREGISTERED_READY_FOR_ONE_SHOT`. This campaign is a one-shot
+Status: `RECOVERED_FROM_COMPLETE_PREFIX`. This campaign is a one-shot
 `DEVELOPMENT_DIAGNOSTIC_BACKTEST` on calibration data. It is not OOS, does not register
 a strategy pass, and makes no live-profitability claim. It is independent from
 `M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD`; the forward claim, process and outputs are
@@ -109,4 +109,94 @@ effect.
 
 ## Result
 
-`NOT_RUN` — populated only after the one authorized execution.
+The single economic campaign consumed all 100,760 causal events in each of the five
+frozen scenarios. It then stopped in reporting because numerically zero accounting
+residuals were serialized as `0.000000000`/`0.00000000` and compared to the literal
+string `"0"`. The complete prefix was preserved with SHA-256
+`1cd9447b39b40f9f1fa36753e3b021a2021ebb6e6b3ba8a3849be23bb41df178`.
+Independent reconstruction matched every asset balance, ledger total and terminal
+checkpoint. Results were therefore recovered by postprocessing only:
+`REPLAY_RERUNS=0`, original failure preserved, `STRATEGY_PASS=false`.
+
+| Fee/leg | Cycles | Cycles/h | Final marked equity | PnL | Return % | Negative cycles | Zero-loss |
+|---:|---:|---:|---:|---:|---:|---:|:---:|
+| 0 bp | 2 | 0.666667 | 200.007193700 | +0.007193700 | +0.00359685% | 0 | PASS |
+| 1 bp | 0 | 0 | 200.00000000 | 0 | 0% | 0 | PASS* |
+| 2 bps | 0 | 0 | 200.00000000 | 0 | 0% | 0 | PASS* |
+| 5 bps | 0 | 0 | 200.00000000 | 0 | 0% | 0 | PASS* |
+| 10 bps | 0 | 0 | 200.00000000 | 0 | 0% | 0 | PASS* |
+
+`PASS*` means only that the frozen boolean is true: no negative cycle, no negative
+risk exit and marked equity at least 200. The zero-activity scenarios provide no
+evidence of productivity or executable profitability.
+
+### Scenario metrics
+
+| Metric | F0 | F1 | F2 | F5 | F10 |
+|---|---:|---:|---:|---:|---:|
+| Initial bank | 200 | 200 | 200 | 200 | 200 |
+| Final realized equity | 200.007193700 | 200 | 200 | 200 | 200 |
+| Final marked equity | 200.007193700 | 200 | 200 | 200 | 200 |
+| Realized PnL | 0.007193700 | 0 | 0 | 0 | 0 |
+| Unrealized PnL | 0 | 0 | 0 | 0 | 0 |
+| Realized/marked return | 0.00359685% | 0% | 0% | 0% | 0% |
+| Physical cycles | 2 | 0 | 0 | 0 | 0 |
+| Slot-equivalent cycles | 2 | 0 | 0 | 0 | 0 |
+| Positive / zero / negative cycles | 2 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 0 |
+| Negative risk exits | 0 | 0 | 0 | 0 | 0 |
+| Total maker fees | 0 | 0 | 0 | 0 | 0 |
+| Execution cost | 0.001803150 | 0 | 0 | 0 | 0 |
+| Adverse-selection cost | 0.001803150 | 0 | 0 | 0 | 0 |
+| Capital utilization | 9.009327% | 0% | 0% | 0% | 0% |
+| Idle capital | 90.990673% | 100% | 100% | 100% | 100% |
+| Time-weighted locked inventory | 5.627669% | 0% | 0% | 0% | 0% |
+| Maximum capital/inventory lock | 18.039600 | 0 | 0 | 0 | 0 |
+| Final locked capital | 18.036903510 | 0 | 0 | 0 | 0 |
+| Final residual inventory | none | none | none | none | none |
+
+F0 cycle net PnLs were `0.003596940` and `0.003596760`; minimum, median and maximum
+were respectively `0.003596760`, `0.003596850` and `0.003596940`. Its combined lock
+sample (two completed cycles plus two open entry reservations at cutoff) had maximum
+`10,187.415888 s`, P50 `5,325.3251145 s`, and P90/P95 `10,187.415888 s`. F1–F10
+had no lock sample. The F0 final `18.036903510 USDT` was held in unfilled entry
+reservations, not negative inventory; residual USDC and unrealized loss were both zero.
+
+Each F1–F10 scenario recorded 997,108 candidate rejections with reason
+`FEE_DUST_PREVENTS_FULL_RETURN`. Under received-asset fees, whole-unit quantity step
+and mandatory no-residue return, 1 bp was already structurally ineligible. Therefore
+the pure economic fee break-even is **not identified**. The frozen-grid admission
+boundary lies between 0 and 1 bp/leg, and the maximum tested fee that produced a
+physical cycle was 0 bp/leg. Minimum gross decision edge is `2f + 5 bps`, giving
+5/7/9/15/25 bps for F0/F1/F2/F5/F10.
+
+Mean F0 net PnL was `0.003596850` per cycle. Descriptively, holding that observed
+mean constant would require 56, 279 and 557 cycles for +0.1%, +0.5% and +1% on 200
+USDT. These are arithmetic rulers, not achievable-target claims. F0 net PnL per
+initial-capital-hour was `0.0000119895 USD per USD-hour`; marked return averaged
+`0.00119895%` per elapsed hour.
+
+### Comparison with M026
+
+M026 recorded 30 physical and 90 slot-equivalent cycles, or 10 physical cycles/hour,
+on the same window. M034 F0 recorded 2 physical cycles: delta `-28` or `-93.3333%`,
+and `0.6667` cycles/hour. F1–F10 recorded zero: delta `-30` or `-100%`. Because M026
+used different initial assets, geometry and virtualized minNotional, this comparison
+is descriptive and does not isolate architecture as a causal treatment.
+
+### Evidence
+
+- Canonical result: `reports/m034/M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H.json`.
+- Chronological cycle ledger: `reports/m034/M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H_CYCLES.csv`.
+- Seven time checkpoints per scenario: `reports/m034/M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H_EQUITY.csv`.
+- Negative-cycle report: `reports/m034/M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H_NEGATIVE_CYCLES.json`.
+- Independent post-run review:
+  `reports/m034/M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H_RESULT_REVIEW.json` (`PASS`, no
+  pending P1/P2 and no replay by the reviewer).
+- Original failure, complete physical prefix and recovery manifest remain under
+  `artifacts/m034/M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H_V1/`.
+
+This development diagnostic rejects the productivity claim for the current frozen
+formulation: the best mechanical upper bound produced two cycles and the first nonzero
+fee scenario produced none. The individual zero-loss invariant held, but it did not
+deliver competitive throughput. This is calibration evidence, not OOS, a strategy
+pass or a live-profitability claim.

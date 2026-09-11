@@ -1,21 +1,33 @@
 # CURRENT STATE
 
-ACTIVE_EXECUTION_CAMPAIGN=M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H_V1
-CAMPAIGN_STATUS=PREREGISTERED_READY_FOR_ONE_SHOT
+ACTIVE_EXECUTION_CAMPAIGN=NONE
+CAMPAIGN_STATUS=RECOVERED_FROM_COMPLETE_PREFIX_NO_RERUN
 CAMPAIGN_EXECUTION_SOURCE_SHA=2a895e5040a9bedd947ad329c1f7c46cfd783b7e
-CAMPAIGN_ACTIVE_ENVELOPE=BINANCE_USDCUSDT_CALIBRATION_2025_01_01_00_03_UTC
+CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
-CAMPAIGN_VERDICT=PREREGISTERED_NOT_STARTED_DEVELOPMENT_DIAGNOSTIC
+CAMPAIGN_VERDICT=ZERO_LOSS_INVARIANT_PASS_PRODUCTIVITY_NOT_SUPPORTED
 CAMPAIGN_PROGRESS_FILE=docs/research/M034_JOURNAL.md
 CAMPAIGN_JOURNAL=docs/research/M034_JOURNAL.md
-CAMPAIGN_SCOREBOARD=reports/usdcusdt/M034-implementation-status.json
-CURRENT_ACTIVE_RESEARCH_MODEL=M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H_V1
-OWNER_NEXT_RESEARCH=EXECUTE_FROZEN_F0_F1_F2_F5_F10_ONE_SHOT
+CAMPAIGN_SCOREBOARD=reports/m034/M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H.json
+CURRENT_ACTIVE_RESEARCH_MODEL=NONE_AWAITING_OWNER_DIRECTION
+OWNER_NEXT_RESEARCH=NONE_CURRENT_M034_FORMULATION_MEASURED_NO_SUCCESSOR_AUTHORIZED
 OWNER_DIRECTIVE=docs/microstructure/M034_BINANCE_ECONOMIC_ELIGIBILITY_PRODUCTIVITY.md
-NEXT_CAMPAIGN_STATUS=ONE_SHOT_HISTORICAL_DEVELOPMENT_DIAGNOSTIC_AFTER_PUBLISH
-NEXT_CAMPAIGN_MODEL_HASH=d85a3bbe2017f77446cebfe67ee74eba7901372b9512554939bbdf667d4a185a
-NEXT_CAMPAIGN_WINDOW=2025_01_01_00_00_TO_03_00_UTC_EXCLUSIVE
-NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=200_USDT
+NEXT_CAMPAIGN_STATUS=NOT_AUTHORIZED
+NEXT_CAMPAIGN_MODEL_HASH=NONE
+NEXT_CAMPAIGN_WINDOW=NONE
+NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=NONE
+
+The one authorized `M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H_V1` campaign is complete
+through preserved-prefix recovery with no replay. F0 produced 2 physical cycles,
+`+0.007193700 USDT`, `+0.00359685%`, final marked equity `200.007193700`, no negative
+cycle/risk exit and no residual inventory. F1/F2/F5/F10 produced zero cycles and zero
+return because received-asset fee dust prevented full no-residue returns. Against
+M026's 30 cycles, F0 is `-93.3333%`; nonzero-fee scenarios are `-100%`. The pure
+economic fee break-even was not identified; 0 bp was the highest tested fee with a
+physical cycle. The single run's postprocessor rejected scaled textual zeros after all
+events; GPT-6 Astra independently matched all balances, and artifacts were recovered
+from complete prefix SHA `1cd9447b...df178` with `REPLAY_RERUNS=0`. This is calibration
+development evidence, not OOS, `STRATEGY_PASS` or a live-profitability claim.
 
 The OWNER-authorized one-shot forward diagnostic is separately preregistered at
 `docs/research/M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD.md`. Source
@@ -32,18 +44,22 @@ reviewed M032/M033 libraries. Per the latest OWNER directive, Kraken is retired 
 all M034 economic paths; only its historical M033 provenance remains. Unknown or unproven fee,
 cost, data, market safety, completion or lock evidence fails closed; no eligible
 opportunity leaves capital explicitly idle. Thresholds are mandatory typed inputs
-with provenance and hashes, but no operational values are frozen. Pre-replay protocol,
+with provenance and hashes. Outside the completed OWNER-assumption development
+diagnostic, no official evidence-derived operational values are frozen. Pre-replay protocol,
 Binance evidence pack, seven-book candidate universe, physical dataset manifest,
 calibration role registry, blocked estimator/cost artifacts, replay protocol and draft
 experimental identity are now published. Twelve USDCUSDT days have valid physical
 L2+trades, but every one is calibration-contaminated by prior development and none has
-complete historical fee+rule proof; economic/OOS pools are empty. No window was selected
-and no CSPRNG draw occurred. The first published
+complete historical fee+rule proof; economic/OOS pools are empty. For that separate
+official evidence-based/OOS campaign, no window was selected and no CSPRNG draw occurred.
+The first published
 reviews at `d009653`, `1dd2f3d` and `e55bb7b` blocked causal/economic invariants;
 the fourth semantic source-bound review passed at `4054dfd`; the independent exact
 post-format GPT-6 Astra review also passed at `420c99e`, proving the Python delta is
-Ruff-format-only and AST-equivalent. No threshold hash, OOS pool, frozen replay dataset,
-window, registered model identity, integrated runner or economic replay exists.
+Ruff-format-only and AST-equivalent. That official evidence-based/OOS campaign still has
+no threshold hash, OOS pool, frozen replay dataset, window, registered model identity,
+integrated runner or economic replay. This does not describe the completed, explicitly
+OWNER-assumption calibration diagnostic summarized above.
 Local root-aware validation passes 1,172 tests with 2 skips, while GitHub Actions is
 still non-green at the pre-existing full-package mypy gate (128 errors/16 legacy files
 on Linux; 117/13 locally); strict mypy on all seven M034-affected modules passes.

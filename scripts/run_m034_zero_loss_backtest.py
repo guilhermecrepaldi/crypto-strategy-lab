@@ -246,7 +246,7 @@ def execute(
         }
         if event_counts != {(100_760, 71_222, 29_538)}:
             raise ValueError(f"M034_ZERO_LOSS_EVENT_COUNT_MISMATCH:{event_counts}")
-        if any(row["ACCOUNTING_IDENTITY_RESIDUAL"] != "0" for row in results):
+        if any(D(row["ACCOUNTING_IDENTITY_RESIDUAL"]) != D(0) for row in results):
             raise ValueError("M034_ZERO_LOSS_ACCOUNTING_AUDIT_FAILED")
         cycles.sort(key=lambda row: (row["start_timestamp_us"], row["scenario"], row["cycle_id"]))
         negative = [row for row in cycles if D(row["net_pnl"]) < 0]
