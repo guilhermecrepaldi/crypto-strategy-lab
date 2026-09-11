@@ -441,7 +441,7 @@ def test_partial_owned_return_is_protected_from_risk_cancel() -> None:
     scenario.receive_book(book(START + 12_000_000, bid="0.9940", ask="0.9942"))
     assert return_order.status == "PARTIAL"
     assert scenario.negative_risk_exits == 0
-    assert scenario.rejections["PARTIAL_OWNED_RETURN_PROTECTED"] > 0
+    assert scenario.rejections["PARTIAL_POSITION_PROTECTED"] > 0
 
 
 def test_risk_exit_consumes_displayed_depth_once_across_slots() -> None:
@@ -462,3 +462,46 @@ def test_risk_exit_consumes_displayed_depth_once_across_slots() -> None:
     assert scenario.negative_risk_exits == 1
     assert scenario.rejections["RISK_EXIT_DEPTH_INSUFFICIENT"] > 0
     assert scenario._residual_inventory() == {"USDC": "10"}
+    scenario.receive_book(book(START + 12_000_000, bid="0.9940", ask="0.9942", bid_quantity="10"))
+    assert scenario.negative_risk_exits == 1
+
+
+@pytest.mark.parametrize("racing_quantity", ["15", "20"])
+def test_cancel_ack_survives_partial_or_full_racing_fill(racing_quantity: str) -> None:
+    scenario = M034ZeroLossScenario(config(), fee_bps=D(0))
+    scenario.receive_trade(
+        trade(START + 1_000_000, 1, price="0.9999", quantity="600", buyer_maker=True)
+    )
+    scenario.receive_trade(
+        trade(START + 2_000_000, 2, price="1.0001", quantity="600", buyer_maker=False)
+    )
+    scenario.receive_book(book(START + 3_000_000))
+    scenario.receive_book(book(START + 5_000_000))
+    c2 = next(
+        order for order in scenario.orders.values() if order.kind == "ENTRY" and order.column == 2
+    )
+    scenario.receive_book(book(START + 7_000_000, bid="1.0000", ask="1.0002"))
+    assert c2.status == "CANCEL_PENDING"
+    scenario.receive_trade(
+        trade(
+            START + 7_500_000,
+            3,
+            price="0.9997",
+            quantity=racing_quantity,
+            buyer_maker=True,
+        )
+    )
+    assert c2.status == "CANCEL_PENDING"
+    scenario.receive_book(book(START + 9_000_000, bid="1.0000", ask="1.0002"))
+    assert c2.reservation_id not in scenario.ledger.reservations
+    if D(racing_quantity) < D(20):
+        assert c2.status == "PARTIAL_CANCELLED"
+        assert c2.filled_quantity == D(5)
+    else:
+        assert c2.status == "FILLED"
+        assert c2.filled_quantity == D(10)
+        assert any(
+            order.kind == "RETURN" and order.slot_id == c2.slot_id
+            for order in scenario.orders.values()
+        )
+    scenario.ledger.reconcile()

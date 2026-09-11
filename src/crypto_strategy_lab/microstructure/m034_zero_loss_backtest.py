@@ -264,6 +264,8 @@ class M034ZeroLossScenario:
         self.negative_risk_exits = 0
         self.risk_exit_assessments = 0
         self.risk_exit_signals: dict[str, int] = {}
+        self.risk_observed_bid_depth: dict[D, D] = {}
+        self.risk_available_bid_depth: dict[D, D] = {}
         self.locked_integral_usd_us = ZERO
         self.idle_integral_usd_us = ZERO
         self.max_capital_lock_usd = ZERO
@@ -376,6 +378,7 @@ class M034ZeroLossScenario:
         asks = tuple((D(str(p)), D(str(q))) for p, q in event["asks"])
         if not bids or not asks or not event["sequence_validated"]:
             raise ValueError("M034_ZERO_LOSS_INVALID_BOOK")
+        self._update_risk_bid_depth(bids)
         self.last_book = {
             "bids": bids,
             "asks": asks,
@@ -393,6 +396,19 @@ class M034ZeroLossScenario:
         self._assess_inventory_risk(now_us)
         self._submit_waiting_returns(now_us)
         self._try_allocate_entries(now_us)
+
+    def _update_risk_bid_depth(self, bids: tuple[tuple[D, D], ...]) -> None:
+        observed = dict(bids)
+        if not self.risk_observed_bid_depth:
+            self.risk_observed_bid_depth = observed
+            self.risk_available_bid_depth = dict(observed)
+            return
+        for price in set(self.risk_observed_bid_depth) | set(observed):
+            previous = self.risk_observed_bid_depth.get(price, ZERO)
+            current = observed.get(price, ZERO)
+            available = self.risk_available_bid_depth.get(price, ZERO)
+            self.risk_available_bid_depth[price] = max(ZERO, available + current - previous)
+        self.risk_observed_bid_depth = observed
 
     def receive_trade(self, event: Mapping[str, Any]) -> None:
         now_us = int(event["local_us"])
@@ -734,9 +750,16 @@ class M034ZeroLossScenario:
                     >= reservation.cancel_requested_at_us + self.config.cancel_ack_latency_us
                 ):
                     if order.order_id in self.queue.order_group:
-                        self.queue.cancel_ack(order.order_id, now_us=now_us)
+                        self.queue.cancel_ack_after_racing_fill(order.order_id, now_us=now_us)
                     self.ledger.acknowledge_cancel(order.reservation_id, now_us=now_us)
-                    order.status = "CANCELLED"
+                    if order.filled_quantity == ZERO:
+                        order.status = "CANCELLED"
+                    elif order.filled_quantity < order.quantity:
+                        order.status = "PARTIAL_CANCELLED"
+                    else:
+                        order.status = "FILLED"
+                        if order.kind == "RETURN":
+                            self._close_cycle(order, now_us)
                 continue
             if order.status != "PENDING" or now_us < order.activate_at_us:
                 continue
@@ -785,6 +808,7 @@ class M034ZeroLossScenario:
     def _apply_fill(self, order: BacktestOrder, amount: D, now_us: int, trade_id: str) -> None:
         if amount <= ZERO or order.status not in {"ACTIVE", "PARTIAL", "CANCEL_PENDING"}:
             raise ValueError("M034_ZERO_LOSS_INVALID_FILL")
+        cancel_pending = order.status == "CANCEL_PENDING"
         if order.kind == "ENTRY":
             input_quantity = amount * order.price
             gross_output = amount
@@ -854,7 +878,10 @@ class M034ZeroLossScenario:
             self.adverse_selection_cost_total += adverse
         order.filled_quantity += amount
         if order.filled_quantity < order.quantity:
-            order.status = "PARTIAL"
+            order.status = "CANCEL_PENDING" if cancel_pending else "PARTIAL"
+            return
+        if cancel_pending:
+            order.status = "CANCEL_PENDING"
             return
         order.status = "FILLED"
         if order.kind == "ENTRY":
@@ -915,7 +942,10 @@ class M034ZeroLossScenario:
         bid = self.last_book["bids"][0][0]
         ask = self.last_book["asks"][0][0]
         midpoint = (bid + ask) / D(2)
-        available_bids = [[price, depth] for price, depth in self.last_book["bids"]]
+        available_bids = [
+            [price, min(depth, self.risk_available_bid_depth.get(price, ZERO))]
+            for price, depth in self.last_book["bids"]
+        ]
         for slot_id, bucket in sorted(self.ledger.owned.items()):
             entry_reservation_order = next(
                 (
@@ -950,6 +980,20 @@ class M034ZeroLossScenario:
                 None,
             )
             if entry is None:
+                continue
+            partial_return = next(
+                (
+                    row
+                    for row in self.orders.values()
+                    if row.slot_id == slot_id
+                    and row.kind == "RETURN"
+                    and ZERO < row.filled_quantity < row.quantity
+                ),
+                None,
+            )
+            if ZERO < entry.filled_quantity < entry.quantity or partial_return is not None:
+                self.risk_exit_signals.pop(slot_id, None)
+                self.rejections["PARTIAL_POSITION_PROTECTED"] += 1
                 continue
             if return_order is not None and return_order.filled_quantity > ZERO:
                 self.risk_exit_signals.pop(slot_id, None)
@@ -1005,6 +1049,8 @@ class M034ZeroLossScenario:
                 continue
             for index, amount in depth_allocations:
                 available_bids[index][1] -= amount
+                price = available_bids[index][0]
+                self.risk_available_bid_depth[price] -= amount
             self._execute_negative_risk_exit(
                 entry=entry,
                 quantity=quantity,
@@ -1285,6 +1331,14 @@ class M034ZeroLossScenario:
             "checkpoints": self.checkpoints,
             "rejections": dict(sorted(self.rejections.items())),
             "risk_exit_signals": self.risk_exit_signals,
+            "risk_depth_shadow": {
+                "observed": {
+                    _s(price): quantity for price, quantity in self.risk_observed_bid_depth.items()
+                },
+                "available_after_own_consumption": {
+                    _s(price): quantity for price, quantity in self.risk_available_bid_depth.items()
+                },
+            },
         }
 
 

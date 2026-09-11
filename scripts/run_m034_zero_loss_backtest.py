@@ -224,7 +224,9 @@ def execute(
 ) -> dict[str, Any]:
     manifest = json.loads(input_authority.MANIFEST.read_bytes())
     validation = json.loads(input_authority.VALIDATION_REPORT.read_bytes())
-    profile, canonical, slices, evidence = input_authority.bounded_inputs(manifest, validation)
+    profile, canonical, slices, input_evidence = input_authority.bounded_inputs(
+        manifest, validation
+    )
     if (
         tuple(item["offset"] for item in slices) != tuple(range(0, 180, 10))
         or len(canonical) != 29_538
@@ -234,9 +236,9 @@ def execute(
         raise ValueError("M034_ZERO_LOSS_INPUT_OR_LATENCY_BINDING_CHANGED")
     _claim(head, source_sha, config_payload["configuration_hash"])
     OUTPUT.mkdir(parents=True, exist_ok=False)
-    evidence: list[dict[str, Any]] = []
+    physical_evidence: list[dict[str, Any]] = []
     try:
-        results, cycles, checkpoints, evidence = run_scenarios(
+        results, cycles, checkpoints, physical_evidence = run_scenarios(
             config, input_authority.bounded_native_events(slices)
         )
         event_counts = {
@@ -278,7 +280,7 @@ def execute(
             "SOURCE_SHA": source_sha,
             "CONFIGURATION_HASH": config_payload["configuration_hash"],
             "THRESHOLD_CONFIG_HASH": config.threshold_registry().config_hash,
-            "INPUT_EVIDENCE": evidence,
+            "INPUT_EVIDENCE": input_evidence,
             "SAME_TAPE_ALL_SCENARIOS": True,
             "ECONOMIC_CAMPAIGN_RUNS": 1,
             "SCENARIO_RUNS_WITHIN_FROZEN_GRID": 5,
@@ -345,7 +347,7 @@ def execute(
         write_json(RESULT, result)
         write_json(OUTPUT / "result.json", result)
         evidence_paths = []
-        for snapshot in evidence:
+        for snapshot in physical_evidence:
             path = OUTPUT / f"physical-evidence-{snapshot['scenario']}.json"
             write_json(path, snapshot)
             evidence_paths.append(path)
@@ -363,7 +365,9 @@ def execute(
         write_json(OUTPUT / "manifest.json", manifest_payload)
         return result
     except BaseException as exc:
-        prefix_evidence = exc.evidence if isinstance(exc, BacktestExecutionError) else evidence
+        prefix_evidence = (
+            exc.evidence if isinstance(exc, BacktestExecutionError) else physical_evidence
+        )
         if prefix_evidence:
             write_json(OUTPUT / "failure-prefix-evidence.json", prefix_evidence)
         write_json(

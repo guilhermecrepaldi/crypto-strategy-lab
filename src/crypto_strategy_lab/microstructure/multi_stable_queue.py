@@ -313,6 +313,17 @@ class CausalQueueEstimator:
         self._validate_group(group)
         return order.remaining
 
+    def cancel_ack_after_racing_fill(self, order_id: str, *, now_us: int) -> D:
+        """Remove a zero-fill cancel request after later exchange fills raced its ACK."""
+        self._causal(now_us)
+        group = self.groups[self.order_group[order_id]]
+        order = next(row for row in group.own_orders if row.order_id == order_id)
+        remaining = order.remaining
+        group.own_orders.remove(order)
+        del self.order_group[order_id]
+        self._validate_group(group)
+        return remaining
+
     def consume_compatible_flow(
         self,
         *,
