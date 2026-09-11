@@ -363,6 +363,72 @@ class CausalQueueEstimator:
         self._validate_group(group)
         return fills
 
+    def consume_trade_through(
+        self,
+        *,
+        event_id: str,
+        book: str,
+        side: str,
+        trade_price: D,
+        quantity: D,
+        now_us: int,
+    ) -> dict[str, D]:
+        """Consume one public trade once across every causally touched price."""
+        self._causal(now_us)
+        if event_id in self.processed_event_ids:
+            raise ValueError("M032_DUPLICATE_TRADE_QUANTITY")
+        if side not in {"BUY", "SELL"} or quantity < ZERO:
+            raise ValueError("M032_INVALID_COMPATIBLE_FLOW")
+        self.processed_event_ids.add(event_id)
+        touched = [
+            group
+            for (group_book, group_side, price), group in self.groups.items()
+            if group_book == book
+            and group_side == side
+            and (
+                (side == "BUY" and trade_price <= price)
+                or (side == "SELL" and trade_price >= price)
+            )
+        ]
+        touched.sort(key=lambda row: row.price, reverse=side == "BUY")
+        remaining = quantity
+        fills: dict[str, D] = {}
+        for group in touched:
+            if remaining <= ZERO:
+                break
+            key = (book, side, group.price)
+            self.compatible_flow.setdefault(key, deque()).append((now_us, remaining))
+            if trade_price == group.price:
+                public = min(remaining, group.public_remaining)
+                group.public_remaining -= public
+                remaining -= public
+            for order in group.own_orders:
+                if remaining <= ZERO:
+                    break
+                public = min(remaining, order.public_barrier_before)
+                if trade_price == group.price:
+                    order.public_barrier_before -= public
+                    remaining -= public
+                if remaining <= ZERO:
+                    break
+                amount = min(order.remaining, remaining)
+                order.remaining -= amount
+                remaining -= amount
+                if amount > ZERO:
+                    fills[order.order_id] = fills.get(order.order_id, ZERO) + amount
+                    if order.first_fill_at_us is None:
+                        order.first_fill_at_us = now_us
+                        self.first_fill_waits_us.setdefault(key, []).append(
+                            now_us - order.activated_at_us
+                        )
+                if order.remaining == ZERO and order.filled_at_us is None:
+                    order.filled_at_us = now_us
+                    self.full_fill_waits_us.setdefault(key, []).append(
+                        now_us - order.activated_at_us
+                    )
+            self._validate_group(group)
+        return fills
+
     def queue_ahead(self, order_id: str) -> D:
         group = self.groups[self.order_group[order_id]]
         ahead = group.public_remaining

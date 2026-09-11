@@ -42,6 +42,7 @@ BPS = D("10000")
 class EvaluationMode(StrEnum):
     HISTORICAL_REPLAY = "HISTORICAL_REPLAY"
     FORWARD = "FORWARD"
+    DEVELOPMENT_DIAGNOSTIC = "DEVELOPMENT_DIAGNOSTIC"
 
 
 class DecisionIntent(StrEnum):
@@ -99,6 +100,7 @@ class DatasetRole(StrEnum):
 class RuleEvidenceStatus(StrEnum):
     PROVEN_HISTORICAL = "PROVEN_HISTORICAL"
     PROVEN_FORWARD = "PROVEN_FORWARD"
+    OWNER_DIAGNOSTIC_ASSUMPTION = "OWNER_DIAGNOSTIC_ASSUMPTION"
     UNPROVEN = "UNPROVEN"
 
 
@@ -403,11 +405,14 @@ class VenuePairFeeRegistry:
             and (profile.effective_end_us is None or time_us < profile.effective_end_us)
             and profile.account_tier_assumption == account_context
         ]
-        allowed = (
-            {FeeEvidenceStatus.PROVEN_HISTORICAL}
-            if mode == EvaluationMode.HISTORICAL_REPLAY
-            else {FeeEvidenceStatus.PROVEN_FORWARD, FeeEvidenceStatus.ACCOUNT_SPECIFIC}
-        )
+        allowed = {
+            EvaluationMode.HISTORICAL_REPLAY: {FeeEvidenceStatus.PROVEN_HISTORICAL},
+            EvaluationMode.FORWARD: {
+                FeeEvidenceStatus.PROVEN_FORWARD,
+                FeeEvidenceStatus.ACCOUNT_SPECIFIC,
+            },
+            EvaluationMode.DEVELOPMENT_DIAGNOSTIC: {FeeEvidenceStatus.OWNER_DIAGNOSTIC_ASSUMPTION},
+        }[mode]
         candidates = [
             profile
             for profile in candidates
@@ -416,7 +421,7 @@ class VenuePairFeeRegistry:
             and bool(profile.record_id)
             and bool(profile.source_reference)
             and bool(profile.provenance)
-            and (mode == EvaluationMode.HISTORICAL_REPLAY or profile.acquired_at_us <= time_us)
+            and (mode != EvaluationMode.FORWARD or profile.acquired_at_us <= time_us)
         ]
         if len(candidates) > 1:
             return None
@@ -455,11 +460,11 @@ class VenuePairRuleRegistry:
     def resolve(
         self, book: BookKey, *, time_us: int, mode: EvaluationMode
     ) -> VenueSymbolRuleRecord | None:
-        allowed = (
-            {RuleEvidenceStatus.PROVEN_HISTORICAL}
-            if mode == EvaluationMode.HISTORICAL_REPLAY
-            else {RuleEvidenceStatus.PROVEN_FORWARD}
-        )
+        allowed = {
+            EvaluationMode.HISTORICAL_REPLAY: {RuleEvidenceStatus.PROVEN_HISTORICAL},
+            EvaluationMode.FORWARD: {RuleEvidenceStatus.PROVEN_FORWARD},
+            EvaluationMode.DEVELOPMENT_DIAGNOSTIC: {RuleEvidenceStatus.OWNER_DIAGNOSTIC_ASSUMPTION},
+        }[mode]
         matches = [
             row
             for row in self._records
@@ -467,7 +472,7 @@ class VenuePairRuleRegistry:
             and row.evidence_status in allowed
             and row.rule.effective_start_us <= time_us
             and (row.rule.effective_end_us is None or time_us < row.rule.effective_end_us)
-            and (mode == EvaluationMode.HISTORICAL_REPLAY or row.acquired_at_us <= time_us)
+            and (mode != EvaluationMode.FORWARD or row.acquired_at_us <= time_us)
         ]
         return matches[0] if len(matches) == 1 else None
 
@@ -837,6 +842,8 @@ class EconomicEligibilityGate:
             fee_status = FeeEvidenceStatus.ACCOUNT_SPECIFIC
         elif FeeEvidenceStatus.PROVEN_FORWARD in statuses:
             fee_status = FeeEvidenceStatus.PROVEN_FORWARD
+        elif FeeEvidenceStatus.OWNER_DIAGNOSTIC_ASSUMPTION in statuses:
+            fee_status = FeeEvidenceStatus.OWNER_DIAGNOSTIC_ASSUMPTION
         else:
             fee_status = FeeEvidenceStatus.PROVEN_HISTORICAL
 

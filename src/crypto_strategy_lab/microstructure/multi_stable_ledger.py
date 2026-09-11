@@ -23,6 +23,7 @@ class CapitalReservation:
     quantity: D
     remaining: D
     created_at_us: int
+    source_bucket: str
     cancel_requested_at_us: int | None = None
     cancel_ack_at_us: int | None = None
 
@@ -115,7 +116,9 @@ class SlotLedger:
         if quantity <= ZERO or self.free.get(asset, ZERO) < quantity:
             raise ValueError("M032_FREE_CAPITAL_INSUFFICIENT")
         self.free[asset] -= quantity
-        return self._create_reservation(slot, reservation_id, asset, quantity, now_us)
+        return self._create_reservation(
+            slot, reservation_id, asset, quantity, now_us, source_bucket="FREE"
+        )
 
     def reserve_owned(
         self,
@@ -133,7 +136,9 @@ class SlotLedger:
         if quantity <= ZERO or self.owned[slot_id].get(asset, ZERO) < quantity:
             raise ValueError("M032_OWNED_CAPITAL_INSUFFICIENT")
         self.owned[slot_id][asset] -= quantity
-        return self._create_reservation(slot, reservation_id, asset, quantity, now_us)
+        return self._create_reservation(
+            slot, reservation_id, asset, quantity, now_us, source_bucket="OWNED"
+        )
 
     def _create_reservation(
         self,
@@ -142,15 +147,25 @@ class SlotLedger:
         asset: str,
         quantity: D,
         now_us: int,
+        *,
+        source_bucket: str,
     ) -> CapitalReservation:
         reservation = CapitalReservation(
-            reservation_id, slot.slot_id, asset, quantity, quantity, now_us
+            reservation_id,
+            slot.slot_id,
+            asset,
+            quantity,
+            quantity,
+            now_us,
+            source_bucket,
         )
         self.reservations[reservation_id] = reservation
         slot.reservation_id = reservation_id
         slot.current_asset = asset
         slot.reserved_value = quantity
         slot.remaining_qty = quantity
+        slot.filled_qty = ZERO
+        slot.activated_at_us = None
         slot.state = SlotState.RESERVED
         if slot.capital_lock_started_at_us is None:
             slot.capital_lock_started_at_us = now_us
@@ -215,7 +230,14 @@ class SlotLedger:
         if now_us < reservation.cancel_requested_at_us:
             raise ValueError("M032_CANCEL_ACK_BEFORE_REQUEST")
         released = reservation.remaining
-        self.free[reservation.asset] += released
+        if reservation.source_bucket == "FREE":
+            self.free[reservation.asset] += released
+        elif reservation.source_bucket == "OWNED":
+            self.owned[slot.slot_id][reservation.asset] = (
+                self.owned[slot.slot_id].get(reservation.asset, ZERO) + released
+            )
+        else:
+            raise ValueError("M032_UNKNOWN_RESERVATION_SOURCE_BUCKET")
         reservation.remaining = ZERO
         reservation.cancel_ack_at_us = now_us
         slot.reservation_id = None
@@ -322,8 +344,80 @@ class SlotLedger:
         )
         if reservation.remaining == ZERO and reservation.cancel_requested_at_us is None:
             slot.reservation_id = None
+            slot.state = SlotState.FILLED
             del self.reservations[reservation_id]
         self._commit_time(fill.time_us)
+        self.reconcile()
+
+    def debit_reserved_cost(
+        self,
+        reservation_id: str,
+        *,
+        quantity: D,
+        cost_kind: str,
+        now_us: int,
+    ) -> None:
+        """Debit an attributable cost from a reservation exactly once."""
+        self._causal(now_us)
+        reservation = self.reservations[reservation_id]
+        slot = self.slots[reservation.slot_id]
+        if (
+            quantity < ZERO
+            or not cost_kind
+            or quantity > reservation.remaining
+            or slot.state not in {SlotState.LIVE, SlotState.PARTIAL, SlotState.CANCEL_PENDING}
+        ):
+            raise ValueError("M034_INVALID_RESERVED_ATTRIBUTABLE_COST")
+        reservation.remaining -= quantity
+        slot.reserved_value = reservation.remaining
+        slot.remaining_qty = reservation.remaining
+        self._asset_totals[reservation.asset] -= quantity
+        self.audit.append(
+            {
+                "event": "ATTRIBUTABLE_COST_DEBIT",
+                "time_us": now_us,
+                "slot_id": slot.slot_id,
+                "reservation_id": reservation_id,
+                "asset": reservation.asset,
+                "quantity": str(quantity),
+                "cost_kind": cost_kind,
+                "source_bucket": "RESERVED",
+            }
+        )
+        if reservation.remaining == ZERO and reservation.cancel_requested_at_us is None:
+            slot.reservation_id = None
+            slot.state = SlotState.FILLED
+            del self.reservations[reservation_id]
+        self._commit_time(now_us)
+        self.reconcile()
+
+    def debit_owned_cost(
+        self,
+        slot_id: str,
+        *,
+        asset: str,
+        quantity: D,
+        cost_kind: str,
+        now_us: int,
+    ) -> None:
+        """Debit a cycle-attributable cost from owned proceeds before close."""
+        self._causal(now_us)
+        if quantity < ZERO or not cost_kind or self.owned[slot_id].get(asset, ZERO) < quantity:
+            raise ValueError("M034_INVALID_OWNED_ATTRIBUTABLE_COST")
+        self.owned[slot_id][asset] -= quantity
+        self._asset_totals[asset] -= quantity
+        self.audit.append(
+            {
+                "event": "ATTRIBUTABLE_COST_DEBIT",
+                "time_us": now_us,
+                "slot_id": slot_id,
+                "asset": asset,
+                "quantity": str(quantity),
+                "cost_kind": cost_kind,
+                "source_bucket": "OWNED",
+            }
+        )
+        self._commit_time(now_us)
         self.reconcile()
 
     def close_slot(
@@ -391,6 +485,17 @@ class SlotLedger:
                 if row.slot_id == authorization.slot_id
                 and row.fill.from_asset == authorization.origin_asset
                 and row.fill.time_us <= now_us
+            ),
+            ZERO,
+        )
+        origin_cost_basis += sum(
+            (
+                D(row["quantity"])
+                for row in self.audit
+                if row.get("event") == "ATTRIBUTABLE_COST_DEBIT"
+                and row.get("slot_id") == authorization.slot_id
+                and row.get("asset") == authorization.origin_asset
+                and int(row["time_us"]) <= now_us
             ),
             ZERO,
         )
