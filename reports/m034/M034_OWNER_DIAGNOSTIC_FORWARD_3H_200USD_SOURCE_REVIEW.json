@@ -1,0 +1,38 @@
+{
+  "schema": "m034-source-bound-review-v1",
+  "identity": "M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD",
+  "source_sha": "be78f31d03006a93e0af9165ee744b9b38cb5913",
+  "reviewer_model": "gpt-6-astra",
+  "reviewed_at": "2026-09-11T12:48:40.3092922Z",
+  "verdict": "PASS_FOR_RUN",
+  "scope": "OWNER_DIAGNOSTIC_FORWARD_PAPER_OPTION_B_UNKNOWN_BLOCKS",
+  "strategy_pass": false,
+  "execution_cycle_path_approved": false,
+  "conditions": [
+    "fee evidence remains UNPROVEN and therefore blocks every dependent candidate",
+    "completion probability, expected lock, adverse selection and execution cost remain UNKNOWN",
+    "no conservative estimator bound or forward learning is enabled",
+    "initial balance is exactly 200 USDT after a 900 second non-economic warm-up",
+    "economic window is exactly 10800 seconds and guarded by exchange and monotonic clocks",
+    "the canonical one-shot claim must be absent before start and preserved after any outcome"
+  ],
+  "independent_validation": {
+    "focused_tests_passed": 177,
+    "ruff": "PASS",
+    "ruff_format": "PASS",
+    "mypy_strict_runner_cli": "PASS",
+    "fee_unproven_reproduced": true,
+    "four_unknown_components_reproduced": true,
+    "zero_eligible_reproduced": true,
+    "zero_orders_reproduced": true,
+    "capital_state": "BLOCKED_DATA"
+  },
+  "confirmed": {
+    "economic_venue": "BINANCE_ONLY",
+    "kraken": "RETIRED_DISABLED",
+    "real_order_endpoint": false,
+    "account_endpoint": false,
+    "testnet": false,
+    "strategy_pass": false
+  }
+}

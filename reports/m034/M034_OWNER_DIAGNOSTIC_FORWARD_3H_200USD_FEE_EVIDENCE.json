@@ -1,0 +1,35 @@
+{
+  "schema": "m034-forward-public-fee-reference-v1",
+  "identity": "M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD",
+  "observed_at": "2026-09-11T12:48:46.1480000Z",
+  "observed_at_us": 1789130926148000,
+  "evidence_status": "UNPROVEN",
+  "maker_rate_reference": "0.001",
+  "taker_rate_reference": "0.001",
+  "fee_asset_semantics_reference": "RECEIVED_ASSET_WHEN_NOT_PAID_IN_BNB",
+  "tier_context_reference": "PUBLIC_REGULAR_USER_NO_BNB_STANDARD_SCHEDULE",
+  "symbols": [
+    "USDCUSDT",
+    "FDUSDUSDT",
+    "FDUSDUSDC",
+    "USD1USDT",
+    "USD1USDC",
+    "TUSDUSDT",
+    "USDPUSDT"
+  ],
+  "sources": [
+    {
+      "url": "https://www.binance.com/en/fee/trading",
+      "observation": "The current public Spot and Margin table lists Regular User standard maker/taker as 0.100%/0.100%; it also lists a separate USDC taker reference of 0.095%."
+    },
+    {
+      "url": "https://developers.binance.com/en/docs/products/spot/faqs/commission_faq",
+      "observation": "Binance documents that exact current commission is account and symbol dependent, that promotions and special or tax commissions can apply, and that current account commission requires a signed USER_DATA request. Without BNB payment, commission is deducted from the received asset."
+    }
+  ],
+  "account_or_key_access": false,
+  "reason_unproven": "No account-specific read-only access was explicitly authorized. The public table is a reference, not proof of the complete applicable commission for each symbol and account context.",
+  "economic_effect": "Every candidate depending on this fee evidence receives FEE_UNPROVEN and zero authorized slots.",
+  "promotion_assumed": false,
+  "zero_fee_assumed": false
+}

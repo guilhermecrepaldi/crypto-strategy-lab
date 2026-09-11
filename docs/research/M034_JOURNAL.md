@@ -1,5 +1,42 @@
 # M034 research journal
 
+## 2026-09-11 - owner forward diagnostic preregistration
+
+OWNER authorized identity `M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD`: exactly 200 USDT,
+a 900-second non-economic warm-up and one 10,800-second Binance public forward-paper
+window, with no real/Testnet/account order path. Kraken remains retired. This identity
+is separate from the still-blocked historical OOS replay.
+
+Canonical source and public transport were implemented and published through
+`caf369c538e8b50109092104316667e5f0365cbb`, but independent GPT-6 Astra review blocked
+it before collection because snapshots were not reconstructible, trade events could
+mask stale depth, timestamp jumps could manufacture three hours, C1/C2 duplicated the
+public queue, and provenance/run-once guards were incomplete. Corrected source
+`533d7f07271da8bcbb039ee7acbe50b5feeffd85` was also blocked before collection on a
+cutoff millisecond edge, overclaiming the generic fee table as proven, and terminal
+queue-cohort reuse. Both blocks are preserved; neither SHA ran.
+
+Final source `be78f31d03006a93e0af9165ee744b9b38cb5913` fixes those findings and passed the
+third source-bound GPT-6 Astra review for the narrow option-B scope. Focused local
+validation passed 180 tests before final review; Astra independently passed 177 plus
+Ruff, format and strict mypy. Full snapshots, independent depth freshness, dual-clock
+cutoff, shared queue cohorts, transitive source binding, semantic artifact checks and
+an atomic canonical run claim are present.
+
+The current Binance regular-user 0.100% public table is reference evidence only.
+Binance documents exact current symbol/account commissions through signed USER_DATA;
+that access was not authorized. Fee status is therefore `UNPROVEN`. Completion, lock,
+adverse selection and execution costs remain `UNKNOWN`. Every dependent candidate is
+blocked with zero slots, and capital is `BLOCKED_DATA`, never relabeled as ordinary
+idle. Threshold values are separate `OWNER_DIAGNOSTIC_ASSUMPTION` constants, not
+official M034 calibration or OOS evidence.
+
+Frozen configuration hash is
+`6f7bbf6e44ad84742fb8e9f45bd33beeb889866418b31a25700f30720d8302bf`; threshold hash is
+`0f13694af14cc324b938b4e26d6b7339ba095dcb6eebb4c2fb904d203b1bcf47`. The one-shot
+claim is absent and no collection has begun. Config, review, fee evidence and protocol
+must be published before claim creation/start. `STRATEGY_PASS=false`.
+
 ## 2026-09-10 - official source implementation
 
 Starting `HEAD=origin/main=aafb57ef4203ad2d0c46edacf0df503ec306795e` on
