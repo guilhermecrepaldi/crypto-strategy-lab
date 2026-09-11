@@ -1,0 +1,24 @@
+{
+  "model_id": "M034",
+  "strategy": "BINANCE_ECONOMIC_ELIGIBILITY_PRODUCTIVITY_LAYER",
+  "parent_models": ["M032", "M033"],
+  "initial_source_head": "aafb57ef4203ad2d0c46edacf0df503ec306795e",
+  "registration_status": "UNREGISTERED_BLOCKED_PRE_REPLAY_CONFIGURATION_AND_EVIDENCE",
+  "economic_execution_venues": ["BINANCE"],
+  "dormant_research_venues": ["KRAKEN"],
+  "maximum_ranks_per_side_per_book": 7,
+  "maximum_columns_per_rank": 2,
+  "columns": ["C1_PERSISTENT_QUEUE", "C2_OPPORTUNITY"],
+  "operational_thresholds": [],
+  "threshold_config_hash": null,
+  "configuration_hash": null,
+  "pair_universe": [],
+  "dataset": null,
+  "window": null,
+  "model_registered": false,
+  "economic_replay_runs": 0,
+  "ready_for_replay": false,
+  "source_architecture_pass": false,
+  "strategy_pass": false
+}
+

@@ -19,6 +19,7 @@ from crypto_strategy_lab.microstructure.multi_stable_models import (
 from crypto_strategy_lab.microstructure.multi_stable_routing import (
     MarginalOpportunity,
     PairProductivityScorer,
+    ProductivityBreakdown,
 )
 
 MAX_RANK = 7
@@ -133,6 +134,25 @@ class AdaptiveColumnAllocator:
                 continue
             selected.append(row)
             left -= row.capital
+        return selected
+
+    @staticmethod
+    def choose_eligible(
+        opportunities: list[ProductivityBreakdown], *, available_capital: D
+    ) -> list[ProductivityBreakdown]:
+        """Allocate only pre-gated M034 opportunities; zero is a valid outcome."""
+        if available_capital < ZERO:
+            raise ValueError("M034_NEGATIVE_AVAILABLE_CAPITAL")
+        selected: list[ProductivityBreakdown] = []
+        left = available_capital
+        for row in sorted(
+            opportunities,
+            key=lambda item: (item.priority_class, -item.productivity, item.candidate_id),
+        ):
+            if row.productivity <= ZERO or row.capital_required > left:
+                continue
+            selected.append(row)
+            left -= row.capital_required
         return selected
 
 

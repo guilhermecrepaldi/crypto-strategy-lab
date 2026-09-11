@@ -9,6 +9,7 @@ from crypto_strategy_lab.microstructure.multi_stable_models import (
     ZERO,
     D,
     EconomicSlot,
+    InventoryReductionAuthorization,
     PhysicalFill,
     SlotState,
 )
@@ -45,6 +46,10 @@ class SlotLedger:
             raise ValueError("M032_MAX_BANKROLL_EXCEEDED")
         self.processed_fill_ids: set[str] = set()
         self.turnover_us: list[int] = []
+        self.inventory_reduction_turnover_us: list[int] = []
+        self.processed_inventory_authorization_ids: set[str] = set()
+        self.negative_exit_count = 0
+        self.negative_exit_cost = ZERO
         self.realized_pnl_by_asset: dict[str, D] = {asset: ZERO for asset in self.free}
         self.audit: list[dict[str, object]] = []
         self.last_event_us = -1
@@ -351,6 +356,77 @@ class SlotLedger:
         self.reconcile()
         return pnl
 
+    def settle_inventory_reduction(
+        self,
+        slot_id: str,
+        *,
+        origin_quantity: D,
+        now_us: int,
+        reduction_id: str,
+        authorization: InventoryReductionAuthorization,
+    ) -> D:
+        """Settle a preregistered M034 risk reduction without counting a positive cycle."""
+        self._causal(now_us)
+        slot = self.slots[slot_id]
+        if slot.reservation_id is not None:
+            raise ValueError("M034_INVENTORY_REDUCTION_WITH_OPEN_RESERVATION")
+        if reduction_id in self.processed_inventory_authorization_ids:
+            raise ValueError("M034_DUPLICATE_INVENTORY_REDUCTION")
+        if (
+            authorization.authorization_id != reduction_id
+            or authorization.slot_id != slot_id
+            or authorization.slot_epoch != slot.slot_epoch
+            or authorization.quantity != origin_quantity
+            or not authorization.decided_at_us <= now_us <= authorization.expires_at_us
+            or authorization.reason_code != "NEGATIVE_EXIT_RISK_RULE_TRIGGERED"
+            or not authorization.rule_id
+            or not authorization.rule_hash
+        ):
+            raise ValueError("M034_INVENTORY_REDUCTION_AUTHORIZATION_MISMATCH")
+        final_quantity = self.owned[slot_id].get(slot.origin_asset, ZERO)
+        loss = origin_quantity - final_quantity
+        hold_cost = (
+            authorization.expected_hold_loss
+            + authorization.opportunity_cost_of_lock
+            + authorization.tail_risk_increase
+        )
+        if loss <= ZERO or loss != authorization.realized_loss_of_exit or hold_cost <= loss:
+            raise ValueError("M034_INVENTORY_REDUCTION_INEQUALITY_NOT_SATISFIED")
+        if slot.capital_lock_started_at_us is None:
+            raise ValueError("M034_INVENTORY_REDUCTION_WITHOUT_CAPITAL_LOCK")
+        duration = now_us - slot.capital_lock_started_at_us
+        if duration < 0:
+            raise ValueError("M034_NONCAUSAL_INVENTORY_REDUCTION")
+
+        self.free[slot.origin_asset] += final_quantity
+        self.owned[slot_id][slot.origin_asset] = ZERO
+        self.realized_pnl_by_asset[slot.origin_asset] -= loss
+        slot.realized_pnl -= loss
+        slot.current_asset = slot.origin_asset
+        slot.state = SlotState.CLOSED
+        slot.capital_lock_duration_us += duration
+        slot.capital_lock_started_at_us = None
+        self.inventory_reduction_turnover_us.append(duration)
+        self.negative_exit_count += 1
+        self.negative_exit_cost += loss
+        self.processed_inventory_authorization_ids.add(reduction_id)
+        self.audit.append(
+            {
+                "event": "INVENTORY_REDUCTION_SETTLED",
+                "time_us": now_us,
+                "slot_id": slot_id,
+                "reduction_id": reduction_id,
+                "rule_id": authorization.rule_id,
+                "rule_hash": authorization.rule_hash,
+                "trigger_reason_code": authorization.trigger_reason_code,
+                "realized_loss": str(loss),
+                "counted_as_positive_cycle": False,
+            }
+        )
+        self._commit_time(now_us)
+        self.reconcile()
+        return -loss
+
     def marked_equity(self, marks_usd: dict[str, D] | None = None) -> D:
         marks = self.marks_usd if marks_usd is None else marks_usd
         totals = self.asset_totals()
@@ -399,6 +475,8 @@ class SlotLedger:
             "P90_SLOT_TURNOVER_US": self._percentile(self.turnover_us, D("0.90")),
             "P95_SLOT_TURNOVER_US": self._percentile(self.turnover_us, D("0.95")),
             "COMPLETED_SLOTS": len(self.turnover_us),
+            "NEGATIVE_EXIT_COUNT": self.negative_exit_count,
+            "NEGATIVE_EXIT_COST": float(self.negative_exit_cost),
         }
 
 

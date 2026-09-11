@@ -43,6 +43,166 @@ class QueueEstimate:
     fill_probability_5m: D
 
 
+@dataclass(frozen=True)
+class CompletionObservation:
+    observation_id: str
+    context: str
+    decided_at_us: int
+    outcome_available_at_us: int
+    horizon_seconds: int
+    completed: bool
+    observed_lock_seconds: D
+
+    def __post_init__(self) -> None:
+        if (
+            self.decided_at_us < 0
+            or self.outcome_available_at_us < self.decided_at_us
+            or self.horizon_seconds <= 0
+            or self.observed_lock_seconds < ZERO
+        ):
+            raise ValueError("M034_INVALID_COMPLETION_OBSERVATION")
+
+
+@dataclass(frozen=True)
+class CompletionProbabilityEstimate:
+    probability: D
+    sample_count: int
+    as_of_us: int
+    training_cutoff_us: int
+    feature_cutoff_us: int
+    horizon_seconds: int
+    estimator_version: str
+
+
+@dataclass(frozen=True)
+class LockTimeEstimate:
+    expected_seconds: D
+    p95_seconds: D
+    sample_count: int
+    as_of_us: int
+    training_cutoff_us: int
+    feature_cutoff_us: int
+    horizon_seconds: int
+    estimator_version: str
+
+
+class CausalCompletionHistory:
+    """Resolved outcomes keyed by causal availability, including censored failures."""
+
+    def __init__(self) -> None:
+        self.observations: dict[str, CompletionObservation] = {}
+
+    def add(self, observation: CompletionObservation) -> None:
+        if observation.observation_id in self.observations:
+            raise ValueError("M034_DUPLICATE_COMPLETION_OBSERVATION")
+        self.observations[observation.observation_id] = observation
+
+    def prefix(
+        self, *, context: str, horizon_seconds: int, now_us: int
+    ) -> list[CompletionObservation]:
+        return sorted(
+            (
+                row
+                for row in self.observations.values()
+                if row.context == context
+                and row.horizon_seconds == horizon_seconds
+                and row.outcome_available_at_us <= now_us
+            ),
+            key=lambda row: (row.outcome_available_at_us, row.observation_id),
+        )
+
+
+class CompletionProbabilityEstimator:
+    VERSION = "M034_EMPIRICAL_RESOLVED_PREFIX_V1"
+
+    def __init__(
+        self,
+        history: CausalCompletionHistory,
+        *,
+        minimum_samples: int,
+        training_cutoff_us: int,
+        horizon_seconds: int,
+    ) -> None:
+        if minimum_samples <= 0:
+            raise ValueError("M034_INVALID_MINIMUM_COMPLETION_SAMPLES")
+        self.history = history
+        self.minimum_samples = minimum_samples
+        self.training_cutoff_us = training_cutoff_us
+        if horizon_seconds <= 0:
+            raise ValueError("M034_INVALID_COMPLETION_HORIZON")
+        self.horizon_seconds = horizon_seconds
+
+    def estimate(
+        self, *, context: str, now_us: int, feature_cutoff_us: int
+    ) -> CompletionProbabilityEstimate | None:
+        if self.training_cutoff_us > now_us or feature_cutoff_us > now_us:
+            raise ValueError("M034_ESTIMATOR_CUTOFF_AFTER_DECISION")
+        rows = self.history.prefix(
+            context=context,
+            horizon_seconds=self.horizon_seconds,
+            now_us=min(now_us, self.training_cutoff_us),
+        )
+        if len(rows) < self.minimum_samples:
+            return None
+        completed = sum(1 for row in rows if row.completed)
+        return CompletionProbabilityEstimate(
+            probability=D(completed) / D(len(rows)),
+            sample_count=len(rows),
+            as_of_us=now_us,
+            training_cutoff_us=self.training_cutoff_us,
+            feature_cutoff_us=feature_cutoff_us,
+            horizon_seconds=self.horizon_seconds,
+            estimator_version=self.VERSION,
+        )
+
+
+class ExpectedLockTimeEstimator:
+    VERSION = "M034_EMPIRICAL_RESOLVED_PREFIX_V1"
+
+    def __init__(
+        self,
+        history: CausalCompletionHistory,
+        *,
+        minimum_samples: int,
+        training_cutoff_us: int,
+        horizon_seconds: int,
+    ) -> None:
+        if minimum_samples <= 0:
+            raise ValueError("M034_INVALID_MINIMUM_LOCK_SAMPLES")
+        self.history = history
+        self.minimum_samples = minimum_samples
+        self.training_cutoff_us = training_cutoff_us
+        if horizon_seconds <= 0:
+            raise ValueError("M034_INVALID_LOCK_HORIZON")
+        self.horizon_seconds = horizon_seconds
+
+    def estimate(
+        self, *, context: str, now_us: int, feature_cutoff_us: int
+    ) -> LockTimeEstimate | None:
+        if self.training_cutoff_us > now_us or feature_cutoff_us > now_us:
+            raise ValueError("M034_ESTIMATOR_CUTOFF_AFTER_DECISION")
+        rows = self.history.prefix(
+            context=context,
+            horizon_seconds=self.horizon_seconds,
+            now_us=min(now_us, self.training_cutoff_us),
+        )
+        if len(rows) < self.minimum_samples:
+            return None
+        values = [row.observed_lock_seconds for row in rows]
+        expected = sum(values, ZERO) / D(len(values))
+        p95 = D(str(CausalQueueEstimator._percentile_decimal(values, D("0.95"))))
+        return LockTimeEstimate(
+            expected,
+            p95,
+            len(rows),
+            now_us,
+            self.training_cutoff_us,
+            feature_cutoff_us,
+            self.horizon_seconds,
+            self.VERSION,
+        )
+
+
 class CausalQueueEstimator:
     """Shared queue accounting; estimates use events observed no later than ``now``."""
 
@@ -245,6 +405,14 @@ class CausalQueueEstimator:
         return ordered[index]
 
     @staticmethod
+    def _percentile_decimal(values: list[D], rank: D) -> D:
+        if not values:
+            raise ValueError("M034_EMPTY_PERCENTILE")
+        ordered = sorted(values)
+        index = int(((D(len(ordered)) - D(1)) * rank).to_integral_value(rounding=ROUND_CEILING))
+        return ordered[index]
+
+    @staticmethod
     def _validate_group(group: QueueGroup) -> None:
         active = [row for row in group.own_orders if row.remaining > ZERO]
         if len(active) > 2:
@@ -261,4 +429,15 @@ class CausalQueueEstimator:
             raise ValueError("M032_NEGATIVE_QUEUE")
 
 
-__all__ = ["CausalQueueEstimator", "OwnQueueOrder", "QueueEstimate", "QueueGroup"]
+__all__ = [
+    "CausalCompletionHistory",
+    "CausalQueueEstimator",
+    "CompletionObservation",
+    "CompletionProbabilityEstimate",
+    "CompletionProbabilityEstimator",
+    "ExpectedLockTimeEstimator",
+    "LockTimeEstimate",
+    "OwnQueueOrder",
+    "QueueEstimate",
+    "QueueGroup",
+]

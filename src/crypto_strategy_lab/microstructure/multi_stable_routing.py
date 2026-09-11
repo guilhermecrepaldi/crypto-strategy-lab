@@ -31,6 +31,36 @@ class MarginalOpportunity:
     lost_fifo_value: D = ZERO
 
 
+@dataclass(frozen=True)
+class EligibleOpportunity:
+    """M034 opportunity values in one explicit decision currency."""
+
+    candidate_id: str
+    priority_class: int
+    conditional_complete_net: D
+    probability_of_completion: D
+    conditional_residual_cost: D
+    tail_risk_cost: D
+    inventory_carry_cost: D
+    capital_required: D
+    expected_lock_seconds: D
+
+
+@dataclass(frozen=True)
+class ProductivityBreakdown:
+    candidate_id: str
+    priority_class: int
+    conditional_complete_net: D
+    probability_of_completion: D
+    conditional_residual_cost: D
+    expected_cycle_value: D
+    tail_risk_cost: D
+    inventory_carry_cost: D
+    capital_required: D
+    expected_lock_seconds: D
+    productivity: D
+
+
 class PairProductivityScorer:
     """Score marginal capital without hiding its economic decomposition."""
 
@@ -74,6 +104,54 @@ class PairProductivityScorer:
     def rank(self, opportunities: list[MarginalOpportunity]) -> list[ScoreBreakdown]:
         scored = [self.score(row) for row in opportunities]
         return sorted(scored, key=lambda row: (row.priority_class, -row.score, row.candidate_id))
+
+    @staticmethod
+    def score_eligible(opportunity: EligibleOpportunity) -> ProductivityBreakdown:
+        """M034 valuation path; eligibility, safety and FIFO are intentionally external."""
+        if opportunity.priority_class < 1:
+            raise ValueError("M034_INVALID_PRIORITY_CLASS")
+        if not ZERO <= opportunity.probability_of_completion <= D(1):
+            raise ValueError("M034_COMPLETION_PROBABILITY_OUT_OF_RANGE")
+        amounts = (
+            opportunity.conditional_complete_net,
+            opportunity.conditional_residual_cost,
+            opportunity.tail_risk_cost,
+            opportunity.inventory_carry_cost,
+        )
+        if any(value < ZERO for value in amounts):
+            raise ValueError("M034_NEGATIVE_PRODUCTIVITY_TERM")
+        if opportunity.capital_required <= ZERO or opportunity.expected_lock_seconds <= ZERO:
+            raise ValueError("M034_INVALID_PRODUCTIVITY_DENOMINATOR")
+        expected_cycle_value = (
+            opportunity.probability_of_completion * opportunity.conditional_complete_net
+            - (D(1) - opportunity.probability_of_completion) * opportunity.conditional_residual_cost
+        )
+        numerator = (
+            expected_cycle_value - opportunity.tail_risk_cost - opportunity.inventory_carry_cost
+        )
+        capital_hours = opportunity.capital_required * opportunity.expected_lock_seconds / D(3600)
+        return ProductivityBreakdown(
+            candidate_id=opportunity.candidate_id,
+            priority_class=opportunity.priority_class,
+            conditional_complete_net=opportunity.conditional_complete_net,
+            probability_of_completion=opportunity.probability_of_completion,
+            conditional_residual_cost=opportunity.conditional_residual_cost,
+            expected_cycle_value=expected_cycle_value,
+            tail_risk_cost=opportunity.tail_risk_cost,
+            inventory_carry_cost=opportunity.inventory_carry_cost,
+            capital_required=opportunity.capital_required,
+            expected_lock_seconds=opportunity.expected_lock_seconds,
+            productivity=numerator / capital_hours,
+        )
+
+    def rank_eligible(
+        self, opportunities: list[EligibleOpportunity]
+    ) -> list[ProductivityBreakdown]:
+        scored = [self.score_eligible(row) for row in opportunities]
+        return sorted(
+            scored,
+            key=lambda row: (row.priority_class, -row.productivity, row.candidate_id),
+        )
 
 
 class RouteEnumerator:
@@ -274,8 +352,10 @@ class CycleManager:
 
 __all__ = [
     "CycleManager",
+    "EligibleOpportunity",
     "MarginalOpportunity",
     "PairProductivityScorer",
+    "ProductivityBreakdown",
     "RouteEnumerator",
     "RouteScore",
     "RouteScorer",

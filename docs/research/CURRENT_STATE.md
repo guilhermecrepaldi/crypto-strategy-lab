@@ -1,6 +1,35 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=NONE
+CAMPAIGN_STATUS=M034_SOURCE_IMPLEMENTATION_PENDING_SOURCE_BOUND_REVIEW
+CAMPAIGN_EXECUTION_SOURCE_SHA=UNPUBLISHED_WORKTREE
+CAMPAIGN_ACTIVE_ENVELOPE=NONE
+CAMPAIGN_QUEUED_ENVELOPE=NONE
+CAMPAIGN_VERDICT=BLOCKED_PRE_RUN
+CAMPAIGN_PROGRESS_FILE=docs/research/M034_JOURNAL.md
+CAMPAIGN_JOURNAL=docs/research/M034_JOURNAL.md
+CAMPAIGN_SCOREBOARD=reports/usdcusdt/M034-implementation-status.json
+CURRENT_ACTIVE_RESEARCH_MODEL=NONE_AWAITING_M034_SOURCE_REVIEW_AND_EVIDENCE
+OWNER_NEXT_RESEARCH=M034_SOURCE_BOUND_REVIEW_THEN_EVIDENCE_AND_CONFIGURATION
+OWNER_DIRECTIVE=docs/microstructure/M034_BINANCE_ECONOMIC_ELIGIBILITY_PRODUCTIVITY.md
+NEXT_CAMPAIGN_STATUS=BLOCKED_PRE_REPLAY_CONFIGURATION_AND_EVIDENCE
+NEXT_CAMPAIGN_MODEL_HASH=UNREGISTERED
+NEXT_CAMPAIGN_WINDOW=UNSELECTED_NO_CSPRNG_DRAW
+NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=UNRESOLVED_NOT_TO_EXCEED_EXISTING_200_USD_EQ_LIMIT
+
+M034 adds a Binance-only economic eligibility and productivity layer over the
+reviewed M032/M033 libraries. Kraken remains compiled, tested and available for
+future research but receives zero M034 economic slots. Unknown or unproven fee,
+cost, data, market safety, completion or lock evidence fails closed; no eligible
+opportunity leaves capital explicitly idle. Thresholds are mandatory typed inputs
+with provenance and hashes, but no operational values are frozen. The source layer
+has 25 deterministic M034 tests and preserves the M032/M033 paths; source-bound
+review is pending. No pair universe, dataset, window, model registration, integrated
+runner or economic replay exists. `SOURCE_ARCHITECTURE_PASS != STRATEGY_PASS`.
+
+<!-- Historical M033 state below is retained as provenance. -->
+
+ACTIVE_EXECUTION_CAMPAIGN=NONE
 CAMPAIGN_STATUS=M033_IMPLEMENTATION_REVIEW_PASS_BLOCKED_PRE_REPLAY
 CAMPAIGN_EXECUTION_SOURCE_SHA=a44831e9a28dc4e1d8647dfc8ba3656fca8a4e92
 CAMPAIGN_ACTIVE_ENVELOPE=NONE

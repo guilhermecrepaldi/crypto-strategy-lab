@@ -19,6 +19,13 @@ class Venue(StrEnum):
     KRAKEN = "KRAKEN"
 
 
+class FeeEvidenceStatus(StrEnum):
+    PROVEN_HISTORICAL = "PROVEN_HISTORICAL"
+    PROVEN_FORWARD = "PROVEN_FORWARD"
+    ACCOUNT_SPECIFIC = "ACCOUNT_SPECIFIC"
+    UNPROVEN = "UNPROVEN"
+
+
 @dataclass(frozen=True, order=True)
 class BookKey:
     venue: Venue
@@ -74,6 +81,18 @@ class VenueFeeProfile:
     effective_end_us: int | None
     provenance: str
     account_tier_assumption: str
+    acquired_at_us: int | None = None
+    evidence_status: FeeEvidenceStatus = FeeEvidenceStatus.UNPROVEN
+    record_id: str | None = None
+    source_reference: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.maker_rate < ZERO or self.taker_rate < ZERO:
+            raise ValueError("M034_NEGATIVE_FEE_RATE")
+        if self.effective_end_us is not None and self.effective_end_us <= self.effective_start_us:
+            raise ValueError("M034_INVALID_FEE_EFFECTIVE_WINDOW")
+        if self.acquired_at_us is not None and self.acquired_at_us < 0:
+            raise ValueError("M034_INVALID_FEE_ACQUISITION_TIME")
 
     def rate(self, *, maker: bool, time_us: int) -> D:
         if time_us < self.effective_start_us or (
@@ -278,6 +297,7 @@ __all__ = [
     "CanonicalLevel",
     "CanonicalTrade",
     "D",
+    "FeeEvidenceStatus",
     "L3EventType",
     "L3OrderEvent",
     "Venue",

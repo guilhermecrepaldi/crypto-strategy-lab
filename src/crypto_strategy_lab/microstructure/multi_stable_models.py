@@ -220,6 +220,47 @@ class PhysicalFill:
         )
 
 
+@dataclass(frozen=True)
+class InventoryReductionAuthorization:
+    authorization_id: str
+    slot_id: str
+    slot_epoch: int
+    quantity: D
+    decided_at_us: int
+    expires_at_us: int
+    rule_id: str
+    rule_hash: str
+    reason_code: str
+    trigger_reason_code: str
+    expected_hold_loss: D
+    opportunity_cost_of_lock: D
+    tail_risk_increase: D
+    realized_loss_of_exit: D
+
+    def __post_init__(self) -> None:
+        if (
+            not self.authorization_id
+            or not self.slot_id
+            or not self.rule_id
+            or not self.rule_hash
+            or not self.reason_code
+            or not self.trigger_reason_code
+            or self.slot_epoch < 1
+            or self.quantity <= ZERO
+            or self.decided_at_us < 0
+            or self.expires_at_us < self.decided_at_us
+        ):
+            raise ValueError("M034_INVALID_INVENTORY_REDUCTION_AUTHORIZATION")
+        amounts = (
+            self.expected_hold_loss,
+            self.opportunity_cost_of_lock,
+            self.tail_risk_increase,
+            self.realized_loss_of_exit,
+        )
+        if any(value < ZERO for value in amounts):
+            raise ValueError("M034_NEGATIVE_INVENTORY_REDUCTION_TERM")
+
+
 __all__ = [
     "ONE",
     "ZERO",
@@ -227,6 +268,7 @@ __all__ = [
     "D",
     "EconomicSlot",
     "FeeProfile",
+    "InventoryReductionAuthorization",
     "PhysicalFill",
     "RouteCandidate",
     "RouteLeg",
