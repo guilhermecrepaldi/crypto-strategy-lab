@@ -1145,12 +1145,17 @@ class M034EconomicAllocationEngine:
             data_reasons = {
                 DecisionReasonCode.DATA_GAP,
                 DecisionReasonCode.DATA_INSUFFICIENT,
+                DecisionReasonCode.CURRENCY_MARK_UNPROVEN,
                 DecisionReasonCode.FEE_UNPROVEN,
                 DecisionReasonCode.PAIR_UNAVAILABLE,
                 DecisionReasonCode.PAIR_EVIDENCE_UNPROVEN,
                 DecisionReasonCode.EXCHANGE_RULE_UNPROVEN,
                 DecisionReasonCode.EXCHANGE_RULE_VIOLATION,
                 DecisionReasonCode.THRESHOLD_NOT_EFFECTIVE,
+                DecisionReasonCode.EXECUTION_COST_UNKNOWN,
+                DecisionReasonCode.ADVERSE_SELECTION_UNKNOWN,
+                DecisionReasonCode.COMPLETION_PROBABILITY_UNKNOWN,
+                DecisionReasonCode.EXPECTED_LOCK_UNKNOWN,
             }
             safety_reasons = {
                 DecisionReasonCode.MARKET_SAFETY_BLOCK,

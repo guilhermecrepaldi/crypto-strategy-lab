@@ -18,11 +18,20 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 
 BASE_URL = "https://data-api.binance.vision"
+SYMBOL = "USDCUSDT"
+M034_SYMBOLS = (
+    "USDCUSDT",
+    "FDUSDUSDT",
+    "FDUSDUSDC",
+    "USD1USDT",
+    "USD1USDC",
+    "TUSDUSDT",
+    "USDPUSDT",
+)
 STREAM_URL = (
     "wss://data-stream.binance.vision/stream?"
     "streams=usdcusdt@aggTrade/usdcusdt@bookTicker&timeUnit=MICROSECOND"
 )
-SYMBOL = "USDCUSDT"
 _HEADERS = {"X-MBX-TIME-UNIT": "MICROSECOND", "Accept": "application/json"}
 
 
@@ -46,6 +55,12 @@ def _positive_decimal(value: Any, name: str) -> Decimal:
     if not result.is_finite() or result <= 0:
         raise PublicMarketError(f"{name} must be a finite positive decimal")
     return result
+
+
+def _symbol(value: str) -> str:
+    if type(value) is not str or value.upper() not in M034_SYMBOLS:
+        raise PublicMarketError("symbol is not allowlisted")
+    return value.upper()
 
 
 @dataclass(frozen=True)
@@ -96,11 +111,12 @@ def _unwrap(payload: dict[str, Any]) -> dict[str, Any]:
     return data
 
 
-def parse_trade(payload: dict[str, Any]) -> MarketTrade:
+def parse_trade(payload: dict[str, Any], *, expected_symbol: str = SYMBOL) -> MarketTrade:
+    expected = _symbol(expected_symbol)
     data = _unwrap(payload)
     if "e" in data and data["e"] != "aggTrade":
         raise PublicMarketError("unexpected trade event")
-    if "s" in data and data["s"] != SYMBOL:
+    if "s" in data and data["s"] != expected:
         raise PublicMarketError("unexpected symbol")
     aggregate_id = _strict_int(data.get("a"), "aggregate_id", positive=True)
     timestamp = _strict_int(data.get("T", data.get("E")), "timestamp_us", positive=True)
@@ -121,9 +137,12 @@ def parse_trade(payload: dict[str, Any]) -> MarketTrade:
     )
 
 
-def parse_book(payload: dict[str, Any], *, received_us: int) -> BookQuote:
+def parse_book(
+    payload: dict[str, Any], *, received_us: int, expected_symbol: str = SYMBOL
+) -> BookQuote:
+    expected = _symbol(expected_symbol)
     data = _unwrap(payload)
-    if "s" in data and data["s"] != SYMBOL:
+    if "s" in data and data["s"] != expected:
         raise PublicMarketError("unexpected symbol")
     # Spot bookTicker has no exchange timestamp. Never relabel E/T as local receipt.
     received = _strict_int(received_us, "received_us", positive=True)
@@ -222,13 +241,36 @@ class PublicMarketClient:
             raise PublicMarketError("invalid server time response")
         return _strict_int(payload.get("serverTime"), "serverTime", positive=True)
 
-    def metadata(self) -> MarketMetadata:
-        payload = self._request_json("/api/v3/exchangeInfo", {"symbol": SYMBOL})
+    def exchange_info(self, symbol: str = SYMBOL) -> dict[str, Any]:
+        expected = _symbol(symbol)
+        payload = self._request_json("/api/v3/exchangeInfo", {"symbol": expected})
+        if not isinstance(payload, dict):
+            raise PublicMarketError("invalid exchange info response")
+        return payload
+
+    def depth_snapshot(self, symbol: str = SYMBOL, *, limit: int = 5000) -> dict[str, Any]:
+        expected = _symbol(symbol)
+        if type(limit) is not int or limit <= 0 or limit > 5000:
+            raise PublicMarketError("limit must be a positive integer no greater than 5000")
+        payload = self._request_json("/api/v3/depth", {"symbol": expected, "limit": limit})
+        if (
+            not isinstance(payload, dict)
+            or type(payload.get("lastUpdateId")) is not int
+            or payload["lastUpdateId"] <= 0
+            or not isinstance(payload.get("bids"), list)
+            or not isinstance(payload.get("asks"), list)
+        ):
+            raise PublicMarketError("invalid depth snapshot response")
+        return payload
+
+    def metadata(self, symbol: str = SYMBOL) -> MarketMetadata:
+        expected = _symbol(symbol)
+        payload = self.exchange_info(expected)
         try:
-            symbol = payload["symbols"][0]
-            if symbol["symbol"] != SYMBOL:
+            symbol_info = payload["symbols"][0]
+            if symbol_info["symbol"] != expected:
                 raise KeyError
-            filters = {item["filterType"]: item for item in symbol["filters"]}
+            filters = {item["filterType"]: item for item in symbol_info["filters"]}
             notional_filter = filters.get("NOTIONAL") or filters.get("MIN_NOTIONAL")
             if notional_filter is None:
                 raise KeyError("NOTIONAL")
@@ -238,14 +280,20 @@ class PublicMarketClient:
                 _positive_decimal(filters["PRICE_FILTER"]["tickSize"], "tick_size"),
                 _positive_decimal(filters["LOT_SIZE"]["stepSize"], "lot_size"),
                 _positive_decimal(notional, "min_notional"),
-                symbol["status"],
+                symbol_info["status"],
             )
         except (KeyError, IndexError, TypeError) as exc:
             raise PublicMarketError("invalid exchange info response") from exc
 
     def agg_trades(
-        self, *, from_id: int | None = None, start_us: int | None = None, end_us: int | None = None
+        self,
+        *,
+        symbol: str = SYMBOL,
+        from_id: int | None = None,
+        start_us: int | None = None,
+        end_us: int | None = None,
     ) -> list[MarketTrade]:
+        expected = _symbol(symbol)
         supplied = sum(value is not None for value in (from_id, start_us, end_us))
         if from_id is not None and (supplied != 1 or type(from_id) is not int or from_id < 0):
             raise PublicMarketError("from_id cannot be combined with time bounds")
@@ -255,7 +303,7 @@ class PublicMarketClient:
             raise PublicMarketError("end_us must be positive integer")
         if start_us is not None and end_us is not None and start_us > end_us:
             raise PublicMarketError("start_us must not exceed end_us")
-        params: dict[str, Any] = {"symbol": SYMBOL, "limit": 1000}
+        params: dict[str, Any] = {"symbol": expected, "limit": 1000}
         if from_id is not None:
             params["fromId"] = from_id
         else:
@@ -266,20 +314,48 @@ class PublicMarketClient:
         payload = self._request_json("/api/v3/aggTrades", params)
         if not isinstance(payload, list):
             raise PublicMarketError("invalid aggregate trades response")
-        return [parse_trade(item) for item in payload]
+        return [parse_trade(item, expected_symbol=expected) for item in payload]
 
 
 @contextmanager
-def connect_market_stream(*, calibration: bool = False) -> Iterator[Any]:
+def connect_market_stream(
+    *,
+    symbols: tuple[str, ...] = (SYMBOL,),
+    depth_interval_ms: int = 1000,
+    calibration: bool = False,
+    forward_depth: bool = False,
+) -> Iterator[Any]:
     from websockets.sync.client import connect
 
-    url = (
-        "wss://data-stream.binance.vision/stream?streams="
-        "usdcusdt@trade/usdcusdt@bookTicker/usdcusdt@depth@100ms&timeUnit=MICROSECOND"
-        if calibration
-        else STREAM_URL
+    if type(depth_interval_ms) is not int or depth_interval_ms <= 0:
+        raise PublicMarketError("depth_interval_ms must be a positive integer")
+    normalized = tuple(_symbol(symbol) for symbol in symbols)
+    if not normalized or len(set(normalized)) != len(normalized):
+        raise PublicMarketError("symbols must be a non-empty unique allowlisted tuple")
+    if calibration:
+        if normalized != (SYMBOL,):
+            raise PublicMarketError("calibration stream supports USDCUSDT only")
+        url = (
+            "wss://data-stream.binance.vision/stream?streams="
+            "usdcusdt@trade/usdcusdt@bookTicker/usdcusdt@depth@100ms&timeUnit=MICROSECOND"
+        )
+    elif forward_depth:
+        streams = "/".join(
+            f"{symbol.lower()}@trade/{symbol.lower()}@depth@{depth_interval_ms}ms"
+            for symbol in normalized
+        )
+        url = f"wss://data-stream.binance.vision/stream?streams={streams}&timeUnit=MICROSECOND"
+    elif normalized == (SYMBOL,):
+        url = STREAM_URL
+    else:
+        raise PublicMarketError("multi-symbol stream requires forward_depth=True")
+    connection = connect(
+        url,
+        ping_interval=None,
+        ping_timeout=20,
+        open_timeout=20,
+        max_queue=8192 if forward_depth else 1024,
     )
-    connection = connect(url, ping_interval=None, ping_timeout=20, open_timeout=20, max_queue=1024)
     try:
         yield connection
     finally:

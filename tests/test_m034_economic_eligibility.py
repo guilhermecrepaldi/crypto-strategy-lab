@@ -841,6 +841,19 @@ def test_data_gap_capital_is_blocked_data_not_idle() -> None:
     assert ledger.capital_states[0].state == CapitalState.BLOCKED_DATA
 
 
+def test_unknown_estimators_block_capital_as_data_not_idle() -> None:
+    row = candidate(
+        execution_cost_bps=None,
+        adverse_selection_bps=None,
+        completion_probability=None,
+        expected_lock_seconds=None,
+    )
+    result, ledger = allocate([row])
+    assert result.selected_candidate_ids == ()
+    assert ledger.capital_states[0].state == CapitalState.BLOCKED_DATA
+    assert ledger.capital_states[0].reason_code == DecisionReasonCode.DATA_INSUFFICIENT
+
+
 def test_censored_observation_is_not_exact_lock_duration() -> None:
     history = CausalCompletionHistory()
     history.add(CompletionObservation("DONE", "CTX", 0, 30_000_000, 300, True, D("30")))

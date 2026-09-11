@@ -14,6 +14,7 @@ from crypto_strategy_lab.microstructure.public_calibration import (
 from crypto_strategy_lab.microstructure.public_market import (
     PublicMarketClient,
     PublicMarketError,
+    connect_market_stream,
     parse_book,
     parse_trade,
 )
@@ -89,6 +90,27 @@ def test_current_notional_does_not_require_legacy_filter(monkeypatch):
     assert client.metadata().min_notional == 5
 
 
+def test_m034_public_transport_methods_are_symbol_scoped(monkeypatch):
+    client = PublicMarketClient()
+    calls = []
+
+    def request(path, params=None):
+        calls.append((path, params))
+        if path.endswith("exchangeInfo"):
+            return {"symbols": []}
+        return {"lastUpdateId": 10, "bids": [], "asks": []}
+
+    monkeypatch.setattr(client, "_request_json", request)
+    assert client.exchange_info("fdusdusdt")["symbols"] == []
+    assert client.depth_snapshot("FDUSDUSDC", limit=100)["lastUpdateId"] == 10
+    assert calls == [
+        ("/api/v3/exchangeInfo", {"symbol": "FDUSDUSDT"}),
+        ("/api/v3/depth", {"symbol": "FDUSDUSDC", "limit": 100}),
+    ]
+    with pytest.raises(PublicMarketError, match="allowlisted"):
+        client.depth_snapshot("BTCUSDT")
+
+
 @pytest.mark.parametrize("path", ["/api/v3/order", "/api/v3/account", "/api/v3/myTrades"])
 def test_private_and_order_paths_fail_closed(path):
     with pytest.raises(PublicMarketError, match="allowlisted"):
@@ -112,6 +134,48 @@ def test_public_trade_identity_and_regression_validation():
         validate_public_trade({**row, "t": 9}, last_trade_id=10)
     with pytest.raises(ValueError, match="SYMBOL"):
         validate_public_trade({**row, "s": "OTHER"})
+
+
+def test_public_calibration_accepts_allowlisted_symbols_with_usdc_default():
+    book = LocalDepth("FDUSDUSDC")
+    book.snapshot(snapshot())
+    assert book.apply({**delta(100, 101), "s": "FDUSDUSDC"})
+    row = {
+        "e": "trade",
+        "s": "FDUSDUSDC",
+        "t": 10,
+        "T": 123456,
+        "p": "1.0",
+        "q": "2.0",
+        "m": True,
+    }
+    assert validate_public_trade(row, expected_symbol="FDUSDUSDC") == 10
+
+
+def test_stream_modes_preserve_legacy_and_isolate_forward_depth(monkeypatch):
+    calls = []
+
+    class Connection:
+        def close(self):
+            return None
+
+    def connect(url, **kwargs):
+        calls.append((url, kwargs))
+        return Connection()
+
+    monkeypatch.setattr("websockets.sync.client.connect", connect)
+    with connect_market_stream():
+        pass
+    with connect_market_stream(calibration=True):
+        pass
+    with connect_market_stream(symbols=("USDCUSDT", "FDUSDUSDT"), forward_depth=True):
+        pass
+    assert "@aggTrade" in calls[0][0] and "@bookTicker" in calls[0][0]
+    assert "@trade" in calls[1][0] and "@depth@100ms" in calls[1][0]
+    assert "@bookTicker" in calls[1][0]
+    assert "usdcusdt@trade" in calls[2][0] and "fdusdusdt@trade" in calls[2][0]
+    assert "@bookTicker" not in calls[2][0]
+    assert calls[2][1]["max_queue"] == 8192
 
 
 def test_bookticker_regression_is_recorded_not_silently_reordered():

@@ -12,9 +12,9 @@ from collections import Counter
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
-from .public_market import PublicMarketClient, connect_market_stream, parse_book
+from .public_market import M034_SYMBOLS, PublicMarketClient, connect_market_stream, parse_book
 
 D = Decimal
 
@@ -26,7 +26,10 @@ class BookGap(ValueError):
 class LocalDepth:
     """Binance snapshot + absolute U/u updates; invalid until a bridging update."""
 
-    def __init__(self) -> None:
+    def __init__(self, expected_symbol: str = "USDCUSDT") -> None:
+        if type(expected_symbol) is not str or expected_symbol.upper() not in M034_SYMBOLS:
+            raise ValueError("INVALID_EXPECTED_SYMBOL")
+        self.expected_symbol = expected_symbol.upper()
         self.bids: dict[Decimal, Decimal] = {}
         self.asks: dict[Decimal, Decimal] = {}
         self.update_id: int | None = None
@@ -50,7 +53,7 @@ class LocalDepth:
         return result
 
     def apply(self, event: dict[str, Any]) -> bool:
-        if event.get("s") != "USDCUSDT" or event.get("e") != "depthUpdate":
+        if event.get("s") != self.expected_symbol or event.get("e") != "depthUpdate":
             raise BookGap("INVALID_DEPTH_SYMBOL_OR_TYPE")
         first, last = event["U"], event["u"]
         if type(first) is not int or type(last) is not int or first > last:
@@ -137,9 +140,13 @@ def quantiles(values: list[Any]) -> dict[str, Any]:
     return result
 
 
-def validate_public_trade(data: dict[str, Any], *, last_trade_id: int | None = None) -> int:
+def validate_public_trade(
+    data: dict[str, Any], *, last_trade_id: int | None = None, expected_symbol: str = "USDCUSDT"
+) -> int:
     """Validate the raw trade stream actually subscribed by the collector."""
-    if data.get("e") != "trade" or data.get("s") != "USDCUSDT":
+    if type(expected_symbol) is not str or expected_symbol.upper() not in M034_SYMBOLS:
+        raise ValueError("INVALID_EXPECTED_SYMBOL")
+    if data.get("e") != "trade" or data.get("s") != expected_symbol.upper():
         raise ValueError("INVALID_TRADE_SYMBOL_OR_TYPE")
     aggregate_id = data.get("t")
     if type(aggregate_id) is not int or aggregate_id < 0:
@@ -387,18 +394,21 @@ def _collect(output: Path, *, seconds: int = 300) -> dict[str, Any]:
                             samples[f"{side}_one_tick_qty"].append(next_q)
                             samples[f"{side}_two_level_qty"].append(best_q + next_q)
                         samples["depth_churn_quantity"].append(churn)
-                        joint = {
-                            k: str(samples[k][-1])
-                            for k in (
-                                "spread",
-                                "bid_best_qty",
-                                "ask_best_qty",
-                                "bid_one_tick_qty",
-                                "ask_one_tick_qty",
-                                "bid_two_level_qty",
-                                "ask_two_level_qty",
-                            )
-                        }
+                        joint = cast(
+                            dict[str, Any],
+                            {
+                                k: str(samples[k][-1])
+                                for k in (
+                                    "spread",
+                                    "bid_best_qty",
+                                    "ask_best_qty",
+                                    "bid_one_tick_qty",
+                                    "ask_one_tick_qty",
+                                    "bid_two_level_qty",
+                                    "ask_two_level_qty",
+                                )
+                            },
+                        )
                         joint.update(
                             bid=str(bid),
                             ask=str(ask),
