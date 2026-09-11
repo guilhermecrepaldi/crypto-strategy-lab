@@ -1,21 +1,33 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=NONE
-CAMPAIGN_STATUS=RECOVERED_FROM_COMPLETE_PREFIX_NO_RERUN
-CAMPAIGN_EXECUTION_SOURCE_SHA=2a895e5040a9bedd947ad329c1f7c46cfd783b7e
+CAMPAIGN_STATUS=M034_OWNER_FORWARD_DIAGNOSTIC_COMPLETE
+CAMPAIGN_EXECUTION_SOURCE_SHA=be78f31d03006a93e0af9165ee744b9b38cb5913
 CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
-CAMPAIGN_VERDICT=ZERO_LOSS_INVARIANT_PASS_PRODUCTIVITY_NOT_SUPPORTED
+CAMPAIGN_VERDICT=PASS_FAIL_CLOSED_TRANSPORT_ONLY_STRATEGY_PASS_FALSE
 CAMPAIGN_PROGRESS_FILE=docs/research/M034_JOURNAL.md
 CAMPAIGN_JOURNAL=docs/research/M034_JOURNAL.md
-CAMPAIGN_SCOREBOARD=reports/m034/M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H.json
+CAMPAIGN_SCOREBOARD=reports/m034/M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD_RESULT_AUDIT.json
 CURRENT_ACTIVE_RESEARCH_MODEL=NONE_AWAITING_OWNER_DIRECTION
-OWNER_NEXT_RESEARCH=NONE_CURRENT_M034_FORMULATION_MEASURED_NO_SUCCESSOR_AUTHORIZED
-OWNER_DIRECTIVE=docs/microstructure/M034_BINANCE_ECONOMIC_ELIGIBILITY_PRODUCTIVITY.md
+OWNER_NEXT_RESEARCH=NONE_FORWARD_DIAGNOSTIC_COMPLETE_NO_SUCCESSOR_AUTHORIZED
+OWNER_DIRECTIVE=docs/research/M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD.md
 NEXT_CAMPAIGN_STATUS=NOT_AUTHORIZED
 NEXT_CAMPAIGN_MODEL_HASH=NONE
 NEXT_CAMPAIGN_WINDOW=NONE
 NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=NONE
+
+The one-shot `M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD` completed its exact three-hour
+Binance public-paper window at `2026-09-11T16:08:39.103903Z`. All 149,240 decisions
+were ineligible with zero slots because fee evidence remained unproven and execution
+cost, adverse selection, completion probability and expected lock remained unknown.
+Capital was `BLOCKED_DATA` for 100% of the window. Initial/final equity was 200 USDT,
+with zero orders, cycles, PnL, fees, lock or inventory. The 343,717-record capture,
+cutoff, manifest hashes, claim, checkpoints and rejection counters passed independent
+audit. GPT-6 Astra returned `PASS_FOR_DIAGNOSTIC_ARTIFACT_PUBLICATION`, no P1/P2 and no
+rerun. This validates transport and fail-closed admission only; `STRATEGY_PASS=false`.
+
+<!-- Previous M034 zero-loss development diagnostic retained as provenance. -->
 
 The one authorized `M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H_V1` campaign is complete
 through preserved-prefix recovery with no replay. F0 produced 2 physical cycles,
@@ -28,16 +40,6 @@ physical cycle. The single run's postprocessor rejected scaled textual zeros aft
 events; GPT-6 Astra independently matched all balances, and artifacts were recovered
 from complete prefix SHA `1cd9447b...df178` with `REPLAY_RERUNS=0`. This is calibration
 development evidence, not OOS, `STRATEGY_PASS` or a live-profitability claim.
-
-The OWNER-authorized one-shot forward diagnostic is separately preregistered at
-`docs/research/M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD.md`. Source
-`be78f31d03006a93e0af9165ee744b9b38cb5913` passed independent GPT-6 Astra review
-for option B only. The public generic fee reference remains `UNPROVEN`; completion,
-lock, adverse-selection and execution-cost estimators remain `UNKNOWN`, so all
-opportunities must receive zero slots and the 200 USDT must be recorded as
-`BLOCKED_DATA`. The diagnostic is not started, its one-shot claim is absent, and no
-market collection/order/account/Testnet action has occurred. This expected zero-order
-observation is not a strategy or market-opportunity verdict.
 
 M034 adds a Binance-only economic eligibility and productivity layer over the
 reviewed M032/M033 libraries. Per the latest OWNER directive, Kraken is retired from

@@ -1,5 +1,37 @@
 # M034 research journal
 
+## 2026-09-11 - owner forward diagnostic completed
+
+The one-shot `M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD` process is no longer active and
+its preserved result reports `status=COMPLETE`. Its exact economic window was
+`2026-09-11T13:08:39.103903Z`–`16:08:39.103903Z` (`10,800,000,000 us`). The claim SHA
+`cbd9e513...b14bd` remains consumed. No runner was restarted or rerun.
+
+The result is the preregistered fail-closed outcome: 149,240 Binance-only eligibility
+decisions, zero eligible candidates, zero slots, orders, cycles, fees, PnL, inventory
+or capital lock. Final realized and marked equity are both `200.0000`; capital was
+`BLOCKED_DATA` for 100% of the window, never ordinary idle. All decisions retained the
+five mandatory blockers: unproven fee plus unknown execution cost, adverse selection,
+completion probability and expected lock.
+
+The raw capture has 343,717 sequential records, 343,715 included and two excluded at
+cutoff. Headline counts include warm-up: 306,938 trades and 36,777 depth events. The
+economic window contains 291,004 trades and 34,258 depth events. Seven initial books,
+42 rule observations, 21 evidence-hash changes and zero native book gaps were verified.
+`DATA_GAP=62,594` is a decision-evidence/staleness classification, not a native gap.
+
+Manifest files, claim, published source review, fee evidence, config and threshold
+hashes, checkpoints and all rejection counters reconcile. Current focused validation
+passes 152 M032/M033/M034 tests. Independent GPT-6 Astra post-run review returned
+`PASS_FOR_DIAGNOSTIC_ARTIFACT_PUBLICATION`, no P1/P2, without executing the runner.
+
+This confirms public transport and fail-closed admission only. It does not validate
+cycle execution, profitability, absence of opportunity, live readiness or strategy.
+The USD label uses the diagnostic 1 USDT = 1 USD convention. The source enforces the
+900-second warm-up, but its exact elapsed duration cannot be recomputed solely from the
+persisted artifacts because the starting monotonic timestamp is absent.
+`STRATEGY_PASS=false`; no successor run is authorized.
+
 ## 2026-09-11 - owner forward diagnostic preregistration
 
 OWNER authorized identity `M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD`: exactly 200 USDT,

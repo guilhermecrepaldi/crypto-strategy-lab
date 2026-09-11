@@ -1,6 +1,6 @@
 # M034 owner diagnostic — 200 USD / 3 hours / Binance forward paper
 
-Status: `PREREGISTERED_NOT_STARTED`. Identity:
+Status: `COMPLETE_FAIL_CLOSED_DIAGNOSTIC`. Identity:
 `M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD`.
 
 This is a one-shot `OWNER_DIAGNOSTIC_FORWARD_PAPER`, not a historical replay,
@@ -95,3 +95,52 @@ checkpoints at 00:00 through 03:00, result and manifest hashes. The final report
 state physical and slot-equivalent cycles, realized and marked PnL/equity, employed,
 idle and blocked capital time, fees, costs, locks, residual inventory and rejection
 counts without tuning, rerun, early stop or artificial liquidation.
+
+## Observed result
+
+The one-shot forward observation completed from `2026-09-11T13:08:39.103903Z` through
+`2026-09-11T16:08:39.103903Z`, exactly `10,800,000,000` market microseconds. The claim
+remains consumed; the runner was not restarted or rerun. The observed economics were:
+
+| Metric | Result |
+|---|---:|
+| Initial bank | 200.00 USDT |
+| Final realized equity | 200.0000 USD-equivalent |
+| Final marked equity | 200.0000 USD-equivalent |
+| Net realized PnL | 0.0000 USD |
+| Marked return | 0.0000% |
+| Physical cycles | 0 |
+| Slot-equivalent cycles | 0 |
+| Eligible candidates | 0 / 149,240 |
+| Authorized slots | 0 |
+| Real/Testnet orders | 0 / 0 |
+| Capital utilized | 0.00% |
+| Ordinary idle capital | 0.00% |
+| Blocked data/estimator capital | 100.00% |
+| Residual inventory | none |
+
+All 149,240 decisions were Binance-only, ineligible and authorized zero slots. Every
+decision carried `FEE_UNPROVEN`, `EXECUTION_COST_UNKNOWN`,
+`ADVERSE_SELECTION_UNKNOWN`, `COMPLETION_PROBABILITY_UNKNOWN` and
+`EXPECTED_LOCK_UNKNOWN`. Capital remained `BLOCKED_DATA` for the complete economic
+window; it was never relabeled as ordinary idle or employed capital.
+
+The capture contains 343,717 sequential raw records: 343,715 included and two excluded
+at cutoff. The headline event counts include warm-up: 306,938 trades and 36,777 depth
+events. The economic window itself contains 291,004 trades and 34,258 depth events,
+325,262 total. Seven initial depth snapshots, 42 rule observations and zero native
+book gaps were independently verified. `DATA_GAP=62,594` refers to stale or missing
+evidence at decisions, not native sequence gaps.
+
+All manifest file sizes/hashes, claim, source review, fee evidence, configuration hash,
+threshold hash, checkpoints, decisions and rejection counters reconciled. Independent
+GPT-6 Astra review returned `PASS_FOR_DIAGNOSTIC_ARTIFACT_PUBLICATION` with no P1/P2.
+The review did not start or rerun the process. Detailed evidence is recorded in
+`reports/m034/M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD_RESULT_AUDIT.json`.
+
+This is a transport and fail-closed admission PASS only. It is not evidence that the
+market lacked opportunities and does not validate execution mechanics, cycles,
+profitability or live readiness. The 200 USD label uses the frozen diagnostic convention
+`1 USDT = 1 USD`, not an observed fiat mark. The source enforces the 900-second warm-up,
+but its exact duration cannot be independently recomputed from the artifacts because
+the starting monotonic timestamp was not persisted. `STRATEGY_PASS=false`.

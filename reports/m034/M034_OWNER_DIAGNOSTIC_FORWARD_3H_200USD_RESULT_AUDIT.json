@@ -1,0 +1,112 @@
+{
+  "schema": "m034-owner-diagnostic-forward-post-run-audit-v1",
+  "identity": "M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD",
+  "verdict": "PASS_FOR_DIAGNOSTIC_ARTIFACT_PUBLICATION",
+  "reviewer_model": "gpt-6-astra",
+  "pending_p1": 0,
+  "pending_p2": 0,
+  "runner_restarted_or_rerun": false,
+  "source_sha": "be78f31d03006a93e0af9165ee744b9b38cb5913",
+  "result_status": "COMPLETE",
+  "strategy_pass": false,
+  "window": {
+    "start_timestamp_us": 1789132119103903,
+    "start_utc": "2026-09-11T13:08:39.103903Z",
+    "end_timestamp_us": 1789142919103903,
+    "end_utc": "2026-09-11T16:08:39.103903Z",
+    "duration_us": 10800000000,
+    "duration_hours": "3.000",
+    "warmup_seconds_source_enforced": 900,
+    "warmup_exactly_recomputable_from_artifacts": false
+  },
+  "hashes": {
+    "manifest_sha256": "8ac3e759259dcc16e62c8c54c9a834509c9504c2abc03b82cf59d559b734a451",
+    "result_sha256": "fb00869e2d6e8d0623c16f3b44552a1464bddc7c568adeec0b106475e482b889",
+    "raw_market_sha256": "dac31048f8d58d7c45a145f9797e60abc537e6e0ebb9350092d3f8007d53b357",
+    "eligibility_decisions_sha256": "684bffdeac5152577e4a4bc274271639ec19d001a4b52b461e32c560ce895e66",
+    "claim_sha256": "cbd9e5136c824a31a562ab6150a2c28225147a55fbb5018b314f759aae4b14bd",
+    "configuration_hash": "6f7bbf6e44ad84742fb8e9f45bd33beeb889866418b31a25700f30720d8302bf",
+    "threshold_config_hash": "0f13694af14cc324b938b4e26d6b7339ba095dcb6eebb4c2fb904d203b1bcf47",
+    "manifest_files_size_and_hash": "PASS",
+    "source_review_and_fee_evidence_bindings": "PASS"
+  },
+  "transport": {
+    "raw_records": 343717,
+    "included_before_cutoff": 343715,
+    "excluded_at_or_after_cutoff": 2,
+    "total_included_trades": 306938,
+    "total_included_depth": 36777,
+    "warmup_trades": 15934,
+    "warmup_depth": 2519,
+    "economic_window_trades": 291004,
+    "economic_window_depth": 34258,
+    "economic_window_events": 325262,
+    "native_ingest_sequence": "PASS",
+    "book_gaps": 0,
+    "depth_snapshots": 7,
+    "rule_observations": 42,
+    "rule_evidence_hash_changes": 21,
+    "market_minus_monotonic_min_us": -8103410,
+    "market_minus_monotonic_max_us": 120050,
+    "last_monotonic_elapsed_seconds": "10800.078",
+    "max_message_interval_seconds": "8.125",
+    "dual_clock_bounds": "PASS"
+  },
+  "eligibility": {
+    "decision_epochs": 2132,
+    "candidates_per_epoch": 70,
+    "evaluations": 149240,
+    "eligible": 0,
+    "rejected": 149240,
+    "slots_authorized": 0,
+    "venue": "BINANCE_ONLY",
+    "evaluated_pairs": [
+      "FDUSDUSDT",
+      "TUSDUSDT",
+      "USD1USDT",
+      "USDCUSDT",
+      "USDPUSDT"
+    ],
+    "required_blocker_count_each": {
+      "FEE_UNPROVEN": 149240,
+      "EXECUTION_COST_UNKNOWN": 149240,
+      "ADVERSE_SELECTION_UNKNOWN": 149240,
+      "COMPLETION_PROBABILITY_UNKNOWN": 149240,
+      "EXPECTED_LOCK_UNKNOWN": 149240
+    },
+    "rejection_counters_reconcile": true,
+    "decision_ids_unique": true,
+    "minimum_decision_epoch_interval_us": 5000000
+  },
+  "economics": {
+    "initial_bank_usd": "200.00",
+    "usdt_to_usd_convention": "1_USDT_EQUALS_1_USD_DIAGNOSTIC_NUMERAIRE_NOT_OBSERVED_FIAT_MARK",
+    "final_realized_equity_usd": "200.0000",
+    "final_marked_equity_usd": "200.0000",
+    "net_realized_pnl_usd": "0.0000",
+    "marked_return_pct": "0.0000",
+    "physical_cycles": 0,
+    "slot_equivalent_cycles": 0,
+    "real_orders": 0,
+    "testnet_orders": 0,
+    "reserved_capital_usd": "0",
+    "residual_inventory": {},
+    "capital_utilization_pct": "0.00",
+    "idle_no_opportunity_pct": "0.00",
+    "blocked_data_or_estimator_pct": "100.00",
+    "blocked_data_duration_us": 10800000000,
+    "seven_checkpoints_reconcile": true
+  },
+  "tests": {
+    "focused_m032_m033_m034_tests_passed": 152,
+    "failed": 0
+  },
+  "limitations": [
+    "PASS validates artifact integrity, public transport and fail-closed admission only.",
+    "Zero orders do not validate cycle execution, profitability or absence of market opportunity.",
+    "DATA_GAP includes stale or missing decision evidence; native BookGap count is zero.",
+    "Rule evidence hash changes are not necessarily material tick or lot changes.",
+    "The exact 900-second warmup cannot be recomputed solely from persisted artifacts because its starting monotonic timestamp was not persisted.",
+    "STRATEGY_PASS remains false and no live, Testnet, account or Kraken action is authorized or implied."
+  ]
+}
