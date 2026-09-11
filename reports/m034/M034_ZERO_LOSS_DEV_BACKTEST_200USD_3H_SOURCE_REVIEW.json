@@ -1,0 +1,34 @@
+{
+  "identity": "M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H_V1",
+  "verdict": "PASS_FOR_DEVELOPMENT_DIAGNOSTIC_BACKTEST",
+  "reviewer_model": "gpt-6-astra",
+  "source_sha": "2a895e5040a9bedd947ad329c1f7c46cfd783b7e",
+  "scope": "BINANCE_ONLY_CALIBRATION_ZERO_LOSS_DEVELOPMENT_BACKTEST",
+  "strategy_pass": false,
+  "oos_pass": false,
+  "historical_fee_proof": false,
+  "review_history": [
+    {"source_sha": "5761ce99ab2e20caf45ce4619a4ed10b397ee0f3", "verdict": "BLOCK"},
+    {"source_sha": "b6cff4fb3dc1b2b3cbd5fa293a6db99db7e41008", "verdict": "BLOCK"},
+    {"source_sha": "87210c517bba1f4b6653b248fa20d74c30c0d0d5", "verdict": "BLOCK"},
+    {"source_sha": "2a895e5040a9bedd947ad329c1f7c46cfd783b7e", "verdict": "PASS_FOR_DEVELOPMENT_DIAGNOSTIC_BACKTEST"}
+  ],
+  "validated_tests": 28,
+  "source_sha256_lf": {
+    "src/crypto_strategy_lab/microstructure/m034_zero_loss_backtest.py": "958a5246f3f09e6577fa72fa159b65b22aeea4658f6a87756b3c6e10939259b4",
+    "src/crypto_strategy_lab/microstructure/economic_eligibility.py": "90c11e8edc71e940d5fb35200572db30cd0144ae45cf8eba1954b257588de660",
+    "src/crypto_strategy_lab/microstructure/multi_stable_ledger.py": "c7702dec6b98ccae0241ec8b68dad7edd7883137e26f362fc1fbf7fbf6b98a75",
+    "src/crypto_strategy_lab/microstructure/multi_stable_queue.py": "266600243c855dd9eeab567e59377555b55f2804e61ffd3d4eeb28a6fbad5523",
+    "src/crypto_strategy_lab/microstructure/multi_stable_routing.py": "e05f611d48e7d70e655efdca3a1baaabfbd370e0ae51dbdcf9aa10d18fdca452",
+    "src/crypto_strategy_lab/microstructure/adaptive_multi_stable_manager.py": "1be8542eb1432ebd469757edee977d0a2e27b356897ca8dd90c4568536147588",
+    "src/crypto_strategy_lab/microstructure/multi_venue_models.py": "9ca7e80238bcc3376d539fecb1d177b9fee4503c6b7a698bb9055a1646499ad6",
+    "src/crypto_strategy_lab/microstructure/tardis_l2.py": "1899a0b0d968296b2b9d9a6bba8a1f1602e0b34162b4ca4b7ecfdbe665f9490d",
+    "scripts/run_m034_zero_loss_backtest.py": "a5e5153193c3099681cfe20a5839ba9a5cc95d96a5de6dcade7fed5ec5b23a52",
+    "tests/test_m034_zero_loss_backtest.py": "381936cbf8028b7355f377b1cad2cb0b8c9136048b64a5cb8204b61cc5ed8fbf"
+  },
+  "limitations": [
+    "DEVELOPMENT_DIAGNOSTIC_BACKTEST_ON_CALIBRATION_DATA",
+    "OWNER_DIAGNOSTIC_ASSUMPTIONS_ARE_NOT_HISTORICAL_PROOF",
+    "SOURCE_PASS_IS_NOT_STRATEGY_OR_LIVE_PASS"
+  ]
+}

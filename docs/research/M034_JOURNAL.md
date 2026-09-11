@@ -177,3 +177,23 @@ global mypy step, where it fails on the existing cross-platform baseline: 128 er
 for all seven M034-affected source modules; CI is truthfully non-green.
 
 `READY_FOR_REPLAY=false`; `ECONOMIC_REPLAY_RUNS=0`; `STRATEGY_PASS=false`.
+
+## 2026-09-11 - zero-loss development backtest preregistration
+
+The OWNER authorized the separate one-shot identity
+`M034_ZERO_LOSS_DEV_BACKTEST_200USD_3H_V1`. It does not consume or modify the existing
+forward identity. Binance-only source was published through `5761ce9`, `b6cff4f`,
+`87210c5` and final `2a895e5`. Independent GPT-6 Astra reviews BLOCKed native-time
+activation, aggregate exposure, risk-depth reuse/latency, partial cancel races,
+failure-prefix evidence, input-provenance shadowing and stale-flow admission. Each was
+reproduced and corrected. Final source-bound verdict is
+`PASS_FOR_DEVELOPMENT_DIAGNOSTIC_BACKTEST` on `2a895e5`; 28 dedicated invariant tests
+pass, along with the M032/M033/M034 regressions and the complete repository suite.
+
+The frozen diagnostic uses the validated 2025-01-01 00:00–03:00 UTC calibration tape,
+200 USDT per independent F0/F1/F2/F5/F10 scenario, 10-USDT cells, 20-USD aggregate
+exposure, causal C1/C2 queues and the OWNER diagnostic assumptions. Configuration hash
+is `d85a3bbe2017f77446cebfe67ee74eba7901372b9512554939bbdf667d4a185a` and threshold
+hash is `c2b239f6c89efd64ac22f755cbd76be756cd4c764869e6b99da9a7b246bede76`.
+No replay has run at this checkpoint; the claim is absent and the next authorized
+action is the single five-scenario execution after publication of this preregistration.
