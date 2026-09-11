@@ -19,6 +19,7 @@ from crypto_strategy_lab.microstructure.adaptive_multi_stable_manager import (
 )
 from crypto_strategy_lab.microstructure.multi_stable_models import (
     ZERO,
+    CausalAssetMark,
     D,
     InventoryReductionAuthorization,
 )
@@ -31,6 +32,7 @@ from crypto_strategy_lab.microstructure.multi_venue_models import (
     FeeEvidenceStatus,
     Venue,
     VenueFeeProfile,
+    VenueRoute,
     VenueSymbolRule,
 )
 
@@ -132,7 +134,9 @@ class DecisionReasonCode(StrEnum):
     PAIR_EVIDENCE_UNPROVEN = "PAIR_EVIDENCE_UNPROVEN"
     EXCHANGE_RULE_UNPROVEN = "EXCHANGE_RULE_UNPROVEN"
     EXCHANGE_RULE_VIOLATION = "EXCHANGE_RULE_VIOLATION"
+    ORDER_CAPITAL_MISMATCH = "ORDER_CAPITAL_MISMATCH"
     THRESHOLD_NOT_EFFECTIVE = "THRESHOLD_NOT_EFFECTIVE"
+    CURRENCY_MARK_UNPROVEN = "CURRENCY_MARK_UNPROVEN"
     TAIL_RISK_TOO_HIGH = "TAIL_RISK_TOO_HIGH"
     INVENTORY_EXPOSURE_TOO_HIGH = "INVENTORY_EXPOSURE_TOO_HIGH"
     NEGATIVE_EXIT_NOT_ALLOWED_COSMETIC = "NEGATIVE_EXIT_NOT_ALLOWED_COSMETIC"
@@ -470,10 +474,50 @@ class VenuePairRuleRegistry:
         return matches[0] if len(matches) == 1 else None
 
 
+class CausalAssetMarkRegistry:
+    """Versioned causal conversion marks used only inside their recorded window."""
+
+    def __init__(self) -> None:
+        self._marks: list[CausalAssetMark] = []
+
+    def add(self, mark: CausalAssetMark) -> None:
+        if mark in self._marks:
+            raise ValueError("M034_DUPLICATE_CAUSAL_ASSET_MARK")
+        self._marks.append(mark)
+
+    def resolve(
+        self, *, base_asset: str, quote_asset: str, time_us: int
+    ) -> CausalAssetMark | None:
+        matches = [
+            mark
+            for mark in self._marks
+            if mark.base_asset == base_asset
+            and mark.quote_asset == quote_asset
+            and mark.observed_at_us <= time_us <= mark.effective_until_us
+        ]
+        return matches[0] if len(matches) == 1 else None
+
+
 @dataclass(frozen=True)
 class FeeLeg:
     book: BookKey
     maker: bool
+    from_asset: str
+    to_asset: str
+    side: str
+    price: D
+    quantity: D
+
+    def __post_init__(self) -> None:
+        if (
+            not self.from_asset
+            or not self.to_asset
+            or self.from_asset == self.to_asset
+            or self.side not in {"BUY", "SELL"}
+            or self.price <= ZERO
+            or self.quantity <= ZERO
+        ):
+            raise ValueError("M034_INVALID_ROUTE_ORDER_LEG")
 
 
 @dataclass(frozen=True)
@@ -554,14 +598,12 @@ class EconomicCandidate:
     rank: int
     column: int
     route_id: str
+    route: VenueRoute
     inventory_state: str
     intent: DecisionIntent
     priority_class: int
     decision_currency: str
-    decision_currency_usd_rate: D
     decision_time_us: int
-    order_price: D
-    order_quantity: D
     gross_edge_bps: D
     execution_cost_bps: D | None
     adverse_selection_bps: D | None
@@ -578,10 +620,27 @@ class EconomicCandidate:
     account_context: str | None = None
 
     def __post_init__(self) -> None:
-        if self.pair.venue != self.venue or any(
+        if self.pair.venue != self.venue or self.route.venue != self.venue or any(
             leg.book.venue != self.venue for leg in self.fee_legs
         ):
             raise ValueError("M034_CANDIDATE_VENUE_IDENTITY_MISMATCH")
+        if (
+            not self.fee_legs
+            or self.route_id != self.route.route_id
+            or self.pair != self.route.legs[0].book
+            or len(self.route.legs) != len(self.fee_legs)
+            or any(
+                route_leg.book != fee_leg.book
+                or route_leg.from_asset != fee_leg.from_asset
+                or route_leg.to_asset != fee_leg.to_asset
+                or route_leg.maker != fee_leg.maker
+                for route_leg, fee_leg in zip(
+                    self.route.legs, self.fee_legs, strict=True
+                )
+            )
+            or self.side != self.fee_legs[0].side
+        ):
+            raise ValueError("M034_CANDIDATE_ROUTE_IDENTITY_MISMATCH")
         if (
             self.side not in {"BUY", "SELL"}
             or self.rank not in range(1, 8)
@@ -596,16 +655,10 @@ class EconomicCandidate:
             or not self.inventory_state
             or not self.decision_currency
             or self.decision_time_us < 0
-            or self.decision_currency_usd_rate <= ZERO
-            or not self.decision_currency_usd_rate.is_finite()
-            or self.order_price <= ZERO
-            or self.order_quantity <= ZERO
             or self.capital_required <= ZERO
             or self.gross_edge_bps < ZERO
         ):
             raise ValueError("M034_INVALID_CANDIDATE_CAPITAL_OR_EDGE")
-        if not self.fee_legs:
-            raise ValueError("M034_CANDIDATE_FEE_LEGS_REQUIRED")
         if self.completion_probability is not None and not (
             ZERO <= self.completion_probability <= D(1)
         ):
@@ -647,7 +700,8 @@ class EligibilityDecision:
     route_id: str
     intent: DecisionIntent
     decision_currency: str
-    decision_currency_usd_rate: D
+    decision_currency_usd_rate: D | None
+    decision_currency_usd_mark_record_id: str | None
     gross_edge_bps: D
     known_fees_bps: D | None
     execution_cost_bps: D | None
@@ -680,12 +734,14 @@ class EconomicEligibilityGate:
         fee_registry: VenuePairFeeRegistry,
         rule_registry: VenuePairRuleRegistry,
         pair_universe: BinancePairUniverse,
+        mark_registry: CausalAssetMarkRegistry,
     ) -> None:
         self.execution_policy = execution_policy
         self.policy = policy
         self.fee_registry = fee_registry
         self.rule_registry = rule_registry
         self.pair_universe = pair_universe
+        self.mark_registry = mark_registry
 
     def evaluate(
         self, candidate: EconomicCandidate, *, mode: EvaluationMode
@@ -699,35 +755,43 @@ class EconomicEligibilityGate:
             reasons.append(DecisionReasonCode.VENUE_DISABLED_FOR_ECONOMIC_EXECUTION)
         if candidate.data_state != DataState.VALID:
             reasons.append(DecisionReasonCode.DATA_INSUFFICIENT)
-        pair_evidence = self.pair_universe.resolve(
-            candidate.pair, time_us=candidate.decision_time_us
+        decision_currency_usd_mark = self.mark_registry.resolve(
+            base_asset=candidate.decision_currency,
+            quote_asset="USD",
+            time_us=candidate.decision_time_us,
         )
-        if pair_evidence is None or not pair_evidence.available:
-            reasons.append(DecisionReasonCode.PAIR_UNAVAILABLE)
-        elif not pair_evidence.eligible:
-            reasons.append(DecisionReasonCode.PAIR_EVIDENCE_UNPROVEN)
-        rule_record = self.rule_registry.resolve(
-            candidate.pair, time_us=candidate.decision_time_us, mode=mode
-        )
-        if rule_record is None:
-            reasons.append(DecisionReasonCode.EXCHANGE_RULE_UNPROVEN)
-        else:
-            try:
-                rule_record.rule.validate(
-                    price=candidate.order_price,
-                    quantity=candidate.order_quantity,
-                    time_us=candidate.decision_time_us,
-                )
-                if candidate.decision_currency not in {
-                    rule_record.rule.base_asset,
-                    rule_record.rule.quote_asset,
-                }:
-                    raise ValueError("M034_DECISION_CURRENCY_OUTSIDE_BOOK")
-            except ValueError:
-                reasons.append(DecisionReasonCode.EXCHANGE_RULE_VIOLATION)
-
+        if decision_currency_usd_mark is None:
+            reasons.append(DecisionReasonCode.CURRENCY_MARK_UNPROVEN)
         profiles: list[VenueFeeProfile] = []
         for leg in candidate.fee_legs:
+            pair_evidence = self.pair_universe.resolve(
+                leg.book, time_us=candidate.decision_time_us
+            )
+            if pair_evidence is None or not pair_evidence.available:
+                reasons.append(DecisionReasonCode.PAIR_UNAVAILABLE)
+            elif not pair_evidence.eligible:
+                reasons.append(DecisionReasonCode.PAIR_EVIDENCE_UNPROVEN)
+            rule_record = self.rule_registry.resolve(
+                leg.book, time_us=candidate.decision_time_us, mode=mode
+            )
+            if rule_record is None:
+                reasons.append(DecisionReasonCode.EXCHANGE_RULE_UNPROVEN)
+            else:
+                try:
+                    rule_record.rule.validate(
+                        price=leg.price,
+                        quantity=leg.quantity,
+                        time_us=candidate.decision_time_us,
+                    )
+                    expected_assets = (
+                        (rule_record.rule.quote_asset, rule_record.rule.base_asset)
+                        if leg.side == "BUY"
+                        else (rule_record.rule.base_asset, rule_record.rule.quote_asset)
+                    )
+                    if (leg.from_asset, leg.to_asset) != expected_assets:
+                        raise ValueError("M034_ROUTE_LEG_ASSET_RULE_MISMATCH")
+                except ValueError:
+                    reasons.append(DecisionReasonCode.EXCHANGE_RULE_VIOLATION)
             profile = self.fee_registry.resolve(
                 leg.book,
                 time_us=candidate.decision_time_us,
@@ -736,8 +800,31 @@ class EconomicEligibilityGate:
             )
             if profile is None:
                 reasons.append(DecisionReasonCode.FEE_UNPROVEN)
-                break
-            profiles.append(profile)
+            else:
+                if profile.fee_asset_semantics not in {
+                    "RECEIVED_ASSET",
+                    "SPENT_ASSET",
+                }:
+                    reasons.append(DecisionReasonCode.FEE_UNPROVEN)
+                else:
+                    profiles.append(profile)
+        if len(profiles) == len(candidate.fee_legs):
+            first_leg = candidate.fee_legs[0]
+            first_profile = profiles[0]
+            required_input = (
+                first_leg.price * first_leg.quantity
+                if first_leg.side == "BUY"
+                else first_leg.quantity
+            )
+            if first_profile.fee_asset_semantics == "SPENT_ASSET":
+                required_input *= D(1) + first_profile.rate(
+                    maker=first_leg.maker, time_us=candidate.decision_time_us
+                )
+            if (
+                first_leg.from_asset != candidate.decision_currency
+                or candidate.capital_required < required_input
+            ):
+                reasons.append(DecisionReasonCode.ORDER_CAPITAL_MISMATCH)
         known_fees_bps = (
             sum(
                 (
@@ -750,7 +837,7 @@ class EconomicEligibilityGate:
             else None
         )
         statuses = {profile.evidence_status for profile in profiles}
-        if not profiles:
+        if len(profiles) != len(candidate.fee_legs):
             fee_status = FeeEvidenceStatus.UNPROVEN
         elif FeeEvidenceStatus.ACCOUNT_SPECIFIC in statuses:
             fee_status = FeeEvidenceStatus.ACCOUNT_SPECIFIC
@@ -796,16 +883,20 @@ class EconomicEligibilityGate:
             )
             if expected_net_edge < self.policy.minimum_net_edge_bps:
                 reasons.append(DecisionReasonCode.EDGE_BELOW_MINIMUM)
-        capital_required_usd = (
-            candidate.capital_required * candidate.decision_currency_usd_rate
+        decision_currency_usd_rate = (
+            decision_currency_usd_mark.rate
+            if decision_currency_usd_mark is not None
+            else None
         )
-        if capital_required_usd > self.policy.maximum_inventory_exposure:
-            reasons.append(DecisionReasonCode.INVENTORY_EXPOSURE_TOO_HIGH)
-        if (
-            candidate.tail_risk_cost * candidate.decision_currency_usd_rate
-            > self.policy.tail_risk_bound
-        ):
-            reasons.append(DecisionReasonCode.TAIL_RISK_TOO_HIGH)
+        if decision_currency_usd_rate is not None:
+            capital_required_usd = candidate.capital_required * decision_currency_usd_rate
+            if capital_required_usd > self.policy.maximum_inventory_exposure:
+                reasons.append(DecisionReasonCode.INVENTORY_EXPOSURE_TOO_HIGH)
+            if (
+                candidate.tail_risk_cost * decision_currency_usd_rate
+                > self.policy.tail_risk_bound
+            ):
+                reasons.append(DecisionReasonCode.TAIL_RISK_TOO_HIGH)
 
         reasons = list(dict.fromkeys(reasons))
         eligible = not reasons
@@ -821,7 +912,12 @@ class EconomicEligibilityGate:
             route_id=candidate.route_id,
             intent=candidate.intent,
             decision_currency=candidate.decision_currency,
-            decision_currency_usd_rate=candidate.decision_currency_usd_rate,
+            decision_currency_usd_rate=decision_currency_usd_rate,
+            decision_currency_usd_mark_record_id=(
+                decision_currency_usd_mark.record_id
+                if decision_currency_usd_mark is not None
+                else None
+            ),
             gross_edge_bps=candidate.gross_edge_bps,
             known_fees_bps=known_fees_bps,
             execution_cost_bps=execution_cost,
@@ -866,16 +962,27 @@ class EligibilityDecisionLedger:
         self.capital_states.append(state)
 
     def metrics(self) -> dict[str, object]:
+        economic_decisions = [
+            decision for decision in self.decisions if decision.venue == Venue.BINANCE
+        ]
         reason_counts = Counter(
             reason.value
-            for decision in self.decisions
+            for decision in economic_decisions
             for reason in decision.decision_reason_codes
             if reason != DecisionReasonCode.ELIGIBLE
         )
         return {
-            "ELIGIBILITY_ACCEPT_COUNT": sum(decision.eligible for decision in self.decisions),
-            "ELIGIBILITY_REJECT_COUNT": sum(not decision.eligible for decision in self.decisions),
-            "SLOTS_AUTHORIZED": sum(decision.slots_authorized for decision in self.decisions),
+            "ELIGIBILITY_ACCEPT_COUNT": sum(
+                decision.eligible for decision in economic_decisions
+            ),
+            "ELIGIBILITY_REJECT_COUNT": sum(
+                not decision.eligible for decision in economic_decisions
+            ),
+            "SLOTS_AUTHORIZED": sum(
+                decision.slots_authorized for decision in economic_decisions
+            ),
+            "DORMANT_VENUE_DIAGNOSTIC_COUNT": len(self.decisions)
+            - len(economic_decisions),
             "REJECTION_REASONS": dict(sorted(reason_counts.items())),
             "CAPITAL_STATE_EVENTS": len(self.capital_states),
             "IDLE_NO_ELIGIBLE_OPPORTUNITY_EVENTS": sum(
@@ -1273,6 +1380,7 @@ class InventoryExitDecisionEngine:
         inventory_asset: str,
         origin_asset: str,
         exit_reservation_id: str,
+        external_fee_marks: tuple[CausalAssetMark, ...],
         now_us: int,
         expires_at_us: int,
         expected_hold_loss: D,
@@ -1321,6 +1429,7 @@ class InventoryExitDecisionEngine:
             inventory_asset=inventory_asset,
             origin_asset=origin_asset,
             exit_reservation_id=exit_reservation_id,
+            external_fee_marks=external_fee_marks,
             decided_at_us=now_us,
             expires_at_us=expires_at_us,
             rule_id=rule.rule_id,
@@ -1415,6 +1524,7 @@ __all__ = [
     "CapitalState",
     "CapitalStateRecord",
     "CausalAdverseSelectionEstimator",
+    "CausalAssetMarkRegistry",
     "DataState",
     "DatasetRole",
     "DatasetRoleRegistry",

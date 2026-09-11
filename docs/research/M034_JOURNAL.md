@@ -49,3 +49,20 @@ regressions passed (135 focused). The full repository collected 1,168 tests and 
 green with 1,166 passed and 2 skipped. Repository-wide Ruff passed, and strict mypy
 passed on all seven affected source modules. Full-package mypy remains a pre-existing
 non-green gate with 117 errors in 13 untouched legacy modules.
+
+The second published review, bound to
+`1dd2f3de2c11449bb5f65f9dfae2a076bfccb01b`, again returned BLOCK. It confirmed the ten
+original fixes, then reproduced six further defects: external fee omission in negative
+exit loss, censored-lock underestimation, order funding not bound to capital, secondary
+route books outside rule/universe gates, unregistered USD marks, and Kraken diagnostics
+inside Binance KPI aggregates.
+
+The second correction adds canonical M033 route binding, per-leg rules/universe/fees,
+physical first-leg funding checks, a causal mark registry, all-in external-fee loss,
+fail-closed censored lock, and Binance-only KPI aggregation. Its 42 M034 tests plus 51
+M032 and 46 M033 regressions pass (139 focused). A third published source-bound review
+is required; no replay has run.
+
+Second-correction full validation collected 1,172 tests and exited green with 1,170
+passed and 2 skipped. Repository-wide Ruff, strict mypy on the seven affected modules,
+JSON parsing and `git diff --check` passed.

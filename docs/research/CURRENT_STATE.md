@@ -2,7 +2,7 @@
 
 ACTIVE_EXECUTION_CAMPAIGN=NONE
 CAMPAIGN_STATUS=M034_SOURCE_CORRECTION_PENDING_SOURCE_BOUND_REVIEW
-CAMPAIGN_EXECUTION_SOURCE_SHA=UNPUBLISHED_CORRECTION_WORKTREE
+CAMPAIGN_EXECUTION_SOURCE_SHA=UNPUBLISHED_SECOND_CORRECTION_WORKTREE
 CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
 CAMPAIGN_VERDICT=BLOCKED_PRE_RUN
@@ -23,8 +23,8 @@ future research but receives zero M034 economic slots. Unknown or unproven fee,
 cost, data, market safety, completion or lock evidence fails closed; no eligible
 opportunity leaves capital explicitly idle. Thresholds are mandatory typed inputs
 with provenance and hashes, but no operational values are frozen. The first published
-review at `d009653` blocked ten causal/economic invariants; the correction adds
-adversarial coverage and is pending a new source-bound review. No operational pair
+reviews at `d009653` and `1dd2f3d` blocked causal/economic invariants; the second
+correction adds adversarial coverage and is pending a new source-bound review. No operational pair
 universe, dataset, window, model registration, integrated
 runner or economic replay exists. `SOURCE_ARCHITECTURE_PASS != STRATEGY_PASS`.
 

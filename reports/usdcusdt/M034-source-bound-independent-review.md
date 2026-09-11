@@ -42,3 +42,27 @@ the canonical incremental M034 path as follows:
 
 The corrected source requires a new review bound to its published SHA. Until that review
 passes, `M034_SOURCE_ARCHITECTURE_PASS=false` and `READY_FOR_REPLAY=false`.
+
+## Review 2 — blocked corrected source
+
+- Reviewer: GPT-6 Astra, independent source review
+- Reviewed source: `1dd2f3de2c11449bb5f65f9dfae2a076bfccb01b`
+- Verdict: `IMPLEMENTATION_REVIEW=BLOCK`
+- Replay: `READY_FOR_REPLAY=false`
+
+All ten Review 1 probes were corrected in their original scope. Six additional defects
+remained: external-asset fees were omitted from the authorized negative-loss limit;
+censored capital was omitted from expected lock; physical order funding was independent
+of `capital_required`; only the first route book passed universe/rule gates; the USD
+conversion rate had no registry/provenance authority; and dormant Kraken diagnostics
+contaminated Binance economic KPI aggregates.
+
+The second correction includes all-in external-fee valuation using preregistered causal
+marks; returns unknown lock when the resolved sample contains censoring and no frozen
+censoring method exists; binds a candidate to the canonical M033 `VenueRoute` and each
+physical order leg; validates universe, temporal rules and fees for every leg; proves
+first-leg funding including spent-asset fees; resolves USD conversion through a causal
+mark registry; and separates dormant-venue diagnostic counts from Binance KPIs.
+
+The post-review correction locally passes 139 focused checks: 42 M034, 51 M032 and 46
+M033. A third independent review must be bound to the next published source SHA.

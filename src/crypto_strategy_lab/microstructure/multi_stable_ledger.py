@@ -482,7 +482,34 @@ class SlotLedger:
         )
         if final_quantity != physical_exit_output:
             raise ValueError("M034_INVENTORY_REDUCTION_ORIGIN_RESIDUAL_MISMATCH")
-        loss = authorization.origin_cost_basis - final_quantity
+        external_fee_rows = [
+            row
+            for row in self.fill_attribution.values()
+            if row.slot_id == slot_id
+            and row.fill.fee_quantity > ZERO
+            and row.fill.fee_asset not in {row.fill.from_asset, row.fill.to_asset}
+        ]
+        fee_marks = {mark.base_asset: mark for mark in authorization.external_fee_marks}
+        try:
+            external_fee_cost_origin = sum(
+                (
+                    row.fill.fee_quantity
+                    * fee_marks[row.fill.fee_asset].rate_at(
+                        base_asset=row.fill.fee_asset,
+                        quote_asset=slot.origin_asset,
+                        time_us=authorization.decided_at_us,
+                    )
+                    for row in external_fee_rows
+                ),
+                ZERO,
+            )
+        except (KeyError, ValueError) as exc:
+            raise ValueError("M034_EXTERNAL_FEE_MARK_UNPROVEN") from exc
+        loss = (
+            authorization.origin_cost_basis
+            - final_quantity
+            + external_fee_cost_origin
+        )
         hold_cost = (
             authorization.expected_hold_loss
             + authorization.opportunity_cost_of_lock
@@ -523,6 +550,7 @@ class SlotLedger:
                 "rule_hash": authorization.rule_hash,
                 "trigger_reason_code": authorization.trigger_reason_code,
                 "realized_loss": str(loss),
+                "external_fee_cost_origin": str(external_fee_cost_origin),
                 "counted_as_positive_cycle": False,
             }
         )

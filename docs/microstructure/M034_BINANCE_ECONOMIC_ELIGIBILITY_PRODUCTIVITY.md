@@ -55,7 +55,9 @@ economic replay, parameter sweeps and claims of profitability.
 
 ```text
 causal venue+book snapshot
-  -> data / venue / rule / fee / market-safety evidence
+  -> canonical M033 venue route + physical order intents
+  -> per-leg data / venue / rule / fee / market-safety evidence
+  -> causal decision-currency/USD mark
   -> EconomicEligibilityGate
   -> eligible candidates only
   -> PairProductivityScorer.score_eligible
@@ -89,7 +91,10 @@ interval covers the decision timestamp and whose recorded account/tier context e
 matches the candidate context. Forward lookup accepts `PROVEN_FORWARD` or a matching
 `ACCOUNT_SPECIFIC` record acquired no later than the decision. Missing,
 incomplete, ambiguous or inapplicable evidence produces `FEE_UNPROVEN`; it never
-becomes zero.
+becomes zero. Each route leg declares spent/received assets and physical order intent.
+M034 currently accepts only explicit `RECEIVED_ASSET` or `SPENT_ASSET` fee semantics;
+unknown or externally funded fee semantics fail closed. A spent-asset fee is included in
+the first-leg funding requirement.
 
 Binance's official Spot documentation exposes current account commission through a
 signed, account-specific endpoint and current symbol filters such as `PRICE_FILTER`,
@@ -166,7 +171,8 @@ The gate first converts the net edge to conditional complete PnL in the decision
 currency. Every allocation batch has one explicit capital currency; a candidate in
 another currency is rejected at the allocation boundary unless a causal conversion has
 already produced a candidate in the common currency. USD gates use the candidate's
-explicit causal `decision_currency_usd_rate`:
+mark resolved from `CausalAssetMarkRegistry`. The record binds base/quote assets, rate,
+observation/effective times, record ID, source reference and provenance:
 
 ```text
 ConditionalCompleteNet = CapitalRequired * ExpectedNetEdgeBps / 10,000
@@ -218,7 +224,8 @@ decision/expiry timestamps, rule ID/hash and all inequality terms. `SlotLedger` 
 persist that authorization before the exit reservation or fill. Settlement then proves
 that every attributed exit fill occurred after authorization, used the bound reservation,
 returned the complete authorized inventory to the origin asset and left no non-origin
-residue. A loss is recorded in realized PnL,
+residue. Fees debited in a third asset are converted with causal, authorization-bound
+marks and included in the all-in realized-loss limit. A loss is recorded in realized PnL,
 `NEGATIVE_EXIT_COUNT` and `NEGATIVE_EXIT_COST`; it never increments positive cycles or
 the completed-slot turnover numerator. Legacy M032 `close_slot` remains fail-closed.
 
@@ -229,8 +236,9 @@ their horizon has ended and the label is observable. It returns a non-negative P
 from the resolved training prefix. `CompletionProbabilityEstimator` and
 `ExpectedLockTimeEstimator` use resolved outcomes available by the frozen training
 cutoff. Censored/non-complete observations remain in completion probability, but are
-not mislabeled as exact lock durations; lock estimates use completed outcomes only and
-remain unknown when completed-sample sufficiency is not met. Observation availability
+not mislabeled as exact lock durations. Without a separately preregistered censoring
+method/bound, the lock estimate remains unknown whenever its resolved prefix contains a
+censored observation. Observation availability
 must be no earlier than the completed lock or full censoring horizon.
 
 Every estimate records estimator version, training cutoff and feature cutoff. Both
@@ -249,7 +257,9 @@ available while still ineligible. Eligibility requires data, temporal rules, tem
 fees, tick/step/min-notional compliance, safety, liquidity and provenance; the final
 fee/rule checks occur again at decision time. `VenuePairRuleRegistry` accepts only
 historically proven rules for historical replay and only forward-proven rules in forward
-mode; ambiguous or missing rules fail closed.
+mode; ambiguous or missing rules fail closed. The candidate is bound to the canonical
+M033 `VenueRoute`; every route leg is checked, and the first physical order's spent-asset
+requirement must be covered by `CapitalRequired`.
 
 ## Decision ledger and reason codes
 
@@ -272,7 +282,8 @@ Reason codes include:
 `CAPITAL_PENDING_CANCEL_ACK`, `MARKET_SAFETY_BLOCK`, `DATA_INSUFFICIENT`,
 `TAIL_RISK_TOO_HIGH`, `INVENTORY_EXPOSURE_TOO_HIGH`, `PAIR_UNAVAILABLE`,
 `PAIR_EVIDENCE_UNPROVEN`, `EXCHANGE_RULE_UNPROVEN`,
-`EXCHANGE_RULE_VIOLATION`, `THRESHOLD_NOT_EFFECTIVE`,
+`EXCHANGE_RULE_VIOLATION`, `ORDER_CAPITAL_MISMATCH`,
+`THRESHOLD_NOT_EFFECTIVE`, `CURRENCY_MARK_UNPROVEN`,
 `NEGATIVE_EXIT_NOT_ALLOWED_COSMETIC`, `NEGATIVE_EXIT_RISK_RULE_TRIGGERED`,
 `INVENTORY_LOCK_EXCEEDED`, `PEG_RISK_ESCALATED` and
 `OPPORTUNITY_COST_EXCEEDED`.
@@ -283,6 +294,9 @@ Capital-state records use `ACTIVE_NEW_ENTRY`, `ACTIVE_OWNED_RETURN`,
 capital record. Data/rule/fee gaps map remaining capital to `BLOCKED_DATA`, safety gates
 to `BLOCKED_SAFETY`, and unresolved owned returns to `LOCKED_INVENTORY`; only a true
 absence of eligible opportunity is recorded as idle.
+
+Dormant-venue decisions remain in the audit ledger as diagnostics, but accept/reject,
+slot and rejection-reason economic aggregates include Binance only.
 
 ## Invariants
 
@@ -306,6 +320,10 @@ absence of eligible opportunity is recorded as idle.
 18. Owned-return capital is reserved before new-entry ranking; non-positive return
     productivity and return shortfall cannot release that obligation to new entries.
 19. Inventory reduction authorization is ledger-persisted before its physical exit.
+20. Every physical route book passes universe, rule and fee gates; the route ID string is
+    never treated as route proof.
+21. `CapitalRequired` covers the first physical order input and any spent-asset fee.
+22. Conversion marks are temporal registry evidence, never caller-provided bare rates.
 
 ## KPIs and capital time
 
@@ -335,8 +353,9 @@ cost/latency policy, registered model identity, integrated runner and replay pro
 No account, key, Testnet, live order, replay, random window draw or registry mutation is
 authorized by this source implementation.
 
-The first published source review of `d009653afaf4dd361dcc4095090e97788b2015f4`
-returned `IMPLEMENTATION_REVIEW=BLOCK`. The correction must itself receive a new
+Published source reviews of `d009653afaf4dd361dcc4095090e97788b2015f4` and
+`1dd2f3de2c11449bb5f65f9dfae2a076bfccb01b` returned
+`IMPLEMENTATION_REVIEW=BLOCK`. The second correction must itself receive a new
 source-bound independent review before this document can claim source architecture
 PASS. The blocked review is preserved in the M034 journal and review report; it was not
 reclassified as a strategy result.

@@ -12,6 +12,7 @@ from crypto_strategy_lab.microstructure.economic_eligibility import (
     BinancePairUniverse,
     CapitalState,
     CausalAdverseSelectionEstimator,
+    CausalAssetMarkRegistry,
     DatasetRole,
     DatasetRoleRegistry,
     DataState,
@@ -41,6 +42,7 @@ from crypto_strategy_lab.microstructure.economic_eligibility import (
 )
 from crypto_strategy_lab.microstructure.multi_stable_ledger import SlotLedger
 from crypto_strategy_lab.microstructure.multi_stable_models import (
+    CausalAssetMark,
     InventoryReductionAuthorization,
     PhysicalFill,
     SlotState,
@@ -56,6 +58,8 @@ from crypto_strategy_lab.microstructure.multi_venue_models import (
     FeeEvidenceStatus,
     Venue,
     VenueFeeProfile,
+    VenueRoute,
+    VenueRouteLeg,
     VenueSymbolRule,
 )
 
@@ -124,7 +128,7 @@ def fee_profile(
         book=book,
         maker_rate=D("0.0001"),
         taker_rate=D("0.0002"),
-        fee_asset_semantics="received asset",
+        fee_asset_semantics="RECEIVED_ASSET",
         effective_start_us=0,
         effective_end_us=1_000,
         provenance="synthetic test evidence",
@@ -186,12 +190,30 @@ def pair_universe(*, eligible: bool = True) -> BinancePairUniverse:
     )
 
 
+def mark_registry(*, rate: str = "1", observed_at_us: int = 90) -> CausalAssetMarkRegistry:
+    registry = CausalAssetMarkRegistry()
+    registry.add(
+        CausalAssetMark(
+            "USDT",
+            "USD",
+            D(rate),
+            observed_at_us,
+            100,
+            "mark:USDT:USD:100",
+            "fixture://mark",
+            "synthetic causal mark",
+        )
+    )
+    return registry
+
+
 def gate(
     registry: VenuePairFeeRegistry | None = None,
     *,
     active_policy: M034Policy | None = None,
     rules: VenuePairRuleRegistry | None = None,
     universe: BinancePairUniverse | None = None,
+    marks: CausalAssetMarkRegistry | None = None,
 ) -> EconomicEligibilityGate:
     return EconomicEligibilityGate(
         execution_policy=execution_policy(),
@@ -199,10 +221,19 @@ def gate(
         fee_registry=registry or fee_registry(),
         rule_registry=rules or rule_registry(),
         pair_universe=universe or pair_universe(),
+        mark_registry=marks or mark_registry(),
     )
 
 
 def candidate(candidate_id: str = "A", **changes: object) -> EconomicCandidate:
+    route = VenueRoute(
+        "USDT->USDC->USDT",
+        "USDT",
+        (
+            VenueRouteLeg(BINANCE, "USDT", "USDC", True),
+            VenueRouteLeg(BINANCE, "USDC", "USDT", True),
+        ),
+    )
     row = EconomicCandidate(
         candidate_id=candidate_id,
         venue=Venue.BINANCE,
@@ -211,14 +242,12 @@ def candidate(candidate_id: str = "A", **changes: object) -> EconomicCandidate:
         rank=1,
         column=1,
         route_id="USDT->USDC->USDT",
+        route=route,
         inventory_state="FLAT",
         intent=DecisionIntent.NEW_ENTRY,
         priority_class=2,
         decision_currency="USDT",
-        decision_currency_usd_rate=D("1"),
         decision_time_us=100,
-        order_price=D("1.0000"),
-        order_quantity=D("5.0"),
         gross_edge_bps=D("10"),
         execution_cost_bps=D("1"),
         adverse_selection_bps=D("1"),
@@ -229,7 +258,10 @@ def candidate(candidate_id: str = "A", **changes: object) -> EconomicCandidate:
         residual_cost_if_incomplete=D("0.0001"),
         tail_risk_cost=D("0.0001"),
         inventory_carry_cost=D("0.0001"),
-        fee_legs=(FeeLeg(BINANCE, True), FeeLeg(BINANCE, True)),
+        fee_legs=(
+            FeeLeg(BINANCE, True, "USDT", "USDC", "BUY", D("1.0000"), D("5.0")),
+            FeeLeg(BINANCE, True, "USDC", "USDT", "SELL", D("1.0000"), D("5.0")),
+        ),
         market=MarketRegimeSnapshot(
             observed_at_us=100,
             regime="NORMAL",
@@ -380,6 +412,7 @@ def test_negative_exit_without_preregistered_risk_rule_is_cosmetic_and_rejected(
         inventory_asset="USDC",
         origin_asset="USDT",
         exit_reservation_id="RETURN",
+        external_fee_marks=(),
         now_us=5,
         expires_at_us=6,
         expected_hold_loss=D("1"),
@@ -410,6 +443,7 @@ def test_negative_exit_risk_rule_requires_true_inequality_and_is_not_a_cycle() -
         inventory_asset="USDC",
         origin_asset="USDT",
         exit_reservation_id="RETURN",
+        external_fee_marks=(),
         now_us=3,
         expires_at_us=10,
         expected_hold_loss=D("0.2"),
@@ -447,16 +481,35 @@ def test_negative_exit_risk_rule_requires_true_inequality_and_is_not_a_cycle() -
 
 def test_kraken_candidate_is_dormant_for_m034_economics() -> None:
     registry = fee_registry(fee_profile(book=KRAKEN))
+    kraken_route = VenueRoute(
+        "USDT->USDC->USDT",
+        "USDT",
+        (
+            VenueRouteLeg(KRAKEN, "USDT", "USDC", True),
+            VenueRouteLeg(KRAKEN, "USDC", "USDT", True),
+        ),
+    )
     row = candidate(
+        "KRAKEN",
         venue=Venue.KRAKEN,
         pair=KRAKEN,
-        fee_legs=(FeeLeg(KRAKEN, True), FeeLeg(KRAKEN, True)),
+        route=kraken_route,
+        fee_legs=(
+            FeeLeg(KRAKEN, True, "USDT", "USDC", "BUY", D("1"), D("5")),
+            FeeLeg(KRAKEN, True, "USDC", "USDT", "SELL", D("1"), D("5")),
+        ),
     )
     decision = gate(registry).evaluate(row, mode=EvaluationMode.HISTORICAL_REPLAY)
     assert not decision.eligible and decision.slots_authorized == 0
     assert DecisionReasonCode.VENUE_DISABLED_FOR_ECONOMIC_EXECUTION in (
         decision.decision_reason_codes
     )
+    ledger = EligibilityDecisionLedger()
+    ledger.append(gate().evaluate(candidate("BINANCE"), mode=EvaluationMode.HISTORICAL_REPLAY))
+    ledger.append(decision)
+    assert ledger.metrics()["ELIGIBILITY_ACCEPT_COUNT"] == 1
+    assert ledger.metrics()["ELIGIBILITY_REJECT_COUNT"] == 0
+    assert ledger.metrics()["DORMANT_VENUE_DIAGNOSTIC_COUNT"] == 1
 
 
 def test_future_observations_cannot_change_completion_lock_or_adverse_decision_at_t() -> None:
@@ -611,10 +664,13 @@ def test_ineligible_owned_return_reserves_capital_before_new_entry() -> None:
 
 def test_owned_return_shortfall_stops_lower_priority_allocation() -> None:
     owned = candidate(
-        "OWNED", intent=DecisionIntent.OWNED_RETURN, priority_class=1
+        "OWNED",
+        intent=DecisionIntent.OWNED_RETURN,
+        priority_class=1,
+        capital_required=D("6"),
     )
-    new = candidate("NEW", capital_required=D("1"), order_quantity=D("5.0"))
-    result, ledger = allocate([owned, new], capital="4")
+    new = candidate("NEW")
+    result, ledger = allocate([owned, new], capital="5")
     assert result.selected_candidate_ids == ()
     assert ledger.capital_states[0].state == CapitalState.LOCKED_INVENTORY
 
@@ -649,6 +705,7 @@ def test_inventory_reduction_requires_physical_return_to_origin() -> None:
         inventory_asset="USDC",
         origin_asset="USDT",
         exit_reservation_id="RETURN",
+        external_fee_marks=(),
         now_us=3,
         expires_at_us=10,
         expected_hold_loss=D("6"),
@@ -702,6 +759,7 @@ def test_inventory_reduction_authorization_cannot_be_retroactive() -> None:
         inventory_asset="USDC",
         origin_asset="USDT",
         exit_reservation_id="RETURN",
+        external_fee_marks=(),
         decided_at_us=5,
         expires_at_us=10,
         rule_id="LATE-RULE",
@@ -784,7 +842,9 @@ def test_allocation_rejects_mixed_currency_without_causal_conversion() -> None:
     engine = M034EconomicAllocationEngine(gate=gate(), decision_ledger=ledger)
     with pytest.raises(ValueError, match="ALLOCATION_CURRENCY_MISMATCH"):
         engine.evaluate_and_allocate(
-            [candidate(decision_currency="EUR", decision_currency_usd_rate=D("1.1"))],
+            [
+                candidate(decision_currency="EUR")
+            ],
             mode=EvaluationMode.HISTORICAL_REPLAY,
             available_capital=D("5"),
             available_capital_currency="USDT",
@@ -813,7 +873,7 @@ def test_censored_observation_is_not_exact_lock_duration() -> None:
     estimate = estimator.estimate(
         context="CTX", now_us=300_000_000, feature_cutoff_us=300_000_000
     )
-    assert estimate is not None and estimate.expected_seconds == D("30")
+    assert estimate is None
     with pytest.raises(ValueError, match="INVALID_COMPLETION_OBSERVATION"):
         CompletionObservation("IMPOSSIBLE", "CTX", 0, 1, 300, True, D("299"))
 
@@ -830,3 +890,129 @@ def test_ambiguous_fee_is_logged_as_unproven_not_raised() -> None:
     decision = gate(registry).evaluate(candidate(), mode=EvaluationMode.HISTORICAL_REPLAY)
     assert not decision.eligible
     assert DecisionReasonCode.FEE_UNPROVEN in decision.decision_reason_codes
+
+
+def test_order_funding_must_cover_the_first_physical_leg() -> None:
+    row = candidate()
+    oversized_first = replace(row.fee_legs[0], quantity=D("1000"))
+    decision = gate().evaluate(
+        replace(row, fee_legs=(oversized_first, row.fee_legs[1])),
+        mode=EvaluationMode.HISTORICAL_REPLAY,
+    )
+    assert not decision.eligible
+    assert DecisionReasonCode.ORDER_CAPITAL_MISMATCH in decision.decision_reason_codes
+    spent_fee = fee_registry(
+        replace(fee_profile(), fee_asset_semantics="SPENT_ASSET")
+    )
+    fee_shortfall = gate(spent_fee).evaluate(
+        candidate(), mode=EvaluationMode.HISTORICAL_REPLAY
+    )
+    assert DecisionReasonCode.ORDER_CAPITAL_MISMATCH in fee_shortfall.decision_reason_codes
+
+
+def test_every_route_book_requires_universe_rules_and_fees() -> None:
+    usdc_fdusd = BookKey(Venue.BINANCE, "USDCFDUSD")
+    fdusd_usdt = BookKey(Venue.BINANCE, "FDUSDUSDT")
+    route = VenueRoute(
+        "USDT->USDC->FDUSD->USDT",
+        "USDT",
+        (
+            VenueRouteLeg(BINANCE, "USDT", "USDC", True),
+            VenueRouteLeg(usdc_fdusd, "USDC", "FDUSD", True),
+            VenueRouteLeg(fdusd_usdt, "FDUSD", "USDT", True),
+        ),
+    )
+    row = candidate(
+        route_id=route.route_id,
+        route=route,
+        fee_legs=(
+            FeeLeg(BINANCE, True, "USDT", "USDC", "BUY", D("1"), D("5")),
+            FeeLeg(usdc_fdusd, True, "USDC", "FDUSD", "SELL", D("1"), D("5")),
+            FeeLeg(fdusd_usdt, True, "FDUSD", "USDT", "SELL", D("1"), D("5")),
+        ),
+    )
+    fees = fee_registry()
+    fees.add(fee_profile(book=usdc_fdusd))
+    fees.add(fee_profile(book=fdusd_usdt))
+    decision = gate(fees).evaluate(row, mode=EvaluationMode.HISTORICAL_REPLAY)
+    assert not decision.eligible
+    assert DecisionReasonCode.PAIR_UNAVAILABLE in decision.decision_reason_codes
+    assert DecisionReasonCode.EXCHANGE_RULE_UNPROVEN in decision.decision_reason_codes
+
+
+def test_currency_mark_requires_temporal_registry_evidence() -> None:
+    missing = CausalAssetMarkRegistry()
+    decision = gate(marks=missing).evaluate(
+        candidate(), mode=EvaluationMode.HISTORICAL_REPLAY
+    )
+    assert DecisionReasonCode.CURRENCY_MARK_UNPROVEN in decision.decision_reason_codes
+    with pytest.raises(ValueError, match="INVALID_CAUSAL_ASSET_MARK"):
+        CausalAssetMark("USDT", "USD", D("1"), 101, 100, "x", "source", "prov")
+
+
+def test_external_fee_is_included_in_negative_exit_limit() -> None:
+    rule = InventoryExitRule(
+        "PEG-RISK-EXT-FEE",
+        "rule-hash",
+        0,
+        20,
+        "synthetic preregistration",
+        DecisionReasonCode.PEG_RISK_ESCALATED,
+    )
+    fee_mark = CausalAssetMark(
+        "FDUSD", "USDT", D("1"), 3, 10, "mark:FDUSD:USDT", "fixture://mark", "test"
+    )
+    assessment = InventoryExitDecisionEngine.evaluate(
+        authorization_id="EXT-FEE",
+        slot_id="S",
+        slot_epoch=1,
+        quantity=D("5"),
+        origin_cost_basis=D("5"),
+        inventory_asset="USDC",
+        origin_asset="USDT",
+        exit_reservation_id="RETURN",
+        external_fee_marks=(fee_mark,),
+        now_us=3,
+        expires_at_us=10,
+        expected_hold_loss=D("0.2"),
+        opportunity_cost_of_lock=D("0"),
+        tail_risk_increase=D("0"),
+        realized_loss_of_exit=D("0.1"),
+        rule=rule,
+    )
+    assert assessment.authorization is not None
+    ledger = SlotLedger(
+        {"USDT": "10", "USDC": "0", "FDUSD": "1"},
+        marks_usd={"USDT": "1", "USDC": "1", "FDUSD": "1"},
+    )
+    ledger.create_slot("S", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
+    ledger.reserve_free("S", "ENTRY", asset="USDT", quantity=D("5"), now_us=1)
+    ledger.activate("ENTRY", now_us=1)
+    ledger.apply_fill(
+        "ENTRY",
+        PhysicalFill(
+            "F1", "USDCUSDT", "USDT", "USDC", D("5"), D("5"), "USDC", D("0"), 2
+        ),
+    )
+    ledger.register_inventory_reduction_authorization(assessment.authorization, now_us=3)
+    ledger.reserve_owned("S", "RETURN", asset="USDC", quantity=D("5"), now_us=4)
+    ledger.activate("RETURN", now_us=4)
+    ledger.apply_fill(
+        "RETURN",
+        PhysicalFill(
+            "F2",
+            "USDCUSDT",
+            "USDC",
+            "USDT",
+            D("5"),
+            D("4.9"),
+            "FDUSD",
+            D("0.5"),
+            5,
+        ),
+    )
+    with pytest.raises(ValueError, match="INEQUALITY_NOT_SATISFIED"):
+        ledger.settle_inventory_reduction(
+            "S", now_us=6, reduction_id="EXT-FEE", authorization=assessment.authorization
+        )
+    assert ledger.negative_exit_count == 0

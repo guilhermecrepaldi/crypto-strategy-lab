@@ -176,7 +176,7 @@ class CompletionProbabilityEstimator:
 
 
 class ExpectedLockTimeEstimator:
-    VERSION = "M034_COMPLETED_LOCK_PREFIX_V2"
+    VERSION = "M034_UNCENSORED_LOCK_PREFIX_V3"
 
     def __init__(
         self,
@@ -211,7 +211,7 @@ class ExpectedLockTimeEstimator:
             now_us=min(now_us, self.training_cutoff_us),
         )
         completed_rows = [row for row in rows if row.completed]
-        if len(completed_rows) < self.minimum_samples:
+        if len(completed_rows) != len(rows) or len(completed_rows) < self.minimum_samples:
             return None
         values = [row.observed_lock_seconds for row in completed_rows]
         expected = sum(values, ZERO) / D(len(values))

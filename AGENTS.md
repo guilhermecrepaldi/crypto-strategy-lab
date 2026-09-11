@@ -15,8 +15,10 @@ auditável separado de ciclos positivos. Thresholds exigem provenance e config h
 calibração não vira OOS. Preservar geometria7 ranks/C1+C2, ledgers/filas por venue,
 owned-return e cancel-ACK. Owned-return reserva capital antes de qualquer NEW_ENTRY;
 saída negativa deve ser autorizada no ledger antes do fill e comprovar retorno físico
-integral ao ativo de origem, sem resíduo. O primeiro review de `d009653` bloqueou a
-source; a correção está em revisão. Sem thresholds operacionais, universo,
+integral ao ativo de origem, sem resíduo e com fees externas all-in. Todos os books da
+rota canônica passam por universo/rules/fees; funding físico e mark causal são
+obrigatórios; Kraken não entra nos KPIs econômicos. Reviews de `d009653` e `1dd2f3d`
+bloquearam a source; a segunda correção está em revisão. Sem thresholds operacionais, universo,
 fee histórica selecionada, dataset/janela, runner, registro ou protocolo de replay.
 Nenhum replay, conta, Testnet, live, nova venue, leverage, perp, AMM ou yield.
 

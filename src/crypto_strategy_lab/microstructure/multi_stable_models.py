@@ -34,6 +34,42 @@ class SlotState(StrEnum):
 
 
 @dataclass(frozen=True)
+class CausalAssetMark:
+    base_asset: str
+    quote_asset: str
+    rate: D
+    observed_at_us: int
+    effective_until_us: int
+    record_id: str
+    source_reference: str
+    provenance: str
+
+    def __post_init__(self) -> None:
+        if (
+            not self.base_asset
+            or not self.quote_asset
+            or self.base_asset == self.quote_asset
+            or self.rate <= ZERO
+            or not self.rate.is_finite()
+            or self.observed_at_us < 0
+            or self.effective_until_us < self.observed_at_us
+            or not self.record_id
+            or not self.source_reference
+            or not self.provenance
+        ):
+            raise ValueError("M034_INVALID_CAUSAL_ASSET_MARK")
+
+    def rate_at(self, *, base_asset: str, quote_asset: str, time_us: int) -> D:
+        if (
+            base_asset != self.base_asset
+            or quote_asset != self.quote_asset
+            or not self.observed_at_us <= time_us <= self.effective_until_us
+        ):
+            raise ValueError("M034_CAUSAL_ASSET_MARK_NOT_APPLICABLE")
+        return self.rate
+
+
+@dataclass(frozen=True)
 class SymbolRule:
     symbol: str
     base_asset: str
@@ -230,6 +266,7 @@ class InventoryReductionAuthorization:
     inventory_asset: str
     origin_asset: str
     exit_reservation_id: str
+    external_fee_marks: tuple[CausalAssetMark, ...]
     decided_at_us: int
     expires_at_us: int
     rule_id: str
@@ -270,11 +307,20 @@ class InventoryReductionAuthorization:
             raise ValueError("M034_NEGATIVE_INVENTORY_REDUCTION_TERM")
         if self.realized_loss_of_exit <= ZERO:
             raise ValueError("M034_NON_POSITIVE_INVENTORY_REDUCTION_LOSS")
+        mark_assets = [mark.base_asset for mark in self.external_fee_marks]
+        if len(mark_assets) != len(set(mark_assets)) or any(
+            mark.quote_asset != self.origin_asset
+            or mark.observed_at_us > self.decided_at_us
+            or mark.effective_until_us < self.expires_at_us
+            for mark in self.external_fee_marks
+        ):
+            raise ValueError("M034_INVALID_INVENTORY_REDUCTION_FEE_MARKS")
 
 
 __all__ = [
     "ONE",
     "ZERO",
+    "CausalAssetMark",
     "ColumnRole",
     "D",
     "EconomicSlot",
