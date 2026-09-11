@@ -464,6 +464,7 @@ class M034ZeroLossScenario:
 
     def _market_snapshot(self, now_us: int) -> MarketRegimeSnapshot:
         assert self.last_book is not None
+        self._prune_flow(now_us)
         bid, ask = self.last_book["bids"][0][0], self.last_book["asks"][0][0]
         midpoint = (bid + ask) / D(2)
         spread_bps = (ask - bid) / midpoint * BPS

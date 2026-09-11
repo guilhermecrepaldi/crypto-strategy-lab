@@ -227,6 +227,20 @@ def test_no_self_fill() -> None:
     assert all(order.filled_quantity == 0 for order in scenario.orders.values())
 
 
+def test_stale_flow_cannot_pass_book_time_admission_gate() -> None:
+    scenario = M034ZeroLossScenario(config(), fee_bps=D(0))
+    scenario.receive_trade(
+        trade(START + 1_000_000, 1, price="0.9999", quantity="600", buyer_maker=True)
+    )
+    scenario.receive_trade(
+        trade(START + 2_000_000, 2, price="1.0001", quantity="600", buyer_maker=False)
+    )
+    scenario.receive_book(book(START + 120_000_000))
+    assert scenario._flow_rate() == 0
+    assert not scenario.orders
+    assert scenario.rejections["COMPATIBLE_FLOW_COLLAPSE"] > 0
+
+
 def test_one_trade_quantity_is_not_duplicated_across_touched_prices() -> None:
     queue = CausalQueueEstimator()
     for index, price in enumerate((D("0.9999"), D("0.9998")), 1):
