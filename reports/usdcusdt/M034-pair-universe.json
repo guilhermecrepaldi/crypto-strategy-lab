@@ -1,0 +1,91 @@
+{
+  "schema": "m034-binance-pair-universe-v1",
+  "registered_at": "2026-09-10T22:00:00-03:00",
+  "selection_basis": "CANONICAL_M032_CANDIDATE_BOOKS_PLUS_LOCAL_PHYSICAL_EVIDENCE;NO_MARKET_PERFORMANCE",
+  "economic_execution_venues": ["BINANCE"],
+  "retired_venues": ["KRAKEN"],
+  "source_authority": "src/crypto_strategy_lab/microstructure/multi_stable_data.py:CANDIDATE_BOOKS",
+  "pairs": [
+    {
+      "pair": "USDCUSDT",
+      "AVAILABLE": true,
+      "DATA_ELIGIBLE": true,
+      "data_eligible_dates": 12,
+      "FEE_ELIGIBLE": false,
+      "RULES_ELIGIBLE": false,
+      "SAFETY_ELIGIBLE": false,
+      "ECONOMIC_CANDIDATE": false,
+      "reason_codes": ["FEE_UNPROVEN", "EXCHANGE_RULE_UNPROVEN", "SAFETY_EVIDENCE_UNPROVEN"]
+    },
+    {
+      "pair": "FDUSDUSDT",
+      "AVAILABLE": false,
+      "DATA_ELIGIBLE": false,
+      "data_eligible_dates": 0,
+      "FEE_ELIGIBLE": false,
+      "RULES_ELIGIBLE": false,
+      "SAFETY_ELIGIBLE": false,
+      "ECONOMIC_CANDIDATE": false,
+      "reason_codes": ["PHYSICAL_L2_AND_TRADES_NOT_INVENTORIED"]
+    },
+    {
+      "pair": "FDUSDUSDC",
+      "AVAILABLE": false,
+      "DATA_ELIGIBLE": false,
+      "data_eligible_dates": 0,
+      "FEE_ELIGIBLE": false,
+      "RULES_ELIGIBLE": false,
+      "SAFETY_ELIGIBLE": false,
+      "ECONOMIC_CANDIDATE": false,
+      "reason_codes": ["PHYSICAL_L2_AND_TRADES_NOT_INVENTORIED"]
+    },
+    {
+      "pair": "USD1USDT",
+      "AVAILABLE": false,
+      "DATA_ELIGIBLE": false,
+      "data_eligible_dates": 0,
+      "FEE_ELIGIBLE": false,
+      "RULES_ELIGIBLE": false,
+      "SAFETY_ELIGIBLE": false,
+      "ECONOMIC_CANDIDATE": false,
+      "reason_codes": ["PHYSICAL_L2_AND_TRADES_NOT_INVENTORIED"]
+    },
+    {
+      "pair": "USD1USDC",
+      "AVAILABLE": false,
+      "DATA_ELIGIBLE": false,
+      "data_eligible_dates": 0,
+      "FEE_ELIGIBLE": false,
+      "RULES_ELIGIBLE": false,
+      "SAFETY_ELIGIBLE": false,
+      "ECONOMIC_CANDIDATE": false,
+      "reason_codes": ["PHYSICAL_L2_AND_TRADES_NOT_INVENTORIED"]
+    },
+    {
+      "pair": "TUSDUSDT",
+      "AVAILABLE": false,
+      "DATA_ELIGIBLE": false,
+      "data_eligible_dates": 0,
+      "FEE_ELIGIBLE": false,
+      "RULES_ELIGIBLE": false,
+      "SAFETY_ELIGIBLE": false,
+      "ECONOMIC_CANDIDATE": false,
+      "reason_codes": ["PHYSICAL_L2_AND_TRADES_NOT_INVENTORIED"]
+    },
+    {
+      "pair": "USDPUSDT",
+      "AVAILABLE": false,
+      "DATA_ELIGIBLE": false,
+      "data_eligible_dates": 0,
+      "FEE_ELIGIBLE": false,
+      "RULES_ELIGIBLE": false,
+      "SAFETY_ELIGIBLE": false,
+      "ECONOMIC_CANDIDATE": false,
+      "reason_codes": ["PHYSICAL_L2_AND_TRADES_NOT_INVENTORIED"]
+    }
+  ],
+  "economic_candidate_pairs": [],
+  "selected_pairs": [],
+  "ready_for_replay": false,
+  "hash_contract": "SHA256_OF_EXACT_LF_FILE_BYTES;HASH_STORED_EXTERNALLY"
+}

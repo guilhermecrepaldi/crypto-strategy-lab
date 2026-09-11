@@ -1,0 +1,134 @@
+{
+  "schema": "m034-binance-physical-dataset-manifest-v1",
+  "registered_at": "2026-09-10T22:00:00-03:00",
+  "exchange": "BINANCE",
+  "source": "TARDIS_FREE_REPLAY_NATIVE_BINANCE_DEPTH_PLUS_BINANCE_PUBLIC_TRADES",
+  "source_manifest": "data/manifests/usdcusdt-tardis-free-l2.json",
+  "source_manifest_sha256": "1c564f88935a7c694d2f15cd4c9a8710013a19095f4eaece32529b22e7ba7fa2",
+  "validation_summary": "reports/usdcusdt/L2-monthly-sample-validation.json",
+  "validation_semantics": "REST_SNAPSHOT_PLUS_BUFFERED_BRIDGE_THEN_NONSTALE_DELTAS;INDIVIDUAL_TRADES_BOUND_AT_NATIVE_REPORTED_PRECISION",
+  "performance_fields_read_for_selection": false,
+  "units": [
+    {
+      "pair": "USDCUSDT", "date": "2025-01-01", "data_eligible": true,
+      "l2": {"path": "data/l2/tardis/binance/usdcusdt/2025-01-01/incremental_book_L2.csv.gz", "bytes": 7090568, "sha256": "cd1fd61021c74911bb73104353b23ac31e8cf3c958e16dcfcd1258d80a819305", "rows": 828955},
+      "trades": {"path": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2025-01-01.zip", "bytes": 3170155, "sha256": "80e7138acd1ad8255bb2dac1d1a1c7d60ef0c104f4979da70e15d1af27b2e572", "rows": 254205},
+      "validation": {"path": "data/l2/tardis/binance/usdcusdt/2025-01-01/validation.json", "sha256": "9eb8bf9bad9b0664b184b57d9dc6894f2aabdfb2c91c7bc178bb58229a917ccd"},
+      "coverage": {"start_exchange_us": 1735689600037000, "end_exchange_us_inclusive": 1735775999937000, "initial_unavailable_us": 9412998},
+      "gaps": {"coverage": "PASS", "native_sequence": "PASS", "normalized_binding": "PASS", "trade_binding": "PASS"}
+    },
+    {
+      "pair": "USDCUSDT", "date": "2025-02-01", "data_eligible": true,
+      "l2": {"path": "data/l2/tardis/binance/usdcusdt/2025-02-01/incremental_book_L2.csv.gz", "bytes": 7941890, "sha256": "6f6ed77db85acfc053c1b2302121647861b0e620a36e13be1cc6f1070e970915", "rows": 934812},
+      "trades": {"path": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2025-02-01.zip", "bytes": 4124785, "sha256": "295d6977fe72aac758802dccfd2f6ec27f7a03db84e5f1ea3bab56226626ad1d", "rows": 326480},
+      "validation": {"path": "data/l2/tardis/binance/usdcusdt/2025-02-01/validation.json", "sha256": "c593549c61fb5241298841d5eaa5a52d439627675cb2ec5b506c04c917be7dc7"},
+      "coverage": {"start_exchange_us": 1738368000137000, "end_exchange_us_inclusive": 1738454399937000, "initial_unavailable_us": 10249780},
+      "gaps": {"coverage": "PASS", "native_sequence": "PASS", "normalized_binding": "PASS", "trade_binding": "PASS"}
+    },
+    {
+      "pair": "USDCUSDT", "date": "2025-03-01", "data_eligible": true,
+      "l2": {"path": "data/l2/tardis/binance/usdcusdt/2025-03-01/incremental_book_L2.csv.gz", "bytes": 9270609, "sha256": "219200fade787e5393014d8fa31dd60ed8e04ad555eea96fa7c69990c27f5acb", "rows": 969097},
+      "trades": {"path": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2025-03-01.zip", "bytes": 4098163, "sha256": "9bb9eeeba6ba2b94801622238be241627583d0ff559975ee8777455cb92686f8", "rows": 347113},
+      "validation": {"path": "data/l2/tardis/binance/usdcusdt/2025-03-01/validation.json", "sha256": "4146f720210f5788aa9e42b793adda4523d49bfe08ac119cc7a45af3d19aeb9e"},
+      "coverage": {"start_exchange_us": 1740787200037499, "end_exchange_us_inclusive": 1740873599937850, "initial_unavailable_us": 13216064},
+      "gaps": {"coverage": "PASS", "native_sequence": "PASS", "normalized_binding": "PASS", "trade_binding": "PASS"}
+    },
+    {
+      "pair": "USDCUSDT", "date": "2025-04-01", "data_eligible": true,
+      "l2": {"path": "data/l2/tardis/binance/usdcusdt/2025-04-01/incremental_book_L2.csv.gz", "bytes": 11109259, "sha256": "c1f969dd011b2214d2bfcf47de8af5717437d7e1d597c78eb90414522c490c5c", "rows": 1225694},
+      "trades": {"path": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2025-04-01.zip", "bytes": 6401626, "sha256": "32cfb269bf4719ccf92ce2f0fecd4abaf25aa405ed3529533a935a6dfc29b2c6", "rows": 600715},
+      "validation": {"path": "data/l2/tardis/binance/usdcusdt/2025-04-01/validation.json", "sha256": "a15147486153cfb2fb30287d0678e9775ac25253aae5dc7306c4c27732cf4dc1"},
+      "coverage": {"start_exchange_us": 1743465600037748, "end_exchange_us_inclusive": 1743551999837652, "initial_unavailable_us": 1302055},
+      "gaps": {"coverage": "PASS", "native_sequence": "PASS", "normalized_binding": "PASS", "trade_binding": "PASS"}
+    },
+    {
+      "pair": "USDCUSDT", "date": "2025-06-01", "data_eligible": true,
+      "l2": {"path": "data/l2/tardis/binance/usdcusdt/2025-06-01/incremental_book_L2.csv.gz", "bytes": 8797010, "sha256": "0c1ff28cb7abc7a88a4953a078cfc991ff84d3979e26801081e25c4c6644d602", "rows": 942763},
+      "trades": {"path": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2025-06-01.zip", "bytes": 2444623, "sha256": "b5bdede6a069eeda804afad45e1e383f362993c77884dc863c5f5de6d4c637eb", "rows": 179921},
+      "validation": {"path": "data/l2/tardis/binance/usdcusdt/2025-06-01/validation.json", "sha256": "f543fbbeb7c7ebe1212713bdb2338b2c0ae47a7a5f8442f4e2bad1369a88723b"},
+      "coverage": {"start_exchange_us": 1748736000037725, "end_exchange_us_inclusive": 1748822399737403, "initial_unavailable_us": 2302083},
+      "gaps": {"coverage": "PASS", "native_sequence": "PASS", "normalized_binding": "PASS", "trade_binding": "PASS"}
+    },
+    {
+      "pair": "USDCUSDT", "date": "2025-08-01", "data_eligible": true,
+      "l2": {"path": "data/l2/tardis/binance/usdcusdt/2025-08-01/incremental_book_L2.csv.gz", "bytes": 10655935, "sha256": "42aa756f110cb1f241e32915851e8f8f4195f23d9dc7ebef9d3d316abf3d1836", "rows": 1102002},
+      "trades": {"path": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2025-08-01.zip", "bytes": 6745427, "sha256": "20c2ac3c67bb5c7cbd92d58cf023e8dedd3018077e3a02f7babee5119a4e2e7e", "rows": 535551},
+      "validation": {"path": "data/l2/tardis/binance/usdcusdt/2025-08-01/validation.json", "sha256": "9ba12401fae1a4f5f05a9a25407041f7dc60ea1168ef90714a3fb85c7e62cb27"},
+      "coverage": {"start_exchange_us": 1754006400037565, "end_exchange_us_inclusive": 1754092799437604, "initial_unavailable_us": 784423},
+      "gaps": {"coverage": "PASS", "native_sequence": "PASS", "normalized_binding": "PASS", "trade_binding": "PASS"}
+    },
+    {
+      "pair": "USDCUSDT", "date": "2026-01-01", "data_eligible": true,
+      "l2": {"path": "data/l2/tardis/binance/usdcusdt/2026-01-01/incremental_book_L2.csv.gz", "bytes": 11392252, "sha256": "2b03fa8b1b352fa7658b1c1c053533c75eb588c141d149f1284d677a55a4ab8b", "rows": 1223832},
+      "trades": {"path": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2026-01-01.zip", "bytes": 4161405, "sha256": "a7d8a5f44fffecc1e29294926a23f936e82c82b87915ad40c740504edfe391a4", "rows": 305359},
+      "validation": {"path": "data/l2/tardis/binance/usdcusdt/2026-01-01/validation.json", "sha256": "18b45067498be779645e0b8b7c5cf8ff1e4c7fdfe60d3433eca4ea94a70e173c"},
+      "coverage": {"start_exchange_us": 1767225600037599, "end_exchange_us_inclusive": 1767311999937323, "initial_unavailable_us": 1122713},
+      "gaps": {"coverage": "PASS", "native_sequence": "PASS", "normalized_binding": "PASS", "trade_binding": "PASS"}
+    },
+    {
+      "pair": "USDCUSDT", "date": "2026-02-01", "data_eligible": true,
+      "l2": {"path": "data/l2/tardis/binance/usdcusdt/2026-02-01/incremental_book_L2.csv.gz", "bytes": 11371301, "sha256": "e8ddf2cd7da1cb7f2793b490d442862a0bab97961bd26fa9f93d039afdab71eb", "rows": 1216978},
+      "trades": {"path": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2026-02-01.zip", "bytes": 5752927, "sha256": "46c17975b798a2edeeec607ef145f4886ab202e6cab4db0ee45acdf6623a0c46", "rows": 428821},
+      "validation": {"path": "data/l2/tardis/binance/usdcusdt/2026-02-01/validation.json", "sha256": "1007915fae7fe901b6de1c27b26db1cf3af24e1a350e7c5c96e5affa1e8cd31f"},
+      "coverage": {"start_exchange_us": 1769904000037498, "end_exchange_us_inclusive": 1769990399937336, "initial_unavailable_us": 3592211},
+      "gaps": {"coverage": "PASS", "native_sequence": "PASS", "normalized_binding": "PASS", "trade_binding": "PASS"}
+    },
+    {
+      "pair": "USDCUSDT", "date": "2026-03-01", "data_eligible": true,
+      "l2": {"path": "data/l2/tardis/binance/usdcusdt/2026-03-01/incremental_book_L2.csv.gz", "bytes": 5693406, "sha256": "feb71cd15841dfe4fa2020d445b395e5c34cf062a675a2ff1e8d696c8a590cf4", "rows": 494318},
+      "trades": {"path": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2026-03-01.zip", "bytes": 4786363, "sha256": "683bd2da10880362a34ee20dda4e8496e703d483433c2e6effc45e58dd7f2096", "rows": 383704},
+      "validation": {"path": "data/l2/tardis/binance/usdcusdt/2026-03-01/validation.json", "sha256": "ff46aa238705f40c22c11c2c2dd9378cb0372040ab432ae83f543772575bf9f6"},
+      "coverage": {"start_exchange_us": 1772323200037407, "end_exchange_us_inclusive": 1772409599837547, "initial_unavailable_us": 1595847},
+      "gaps": {"coverage": "PASS", "native_sequence": "PASS", "normalized_binding": "PASS", "trade_binding": "PASS"}
+    },
+    {
+      "pair": "USDCUSDT", "date": "2026-04-01", "data_eligible": true,
+      "l2": {"path": "data/l2/tardis/binance/usdcusdt/2026-04-01/incremental_book_L2.csv.gz", "bytes": 10910392, "sha256": "ac6ee757432aec7267587bb8f793280ec6a3df5c59db0cd49c387951286038ba", "rows": 1164580},
+      "trades": {"path": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2026-04-01.zip", "bytes": 4594238, "sha256": "f7e00f523b07d6d0511bcc642a1ecb2b6717714055002acab9e1be0578814a95", "rows": 337571},
+      "validation": {"path": "data/l2/tardis/binance/usdcusdt/2026-04-01/validation.json", "sha256": "f019f0e19d08c3f668a09f91ff2ed67a4da896d00626f423a6900822bb5fd9ca"},
+      "coverage": {"start_exchange_us": 1775001600037504, "end_exchange_us_inclusive": 1775087999937502, "initial_unavailable_us": 2562461},
+      "gaps": {"coverage": "PASS", "native_sequence": "PASS", "normalized_binding": "PASS", "trade_binding": "PASS"}
+    },
+    {
+      "pair": "USDCUSDT", "date": "2026-05-01", "data_eligible": true,
+      "l2": {"path": "data/l2/tardis/binance/usdcusdt/2026-05-01/incremental_book_L2.csv.gz", "bytes": 9470376, "sha256": "3854b37148f4a9197d71105035781fa8137090723ce8778614570023a511fe63", "rows": 957184},
+      "trades": {"path": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2026-05-01.zip", "bytes": 4362287, "sha256": "a81867325ae28405d59455f68441b77834cf57e59b707ec30392a1efe186c99a", "rows": 332945},
+      "validation": {"path": "data/l2/tardis/binance/usdcusdt/2026-05-01/validation.json", "sha256": "1b7ee1a81a4abe262187b12911605fc5f6b6f851998ad56340998c755f2d6d21"},
+      "coverage": {"start_exchange_us": 1777593600537594, "end_exchange_us_inclusive": 1777679999938171, "initial_unavailable_us": 3639610},
+      "gaps": {"coverage": "PASS", "native_sequence": "PASS", "normalized_binding": "PASS", "trade_binding": "PASS"}
+    },
+    {
+      "pair": "USDCUSDT", "date": "2026-07-01", "data_eligible": true,
+      "l2": {"path": "data/l2/tardis/binance/usdcusdt/2026-07-01/incremental_book_L2.csv.gz", "bytes": 11586397, "sha256": "d3c5e3c660afe30f283187e4a145d0f76ccfba9c409772896e65c6fa28bd2789", "rows": 1286008},
+      "trades": {"path": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2026-07-01.zip", "bytes": 6789144, "sha256": "18544775f1e6ad4d00540f31f09d987559e9dffdcc7fd2c1d3a779a94f87549b", "rows": 503449},
+      "validation": {"path": "data/l2/tardis/binance/usdcusdt/2026-07-01/validation.json", "sha256": "14f99d9571309032847b3ffc011142455793c3ec201e40c1ecc9e8c51e16cec7"},
+      "coverage": {"start_exchange_us": 1782864000037424, "end_exchange_us_inclusive": 1782950399837525, "initial_unavailable_us": 1373882},
+      "gaps": {"coverage": "PASS", "native_sequence": "PASS", "normalized_binding": "PASS", "trade_binding": "PASS"}
+    }
+  ],
+  "rejected_units": [
+    {"pair": "USDCUSDT", "date": "2025-05-01", "native_sequence": "FAIL", "normalized_binding": "FAIL", "trade_binding": "FAIL"},
+    {"pair": "USDCUSDT", "date": "2025-07-01", "native_sequence": "FAIL", "normalized_binding": "FAIL", "trade_binding": "FAIL"},
+    {"pair": "USDCUSDT", "date": "2025-09-01", "native_sequence": "FAIL", "normalized_binding": "FAIL", "trade_binding": "FAIL"},
+    {"pair": "USDCUSDT", "date": "2025-10-01", "native_sequence": "FAIL", "normalized_binding": "FAIL", "trade_binding": "FAIL"},
+    {"pair": "USDCUSDT", "date": "2025-11-01", "native_sequence": "PASS", "normalized_binding": "FAIL", "trade_binding": "PASS"},
+    {"pair": "USDCUSDT", "date": "2025-12-01", "native_sequence": "FAIL", "normalized_binding": "FAIL", "trade_binding": "FAIL"},
+    {"pair": "USDCUSDT", "date": "2026-06-01", "native_sequence": "FAIL", "normalized_binding": "FAIL", "trade_binding": "FAIL"},
+    {"pair": "USDCUSDT", "date": "2026-08-01", "native_sequence": "FAIL", "normalized_binding": "FAIL", "trade_binding": "PASS"},
+    {"pair": "USDCUSDT", "date": "2026-09-01", "native_sequence": "FAIL", "normalized_binding": "FAIL", "trade_binding": "FAIL"}
+  ],
+  "summary": {
+    "inventoried_units": 21,
+    "data_eligible_units": 12,
+    "rejected_units": 9,
+    "other_candidate_pairs_with_data_eligible_units": 0,
+    "economic_eligible_units": 0
+  },
+  "dataset_frozen_for_replay": false,
+  "blockers": [
+    "ALL_DATA_ELIGIBLE_UNITS_ARE_CALIBRATION_NOT_OOS",
+    "NO_UNIT_HAS_PROVEN_HISTORICAL_FEES_AND_COMPLETE_HISTORICAL_RULES",
+    "FINAL_WINDOW_NOT_SELECTED"
+  ],
+  "hash_contract": "SHA256_OF_EXACT_LF_FILE_BYTES;HASH_STORED_EXTERNALLY"
+}

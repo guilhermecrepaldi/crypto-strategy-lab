@@ -1,0 +1,50 @@
+{
+  "schema": "m034-binance-fee-evidence-v1",
+  "acquired_at": "2026-09-10T22:00:00-03:00",
+  "venue": "BINANCE",
+  "historical_replay_requirement": "PROVEN_HISTORICAL_ONLY",
+  "account_accessed": false,
+  "records": [
+    {
+      "pair": "USDCUSDT",
+      "candidate_dates": [
+        "2025-01-01", "2025-02-01", "2025-03-01", "2025-04-01",
+        "2025-06-01", "2025-08-01", "2026-01-01", "2026-02-01",
+        "2026-03-01", "2026-04-01", "2026-05-01", "2026-07-01"
+      ],
+      "maker_fee": null,
+      "taker_fee": null,
+      "fee_semantics": "UNKNOWN_FOR_EXACT_HISTORICAL_ACCOUNT_TIER_PROMOTION_AND_DEBIT_ASSET",
+      "fee_asset_rules": null,
+      "effective_from": null,
+      "effective_until": null,
+      "account_tier_context": "UNKNOWN_NOT_AUTHORIZED",
+      "evidence_status": "UNPROVEN",
+      "source_reference": "docs/binance/BINANCE_USDCUSDT_EXECUTION_AUTHORITY.md",
+      "provenance": "EXISTING_OFFICIAL_SOURCE_PACK_REVIEW;CAPTCHA_RESPONSES_DO_NOT_PROVE_ANNOUNCEMENT_CONTENT"
+    },
+    {
+      "pair": "USDCUSDT",
+      "candidate_dates": [],
+      "maker_fee": "0.001",
+      "taker_fee": "0.001",
+      "fee_semantics": "ORDINARY_FORWARD_TABLE_REFERENCE_ONLY",
+      "fee_asset_rules": "SIDE_AND_ACCOUNT_DEPENDENT",
+      "effective_from": null,
+      "effective_until": null,
+      "account_tier_context": "REGULAR_NON_PROMOTIONAL_REFERENCE",
+      "evidence_status": "PROVEN_FORWARD",
+      "source_reference": "https://www.binance.com/en/fee/trading",
+      "provenance": "OFFICIAL_CURRENT_TABLE_REFERENCE;NOT_HISTORICAL_USDCUSDT_ACTUAL"
+    }
+  ],
+  "other_candidate_pairs": ["FDUSDUSDT", "FDUSDUSDC", "USD1USDT", "USD1USDC", "TUSDUSDT", "USDPUSDT"],
+  "other_candidate_pair_status": "UNPROVEN_NO_PHYSICAL_DATE_UNIT",
+  "historical_fee_eligible_units": [],
+  "blockers": [
+    "NO_DATE_BOUNDED_PROVEN_HISTORICAL_FEE_RECORD_FOR_ANY_DATA_ELIGIBLE_UNIT",
+    "SIGNED_ACCOUNT_COMMISSION_ENDPOINT_NOT_AUTHORIZED",
+    "CURRENT_FEE_IS_NOT_HISTORICAL_FEE"
+  ],
+  "ready_for_replay": false
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "m034-estimator-readiness-v1",
+  "registered_at": "2026-09-10T22:00:00-03:00",
+  "calibration_set_hash": "694752eb0f83ce10315e7cfffdb86dea5601c60ea92373d5821dbfb508f814a0",
+  "estimators": {
+    "CompletionProbabilityEstimator": {"status": "NOT_CALIBRATED", "artifact_hash": null, "blocker": "CALIBRATION_LABELS_UNAVAILABLE_WITHOUT_PROHIBITED_ECONOMIC_REPLAY"},
+    "ExpectedLockTimeEstimator": {"status": "NOT_CALIBRATED", "artifact_hash": null, "blocker": "CENSORING_METHOD_AND_OPERATIONAL_LABELS_NOT_FROZEN"},
+    "CausalAdverseSelectionEstimator": {"status": "NOT_CALIBRATED", "artifact_hash": null, "blocker": "SIDE_REFERENCE_HORIZON_AND_LABEL_POPULATION_NOT_FROZEN"},
+    "CausalExecutionCostEstimator": {"status": "NOT_CALIBRATED", "artifact_hash": null, "blocker": "NO_HISTORICAL_EXECUTION_OR_CONSERVATIVE_BOUND_AUTHORITY"}
+  },
+  "causality_invariants": [
+    "TRAINING_CUTOFF_LE_DECISION_TIME",
+    "FEATURE_CUTOFF_LE_DECISION_TIME",
+    "LABEL_AVAILABLE_AT_LE_DECISION_TIME",
+    "CENSORED_IS_NOT_COMPLETED",
+    "MARGINAL_LEG_PROBABILITIES_NOT_MULTIPLIED_WITHOUT_JOINT_AUTHORITY",
+    "UNKNOWN_IS_NOT_ZERO"
+  ],
+  "economic_calibration_replay_runs": 0,
+  "ready_for_replay": false
+}

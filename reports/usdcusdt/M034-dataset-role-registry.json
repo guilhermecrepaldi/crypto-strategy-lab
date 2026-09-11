@@ -1,0 +1,21 @@
+{
+  "schema": "m034-dataset-role-registry-v1",
+  "registered_at": "2026-09-10T22:00:00-03:00",
+  "role_identity": "UNDERLYING_VENUE_PAIR_INTERVAL_AND_CONTENT_NOT_FILENAME",
+  "calibration_set_hash": "694752eb0f83ce10315e7cfffdb86dea5601c60ea92373d5821dbfb508f814a0",
+  "calibration_units": [
+    "BINANCE:USDCUSDT:2025-01-01", "BINANCE:USDCUSDT:2025-02-01",
+    "BINANCE:USDCUSDT:2025-03-01", "BINANCE:USDCUSDT:2025-04-01",
+    "BINANCE:USDCUSDT:2025-06-01", "BINANCE:USDCUSDT:2025-08-01",
+    "BINANCE:USDCUSDT:2026-01-01", "BINANCE:USDCUSDT:2026-02-01",
+    "BINANCE:USDCUSDT:2026-03-01", "BINANCE:USDCUSDT:2026-04-01",
+    "BINANCE:USDCUSDT:2026-05-01", "BINANCE:USDCUSDT:2026-07-01"
+  ],
+  "calibration_reason": "ALL_LOCALLY_DATA_ELIGIBLE_TAPES_WERE_PREVIOUSLY_EXPOSED_TO_M016_M030_DEVELOPMENT_OR_REPORTING",
+  "validation_oos_pool_hash": null,
+  "validation_oos_units": [],
+  "validation_oos_status": "EMPTY_NO_INDEPENDENT_PHYSICAL_L2_PLUS_TRADES_UNIT",
+  "same_hash_cannot_have_both_roles": true,
+  "renaming_or_renormalizing_does_not_create_oos": true,
+  "ready_for_replay": false
+}

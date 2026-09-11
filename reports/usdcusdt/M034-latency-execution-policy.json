@@ -1,0 +1,22 @@
+{
+  "schema": "m034-latency-execution-policy-v1",
+  "registered_at": "2026-09-10T22:00:00-03:00",
+  "status": "UNRESOLVED",
+  "latency_policy_hash": null,
+  "execution_cost_model_hash": null,
+  "market_data_delivery": "UNKNOWN",
+  "submit_to_activation_ack": "UNKNOWN",
+  "cancel_request_to_cancel_ack": "UNKNOWN",
+  "requote_latency": "UNKNOWN",
+  "tick_loss": "UNKNOWN",
+  "requote_cost": "UNKNOWN",
+  "crossing_cost": "UNKNOWN",
+  "taker_contingency": "UNKNOWN",
+  "impact": "UNKNOWN",
+  "slippage": "UNKNOWN",
+  "latency_cost": "UNKNOWN",
+  "zero_latency_authorized": false,
+  "unknown_cost_policy": "UNRESOLVED",
+  "blocker": "OBJECTIVE_EVIDENCE_OR_OWNER_PREREGISTERED_CONSERVATIVE_BOUNDS_REQUIRED",
+  "ready_for_replay": false
+}

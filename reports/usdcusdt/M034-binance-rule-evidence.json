@@ -1,0 +1,58 @@
+{
+  "schema": "m034-binance-exchange-rule-evidence-v1",
+  "acquired_at": "2026-09-10T22:00:00-03:00",
+  "venue": "BINANCE",
+  "historical_replay_requirement": "PROVEN_HISTORICAL_ONLY",
+  "records": [
+    {
+      "pair": "USDCUSDT",
+      "effective_from": "2026-09-07T21:28:43Z",
+      "effective_until": null,
+      "evidence_status": "PROVEN_FORWARD",
+      "source_reference": "https://data-api.binance.vision/api/v3/exchangeInfo?symbol=USDCUSDT",
+      "source_artifact": "artifacts/binance/official-sources/20260907-b10/exchangeInfo.json",
+      "source_sha256": "d0e567bb6e74260f8474f05dc831e6107b4c7297ba8340896ae1e6a5cf572c85",
+      "status": "TRADING",
+      "tickSize": "0.00001000",
+      "stepSize": "1.00000000",
+      "minQty": "1.00000000",
+      "maxQty": "10000000.00000000",
+      "minNotional": "5.00000000",
+      "maxNotional": "9000000.00000000",
+      "price_filter": {"minPrice": "0.80000000", "maxPrice": "1.20000000"},
+      "notional_filter": {"applyMinToMarket": true, "applyMaxToMarket": false, "avgPriceMins": 5},
+      "provenance": "PUBLIC_OFFICIAL_ENDPOINT_OBSERVATION;DO_NOT_BACKPROJECT"
+    },
+    {
+      "pair": "USDCUSDT",
+      "candidate_dates": [
+        "2025-01-01", "2025-02-01", "2025-03-01", "2025-04-01",
+        "2025-06-01", "2025-08-01", "2026-01-01", "2026-02-01",
+        "2026-03-01", "2026-04-01", "2026-05-01", "2026-07-01"
+      ],
+      "effective_from": null,
+      "effective_until": null,
+      "evidence_status": "UNPROVEN",
+      "source_reference": "reports/usdcusdt/B10-binance-rule-timeline.json",
+      "tickSize": "PARTIAL_TIMELINE_ONLY",
+      "stepSize": null,
+      "minQty": null,
+      "maxQty": null,
+      "minNotional": null,
+      "maxNotional": null,
+      "price_filter": null,
+      "notional_filter": null,
+      "status": null,
+      "provenance": "HISTORICAL_CONTINUITY_NOT_PROVEN_FOR_COMPLETE_FILTER_SET"
+    }
+  ],
+  "other_candidate_pairs": ["FDUSDUSDT", "FDUSDUSDC", "USD1USDT", "USD1USDC", "TUSDUSDT", "USDPUSDT"],
+  "other_candidate_pair_status": "UNPROVEN_NO_PHYSICAL_DATE_UNIT",
+  "historical_rule_eligible_units": [],
+  "blockers": [
+    "NO_COMPLETE_DATE_BOUNDED_HISTORICAL_FILTER_SET",
+    "CURRENT_EXCHANGE_INFO_IS_NOT_HISTORICAL_EVIDENCE",
+    "PARTIAL_TICK_TIMELINE_CANNOT_VALIDATE_OTHER_FILTERS_OR_SYMBOL_STATUS"
+  ],
+  "ready_for_replay": false
+}
