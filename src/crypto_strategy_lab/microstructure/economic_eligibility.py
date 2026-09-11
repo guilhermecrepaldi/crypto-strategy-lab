@@ -31,6 +31,7 @@ from crypto_strategy_lab.microstructure.multi_venue_models import (
     FeeEvidenceStatus,
     Venue,
     VenueFeeProfile,
+    VenueSymbolRule,
 )
 
 BPS = D("10000")
@@ -93,6 +94,12 @@ class DatasetRole(StrEnum):
     VALIDATION_OOS = "VALIDATION_OOS"
 
 
+class RuleEvidenceStatus(StrEnum):
+    PROVEN_HISTORICAL = "PROVEN_HISTORICAL"
+    PROVEN_FORWARD = "PROVEN_FORWARD"
+    UNPROVEN = "UNPROVEN"
+
+
 class DecisionReasonCode(StrEnum):
     ELIGIBLE = "ELIGIBLE"
     EDGE_BELOW_MINIMUM = "EDGE_BELOW_MINIMUM"
@@ -121,6 +128,11 @@ class DecisionReasonCode(StrEnum):
     CAPITAL_PENDING_CANCEL_ACK = "CAPITAL_PENDING_CANCEL_ACK"
     MARKET_SAFETY_BLOCK = "MARKET_SAFETY_BLOCK"
     DATA_INSUFFICIENT = "DATA_INSUFFICIENT"
+    PAIR_UNAVAILABLE = "PAIR_UNAVAILABLE"
+    PAIR_EVIDENCE_UNPROVEN = "PAIR_EVIDENCE_UNPROVEN"
+    EXCHANGE_RULE_UNPROVEN = "EXCHANGE_RULE_UNPROVEN"
+    EXCHANGE_RULE_VIOLATION = "EXCHANGE_RULE_VIOLATION"
+    THRESHOLD_NOT_EFFECTIVE = "THRESHOLD_NOT_EFFECTIVE"
     TAIL_RISK_TOO_HIGH = "TAIL_RISK_TOO_HIGH"
     INVENTORY_EXPOSURE_TOO_HIGH = "INVENTORY_EXPOSURE_TOO_HIGH"
     NEGATIVE_EXIT_NOT_ALLOWED_COSMETIC = "NEGATIVE_EXIT_NOT_ALLOWED_COSMETIC"
@@ -164,6 +176,7 @@ class ThresholdDefinition:
             or not self.derivation_method
             or self.effective_from_us < 0
             or self.frozen_at_us < 0
+            or not self.value.is_finite()
         ):
             raise ValueError("M034_THRESHOLD_PROVENANCE_REQUIRED")
         if self.source_type == ThresholdSourceType.TRAINING_DATA_ESTIMATE and not (
@@ -226,14 +239,22 @@ class ThresholdRegistry:
         )
         self._by_name = by_name
 
-    def value(self, name: str, *, unit: str) -> D:
+    def value(self, name: str, *, unit: str, at_time_us: int | None = None) -> D:
         try:
             row = self._by_name[name]
         except KeyError as exc:
             raise ValueError("M034_THRESHOLD_MISSING") from exc
         if row.unit != unit:
             raise ValueError("M034_THRESHOLD_UNIT_MISMATCH")
+        if at_time_us is not None and row.effective_from_us > at_time_us:
+            raise ValueError("M034_THRESHOLD_NOT_EFFECTIVE")
         return row.value
+
+    def validate_effective_at(self, time_us: int) -> None:
+        if time_us < 0 or any(
+            row.effective_from_us > time_us for row in self._by_name.values()
+        ):
+            raise ValueError("M034_THRESHOLD_NOT_EFFECTIVE")
 
 
 class DatasetRoleRegistry:
@@ -277,8 +298,12 @@ class M034Policy:
         if self.minimum_net_edge_bps <= ZERO:
             raise ValueError("M034_MINIMUM_NET_EDGE_MUST_BE_POSITIVE")
         if self.unknown_cost_policy == UnknownCostPolicy.CONSERVATIVE_BOUND:
-            self.thresholds.value("UNKNOWN_EXECUTION_COST_BOUND", unit="bps")
-            self.thresholds.value("UNKNOWN_ADVERSE_SELECTION_BOUND", unit="bps")
+            bounds = (
+                self.thresholds.value("UNKNOWN_EXECUTION_COST_BOUND", unit="bps"),
+                self.thresholds.value("UNKNOWN_ADVERSE_SELECTION_BOUND", unit="bps"),
+            )
+            if any(value < ZERO or not value.is_finite() for value in bounds):
+                raise ValueError("M034_INVALID_CONSERVATIVE_COST_BOUND")
 
     @property
     def threshold_config_hash(self) -> str:
@@ -374,10 +399,7 @@ class VenuePairFeeRegistry:
             if profile.book == book
             and profile.effective_start_us <= time_us
             and (profile.effective_end_us is None or time_us < profile.effective_end_us)
-            and (
-                profile.evidence_status != FeeEvidenceStatus.ACCOUNT_SPECIFIC
-                or profile.account_tier_assumption == account_context
-            )
+            and profile.account_tier_assumption == account_context
         ]
         allowed = (
             {FeeEvidenceStatus.PROVEN_HISTORICAL}
@@ -395,8 +417,57 @@ class VenuePairFeeRegistry:
             and (mode == EvaluationMode.HISTORICAL_REPLAY or profile.acquired_at_us <= time_us)
         ]
         if len(candidates) > 1:
-            raise ValueError("M034_AMBIGUOUS_FEE_PROFILE")
+            return None
         return candidates[0] if candidates else None
+
+
+@dataclass(frozen=True)
+class VenueSymbolRuleRecord:
+    rule: VenueSymbolRule
+    evidence_status: RuleEvidenceStatus
+    acquired_at_us: int
+    record_id: str
+    source_reference: str
+
+    def __post_init__(self) -> None:
+        if (
+            self.acquired_at_us < 0
+            or not self.record_id
+            or not self.source_reference
+            or not self.rule.provenance
+        ):
+            raise ValueError("M034_INVALID_RULE_EVIDENCE")
+
+
+class VenuePairRuleRegistry:
+    """Temporal exchange-rule authority; current rules cannot prove historical orders."""
+
+    def __init__(self) -> None:
+        self._records: list[VenueSymbolRuleRecord] = []
+
+    def add(self, record: VenueSymbolRuleRecord) -> None:
+        if record in self._records:
+            raise ValueError("M034_DUPLICATE_RULE_RECORD")
+        self._records.append(record)
+
+    def resolve(
+        self, book: BookKey, *, time_us: int, mode: EvaluationMode
+    ) -> VenueSymbolRuleRecord | None:
+        allowed = (
+            {RuleEvidenceStatus.PROVEN_HISTORICAL}
+            if mode == EvaluationMode.HISTORICAL_REPLAY
+            else {RuleEvidenceStatus.PROVEN_FORWARD}
+        )
+        matches = [
+            row
+            for row in self._records
+            if row.rule.book == book
+            and row.evidence_status in allowed
+            and row.rule.effective_start_us <= time_us
+            and (row.rule.effective_end_us is None or time_us < row.rule.effective_end_us)
+            and (mode == EvaluationMode.HISTORICAL_REPLAY or row.acquired_at_us <= time_us)
+        ]
+        return matches[0] if len(matches) == 1 else None
 
 
 @dataclass(frozen=True)
@@ -416,7 +487,19 @@ class MarketRegimeSnapshot:
     data_gap: bool = False
 
     def __post_init__(self) -> None:
-        if self.observed_at_us < 0 or not self.regime:
+        if (
+            self.observed_at_us < 0
+            or not self.regime
+            or any(
+                value is not None and (value < ZERO or not value.is_finite())
+                for value in (
+                    self.spread_bps,
+                    self.depth_usd,
+                    self.compatible_flow_per_second,
+                )
+            )
+            or (self.peg_deviation is not None and not self.peg_deviation.is_finite())
+        ):
             raise ValueError("M034_INVALID_MARKET_REGIME_SNAPSHOT")
 
 
@@ -475,7 +558,10 @@ class EconomicCandidate:
     intent: DecisionIntent
     priority_class: int
     decision_currency: str
+    decision_currency_usd_rate: D
     decision_time_us: int
+    order_price: D
+    order_quantity: D
     gross_edge_bps: D
     execution_cost_bps: D | None
     adverse_selection_bps: D | None
@@ -504,7 +590,19 @@ class EconomicCandidate:
             raise ValueError("M034_INVALID_GEOMETRY_OR_SIDE")
         if self.market.observed_at_us > self.decision_time_us:
             raise ValueError("M034_FUTURE_MARKET_SNAPSHOT")
-        if self.capital_required <= ZERO or self.gross_edge_bps < ZERO:
+        if (
+            not self.candidate_id
+            or not self.route_id
+            or not self.inventory_state
+            or not self.decision_currency
+            or self.decision_time_us < 0
+            or self.decision_currency_usd_rate <= ZERO
+            or not self.decision_currency_usd_rate.is_finite()
+            or self.order_price <= ZERO
+            or self.order_quantity <= ZERO
+            or self.capital_required <= ZERO
+            or self.gross_edge_bps < ZERO
+        ):
             raise ValueError("M034_INVALID_CANDIDATE_CAPITAL_OR_EDGE")
         if not self.fee_legs:
             raise ValueError("M034_CANDIDATE_FEE_LEGS_REQUIRED")
@@ -548,6 +646,8 @@ class EligibilityDecision:
     column: int
     route_id: str
     intent: DecisionIntent
+    decision_currency: str
+    decision_currency_usd_rate: D
     gross_edge_bps: D
     known_fees_bps: D | None
     execution_cost_bps: D | None
@@ -578,19 +678,53 @@ class EconomicEligibilityGate:
         execution_policy: EconomicExecutionPolicy,
         policy: M034Policy,
         fee_registry: VenuePairFeeRegistry,
+        rule_registry: VenuePairRuleRegistry,
+        pair_universe: BinancePairUniverse,
     ) -> None:
         self.execution_policy = execution_policy
         self.policy = policy
         self.fee_registry = fee_registry
+        self.rule_registry = rule_registry
+        self.pair_universe = pair_universe
 
     def evaluate(
         self, candidate: EconomicCandidate, *, mode: EvaluationMode
     ) -> EligibilityDecision:
         reasons: list[DecisionReasonCode] = []
+        try:
+            self.policy.thresholds.validate_effective_at(candidate.decision_time_us)
+        except ValueError:
+            reasons.append(DecisionReasonCode.THRESHOLD_NOT_EFFECTIVE)
         if candidate.venue not in self.execution_policy.economic_venues:
             reasons.append(DecisionReasonCode.VENUE_DISABLED_FOR_ECONOMIC_EXECUTION)
         if candidate.data_state != DataState.VALID:
             reasons.append(DecisionReasonCode.DATA_INSUFFICIENT)
+        pair_evidence = self.pair_universe.resolve(
+            candidate.pair, time_us=candidate.decision_time_us
+        )
+        if pair_evidence is None or not pair_evidence.available:
+            reasons.append(DecisionReasonCode.PAIR_UNAVAILABLE)
+        elif not pair_evidence.eligible:
+            reasons.append(DecisionReasonCode.PAIR_EVIDENCE_UNPROVEN)
+        rule_record = self.rule_registry.resolve(
+            candidate.pair, time_us=candidate.decision_time_us, mode=mode
+        )
+        if rule_record is None:
+            reasons.append(DecisionReasonCode.EXCHANGE_RULE_UNPROVEN)
+        else:
+            try:
+                rule_record.rule.validate(
+                    price=candidate.order_price,
+                    quantity=candidate.order_quantity,
+                    time_us=candidate.decision_time_us,
+                )
+                if candidate.decision_currency not in {
+                    rule_record.rule.base_asset,
+                    rule_record.rule.quote_asset,
+                }:
+                    raise ValueError("M034_DECISION_CURRENCY_OUTSIDE_BOOK")
+            except ValueError:
+                reasons.append(DecisionReasonCode.EXCHANGE_RULE_VIOLATION)
 
         profiles: list[VenueFeeProfile] = []
         for leg in candidate.fee_legs:
@@ -662,9 +796,15 @@ class EconomicEligibilityGate:
             )
             if expected_net_edge < self.policy.minimum_net_edge_bps:
                 reasons.append(DecisionReasonCode.EDGE_BELOW_MINIMUM)
-        if candidate.capital_required > self.policy.maximum_inventory_exposure:
+        capital_required_usd = (
+            candidate.capital_required * candidate.decision_currency_usd_rate
+        )
+        if capital_required_usd > self.policy.maximum_inventory_exposure:
             reasons.append(DecisionReasonCode.INVENTORY_EXPOSURE_TOO_HIGH)
-        if candidate.tail_risk_cost > self.policy.tail_risk_bound:
+        if (
+            candidate.tail_risk_cost * candidate.decision_currency_usd_rate
+            > self.policy.tail_risk_bound
+        ):
             reasons.append(DecisionReasonCode.TAIL_RISK_TOO_HIGH)
 
         reasons = list(dict.fromkeys(reasons))
@@ -680,6 +820,8 @@ class EconomicEligibilityGate:
             column=candidate.column,
             route_id=candidate.route_id,
             intent=candidate.intent,
+            decision_currency=candidate.decision_currency,
+            decision_currency_usd_rate=candidate.decision_currency_usd_rate,
             gross_edge_bps=candidate.gross_edge_bps,
             known_fees_bps=known_fees_bps,
             execution_cost_bps=execution_cost,
@@ -748,10 +890,11 @@ class CapitalStateRecord:
     timestamp_us: int
     state: CapitalState
     capital: D
+    currency: str
     reason_code: DecisionReasonCode
 
     def __post_init__(self) -> None:
-        if self.timestamp_us < 0 or self.capital < ZERO:
+        if self.timestamp_us < 0 or self.capital < ZERO or not self.currency:
             raise ValueError("M034_INVALID_CAPITAL_STATE")
 
 
@@ -784,13 +927,21 @@ class M034EconomicAllocationEngine:
         *,
         mode: EvaluationMode,
         available_capital: D,
+        available_capital_currency: str,
         now_us: int,
     ) -> AllocationResult:
+        if available_capital < ZERO or not available_capital_currency or now_us < 0:
+            raise ValueError("M034_INVALID_AVAILABLE_CAPITAL")
         candidate_ids = [candidate.candidate_id for candidate in candidates]
         if len(candidate_ids) != len(set(candidate_ids)):
             raise ValueError("M034_DUPLICATE_CANDIDATE_ID")
         if any(candidate.decision_time_us != now_us for candidate in candidates):
             raise ValueError("M034_ALLOCATION_TIME_MISMATCH")
+        if any(
+            candidate.decision_currency != available_capital_currency
+            for candidate in candidates
+        ):
+            raise ValueError("M034_ALLOCATION_CURRENCY_MISMATCH")
         evaluated = [
             (candidate, self.gate.evaluate(candidate, mode=mode)) for candidate in candidates
         ]
@@ -818,7 +969,18 @@ class M034EconomicAllocationEngine:
                 )
             )
         scores = self.scorer.rank_eligible(eligible_opportunities)
-        selected = self.allocator.choose_eligible(scores, available_capital=available_capital)
+        blocked_owned_capital = sum(
+            (
+                candidate.capital_required
+                for candidate, decision in evaluated
+                if candidate.intent == DecisionIntent.OWNED_RETURN and not decision.eligible
+            ),
+            ZERO,
+        )
+        allocatable_capital = max(available_capital - blocked_owned_capital, ZERO)
+        selected = self.allocator.choose_eligible(
+            scores, available_capital=allocatable_capital
+        )
         score_by_id = {score.candidate_id: score for score in scores}
         selected_ids = {score.candidate_id for score in selected}
         final: list[EligibilityDecision] = []
@@ -850,51 +1012,92 @@ class M034EconomicAllocationEngine:
                 )
             self.decision_ledger.append(final_decision)
             final.append(final_decision)
-        if not selected:
-            state = AllocationState.NO_ELIGIBLE_OPPORTUNITY
+        selected_capital = sum((row.capital_required for row in selected), ZERO)
+        for row in selected:
+            candidate = candidate_by_id[row.candidate_id]
             self.decision_ledger.append_capital_state(
                 CapitalStateRecord(
                     timestamp_us=now_us,
-                    state=CapitalState.IDLE_NO_ELIGIBLE_OPPORTUNITY,
-                    capital=available_capital,
-                    reason_code=DecisionReasonCode.NO_ELIGIBLE_OPPORTUNITY,
-                )
-            )
-        else:
-            selected_capital = sum((row.capital_required for row in selected), ZERO)
-            selected_intents = {candidate_by_id[row.candidate_id].intent for row in selected}
-            capital_state = (
-                CapitalState.ACTIVE_OWNED_RETURN
-                if DecisionIntent.OWNED_RETURN in selected_intents
-                else CapitalState.ACTIVE_NEW_ENTRY
-            )
-            self.decision_ledger.append_capital_state(
-                CapitalStateRecord(
-                    timestamp_us=now_us,
-                    state=capital_state,
-                    capital=selected_capital,
+                    state=(
+                        CapitalState.ACTIVE_OWNED_RETURN
+                        if candidate.intent == DecisionIntent.OWNED_RETURN
+                        else CapitalState.ACTIVE_NEW_ENTRY
+                    ),
+                    capital=row.capital_required,
+                    currency=available_capital_currency,
                     reason_code=(
                         DecisionReasonCode.CAPITAL_RESERVED_OWNED_RETURN
-                        if capital_state == CapitalState.ACTIVE_OWNED_RETURN
+                        if candidate.intent == DecisionIntent.OWNED_RETURN
                         else DecisionReasonCode.ELIGIBLE
                     ),
                 )
             )
-            idle_capital = available_capital - selected_capital
-            if idle_capital > ZERO:
-                self.decision_ledger.append_capital_state(
-                    CapitalStateRecord(
-                        timestamp_us=now_us,
-                        state=CapitalState.IDLE_NO_ELIGIBLE_OPPORTUNITY,
-                        capital=idle_capital,
-                        reason_code=DecisionReasonCode.NO_ELIGIBLE_OPPORTUNITY,
-                    )
+        unclassified_capital = available_capital - selected_capital
+        locked_owned = min(blocked_owned_capital, unclassified_capital)
+        if locked_owned > ZERO:
+            self.decision_ledger.append_capital_state(
+                CapitalStateRecord(
+                    timestamp_us=now_us,
+                    state=CapitalState.LOCKED_INVENTORY,
+                    capital=locked_owned,
+                    currency=available_capital_currency,
+                    reason_code=DecisionReasonCode.CAPITAL_LOCKED_INVENTORY,
                 )
-            state = (
+            )
+            unclassified_capital -= locked_owned
+        if unclassified_capital > ZERO:
+            reason_sets = [set(decision.decision_reason_codes) for _, decision in evaluated]
+            data_reasons = {
+                DecisionReasonCode.DATA_GAP,
+                DecisionReasonCode.DATA_INSUFFICIENT,
+                DecisionReasonCode.FEE_UNPROVEN,
+                DecisionReasonCode.PAIR_UNAVAILABLE,
+                DecisionReasonCode.PAIR_EVIDENCE_UNPROVEN,
+                DecisionReasonCode.EXCHANGE_RULE_UNPROVEN,
+                DecisionReasonCode.EXCHANGE_RULE_VIOLATION,
+                DecisionReasonCode.THRESHOLD_NOT_EFFECTIVE,
+            }
+            safety_reasons = {
+                DecisionReasonCode.MARKET_SAFETY_BLOCK,
+                DecisionReasonCode.PEG_RISK,
+                DecisionReasonCode.ABNORMAL_SPREAD,
+                DecisionReasonCode.LIQUIDITY_COLLAPSE,
+                DecisionReasonCode.COMPATIBLE_FLOW_COLLAPSE,
+            }
+            if any(reasons & data_reasons for reasons in reason_sets):
+                remaining_state = CapitalState.BLOCKED_DATA
+                remaining_reason = DecisionReasonCode.DATA_INSUFFICIENT
+            elif any(reasons & safety_reasons for reasons in reason_sets):
+                remaining_state = CapitalState.BLOCKED_SAFETY
+                remaining_reason = DecisionReasonCode.MARKET_SAFETY_BLOCK
+            elif any(
+                candidate.intent == DecisionIntent.OWNED_RETURN
+                and candidate.candidate_id not in selected_ids
+                for candidate, _ in evaluated
+            ):
+                remaining_state = CapitalState.LOCKED_INVENTORY
+                remaining_reason = DecisionReasonCode.CAPITAL_LOCKED_INVENTORY
+            else:
+                remaining_state = CapitalState.IDLE_NO_ELIGIBLE_OPPORTUNITY
+                remaining_reason = DecisionReasonCode.NO_ELIGIBLE_OPPORTUNITY
+            self.decision_ledger.append_capital_state(
+                CapitalStateRecord(
+                    timestamp_us=now_us,
+                    state=remaining_state,
+                    capital=unclassified_capital,
+                    currency=available_capital_currency,
+                    reason_code=remaining_reason,
+                )
+            )
+        state = (
+            AllocationState.NO_ELIGIBLE_OPPORTUNITY
+            if not selected
+            else (
                 AllocationState.ALLOCATED
                 if len(selected) == len(candidates)
                 else AllocationState.PARTIALLY_ALLOCATED
             )
+        )
         return AllocationResult(
             state=state,
             decisions=tuple(final),
@@ -914,7 +1117,13 @@ class AdverseSelectionObservation:
     adverse_selection_bps: D
 
     def __post_init__(self) -> None:
-        if not self.fill_time_us <= self.horizon_end_us <= self.observed_at_us:
+        if (
+            not self.observation_id
+            or not self.context
+            or self.fill_time_us < 0
+            or not self.fill_time_us <= self.horizon_end_us <= self.observed_at_us
+            or not self.adverse_selection_bps.is_finite()
+        ):
             raise ValueError("M034_NONCAUSAL_ADVERSE_SELECTION_OBSERVATION")
 
 
@@ -922,7 +1131,7 @@ class CausalAdverseSelectionEstimator:
     VERSION = "M034_RESOLVED_PREFIX_P95_V1"
 
     def __init__(self, *, minimum_samples: int, training_cutoff_us: int) -> None:
-        if minimum_samples <= 0:
+        if minimum_samples <= 0 or training_cutoff_us < 0:
             raise ValueError("M034_INVALID_ADVERSE_SELECTION_SAMPLE_MINIMUM")
         self.minimum_samples = minimum_samples
         self.training_cutoff_us = training_cutoff_us
@@ -936,7 +1145,12 @@ class CausalAdverseSelectionEstimator:
     def estimate(
         self, *, context: str, now_us: int, feature_cutoff_us: int
     ) -> AdverseSelectionEstimate | None:
-        if self.training_cutoff_us > now_us or feature_cutoff_us > now_us:
+        if (
+            now_us < 0
+            or feature_cutoff_us < 0
+            or self.training_cutoff_us > now_us
+            or feature_cutoff_us > now_us
+        ):
             raise ValueError("M034_ESTIMATOR_CUTOFF_AFTER_DECISION")
         values = sorted(
             max(ZERO, row.adverse_selection_bps)
@@ -1055,6 +1269,10 @@ class InventoryExitDecisionEngine:
         slot_id: str,
         slot_epoch: int,
         quantity: D,
+        origin_cost_basis: D,
+        inventory_asset: str,
+        origin_asset: str,
+        exit_reservation_id: str,
         now_us: int,
         expires_at_us: int,
         expected_hold_loss: D,
@@ -1065,6 +1283,12 @@ class InventoryExitDecisionEngine:
     ) -> InventoryExitAssessment:
         if (
             quantity <= ZERO
+            or origin_cost_basis <= ZERO
+            or realized_loss_of_exit <= ZERO
+            or not inventory_asset
+            or not origin_asset
+            or inventory_asset == origin_asset
+            or not exit_reservation_id
             or expires_at_us < now_us
             or any(
                 value < ZERO
@@ -1093,6 +1317,10 @@ class InventoryExitDecisionEngine:
             slot_id=slot_id,
             slot_epoch=slot_epoch,
             quantity=quantity,
+            origin_cost_basis=origin_cost_basis,
+            inventory_asset=inventory_asset,
+            origin_asset=origin_asset,
+            exit_reservation_id=exit_reservation_id,
             decided_at_us=now_us,
             expires_at_us=expires_at_us,
             rule_id=rule.rule_id,
@@ -1118,6 +1346,30 @@ class BinancePairEvidence:
     safety_acceptable: bool
     liquidity_acceptable: bool
     temporal_provenance: str
+    effective_start_us: int
+    effective_end_us: int | None
+
+    def __post_init__(self) -> None:
+        if (
+            self.book.venue != Venue.BINANCE
+            or not self.temporal_provenance
+            or self.effective_start_us < 0
+            or (
+                self.effective_end_us is not None
+                and self.effective_end_us <= self.effective_start_us
+            )
+        ):
+            raise ValueError("M034_INVALID_PAIR_EVIDENCE")
+
+    @property
+    def eligible(self) -> bool:
+        return (
+            self.available
+            and self.data_proven
+            and self.rules_proven
+            and self.safety_acceptable
+            and self.liquidity_acceptable
+        )
 
 
 class BinancePairUniverse:
@@ -1130,6 +1382,14 @@ class BinancePairUniverse:
         if any(row.book.venue != Venue.BINANCE for row in evidence):
             raise ValueError("M034_PAIR_UNIVERSE_MUST_BE_BINANCE_ONLY")
 
+    def resolve(self, book: BookKey, *, time_us: int) -> BinancePairEvidence | None:
+        row = self.evidence.get(book)
+        if row is None or time_us < row.effective_start_us or (
+            row.effective_end_us is not None and time_us >= row.effective_end_us
+        ):
+            return None
+        return row
+
     @property
     def available_books(self) -> tuple[BookKey, ...]:
         return tuple(sorted(book for book, row in self.evidence.items() if row.available))
@@ -1140,12 +1400,7 @@ class BinancePairUniverse:
             sorted(
                 book
                 for book, row in self.evidence.items()
-                if row.available
-                and row.data_proven
-                and row.rules_proven
-                and row.safety_acceptable
-                and row.liquidity_acceptable
-                and bool(row.temporal_provenance)
+                if row.eligible
             )
         )
 
@@ -1183,6 +1438,7 @@ __all__ = [
     "MarketRegimeSnapshot",
     "ReallocationDecision",
     "ReallocationDecisionEngine",
+    "RuleEvidenceStatus",
     "SafetyState",
     "ThresholdDefinition",
     "ThresholdRecord",
@@ -1190,4 +1446,6 @@ __all__ = [
     "ThresholdSourceType",
     "UnknownCostPolicy",
     "VenuePairFeeRegistry",
+    "VenuePairRuleRegistry",
+    "VenueSymbolRuleRecord",
 ]

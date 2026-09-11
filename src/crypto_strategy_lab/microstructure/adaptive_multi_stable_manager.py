@@ -149,6 +149,12 @@ class AdaptiveColumnAllocator:
             opportunities,
             key=lambda item: (item.priority_class, -item.productivity, item.candidate_id),
         ):
+            if row.priority_class == 1:
+                if row.capital_required > left:
+                    break
+                selected.append(row)
+                left -= row.capital_required
+                continue
             if row.productivity <= ZERO or row.capital_required > left:
                 continue
             selected.append(row)

@@ -226,6 +226,10 @@ class InventoryReductionAuthorization:
     slot_id: str
     slot_epoch: int
     quantity: D
+    origin_cost_basis: D
+    inventory_asset: str
+    origin_asset: str
+    exit_reservation_id: str
     decided_at_us: int
     expires_at_us: int
     rule_id: str
@@ -245,8 +249,13 @@ class InventoryReductionAuthorization:
             or not self.rule_hash
             or not self.reason_code
             or not self.trigger_reason_code
+            or not self.inventory_asset
+            or not self.origin_asset
+            or self.inventory_asset == self.origin_asset
+            or not self.exit_reservation_id
             or self.slot_epoch < 1
             or self.quantity <= ZERO
+            or self.origin_cost_basis <= ZERO
             or self.decided_at_us < 0
             or self.expires_at_us < self.decided_at_us
         ):
@@ -259,6 +268,8 @@ class InventoryReductionAuthorization:
         )
         if any(value < ZERO for value in amounts):
             raise ValueError("M034_NEGATIVE_INVENTORY_REDUCTION_TERM")
+        if self.realized_loss_of_exit <= ZERO:
+            raise ValueError("M034_NON_POSITIVE_INVENTORY_REDUCTION_LOSS")
 
 
 __all__ = [

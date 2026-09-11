@@ -27,6 +27,14 @@ class CapitalReservation:
     cancel_ack_at_us: int | None = None
 
 
+@dataclass(frozen=True)
+class FillAttribution:
+    reservation_id: str
+    reservation_created_at_us: int
+    slot_id: str
+    fill: PhysicalFill
+
+
 class SlotLedger:
     """Own every asset unit in exactly one FREE, RESERVED or OWNED bucket."""
 
@@ -45,8 +53,12 @@ class SlotLedger:
         if self.initial_equity > D("200"):
             raise ValueError("M032_MAX_BANKROLL_EXCEEDED")
         self.processed_fill_ids: set[str] = set()
+        self.fill_attribution: dict[str, FillAttribution] = {}
         self.turnover_us: list[int] = []
         self.inventory_reduction_turnover_us: list[int] = []
+        self.inventory_reduction_authorizations: dict[
+            str, InventoryReductionAuthorization
+        ] = {}
         self.processed_inventory_authorization_ids: set[str] = set()
         self.negative_exit_count = 0
         self.negative_exit_cost = ZERO
@@ -291,11 +303,18 @@ class SlotLedger:
         else:
             slot.state = SlotState.FILLED if reservation.remaining == ZERO else SlotState.PARTIAL
         self.processed_fill_ids.add(fill.fill_id)
+        self.fill_attribution[fill.fill_id] = FillAttribution(
+            reservation_id=reservation_id,
+            reservation_created_at_us=reservation.created_at_us,
+            slot_id=slot.slot_id,
+            fill=fill,
+        )
         self.audit.append(
             {
                 "event": "FILL",
                 "time_us": fill.time_us,
                 "fill_id": fill.fill_id,
+                "reservation_id": reservation_id,
                 "slot_id": slot.slot_id,
                 "input": str(fill.input_quantity),
                 "output_net": str(fill.output_quantity_net),
@@ -356,11 +375,58 @@ class SlotLedger:
         self.reconcile()
         return pnl
 
+    def register_inventory_reduction_authorization(
+        self, authorization: InventoryReductionAuthorization, *, now_us: int
+    ) -> None:
+        """Persist the risk decision before any authorized exit reservation or fill."""
+        self._causal(now_us)
+        slot = self.slots[authorization.slot_id]
+        origin_cost_basis = sum(
+            (
+                row.fill.input_quantity
+                + (
+                    row.fill.fee_quantity
+                    if row.fill.fee_asset == authorization.origin_asset
+                    else ZERO
+                )
+                for row in self.fill_attribution.values()
+                if row.slot_id == authorization.slot_id
+                and row.fill.from_asset == authorization.origin_asset
+                and row.fill.time_us <= now_us
+            ),
+            ZERO,
+        )
+        if (
+            now_us != authorization.decided_at_us
+            or authorization.authorization_id in self.inventory_reduction_authorizations
+            or authorization.authorization_id in self.processed_inventory_authorization_ids
+            or slot.slot_epoch != authorization.slot_epoch
+            or slot.origin_asset != authorization.origin_asset
+            or slot.reservation_id is not None
+            or slot.current_asset != authorization.inventory_asset
+            or self.owned[slot.slot_id].get(authorization.inventory_asset, ZERO)
+            != authorization.quantity
+            or origin_cost_basis != authorization.origin_cost_basis
+        ):
+            raise ValueError("M034_INVALID_INVENTORY_REDUCTION_REGISTRATION")
+        self.inventory_reduction_authorizations[authorization.authorization_id] = authorization
+        self.audit.append(
+            {
+                "event": "INVENTORY_REDUCTION_AUTHORIZED",
+                "time_us": now_us,
+                "slot_id": authorization.slot_id,
+                "authorization_id": authorization.authorization_id,
+                "exit_reservation_id": authorization.exit_reservation_id,
+                "rule_id": authorization.rule_id,
+                "rule_hash": authorization.rule_hash,
+            }
+        )
+        self._commit_time(now_us)
+
     def settle_inventory_reduction(
         self,
         slot_id: str,
         *,
-        origin_quantity: D,
         now_us: int,
         reduction_id: str,
         authorization: InventoryReductionAuthorization,
@@ -373,24 +439,60 @@ class SlotLedger:
         if reduction_id in self.processed_inventory_authorization_ids:
             raise ValueError("M034_DUPLICATE_INVENTORY_REDUCTION")
         if (
+            self.inventory_reduction_authorizations.get(reduction_id) != authorization
+            or
             authorization.authorization_id != reduction_id
             or authorization.slot_id != slot_id
             or authorization.slot_epoch != slot.slot_epoch
-            or authorization.quantity != origin_quantity
             or not authorization.decided_at_us <= now_us <= authorization.expires_at_us
             or authorization.reason_code != "NEGATIVE_EXIT_RISK_RULE_TRIGGERED"
             or not authorization.rule_id
             or not authorization.rule_hash
         ):
             raise ValueError("M034_INVENTORY_REDUCTION_AUTHORIZATION_MISMATCH")
+        exit_fills = [
+            row
+            for row in self.fill_attribution.values()
+            if row.reservation_id == authorization.exit_reservation_id
+        ]
+        if (
+            not exit_fills
+            or any(
+                row.slot_id != slot_id
+                or row.reservation_created_at_us < authorization.decided_at_us
+                or row.fill.time_us < authorization.decided_at_us
+                or row.fill.time_us > min(now_us, authorization.expires_at_us)
+                or row.fill.from_asset != authorization.inventory_asset
+                or row.fill.to_asset != authorization.origin_asset
+                for row in exit_fills
+            )
+            or sum((row.fill.input_quantity for row in exit_fills), ZERO)
+            != authorization.quantity
+            or any(
+                quantity != ZERO
+                for asset, quantity in self.owned[slot_id].items()
+                if asset != slot.origin_asset
+            )
+            or slot.origin_asset != authorization.origin_asset
+        ):
+            raise ValueError("M034_INVENTORY_REDUCTION_PHYSICAL_EXIT_UNPROVEN")
         final_quantity = self.owned[slot_id].get(slot.origin_asset, ZERO)
-        loss = origin_quantity - final_quantity
+        physical_exit_output = sum(
+            (row.fill.output_quantity_net for row in exit_fills), ZERO
+        )
+        if final_quantity != physical_exit_output:
+            raise ValueError("M034_INVENTORY_REDUCTION_ORIGIN_RESIDUAL_MISMATCH")
+        loss = authorization.origin_cost_basis - final_quantity
         hold_cost = (
             authorization.expected_hold_loss
             + authorization.opportunity_cost_of_lock
             + authorization.tail_risk_increase
         )
-        if loss <= ZERO or loss != authorization.realized_loss_of_exit or hold_cost <= loss:
+        if (
+            loss <= ZERO
+            or loss > authorization.realized_loss_of_exit
+            or hold_cost <= loss
+        ):
             raise ValueError("M034_INVENTORY_REDUCTION_INEQUALITY_NOT_SATISFIED")
         if slot.capital_lock_started_at_us is None:
             raise ValueError("M034_INVENTORY_REDUCTION_WITHOUT_CAPITAL_LOCK")
@@ -410,6 +512,7 @@ class SlotLedger:
         self.negative_exit_count += 1
         self.negative_exit_cost += loss
         self.processed_inventory_authorization_ids.add(reduction_id)
+        del self.inventory_reduction_authorizations[reduction_id]
         self.audit.append(
             {
                 "event": "INVENTORY_REDUCTION_SETTLED",

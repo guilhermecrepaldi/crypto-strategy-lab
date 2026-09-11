@@ -54,6 +54,24 @@ class VenueSymbolRule:
     effective_end_us: int | None
     provenance: str
 
+    def __post_init__(self) -> None:
+        if (
+            not self.base_asset
+            or not self.quote_asset
+            or not self.provenance
+            or self.tick_size <= ZERO
+            or self.quantity_step <= ZERO
+            or self.minimum_quantity <= ZERO
+            or self.minimum_notional <= ZERO
+            or self.price_precision < 0
+            or self.effective_start_us < 0
+            or (
+                self.effective_end_us is not None
+                and self.effective_end_us <= self.effective_start_us
+            )
+        ):
+            raise ValueError("M033_INVALID_SYMBOL_RULE")
+
     def validate(self, *, price: D, quantity: D, time_us: int) -> None:
         if time_us < self.effective_start_us or (
             self.effective_end_us is not None and time_us >= self.effective_end_us
@@ -87,8 +105,14 @@ class VenueFeeProfile:
     source_reference: str | None = None
 
     def __post_init__(self) -> None:
-        if self.maker_rate < ZERO or self.taker_rate < ZERO:
-            raise ValueError("M034_NEGATIVE_FEE_RATE")
+        if (
+            self.maker_rate < ZERO
+            or self.taker_rate < ZERO
+            or not self.fee_asset_semantics.strip()
+            or not self.provenance.strip()
+            or not self.account_tier_assumption.strip()
+        ):
+            raise ValueError("M034_INVALID_FEE_PROFILE")
         if self.effective_end_us is not None and self.effective_end_us <= self.effective_start_us:
             raise ValueError("M034_INVALID_FEE_EFFECTIVE_WINDOW")
         if self.acquired_at_us is not None and self.acquired_at_us < 0:

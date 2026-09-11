@@ -1,0 +1,44 @@
+# M034 source-bound independent review
+
+## Review 1 — blocked source
+
+- Reviewer: GPT-6 Astra, independent source review
+- Reviewed source: `d009653afaf4dd361dcc4095090e97788b2015f4`
+- Base: `aafb57ef4203ad2d0c46edacf0df503ec306795e`
+- Verdict: `IMPLEMENTATION_REVIEW=BLOCK`
+- Replay: `READY_FOR_REPLAY=false`
+- Economic execution: none
+
+The reviewer reproduced ten blocking classes: owned-return priority and shortfall
+bypass; non-physical inventory-reduction settlement; retroactive exit authorization;
+negative conservative cost bounds; incomplete or tier-inapplicable fee evidence;
+pair-universe and exchange-rule evidence disconnected from admission; temporally
+impossible completion labels and censored lock treated as exact duration;
+future-effective thresholds used in past decisions; mixed-currency capital aggregation;
+and data/safety blocks mislabeled as idle capital.
+
+Verification on the reviewed SHA: 122 focused tests passed (25 M034, 51 M032 and 46
+M033), repository Ruff passed, and strict mypy passed on the seven changed source
+modules. `git diff --check` found extra EOF blank lines in two new documents. These
+software checks did not override the blocking scientific findings.
+
+## Correction disposition
+
+The correction adds adversarial tests that reproduce every reported defect and changes
+the canonical incremental M034 path as follows:
+
+- owned-return capital is protected before new-entry ranking; priority-one returns do
+  not require positive productivity and shortfall stops lower priorities;
+- inventory-reduction authorization is persisted by `SlotLedger` before the bound exit
+  reservation/fills, and settlement proves origin return, cost basis, fill attribution,
+  causal times and zero non-origin residue;
+- threshold effective time, finite/non-negative conservative bounds, fee tier/context,
+  pair evidence and historical/forward symbol-rule evidence are direct gate inputs;
+- completion outcomes require physically coherent availability times; censored outcomes
+  inform completion probability but not an exact expected-lock duration;
+- each allocation batch has one explicit currency and causal USD rate for USD limits;
+- capital states distinguish active new/return, locked inventory, blocked data, blocked
+  safety and genuinely idle/no-opportunity capital.
+
+The corrected source requires a new review bound to its published SHA. Until that review
+passes, `M034_SOURCE_ARCHITECTURE_PASS=false` and `READY_FOR_REPLAY=false`.

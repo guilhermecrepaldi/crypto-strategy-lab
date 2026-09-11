@@ -1,6 +1,6 @@
 # M034 - Binance economic eligibility and productivity
 
-Status: `SOURCE_IMPLEMENTATION_PENDING_SOURCE_BOUND_REVIEW`.
+Status: `SOURCE_CORRECTION_PENDING_SOURCE_BOUND_REVIEW`.
 
 M034 is an incremental admission and allocation layer over the reviewed M032/M033
 libraries. It is not a parallel strategy, a replay result or evidence of economic
@@ -26,14 +26,14 @@ not a material conflict with the official M034 prompt.
 | Existing component | File | Responsibility/current state | M034 impact |
 |---|---|---|---|
 | `StablecoinUniverse` | `adaptive_multi_stable_manager.py` | Asset-level M032 safety eligibility | Preserved; M034 adds book-level Binance evidence without replacing it |
-| `SlotLedger` | `multi_stable_ledger.py` | Exact free/reserved/owned capital, fill and cancel-ACK lifecycle | Preserved; adds audited risk-reduction settlement that is not a positive cycle |
+| `SlotLedger` | `multi_stable_ledger.py` | Exact free/reserved/owned capital, fill and cancel-ACK lifecycle | Preserved; adds pre-fill authorization registration and physically attributed risk-reduction settlement that is not a positive cycle |
 | `CausalQueueEstimator` | `multi_stable_queue.py` | One PUBLIC/C1/C2 queue and prefix flow | Preserved; completion/lock estimators consume resolved causal history, not a second queue |
 | `PairProductivityScorer` | `multi_stable_routing.py` | Legacy M032 score | Preserved; gains a typed M034 path with the new formula |
 | `AdaptiveColumnAllocator` | `adaptive_multi_stable_manager.py` | Priority then capital-constrained allocation | Preserved; gains an eligible-only entry point where zero selections are valid |
 | route engine | `multi_stable_routing.py`, `multi_venue_models.py` | 2-4 asset route construction/scoring/lifecycle; venue-local routes | Preserved; M034 values only pre-gated candidates |
 | capital order manager | `adaptive_multi_stable_manager.py` | Geometry, hotline, safety and ACK-gated reclaim | Preserved; M034 reallocation compares currency values and switching cost first |
 | venue adapters | `venue_adapters.py` | Binance L2 and Kraken L2/L3 normalization | Unchanged; economic venue policy is not placed in adapters |
-| fee models | `multi_stable_models.py`, `multi_venue_models.py` | Temporal symbol/venue fee values | `VenueFeeProfile` gains evidence/acquisition/source identity; registry is the lookup authority |
+| fee/rule models | `multi_stable_models.py`, `multi_venue_models.py` | Temporal symbol/venue fee and exchange-rule values | Evidence registries validate temporal applicability, source identity and tier/context at the decision |
 | replay engine | none for M032/M033 | No integrated economic runner exists | Not improvised in M034; replay remains blocked |
 | reporting/metrics | `reporting.py`, ledgers and published status JSON | Older campaign reports plus turnover/ledger metrics | Decision ledger adds eligibility/rejection and capital-state evidence; runner KPIs remain blocked |
 | multi-venue portfolio | `multi_venue_ledger.py` | Independent physical ledgers per venue | Preserved; Binance policy never borrows Kraken capital |
@@ -85,8 +85,9 @@ record identity.
 
 Evidence states are `PROVEN_HISTORICAL`, `PROVEN_FORWARD`, `ACCOUNT_SPECIFIC` and
 `UNPROVEN`. Historical lookup accepts only a `PROVEN_HISTORICAL` record whose effective
-interval covers the decision timestamp. Forward lookup accepts `PROVEN_FORWARD` or a
-matching `ACCOUNT_SPECIFIC` record acquired no later than the decision. Missing,
+interval covers the decision timestamp and whose recorded account/tier context exactly
+matches the candidate context. Forward lookup accepts `PROVEN_FORWARD` or a matching
+`ACCOUNT_SPECIFIC` record acquired no later than the decision. Missing,
 incomplete, ambiguous or inapplicable evidence produces `FEE_UNPROVEN`; it never
 becomes zero.
 
@@ -117,6 +118,11 @@ If conservative unknown-cost bounds are selected, both
 mandatory. Each threshold records value, unit, source type, source reference,
 derivation, calibration dataset hash when applicable, effective timestamp, frozen
 timestamp and the canonical threshold-set SHA-256.
+
+All threshold values must be finite; policy-domain values and conservative cost bounds
+must be non-negative. A decision can only use a threshold whose `effective_from` is no
+later than market decision time. `frozen_at` is the experiment/configuration clock and
+is not falsely compared to the historical market clock.
 
 Allowed source types are `OWNER_PREREGISTERED`, `EXTERNAL_ECONOMIC_RULE`,
 `TRAINING_DATA_ESTIMATE`, `SAFETY_BOUND` and `PROTOCOL_CONSTANT`. Training estimates
@@ -157,7 +163,10 @@ pre-registered conservative-bound policy is supplied. `UNKNOWN != ZERO`.
 ## Productivity formula and units
 
 The gate first converts the net edge to conditional complete PnL in the decision
-currency:
+currency. Every allocation batch has one explicit capital currency; a candidate in
+another currency is rejected at the allocation boundary unless a causal conversion has
+already produced a candidate in the common currency. USD gates use the candidate's
+explicit causal `decision_currency_usd_rate`:
 
 ```text
 ConditionalCompleteNet = CapitalRequired * ExpectedNetEdgeBps / 10,000
@@ -203,9 +212,13 @@ ExpectedHoldLoss + OpportunityCostOfLock + TailRiskIncrease
   > RealizedLossOfExit
 ```
 
-The resulting authorization binds authorization ID, slot, slot epoch, quantity,
-decision/expiry timestamps, rule ID/hash and all inequality terms. `SlotLedger` checks
-that binding again at settlement. A loss is recorded in realized PnL,
+The resulting authorization binds authorization ID, slot, slot epoch, inventory asset
+and quantity, origin asset and cost basis, the planned exit reservation ID,
+decision/expiry timestamps, rule ID/hash and all inequality terms. `SlotLedger` must
+persist that authorization before the exit reservation or fill. Settlement then proves
+that every attributed exit fill occurred after authorization, used the bound reservation,
+returned the complete authorized inventory to the origin asset and left no non-origin
+residue. A loss is recorded in realized PnL,
 `NEGATIVE_EXIT_COUNT` and `NEGATIVE_EXIT_COST`; it never increments positive cycles or
 the completed-slot turnover numerator. Legacy M032 `close_slot` remains fail-closed.
 
@@ -214,8 +227,11 @@ the completed-slot turnover numerator. Legacy M032 `close_slot` remains fail-clo
 `CausalAdverseSelectionEstimator` uses side-adjusted adverse movement labels only after
 their horizon has ended and the label is observable. It returns a non-negative P95 cost
 from the resolved training prefix. `CompletionProbabilityEstimator` and
-`ExpectedLockTimeEstimator` use resolved outcomes, including censored/non-complete
-observations, available by the frozen training cutoff.
+`ExpectedLockTimeEstimator` use resolved outcomes available by the frozen training
+cutoff. Censored/non-complete observations remain in completion probability, but are
+not mislabeled as exact lock durations; lock estimates use completed outcomes only and
+remain unknown when completed-sample sufficiency is not met. Observation availability
+must be no earlier than the completed lock or full censoring horizon.
 
 Every estimate records estimator version, training cutoff and feature cutoff. Both
 cutoffs must be no later than decision time. Existing queue-clear heuristics are not
@@ -231,7 +247,9 @@ separately as `VALID`, `INVALID` or `UNKNOWN`.
 `BinancePairUniverse` is book-based and does not hardcode USDCUSDT. A book can be
 available while still ineligible. Eligibility requires data, temporal rules, temporal
 fees, tick/step/min-notional compliance, safety, liquidity and provenance; the final
-fee/rule checks occur again at decision time.
+fee/rule checks occur again at decision time. `VenuePairRuleRegistry` accepts only
+historically proven rules for historical replay and only forward-proven rules in forward
+mode; ambiguous or missing rules fail closed.
 
 ## Decision ledger and reason codes
 
@@ -252,15 +270,19 @@ Reason codes include:
 `PRODUCTIVITY_NON_POSITIVE`, `NO_ELIGIBLE_OPPORTUNITY`,
 `CAPITAL_RESERVED_OWNED_RETURN`, `CAPITAL_LOCKED_INVENTORY`,
 `CAPITAL_PENDING_CANCEL_ACK`, `MARKET_SAFETY_BLOCK`, `DATA_INSUFFICIENT`,
-`TAIL_RISK_TOO_HIGH`, `INVENTORY_EXPOSURE_TOO_HIGH`,
+`TAIL_RISK_TOO_HIGH`, `INVENTORY_EXPOSURE_TOO_HIGH`, `PAIR_UNAVAILABLE`,
+`PAIR_EVIDENCE_UNPROVEN`, `EXCHANGE_RULE_UNPROVEN`,
+`EXCHANGE_RULE_VIOLATION`, `THRESHOLD_NOT_EFFECTIVE`,
 `NEGATIVE_EXIT_NOT_ALLOWED_COSMETIC`, `NEGATIVE_EXIT_RISK_RULE_TRIGGERED`,
 `INVENTORY_LOCK_EXCEEDED`, `PEG_RISK_ESCALATED` and
 `OPPORTUNITY_COST_EXCEEDED`.
 
 Capital-state records use `ACTIVE_NEW_ENTRY`, `ACTIVE_OWNED_RETURN`,
 `LOCKED_INVENTORY`, `PENDING_CANCEL_ACK`, `IDLE_NO_ELIGIBLE_OPPORTUNITY`,
-`BLOCKED_DATA` and `BLOCKED_SAFETY`. The no-candidate path records idle capital and
-`NO_ELIGIBLE_OPPORTUNITY` explicitly.
+`BLOCKED_DATA` and `BLOCKED_SAFETY`. Each selected candidate gets its own currency-bound
+capital record. Data/rule/fee gaps map remaining capital to `BLOCKED_DATA`, safety gates
+to `BLOCKED_SAFETY`, and unresolved owned returns to `LOCKED_INVENTORY`; only a true
+absence of eligible opportunity is recorded as idle.
 
 ## Invariants
 
@@ -281,6 +303,9 @@ Capital-state records use `ACTIVE_NEW_ENTRY`, `ACTIVE_OWNED_RETURN`,
 15. Calibration data cannot be relabeled independent validation.
 16. Future events cannot change a past decision.
 17. Tests/source pass never imply strategy, replay or live pass.
+18. Owned-return capital is reserved before new-entry ranking; non-positive return
+    productivity and return shortfall cannot release that obligation to new entries.
+19. Inventory reduction authorization is ledger-persisted before its physical exit.
 
 ## KPIs and capital time
 
@@ -310,5 +335,10 @@ cost/latency policy, registered model identity, integrated runner and replay pro
 No account, key, Testnet, live order, replay, random window draw or registry mutation is
 authorized by this source implementation.
 
-`M034_SOURCE_ARCHITECTURE_PASS != M034_STRATEGY_PASS`.
+The first published source review of `d009653afaf4dd361dcc4095090e97788b2015f4`
+returned `IMPLEMENTATION_REVIEW=BLOCK`. The correction must itself receive a new
+source-bound independent review before this document can claim source architecture
+PASS. The blocked review is preserved in the M034 journal and review report; it was not
+reclassified as a strategy result.
 
+`M034_SOURCE_ARCHITECTURE_PASS != M034_STRATEGY_PASS`.

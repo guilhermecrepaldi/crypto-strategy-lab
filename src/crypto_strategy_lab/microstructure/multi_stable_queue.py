@@ -54,11 +54,25 @@ class CompletionObservation:
     observed_lock_seconds: D
 
     def __post_init__(self) -> None:
+        horizon_us = self.horizon_seconds * 1_000_000
+        observed_lock_us = int(self.observed_lock_seconds * D("1000000"))
         if (
             self.decided_at_us < 0
             or self.outcome_available_at_us < self.decided_at_us
             or self.horizon_seconds <= 0
             or self.observed_lock_seconds < ZERO
+            or (self.completed and self.observed_lock_seconds > D(self.horizon_seconds))
+            or (
+                self.completed
+                and self.outcome_available_at_us < self.decided_at_us + observed_lock_us
+            )
+            or (
+                not self.completed
+                and (
+                    self.observed_lock_seconds < D(self.horizon_seconds)
+                    or self.outcome_available_at_us < self.decided_at_us + horizon_us
+                )
+            )
         ):
             raise ValueError("M034_INVALID_COMPLETION_OBSERVATION")
 
@@ -123,7 +137,7 @@ class CompletionProbabilityEstimator:
         training_cutoff_us: int,
         horizon_seconds: int,
     ) -> None:
-        if minimum_samples <= 0:
+        if minimum_samples <= 0 or training_cutoff_us < 0:
             raise ValueError("M034_INVALID_MINIMUM_COMPLETION_SAMPLES")
         self.history = history
         self.minimum_samples = minimum_samples
@@ -135,7 +149,12 @@ class CompletionProbabilityEstimator:
     def estimate(
         self, *, context: str, now_us: int, feature_cutoff_us: int
     ) -> CompletionProbabilityEstimate | None:
-        if self.training_cutoff_us > now_us or feature_cutoff_us > now_us:
+        if (
+            now_us < 0
+            or feature_cutoff_us < 0
+            or self.training_cutoff_us > now_us
+            or feature_cutoff_us > now_us
+        ):
             raise ValueError("M034_ESTIMATOR_CUTOFF_AFTER_DECISION")
         rows = self.history.prefix(
             context=context,
@@ -157,7 +176,7 @@ class CompletionProbabilityEstimator:
 
 
 class ExpectedLockTimeEstimator:
-    VERSION = "M034_EMPIRICAL_RESOLVED_PREFIX_V1"
+    VERSION = "M034_COMPLETED_LOCK_PREFIX_V2"
 
     def __init__(
         self,
@@ -167,7 +186,7 @@ class ExpectedLockTimeEstimator:
         training_cutoff_us: int,
         horizon_seconds: int,
     ) -> None:
-        if minimum_samples <= 0:
+        if minimum_samples <= 0 or training_cutoff_us < 0:
             raise ValueError("M034_INVALID_MINIMUM_LOCK_SAMPLES")
         self.history = history
         self.minimum_samples = minimum_samples
@@ -179,22 +198,28 @@ class ExpectedLockTimeEstimator:
     def estimate(
         self, *, context: str, now_us: int, feature_cutoff_us: int
     ) -> LockTimeEstimate | None:
-        if self.training_cutoff_us > now_us or feature_cutoff_us > now_us:
+        if (
+            now_us < 0
+            or feature_cutoff_us < 0
+            or self.training_cutoff_us > now_us
+            or feature_cutoff_us > now_us
+        ):
             raise ValueError("M034_ESTIMATOR_CUTOFF_AFTER_DECISION")
         rows = self.history.prefix(
             context=context,
             horizon_seconds=self.horizon_seconds,
             now_us=min(now_us, self.training_cutoff_us),
         )
-        if len(rows) < self.minimum_samples:
+        completed_rows = [row for row in rows if row.completed]
+        if len(completed_rows) < self.minimum_samples:
             return None
-        values = [row.observed_lock_seconds for row in rows]
+        values = [row.observed_lock_seconds for row in completed_rows]
         expected = sum(values, ZERO) / D(len(values))
         p95 = D(str(CausalQueueEstimator._percentile_decimal(values, D("0.95"))))
         return LockTimeEstimate(
             expected,
             p95,
-            len(rows),
+            len(completed_rows),
             now_us,
             self.training_cutoff_us,
             feature_cutoff_us,

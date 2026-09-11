@@ -30,14 +30,21 @@ from crypto_strategy_lab.microstructure.economic_eligibility import (
     M034Policy,
     MarketRegimeSnapshot,
     ReallocationDecisionEngine,
+    RuleEvidenceStatus,
     ThresholdDefinition,
     ThresholdRegistry,
     ThresholdSourceType,
     UnknownCostPolicy,
     VenuePairFeeRegistry,
+    VenuePairRuleRegistry,
+    VenueSymbolRuleRecord,
 )
 from crypto_strategy_lab.microstructure.multi_stable_ledger import SlotLedger
-from crypto_strategy_lab.microstructure.multi_stable_models import PhysicalFill, SlotState
+from crypto_strategy_lab.microstructure.multi_stable_models import (
+    InventoryReductionAuthorization,
+    PhysicalFill,
+    SlotState,
+)
 from crypto_strategy_lab.microstructure.multi_stable_queue import (
     CausalCompletionHistory,
     CompletionObservation,
@@ -49,6 +56,7 @@ from crypto_strategy_lab.microstructure.multi_venue_models import (
     FeeEvidenceStatus,
     Venue,
     VenueFeeProfile,
+    VenueSymbolRule,
 )
 
 BINANCE = BookKey(Venue.BINANCE, "USDCUSDT")
@@ -84,12 +92,16 @@ def threshold_definitions() -> list[ThresholdDefinition]:
     ]
 
 
-def policy() -> M034Policy:
+def policy(
+    *,
+    definitions: list[ThresholdDefinition] | None = None,
+    unknown_cost_policy: UnknownCostPolicy = UnknownCostPolicy.REJECT,
+) -> M034Policy:
     return M034Policy(
         policy_id="M034_SYNTHETIC_TEST_ONLY",
         provenance="tests/test_m034_economic_eligibility.py",
-        thresholds=ThresholdRegistry(threshold_definitions()),
-        unknown_cost_policy=UnknownCostPolicy.REJECT,
+        thresholds=ThresholdRegistry(definitions or threshold_definitions()),
+        unknown_cost_policy=unknown_cost_policy,
     )
 
 
@@ -130,11 +142,63 @@ def fee_registry(profile: VenueFeeProfile | None = None) -> VenuePairFeeRegistry
     return registry
 
 
-def gate(registry: VenuePairFeeRegistry | None = None) -> EconomicEligibilityGate:
+def rule_registry() -> VenuePairRuleRegistry:
+    registry = VenuePairRuleRegistry()
+    registry.add(
+        VenueSymbolRuleRecord(
+            rule=VenueSymbolRule(
+                book=BINANCE,
+                base_asset="USDC",
+                quote_asset="USDT",
+                tick_size=D("0.0001"),
+                quantity_step=D("0.1"),
+                minimum_quantity=D("0.1"),
+                minimum_notional=D("5"),
+                price_precision=4,
+                effective_start_us=0,
+                effective_end_us=1_000,
+                provenance="synthetic historical rule fixture",
+            ),
+            evidence_status=RuleEvidenceStatus.PROVEN_HISTORICAL,
+            acquired_at_us=200,
+            record_id="rule:BINANCE:USDCUSDT:historical",
+            source_reference="fixture://rule-evidence",
+        )
+    )
+    return registry
+
+
+def pair_universe(*, eligible: bool = True) -> BinancePairUniverse:
+    return BinancePairUniverse(
+        [
+            BinancePairEvidence(
+                BINANCE,
+                True,
+                eligible,
+                eligible,
+                eligible,
+                eligible,
+                "synthetic temporal pair evidence",
+                0,
+                1_000,
+            )
+        ]
+    )
+
+
+def gate(
+    registry: VenuePairFeeRegistry | None = None,
+    *,
+    active_policy: M034Policy | None = None,
+    rules: VenuePairRuleRegistry | None = None,
+    universe: BinancePairUniverse | None = None,
+) -> EconomicEligibilityGate:
     return EconomicEligibilityGate(
         execution_policy=execution_policy(),
-        policy=policy(),
+        policy=active_policy or policy(),
         fee_registry=registry or fee_registry(),
+        rule_registry=rules or rule_registry(),
+        pair_universe=universe or pair_universe(),
     )
 
 
@@ -151,7 +215,10 @@ def candidate(candidate_id: str = "A", **changes: object) -> EconomicCandidate:
         intent=DecisionIntent.NEW_ENTRY,
         priority_class=2,
         decision_currency="USDT",
+        decision_currency_usd_rate=D("1"),
         decision_time_us=100,
+        order_price=D("1.0000"),
+        order_quantity=D("5.0"),
         gross_edge_bps=D("10"),
         execution_cost_bps=D("1"),
         adverse_selection_bps=D("1"),
@@ -172,6 +239,7 @@ def candidate(candidate_id: str = "A", **changes: object) -> EconomicCandidate:
             compatible_flow_per_second=D("10"),
         ),
         data_state=DataState.VALID,
+        account_context="public standard",
     )
     return replace(row, **changes)
 
@@ -183,6 +251,7 @@ def allocate(rows: list[EconomicCandidate], *, capital: str = "5") -> tuple[obje
         rows,
         mode=EvaluationMode.HISTORICAL_REPLAY,
         available_capital=D(capital),
+        available_capital_currency="USDT",
         now_us=100,
     )
     return result, ledger
@@ -307,6 +376,10 @@ def test_negative_exit_without_preregistered_risk_rule_is_cosmetic_and_rejected(
         slot_id="S",
         slot_epoch=1,
         quantity=D("5"),
+        origin_cost_basis=D("5"),
+        inventory_asset="USDC",
+        origin_asset="USDT",
+        exit_reservation_id="RETURN",
         now_us=5,
         expires_at_us=6,
         expected_hold_loss=D("1"),
@@ -324,7 +397,7 @@ def test_negative_exit_risk_rule_requires_true_inequality_and_is_not_a_cycle() -
         "PEG-RISK-1",
         "rule-hash",
         0,
-        10,
+        20,
         "synthetic preregistration",
         DecisionReasonCode.PEG_RISK_ESCALATED,
     )
@@ -332,9 +405,13 @@ def test_negative_exit_risk_rule_requires_true_inequality_and_is_not_a_cycle() -
         authorization_id="REDUCE-1",
         slot_id="S",
         slot_epoch=1,
-        quantity=D("5"),
-        now_us=5,
-        expires_at_us=6,
+        quantity=D("4.9"),
+        origin_cost_basis=D("5"),
+        inventory_asset="USDC",
+        origin_asset="USDT",
+        exit_reservation_id="RETURN",
+        now_us=3,
+        expires_at_us=10,
         expected_hold_loss=D("0.2"),
         opportunity_cost_of_lock=D("0.1"),
         tail_risk_increase=D("0.1"),
@@ -349,16 +426,18 @@ def test_negative_exit_risk_rule_requires_true_inequality_and_is_not_a_cycle() -
     ledger.apply_fill(
         "ENTRY", PhysicalFill("F1", "USDCUSDT", "USDT", "USDC", D("5"), D("4.9"), "USDC", D("0"), 2)
     )
-    ledger.reserve_owned("S", "RETURN", asset="USDC", quantity=D("4.9"), now_us=3)
-    ledger.activate("RETURN", now_us=3)
+    ledger.register_inventory_reduction_authorization(
+        assessment.authorization, now_us=3
+    )
+    ledger.reserve_owned("S", "RETURN", asset="USDC", quantity=D("4.9"), now_us=4)
+    ledger.activate("RETURN", now_us=4)
     ledger.apply_fill(
         "RETURN",
-        PhysicalFill("F2", "USDCUSDT", "USDC", "USDT", D("4.9"), D("4.9"), "USDT", D("0"), 4),
+        PhysicalFill("F2", "USDCUSDT", "USDC", "USDT", D("4.9"), D("4.9"), "USDT", D("0"), 5),
     )
     assert ledger.settle_inventory_reduction(
         "S",
-        origin_quantity=D("5"),
-        now_us=5,
+        now_us=6,
         reduction_id="REDUCE-1",
         authorization=assessment.authorization,
     ) == D("-0.1")
@@ -382,21 +461,25 @@ def test_kraken_candidate_is_dormant_for_m034_economics() -> None:
 
 def test_future_observations_cannot_change_completion_lock_or_adverse_decision_at_t() -> None:
     history = CausalCompletionHistory()
-    history.add(CompletionObservation("PAST", "CTX", 0, 50, 300, True, D("30")))
+    history.add(CompletionObservation("PAST", "CTX", 0, 30_000_000, 300, True, D("30")))
     completion = CompletionProbabilityEstimator(
-        history, minimum_samples=1, training_cutoff_us=100, horizon_seconds=300
+        history, minimum_samples=1, training_cutoff_us=100_000_000, horizon_seconds=300
     )
     lock = ExpectedLockTimeEstimator(
-        history, minimum_samples=1, training_cutoff_us=100, horizon_seconds=300
+        history, minimum_samples=1, training_cutoff_us=100_000_000, horizon_seconds=300
     )
     before = (
-        completion.estimate(context="CTX", now_us=100, feature_cutoff_us=100),
-        lock.estimate(context="CTX", now_us=100, feature_cutoff_us=100),
+        completion.estimate(context="CTX", now_us=100_000_000, feature_cutoff_us=100_000_000),
+        lock.estimate(context="CTX", now_us=100_000_000, feature_cutoff_us=100_000_000),
     )
-    history.add(CompletionObservation("FUTURE", "CTX", 101, 200, 300, False, D("999")))
+    history.add(
+        CompletionObservation(
+            "FUTURE", "CTX", 101_000_000, 401_000_000, 300, False, D("300")
+        )
+    )
     after = (
-        completion.estimate(context="CTX", now_us=100, feature_cutoff_us=100),
-        lock.estimate(context="CTX", now_us=100, feature_cutoff_us=100),
+        completion.estimate(context="CTX", now_us=100_000_000, feature_cutoff_us=100_000_000),
+        lock.estimate(context="CTX", now_us=100_000_000, feature_cutoff_us=100_000_000),
     )
     assert before == after
     adverse = CausalAdverseSelectionEstimator(minimum_samples=1, training_cutoff_us=100)
@@ -466,6 +549,7 @@ def test_no_eligible_candidate_records_idle_and_reason() -> None:
         [],
         mode=EvaluationMode.HISTORICAL_REPLAY,
         available_capital=D("5"),
+        available_capital_currency="USDT",
         now_us=100,
     )
     assert result.state == AllocationState.NO_ELIGIBLE_OPPORTUNITY
@@ -483,10 +567,266 @@ def test_every_logged_decision_has_reason_code() -> None:
 def test_available_binance_pair_is_not_automatically_eligible() -> None:
     universe = BinancePairUniverse(
         [
-            BinancePairEvidence(BINANCE, True, False, True, True, True, "evidence"),
+            BinancePairEvidence(BINANCE, True, False, True, True, True, "evidence", 0, 1_000),
             BinancePairEvidence(
-                BookKey(Venue.BINANCE, "FDUSDUSDT"), True, True, True, True, True, "evidence"
+                BookKey(Venue.BINANCE, "FDUSDUSDT"),
+                True,
+                True,
+                True,
+                True,
+                True,
+                "evidence",
+                0,
+                1_000,
             ),
         ]
     )
     assert BINANCE in universe.available_books and BINANCE not in universe.eligible_books
+
+
+def test_owned_return_with_negative_productivity_remains_selected() -> None:
+    owned = candidate(
+        "OWNED",
+        intent=DecisionIntent.OWNED_RETURN,
+        priority_class=1,
+        residual_cost_if_incomplete=D("10"),
+    )
+    result, ledger = allocate([owned])
+    assert result.selected_candidate_ids == ("OWNED",)
+    assert ledger.decisions[0].productivity_score is not None
+    assert ledger.decisions[0].productivity_score < 0
+
+
+def test_ineligible_owned_return_reserves_capital_before_new_entry() -> None:
+    owned = candidate(
+        "OWNED",
+        intent=DecisionIntent.OWNED_RETURN,
+        priority_class=1,
+        expected_lock_seconds=D("301"),
+    )
+    result, ledger = allocate([owned, candidate("NEW")])
+    assert result.selected_candidate_ids == ()
+    assert ledger.capital_states[0].state == CapitalState.LOCKED_INVENTORY
+
+
+def test_owned_return_shortfall_stops_lower_priority_allocation() -> None:
+    owned = candidate(
+        "OWNED", intent=DecisionIntent.OWNED_RETURN, priority_class=1
+    )
+    new = candidate("NEW", capital_required=D("1"), order_quantity=D("5.0"))
+    result, ledger = allocate([owned, new], capital="4")
+    assert result.selected_candidate_ids == ()
+    assert ledger.capital_states[0].state == CapitalState.LOCKED_INVENTORY
+
+
+def test_inventory_reduction_requires_physical_return_to_origin() -> None:
+    rule = InventoryExitRule(
+        "PEG-RISK-1",
+        "rule-hash",
+        0,
+        20,
+        "synthetic preregistration",
+        DecisionReasonCode.PEG_RISK_ESCALATED,
+    )
+    ledger = SlotLedger(
+        {"USDT": "10", "USDC": "0"}, marks_usd={"USDT": "1", "USDC": "1"}
+    )
+    ledger.create_slot("S", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
+    ledger.reserve_free("S", "ENTRY", asset="USDT", quantity=D("5"), now_us=1)
+    ledger.activate("ENTRY", now_us=1)
+    ledger.apply_fill(
+        "ENTRY",
+        PhysicalFill(
+            "F1", "USDCUSDT", "USDT", "USDC", D("5"), D("5"), "USDC", D("0"), 2
+        ),
+    )
+    assessment = InventoryExitDecisionEngine.evaluate(
+        authorization_id="REDUCE-NO-RETURN",
+        slot_id="S",
+        slot_epoch=1,
+        quantity=D("5"),
+        origin_cost_basis=D("5"),
+        inventory_asset="USDC",
+        origin_asset="USDT",
+        exit_reservation_id="RETURN",
+        now_us=3,
+        expires_at_us=10,
+        expected_hold_loss=D("6"),
+        opportunity_cost_of_lock=D("0"),
+        tail_risk_increase=D("0"),
+        realized_loss_of_exit=D("5"),
+        rule=rule,
+    )
+    assert assessment.authorization is not None
+    ledger.register_inventory_reduction_authorization(
+        assessment.authorization, now_us=3
+    )
+    with pytest.raises(ValueError, match="PHYSICAL_EXIT_UNPROVEN"):
+        ledger.settle_inventory_reduction(
+            "S",
+            now_us=4,
+            reduction_id="REDUCE-NO-RETURN",
+            authorization=assessment.authorization,
+        )
+    assert ledger.owned["S"]["USDC"] == D("5")
+    assert ledger.slots["S"].state != SlotState.CLOSED
+
+
+def test_inventory_reduction_authorization_cannot_be_retroactive() -> None:
+    ledger = SlotLedger(
+        {"USDT": "10", "USDC": "0"}, marks_usd={"USDT": "1", "USDC": "1"}
+    )
+    ledger.create_slot("S", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
+    ledger.reserve_free("S", "ENTRY", asset="USDT", quantity=D("5"), now_us=1)
+    ledger.activate("ENTRY", now_us=1)
+    ledger.apply_fill(
+        "ENTRY",
+        PhysicalFill(
+            "F1", "USDCUSDT", "USDT", "USDC", D("5"), D("4.9"), "USDC", D("0"), 2
+        ),
+    )
+    ledger.reserve_owned("S", "RETURN", asset="USDC", quantity=D("4.9"), now_us=3)
+    ledger.activate("RETURN", now_us=3)
+    ledger.apply_fill(
+        "RETURN",
+        PhysicalFill(
+            "F2", "USDCUSDT", "USDC", "USDT", D("4.9"), D("4.9"), "USDT", D("0"), 4
+        ),
+    )
+    authorization = InventoryReductionAuthorization(
+        authorization_id="RETRO",
+        slot_id="S",
+        slot_epoch=1,
+        quantity=D("4.9"),
+        origin_cost_basis=D("5"),
+        inventory_asset="USDC",
+        origin_asset="USDT",
+        exit_reservation_id="RETURN",
+        decided_at_us=5,
+        expires_at_us=10,
+        rule_id="LATE-RULE",
+        rule_hash="late-rule-hash",
+        reason_code=DecisionReasonCode.NEGATIVE_EXIT_RISK_RULE_TRIGGERED.value,
+        trigger_reason_code=DecisionReasonCode.PEG_RISK_ESCALATED.value,
+        expected_hold_loss=D("0.2"),
+        opportunity_cost_of_lock=D("0.1"),
+        tail_risk_increase=D("0.1"),
+        realized_loss_of_exit=D("0.1"),
+    )
+    with pytest.raises(ValueError, match="INVALID_INVENTORY_REDUCTION_REGISTRATION"):
+        ledger.register_inventory_reduction_authorization(authorization, now_us=5)
+
+
+def test_negative_conservative_cost_bound_is_rejected() -> None:
+    definitions = threshold_definitions() + [
+        ThresholdDefinition(
+            name=name,
+            value=D("-100"),
+            unit="bps",
+            source_type=ThresholdSourceType.SAFETY_BOUND,
+            source_reference="synthetic invalid bound",
+            derivation_method="adversarial fixture",
+            calibration_dataset_hash=None,
+            effective_from_us=0,
+            frozen_at_us=0,
+        )
+        for name in (
+            "UNKNOWN_EXECUTION_COST_BOUND",
+            "UNKNOWN_ADVERSE_SELECTION_BOUND",
+        )
+    ]
+    with pytest.raises(ValueError, match="INVALID_CONSERVATIVE_COST_BOUND"):
+        policy(
+            definitions=definitions,
+            unknown_cost_policy=UnknownCostPolicy.CONSERVATIVE_BOUND,
+        )
+
+
+def test_historical_fee_requires_matching_tier_context() -> None:
+    mismatched = replace(fee_profile(), account_tier_assumption="vip9")
+    decision = gate(fee_registry(mismatched)).evaluate(
+        candidate(), mode=EvaluationMode.HISTORICAL_REPLAY
+    )
+    assert DecisionReasonCode.FEE_UNPROVEN in decision.decision_reason_codes
+    with pytest.raises(ValueError):
+        replace(fee_profile(), fee_asset_semantics="")
+
+
+def test_pair_universe_and_historical_rule_are_admission_gates() -> None:
+    unavailable = gate(universe=pair_universe(eligible=False)).evaluate(
+        candidate(), mode=EvaluationMode.HISTORICAL_REPLAY
+    )
+    assert DecisionReasonCode.PAIR_EVIDENCE_UNPROVEN in unavailable.decision_reason_codes
+    forward_rules = VenuePairRuleRegistry()
+    forward_rules.add(
+        replace(
+            rule_registry()._records[0],
+            evidence_status=RuleEvidenceStatus.PROVEN_FORWARD,
+        )
+    )
+    no_historical_rule = gate(rules=forward_rules).evaluate(
+        candidate(), mode=EvaluationMode.HISTORICAL_REPLAY
+    )
+    assert DecisionReasonCode.EXCHANGE_RULE_UNPROVEN in no_historical_rule.decision_reason_codes
+
+
+def test_future_effective_threshold_blocks_past_decision() -> None:
+    future = [replace(row, effective_from_us=1_000_000) for row in threshold_definitions()]
+    decision = gate(active_policy=policy(definitions=future)).evaluate(
+        candidate(), mode=EvaluationMode.HISTORICAL_REPLAY
+    )
+    assert DecisionReasonCode.THRESHOLD_NOT_EFFECTIVE in decision.decision_reason_codes
+    assert not decision.eligible
+
+
+def test_allocation_rejects_mixed_currency_without_causal_conversion() -> None:
+    ledger = EligibilityDecisionLedger()
+    engine = M034EconomicAllocationEngine(gate=gate(), decision_ledger=ledger)
+    with pytest.raises(ValueError, match="ALLOCATION_CURRENCY_MISMATCH"):
+        engine.evaluate_and_allocate(
+            [candidate(decision_currency="EUR", decision_currency_usd_rate=D("1.1"))],
+            mode=EvaluationMode.HISTORICAL_REPLAY,
+            available_capital=D("5"),
+            available_capital_currency="USDT",
+            now_us=100,
+        )
+
+
+def test_data_gap_capital_is_blocked_data_not_idle() -> None:
+    row = candidate(market=replace(candidate().market, data_gap=True))
+    result, ledger = allocate([row])
+    assert result.selected_candidate_ids == ()
+    assert ledger.capital_states[0].state == CapitalState.BLOCKED_DATA
+
+
+def test_censored_observation_is_not_exact_lock_duration() -> None:
+    history = CausalCompletionHistory()
+    history.add(CompletionObservation("DONE", "CTX", 0, 30_000_000, 300, True, D("30")))
+    history.add(
+        CompletionObservation(
+            "CENSORED", "CTX", 0, 300_000_000, 300, False, D("300")
+        )
+    )
+    estimator = ExpectedLockTimeEstimator(
+        history, minimum_samples=1, training_cutoff_us=300_000_000, horizon_seconds=300
+    )
+    estimate = estimator.estimate(
+        context="CTX", now_us=300_000_000, feature_cutoff_us=300_000_000
+    )
+    assert estimate is not None and estimate.expected_seconds == D("30")
+    with pytest.raises(ValueError, match="INVALID_COMPLETION_OBSERVATION"):
+        CompletionObservation("IMPOSSIBLE", "CTX", 0, 1, 300, True, D("299"))
+
+
+def test_ambiguous_fee_is_logged_as_unproven_not_raised() -> None:
+    registry = fee_registry()
+    registry.add(
+        replace(
+            fee_profile(),
+            maker_rate=D("0.0002"),
+            record_id="fee:BINANCE:USDCUSDT:historical:second",
+        )
+    )
+    decision = gate(registry).evaluate(candidate(), mode=EvaluationMode.HISTORICAL_REPLAY)
+    assert not decision.eligible
+    assert DecisionReasonCode.FEE_UNPROVEN in decision.decision_reason_codes
