@@ -161,6 +161,11 @@ class PaperQueueModel:
         self.orders[order_id] = order
         cohort_key = (symbol, side, price)
         cohort = self.cohorts.get(cohort_key)
+        terminal = {PaperOrderState.FILLED, PaperOrderState.CANCELED}
+        if cohort is not None and all(
+            self.orders[existing_id].state in terminal for existing_id in cohort.order_ids
+        ):
+            cohort = None
         if cohort is None:
             cohort = PaperQueueCohort(
                 symbol=symbol,
@@ -393,8 +398,11 @@ class DiagnosticConfig:
             raise ForwardDiagnosticError("M034_FORWARD_INVALID_TIMING")
         if self.depth_band_bps <= ZERO:
             raise ForwardDiagnosticError("M034_FORWARD_INVALID_DEPTH_BAND")
-        if self.fee_evidence_status != FeeEvidenceStatus.PROVEN_FORWARD.value:
-            raise ForwardDiagnosticError("M034_FORWARD_FEE_UNPROVEN")
+        if self.fee_evidence_status not in {
+            FeeEvidenceStatus.PROVEN_FORWARD.value,
+            FeeEvidenceStatus.UNPROVEN.value,
+        }:
+            raise ForwardDiagnosticError("M034_FORWARD_INVALID_FEE_STATUS")
         if (
             not self.fee_source_reference
             or not self.fee_evidence_artifact
@@ -802,7 +810,7 @@ class ForwardPaperDiagnosticRunner:
                     provenance="BINANCE_PUBLIC_STANDARD_FORWARD_DIAGNOSTIC",
                     account_tier_assumption=ACCOUNT_CONTEXT,
                     acquired_at_us=self.config.fee_observed_at_us,
-                    evidence_status=FeeEvidenceStatus.PROVEN_FORWARD,
+                    evidence_status=FeeEvidenceStatus(self.config.fee_evidence_status),
                     record_id=f"forward-standard-fee:{state.symbol}",
                     source_reference=self.config.fee_source_reference,
                 )
@@ -1144,6 +1152,7 @@ class ForwardPaperDiagnosticRunner:
         last_message_mono = warmup_started_mono
         market_watermark_us: int | None = None
         validated_market_watermark_us: int | None = None
+        cutoff_observed = False
         raw_path = output / "raw-market.jsonl.gz"
         decisions_path = output / "eligibility-decisions.jsonl.gz"
         try:
@@ -1159,6 +1168,13 @@ class ForwardPaperDiagnosticRunner:
                     try:
                         message = stream.recv(timeout=1.0)
                     except TimeoutError:
+                        if (
+                            cutoff_observed
+                            and economic_start_mono_ns is not None
+                            and self.monotonic_ns() - economic_start_mono_ns
+                            >= self.config.duration_seconds * 1_000_000_000
+                        ):
+                            break
                         if (
                             self.monotonic_ns() - last_message_mono
                             > self.config.max_stream_silence_seconds * 1_000_000_000
@@ -1206,9 +1222,10 @@ class ForwardPaperDiagnosticRunner:
                             raise ForwardDiagnosticError("M034_FORWARD_MARKET_CLOCK_STALLED")
                         validated_market_watermark_us = market_watermark_us
                         if economic_end_us is not None and market_watermark_us >= economic_end_us:
-                            if monotonic_elapsed_us < self.config.duration_seconds * 1_000_000:
-                                raise ForwardDiagnosticError("M034_FORWARD_THREE_HOURS_NOT_ELAPSED")
-                            break
+                            cutoff_observed = True
+                            if monotonic_elapsed_us >= self.config.duration_seconds * 1_000_000:
+                                break
+                            continue
                     self._apply_event(
                         data,
                         received_us=received_us,

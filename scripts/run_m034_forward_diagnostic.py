@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import subprocess
 from pathlib import Path
 
 from crypto_strategy_lab.microstructure.m034_forward_paper import (
     CANONICAL_SYMBOLS,
+    DiagnosticConfig,
     ForwardDiagnosticError,
     ForwardPaperDiagnosticRunner,
     claim_identity,
@@ -66,6 +68,38 @@ def verify_artifact(path_value: str, expected_sha256: str, *, label: str) -> Non
         raise ForwardDiagnosticError(f"M034_FORWARD_{label}_NOT_PUBLISHED")
 
 
+def _artifact_payload(path_value: str, *, label: str) -> dict[str, object]:
+    artifact = (ROOT / path_value).resolve()
+    try:
+        payload = json.loads(artifact.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ForwardDiagnosticError(f"M034_FORWARD_{label}_INVALID_JSON") from exc
+    if not isinstance(payload, dict):
+        raise ForwardDiagnosticError(f"M034_FORWARD_{label}_INVALID_JSON")
+    return payload
+
+
+def verify_source_review(config: DiagnosticConfig) -> None:
+    payload = _artifact_payload(config.source_review_artifact, label="SOURCE_REVIEW")
+    if (
+        payload.get("source_sha") != config.source_sha
+        or payload.get("verdict") != "PASS_FOR_RUN"
+        or payload.get("reviewer_model") != "gpt-6-astra"
+    ):
+        raise ForwardDiagnosticError("M034_FORWARD_SOURCE_REVIEW_SEMANTIC_MISMATCH")
+
+
+def verify_fee_evidence(config: DiagnosticConfig) -> None:
+    payload = _artifact_payload(config.fee_evidence_artifact, label="FEE_EVIDENCE")
+    if (
+        payload.get("evidence_status") != config.fee_evidence_status
+        or payload.get("maker_rate_reference") != str(config.fee_maker_rate)
+        or payload.get("taker_rate_reference") != str(config.fee_taker_rate)
+        or payload.get("symbols") != list(config.fee_applicable_symbols)
+    ):
+        raise ForwardDiagnosticError("M034_FORWARD_FEE_EVIDENCE_SEMANTIC_MISMATCH")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run the one-shot M034 Binance forward paper diagnostic."
@@ -97,11 +131,13 @@ def main() -> None:
         config.source_review_sha256,
         label="SOURCE_REVIEW",
     )
+    verify_source_review(config)
     verify_artifact(
         config.fee_evidence_artifact,
         config.fee_evidence_sha256,
         label="FEE_EVIDENCE",
     )
+    verify_fee_evidence(config)
     claim_artifact = claim_identity(config, output_path, root=ROOT)
     runner = ForwardPaperDiagnosticRunner(
         config=config,

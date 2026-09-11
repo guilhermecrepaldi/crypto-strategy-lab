@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gzip
 import json
 from contextlib import contextmanager
 from decimal import Decimal as D
@@ -79,7 +80,7 @@ def config_payload() -> dict[str, object]:
         "max_market_clock_lag_us": 30_000_000,
         "fee_maker_rate": "0.001",
         "fee_taker_rate": "0.001",
-        "fee_evidence_status": "PROVEN_FORWARD",
+        "fee_evidence_status": "UNPROVEN",
         "fee_source_reference": "https://www.binance.com/en/fee/trading",
         "fee_evidence_artifact": "reports/m034/fee-evidence.json",
         "fee_evidence_sha256": "c" * 64,
@@ -295,6 +296,56 @@ def test_c1_c2_share_public_queue_ahead_once() -> None:
     assert all(order.state == PaperOrderState.FILLED for order in orders)
 
 
+def test_new_terminal_cohort_observes_new_public_queue() -> None:
+    model = PaperQueueModel()
+    first = model.place(
+        order_id="first",
+        symbol="USDCUSDT",
+        side="BUY",
+        price=D("0.9999"),
+        quantity=D("1"),
+        now_us=10,
+        activation_latency_us=1,
+        best_bid=D("0.9999"),
+        best_ask=D("1.0001"),
+        public_quantity_at_price=D("0"),
+    )
+    PaperQueueModel.activate(first, now_us=11, best_bid=D("0.9999"), best_ask=D("1.0001"))
+    assert model.consume_trade(
+        symbol="USDCUSDT",
+        trade_id=5,
+        price=D("0.9999"),
+        quantity=D("1"),
+        buyer_is_maker=True,
+        trade_time_us=12,
+    ) == {"first": D("1")}
+    second = model.place(
+        order_id="second",
+        symbol="USDCUSDT",
+        side="BUY",
+        price=D("0.9999"),
+        quantity=D("1"),
+        now_us=20,
+        activation_latency_us=1,
+        best_bid=D("0.9999"),
+        best_ask=D("1.0001"),
+        public_quantity_at_price=D("100"),
+    )
+    PaperQueueModel.activate(second, now_us=21, best_bid=D("0.9999"), best_ask=D("1.0001"))
+    assert (
+        model.consume_trade(
+            symbol="USDCUSDT",
+            trade_id=6,
+            price=D("0.9999"),
+            quantity=D("1"),
+            buyer_is_maker=True,
+            trade_time_us=22,
+        )
+        == {}
+    )
+    assert second.queue_ahead == D("99")
+
+
 class NoopClient:
     last_response = None
 
@@ -342,6 +393,7 @@ def test_unknown_estimators_flow_through_gate_and_block_all_capital() -> None:
         DecisionReasonCode.COMPLETION_PROBABILITY_UNKNOWN in row.decision_reason_codes
         for row in decisions
     )
+    assert all(DecisionReasonCode.FEE_UNPROVEN in row.decision_reason_codes for row in decisions)
     assert runner.decision_ledger.capital_states[-1].state == CapitalState.BLOCKED_DATA
     assert runner.paper_queue.orders == {}
 
@@ -553,3 +605,67 @@ def test_timestamp_jump_cannot_fake_three_hours(tmp_path: Path) -> None:
     assert result["failure"] == "ForwardDiagnosticError:M034_FORWARD_MARKET_CLOCK_JUMP"
     assert result["DURATION_HOURS"] == "0.000"
     assert result["END_TIMESTAMP_US"] == result["START_TIMESTAMP_US"]
+
+
+def test_cutoff_waits_for_monotonic_clock_without_including_late_event(tmp_path: Path) -> None:
+    configuration = DiagnosticConfig.from_mapping(config_payload())
+    start_us = 2_000_000_000_000_000
+    messages = [
+        json.dumps(
+            {
+                "data": {
+                    "e": "depthUpdate",
+                    "s": "USDCUSDT",
+                    "E": start_us,
+                    "U": 2,
+                    "u": 2,
+                    "b": [],
+                    "a": [],
+                }
+            }
+        ),
+        json.dumps(
+            {
+                "data": {
+                    "e": "depthUpdate",
+                    "s": "USDCUSDT",
+                    "E": start_us + 10_800_000_000,
+                    "U": 3,
+                    "u": 3,
+                    "b": [],
+                    "a": [],
+                }
+            }
+        ),
+        json.dumps(
+            {
+                "data": {
+                    "e": "depthUpdate",
+                    "s": "USDCUSDT",
+                    "E": start_us + 10_800_002_000,
+                    "U": 4,
+                    "u": 4,
+                    "b": [],
+                    "a": [],
+                }
+            }
+        ),
+    ]
+    monotonic_values = iter([0, 900_000_000_000, 11_699_999_000_000, 11_700_001_000_000])
+    claim = tmp_path / "claim.json"
+    claim.write_text("{}\n", encoding="utf-8")
+    runner = ForwardPaperDiagnosticRunner(
+        config=configuration,
+        public_client=NoopClient(),
+        stream_factory=lambda _symbols: fake_stream(messages),
+        wall_time_us=lambda: start_us - 1,
+        monotonic_ns=lambda: next(monotonic_values),
+        claim_artifact=claim,
+    )
+    output = tmp_path / "cutoff-wait"
+    result = runner.run(output)
+    assert result["status"] == "COMPLETE"
+    assert result["DURATION_HOURS"] == "3.000"
+    with gzip.open(output / "raw-market.jsonl.gz", "rt", encoding="utf-8") as stream:
+        rows = [json.loads(line) for line in stream]
+    assert [row["included_before_cutoff"] for row in rows] == [True, False, False]
