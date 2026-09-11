@@ -281,9 +281,7 @@ def test_one_trade_budget_cannot_fill_multiple_orders_beyond_observed_quantity()
     before = ladder.inventory
     quantity = D(".05")
 
-    consumed = ladder.receive_trade(
-        Trade(200, 99, D(".90"), quantity, True), capture_time_us=200
-    )
+    consumed = ladder.receive_trade(Trade(200, 99, D(".90"), quantity, True), capture_time_us=200)
 
     assert consumed == quantity
     assert ladder.inventory - before == quantity
@@ -327,11 +325,7 @@ def test_profitable_exit_closes_the_bound_lot_and_compounds_cash():
     before_equity_basis = ladder.cash + ladder.active_buy_notional + ladder.inventory_cost
     ladder._fill(sell, sell.remaining, 400, source_id=2)
 
-    assert all(
-        lot.remaining == D("0")
-        for lot in ladder.lots
-        if lot.lot_id in bound_ids
-    )
+    assert all(lot.remaining == D("0") for lot in ladder.lots if lot.lot_id in bound_ids)
     assert ladder.cycle_count >= 1
     assert ladder.realized_profit > D("0")
     assert ladder.cash + ladder.active_buy_notional + ladder.inventory_cost > before_equity_basis
@@ -358,9 +352,7 @@ def test_delayed_native_print_before_actual_activation_cannot_fill():
     ladder, _, _, _ = _without_endowment()
     order = next(order for order in ladder.active_orders if order.side == "BUY")
 
-    consumed = ladder.receive_trade(
-        Trade(109, 1, order.price, D("1"), True), capture_time_us=200
-    )
+    consumed = ladder.receive_trade(Trade(109, 1, order.price, D("1"), True), capture_time_us=200)
 
     assert consumed == D("0")
     assert order.activation_evaluated_us == 200
@@ -373,9 +365,9 @@ def test_cancel_pending_order_does_not_fill_before_it_really_activates():
     ladder._cancel(order, 105, "CANCEL_BEFORE_ACTIVE")
 
     assert order.activation_evaluated_us is None
-    assert ladder.receive_trade(
-        Trade(109, 1, order.price, D("1"), True), capture_time_us=111
-    ) == D("0")
+    assert ladder.receive_trade(Trade(109, 1, order.price, D("1"), True), capture_time_us=111) == D(
+        "0"
+    )
     assert order.filled == D("0")
 
 

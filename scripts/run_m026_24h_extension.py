@@ -64,8 +64,7 @@ REVIEW = Path("reports/usdcusdt/M028-preflight-independent-review.md")
 JOURNAL = Path("docs/research/M028_JOURNAL.md")
 PARENT_RESULT = Path("reports/usdcusdt/M026-3h-result.json")
 PARENT_LEDGER = Path(
-    "artifacts/usdcusdt/l2-monthly-samples/M026/OWNER_GATED_3H/PRICE_PRIORITY/"
-    "execution-audit.jsonl"
+    "artifacts/usdcusdt/l2-monthly-samples/M026/OWNER_GATED_3H/PRICE_PRIORITY/execution-audit.jsonl"
 )
 PARENT_TERMINAL = Path(
     "artifacts/usdcusdt/l2-monthly-samples/M026/OWNER_GATED_3H/PRICE_PRIORITY/"
@@ -185,9 +184,7 @@ def bounded_inputs(
     checked = next(item for item in validation["days"] if item["date"] == SOURCE_DAY)
     verified = verify_published_day_evidence(entry, checked, trade_manifest)
     slices = tuple(sorted(entry["raw_slices"], key=lambda item: int(item["offset"])))
-    if len(slices) != 144 or tuple(item["offset"] for item in slices) != tuple(
-        range(0, 1440, 10)
-    ):
+    if len(slices) != 144 or tuple(item["offset"] for item in slices) != tuple(range(0, 1440, 10)):
         raise ValueError("M028_EXACT_ALL_144_SLICES_REQUIRED")
     for item in slices:
         validate_slice_metadata(SOURCE_DAY, item)
@@ -249,8 +246,7 @@ def bounded_native_events(slices: tuple[dict[str, Any], ...]):
         raise ValueError("M028_ALL_SLICES_REQUIRED")
     for event in iter_native_events(raw_lines(ROOT, SOURCE_DAY, list(slices))):
         if not (
-            START_US <= event["local_us"] < END_US
-            and START_US <= event["exchange_us"] < END_US
+            START_US <= event["local_us"] < END_US and START_US <= event["exchange_us"] < END_US
         ):
             raise ValueError("M028_NATIVE_EVENT_ESCAPED_24H_BOUND")
         yield event
@@ -293,9 +289,7 @@ def verify_m026_prefix(
     expected_ledger = _read_jsonl(PARENT_LEDGER)
     if engine.audit != expected_ledger:
         raise ValueError(f"{model_id}_M026_PREFIX_LEDGER_MISMATCH")
-    expected_ids = {
-        trade.trade_id for trade in canonical.values() if trade.time_us < M026_END_US
-    }
+    expected_ids = {trade.trade_id for trade in canonical.values() if trade.time_us < M026_END_US}
     if seen != expected_ids or len(seen) != expected_result["expected_trade_count"]:
         raise ValueError(f"{model_id}_M026_PREFIX_TRADE_SET_MISMATCH")
     actual_terminal = engine.checkpoint()
@@ -457,9 +451,7 @@ def run():
             "parent_model_id": "M026",
             "parent_model_hash": ModelRegistry().get("M026").model_hash,
             "capital_mode": "PHYSICAL_DYNAMIC_NORMALIZED_MECHANICS_BANK",
-            "order_notional_mode": (
-                "SLOT_BASE_1_USDT_EQ_QUANTIZED_WHOLE_USDC_NON_EXECUTABLE"
-            ),
+            "order_notional_mode": ("SLOT_BASE_1_USDT_EQ_QUANTIZED_WHOLE_USDC_NON_EXECUTABLE"),
             "virtual_filter_override": "MIN_NOTIONAL_ONLY",
             "start": "2025-01-01T00:00:00Z",
             "end_exclusive": "2025-01-02T00:00:00Z",

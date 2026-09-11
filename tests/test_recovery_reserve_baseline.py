@@ -34,8 +34,11 @@ def _cycle(entry: datetime, exit_: datetime) -> SerialCycle:
 
 
 def _result(
-    *, cycles: tuple[SerialCycle, ...] = (), open_entry: datetime | None = None,
-    end: datetime = START + timedelta(days=3), daily: dict[date, int] | None = None,
+    *,
+    cycles: tuple[SerialCycle, ...] = (),
+    open_entry: datetime | None = None,
+    end: datetime = START + timedelta(days=3),
+    daily: dict[date, int] | None = None,
     model_id: str = "M007",
 ) -> SerialReplayResult:
     return SerialReplayResult.model_construct(
@@ -46,8 +49,12 @@ def _result(
         release_closures=(),
         open_entry_event=_event(open_entry) if open_entry else None,
         open_entry_timestamp=open_entry,
-        daily_cycles=daily or {START.date(): 0, (START + timedelta(days=1)).date(): 1,
-                               (START + timedelta(days=2)).date(): 0},
+        daily_cycles=daily
+        or {
+            START.date(): 0,
+            (START + timedelta(days=1)).date(): 1,
+            (START + timedelta(days=2)).date(): 0,
+        },
     )
 
 

@@ -78,11 +78,7 @@ def _event_hours(value: int) -> str:
 
 
 def _microseconds(value: timedelta) -> int:
-    return (
-        value.days * 86_400_000_000
-        + value.seconds * 1_000_000
-        + value.microseconds
-    )
+    return value.days * 86_400_000_000 + value.seconds * 1_000_000 + value.microseconds
 
 
 def _percent(numerator: int, denominator: int) -> str:
@@ -217,9 +213,7 @@ def build_baseline_autopsy(result: SerialReplayResult) -> dict[str, Any]:
     for limit in TOP_K:
         selected = ranked[:limit]
         union_days = (
-            set().union(*(covered_by[item.episode_id] for item in selected))
-            if selected
-            else set()
+            set().union(*(covered_by[item.episode_id] for item in selected)) if selected else set()
         )
         selected_lock = sum(item.lock_event_units for item in selected)
         top[f"top{limit}"] = {

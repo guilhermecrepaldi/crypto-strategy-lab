@@ -467,8 +467,7 @@ class B10ReserveReplay(B10RealityReplay):
             raise ValueError("ENTRY_ADMISSION_POLICY_REQUIRES_M018")
         if (
             identity.get("model_id") in DEADLINE_POLICY_HASHES
-            and identity.get("deadline_policy_hash")
-            != DEADLINE_POLICY_HASHES[identity["model_id"]]
+            and identity.get("deadline_policy_hash") != DEADLINE_POLICY_HASHES[identity["model_id"]]
         ):
             raise ValueError("M016_DEADLINE_POLICY_IDENTITY_REQUIRED")
         if identity.get("model_id") in DEADLINE_POLICY_HASHES and not getattr(

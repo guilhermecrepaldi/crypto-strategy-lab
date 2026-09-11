@@ -26,8 +26,7 @@ def finalize() -> dict:
         result.get("run_hash") != EXPECTED_RUN_HASH
         or result.get("published_config_sha") != SOURCE_COMMIT
         or result.get("RUN_STATUS") != "COMPLETE"
-        or result.get("AUDIT", {}).get("status")
-        != "PASS_ALL_11_INDEPENDENT_SCENARIO_AUDITS"
+        or result.get("AUDIT", {}).get("status") != "PASS_ALL_11_INDEPENDENT_SCENARIO_AUDITS"
         or result.get("REPORTING_CORRECTION", {}).get("status") != "PASS"
         or result["REPORTING_CORRECTION"].get("event_replay_performed") is not False
     ):

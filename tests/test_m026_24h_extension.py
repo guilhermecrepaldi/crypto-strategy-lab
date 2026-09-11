@@ -151,9 +151,7 @@ def test_result_audit_rejects_non_24h_terminal(monkeypatch) -> None:
         "independent_dynamic_hotline_audit",
         lambda *_: {"status": "PASS_PARENT"},
     )
-    terminal = {
-        "state": {"parent": {"config": {"start_us": audit_module.START_US, "end_us": 3}}}
-    }
+    terminal = {"state": {"parent": {"config": {"start_us": audit_module.START_US, "end_us": 3}}}}
     with pytest.raises(ValueError, match="M028_AUDIT_TERMINAL_END"):
         independent_m026_24h_audit(
             [],

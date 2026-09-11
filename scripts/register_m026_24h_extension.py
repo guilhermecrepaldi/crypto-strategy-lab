@@ -105,9 +105,7 @@ def register():
                 "parent_model_id": "M026",
                 "ancestor_chain": (*parent.lineage.ancestor_chain, "M026"),
                 "change_category": "OWNER_TEMPORAL_REPLICATION_24H",
-                "change_summary": (
-                    "Unchanged M026 strategy on the complete January 1 UTC day."
-                ),
+                "change_summary": ("Unchanged M026 strategy on the complete January 1 UTC day."),
                 "references": {
                     "owner_directive": str(OWNER),
                     "preregistration": str(PREREG),

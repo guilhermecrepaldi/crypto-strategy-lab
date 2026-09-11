@@ -58,18 +58,14 @@ def finalize() -> dict:
 
     rows = [json.loads(line) for line in AUDIT.read_text(encoding="utf-8").splitlines()]
     submissions = {int(row["order_id"]): row for row in rows if row["event"] == "SUBMIT"}
-    self_cross = Counter(
-        row["band_id"] for row in rows if row["event"] == "SELF_CROSS_BLOCKED"
-    )
+    self_cross = Counter(row["band_id"] for row in rows if row["event"] == "SELF_CROSS_BLOCKED")
     post_only = Counter(
         submissions[int(row["order_id"])]["band_id"]
         for row in rows
         if row["event"] == "REJECTED_POST_ONLY"
     )
     filled_slots = {row["SLOT"] for row in report["ALL_SLOTS"] if row["FILLS"] > 0}
-    productive_slots = {
-        row["SLOT"] for row in report["ALL_SLOTS"] if row["COMPLETE_CYCLES"] > 0
-    }
+    productive_slots = {row["SLOT"] for row in report["ALL_SLOTS"] if row["COMPLETE_CYCLES"] > 0}
     report.update(
         {
             "PHYSICAL_RUN_HASH": physical_hash,

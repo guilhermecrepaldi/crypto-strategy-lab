@@ -474,9 +474,7 @@ def test_rolling_window_repositions_only_after_cancel_ack() -> None:
         next(order for order in value.orders if order.order_id == order_id).status == "CANCELED"
         for order_id in canceled_ids
     )
-    assert any(
-        row["event"] == "ROLLING_REPLACEMENT_SUBMITTED" for row in value.audit
-    )
+    assert any(row["event"] == "ROLLING_REPLACEMENT_SUBMITTED" for row in value.audit)
 
 
 def test_checkpoint_rejects_different_replay_window() -> None:
@@ -560,9 +558,7 @@ def test_rolling_cancel_race_routes_partial_lot_without_recreating_full_cell() -
     book(40, "1.0021", "1.0022")
     assert order.status == "CANCELED_PARTIAL"
     assert not any(
-        item.role == "ENTRY"
-        and item.cell_id == order.cell_id
-        and item.order_id != order.order_id
+        item.role == "ENTRY" and item.cell_id == order.cell_id and item.order_id != order.order_id
         for item in value.orders
     )
     assert order.order_id not in value._deferred_returns

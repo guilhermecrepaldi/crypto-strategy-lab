@@ -136,9 +136,7 @@ def recover_preserved_result() -> dict:
         "RECOVERY_AUDITOR_COMMIT": RECOVERY_AUDITOR_COMMIT,
         "USDT_FINAL": metrics["FINAL_USDT"],
         "USDC_FINAL": metrics["FINAL_USDC"],
-        "USDC_MARKED_VALUE": str(
-            D(metrics["FINAL_MARKED_EQUITY"]) - D(metrics["FINAL_USDT"])
-        ),
+        "USDC_MARKED_VALUE": str(D(metrics["FINAL_MARKED_EQUITY"]) - D(metrics["FINAL_USDT"])),
         "TOTAL_FINAL_EQUITY": metrics["FINAL_MARKED_EQUITY"],
         "REALIZED_NET_PNL": metrics["REALIZED_DISPOSAL_PNL"],
         "COMPLETED_CYCLE_PNL": metrics["REALIZED_PNL"],

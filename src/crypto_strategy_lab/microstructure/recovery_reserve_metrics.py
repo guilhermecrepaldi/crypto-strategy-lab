@@ -34,9 +34,8 @@ def _duration_hours(start: Any, end: Any) -> Decimal | None:
     try:
         duration = end - start
         microseconds = (
-            (duration.days * 86_400 + duration.seconds) * 1_000_000
-            + duration.microseconds
-        )
+            duration.days * 86_400 + duration.seconds
+        ) * 1_000_000 + duration.microseconds
         with localcontext() as context:
             context.prec = _LEDGER_PRECISION
             return D(microseconds) / D(3_600_000_000)
@@ -86,9 +85,7 @@ def summarize_replay(
     def percentile(fraction: Decimal) -> Decimal:
         if not ordered_holds:
             return D(0)
-        index = int(
-            (D(len(ordered_holds)) * fraction).to_integral_value(rounding=ROUND_CEILING)
-        )
+        index = int((D(len(ordered_holds)) * fraction).to_integral_value(rounding=ROUND_CEILING))
         return ordered_holds[max(0, index - 1)]
 
     release_events = sorted(int(row["event"]) for row in releases if row.get("event") is not None)
@@ -103,13 +100,10 @@ def summarize_replay(
             None if interval is None or interval <= 0 else inventory_hours / interval
         )
         intervals = [
-            D(right - left) / D(4096 * 1_000_000 * 3600)
-            for left, right in pairwise(release_events)
+            D(right - left) / D(4096 * 1_000_000 * 3600) for left, right in pairwise(release_events)
         ]
         release_loss_total = sum(release_losses, D(0))
-        mean_intervention_hours = (
-            sum(intervals, D(0)) / D(len(intervals)) if intervals else None
-        )
+        mean_intervention_hours = sum(intervals, D(0)) / D(len(intervals)) if intervals else None
         median_intervention_hours = (
             sorted(intervals)[len(intervals) // 2]
             if len(intervals) % 2 == 1
@@ -388,6 +382,7 @@ def robust_regions(rows: list[dict[str, Any]], baseline: dict[str, Any]) -> dict
         peer_rows = [
             next(r for r in rows if r.get("scenario_id") == p.get("scenario_id")) for p in peers
         ]
+
         def worst_improvement(key: str, base: Decimal | None, *, inverse: bool = False) -> Decimal:
             values = [_dec(row.get(key)) for row in peer_rows]
             if base is None or any(value is None for value in values):

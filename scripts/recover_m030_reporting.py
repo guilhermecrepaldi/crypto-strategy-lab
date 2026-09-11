@@ -77,9 +77,7 @@ def _verify_provenance(manifest: dict[str, Any]) -> None:
     if json_hash(manifest["evidence"]) != manifest["evidence_sha256"]:
         raise ValueError("M030_RECOVERY_EVIDENCE_HASH")
     identity = {
-        key: value
-        for key, value in manifest.items()
-        if key not in {"evidence", "run_hash"}
+        key: value for key, value in manifest.items() if key not in {"evidence", "run_hash"}
     }
     if json_hash(identity) != EXPECTED_RUN_HASH:
         raise ValueError("M030_RECOVERY_IDENTITY_HASH")
@@ -88,16 +86,12 @@ def _verify_provenance(manifest: dict[str, Any]) -> None:
         "docs/microstructure/M030_HOTLINE_FIRST_REALLOCATION_OWNER_DIRECTIVE.md": manifest[
             "owner_directive_sha256_lf"
         ],
-        "docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md": manifest[
-            "owner_window_sha256_lf"
-        ],
+        "docs/microstructure/OWNER_GATED_REPLAY_WINDOW.md": manifest["owner_window_sha256_lf"],
         "docs/microstructure/M030_MODEL_SPEC.json": manifest["spec_sha256_lf"],
         "docs/microstructure/M030_HOTLINE_FIRST_REALLOCATION_PREREGISTRATION.md": manifest[
             "protocol_sha256_lf"
         ],
-        "reports/usdcusdt/M030-preflight-independent-review.md": manifest[
-            "review_sha256_lf"
-        ],
+        "reports/usdcusdt/M030-preflight-independent-review.md": manifest["review_sha256_lf"],
         "docs/research/M030_JOURNAL.md": manifest["pre_run_journal_sha256_lf"],
     }
     for path, expected in source_fields.items():
@@ -150,9 +144,7 @@ def _comparison(metrics: dict[str, Any], audit: dict[str, Any]) -> dict[str, Any
             "SLOT_CYCLES": metrics["M030_EVAL_SLOT_CYCLES"],
             "SLOT_CYCLES_PER_HOUR": metrics["M030_EVAL_SLOT_CYCLES_PER_HOUR"],
             "HOT_COVERAGE_RANDOM_3H_TIME_WEIGHTED": str(treatment_coverage),
-            "HOT_COVERAGE_FULL_DAY_TIME_WEIGHTED": metrics[
-                "HOT_FUNDING_COVERAGE_TIME_WEIGHTED"
-            ],
+            "HOT_COVERAGE_FULL_DAY_TIME_WEIGHTED": metrics["HOT_FUNDING_COVERAGE_TIME_WEIGHTED"],
             "RECLAIMABLE_STRANDED_RANDOM_3H_TIME_PCT": str(treatment_stranded),
         },
         "PHYSICAL_CYCLE_DELTA": delta,
@@ -199,9 +191,7 @@ def recover() -> dict[str, Any]:
     _profile, canonical, _slices, evidence = base.bounded_inputs(data_manifest, validation)
     if len(canonical) != manifest["expected_trade_count"]:
         raise ValueError("M030_RECOVERY_CANONICAL_COUNT")
-    audit = independent_m030_audit(
-        rows, terminal, metrics, canonical, DEFAULT_EVALUATION_WINDOWS
-    )
+    audit = independent_m030_audit(rows, terminal, metrics, canonical, DEFAULT_EVALUATION_WINDOWS)
     audit.update(
         terminal_sha256=terminal["sha256"],
         ledger_sha256=EXPECTED_PHYSICAL_SHA256["execution-audit.jsonl"],

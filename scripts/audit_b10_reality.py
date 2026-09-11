@@ -75,9 +75,9 @@ def reconstruct(rows, profile, *, owner_reserve=False, price_priority=False):
                 orders[row["order_id"]]["cancel_requested_effective_us"] = row["effective_us"]
             if kind == "ORDER_ACTIVE":
                 order = orders[row["order_id"]]
-                if (row["order_id"] in terminal or not (
-                        row["evaluated_at_us"] > order["active_us"] >= order["submitted_us"]
-                )):
+                if row["order_id"] in terminal or not (
+                    row["evaluated_at_us"] > order["active_us"] >= order["submitted_us"]
+                ):
                     raise ValueError("IMPOSSIBLE_ORDER_ACTIVATION_TIMESTAMP")
                 orders[row["order_id"]]["activation_evaluated_us"] = row["evaluated_at_us"]
             if kind == "QUEUE_FLOW":
@@ -91,7 +91,9 @@ def reconstruct(rows, profile, *, owner_reserve=False, price_priority=False):
                 order = orders[row["order_id"]]
                 stamp = row["time_us"]
                 if (
-                    not price_priority or order["release"] or row["order_id"] in terminal
+                    not price_priority
+                    or order["release"]
+                    or row["order_id"] in terminal
                     or order.get("activation_evaluated_us", stamp) >= stamp
                     or stamp >= order.get("cancel_requested_effective_us", stamp + 1)
                     or row["activation_evaluated_us"] != order["activation_evaluated_us"]
@@ -106,11 +108,15 @@ def reconstruct(rows, profile, *, owner_reserve=False, price_priority=False):
                 same(row["queue_before"], order["audit_queue"], "PRICE_PRIORITY_QUEUE_BEFORE")
                 order["audit_queue"] = D(0)
                 same(row["modeled_active_us"], order["active_us"], "PRICE_PRIORITY_ACTIVE_US")
-                own = min(number(row["raw_quantity"]),
-                          number(order["quantity"]) - order["audit_filled"])
+                own = min(
+                    number(row["raw_quantity"]), number(order["quantity"]) - order["audit_filled"]
+                )
                 same(row["own_quantity"], own, "PRICE_PRIORITY_QUANTITY")
-                same(row["remaining_raw_quantity"], number(row["raw_quantity"]) - own,
-                     "PRICE_PRIORITY_UNUSED_VOLUME")
+                same(
+                    row["remaining_raw_quantity"],
+                    number(row["raw_quantity"]) - own,
+                    "PRICE_PRIORITY_UNUSED_VOLUME",
+                )
                 order.setdefault("priority_clear_us", stamp)
                 inferences.append(row)
                 key = (row["order_id"], row["trade_id"])
@@ -134,8 +140,12 @@ def reconstruct(rows, profile, *, owner_reserve=False, price_priority=False):
                 order_id = row["order_id"]
                 if order_id in orders:
                     raise ValueError("DUPLICATE_ORDER_ID")
-                orders[order_id] = {**row, "audit_filled": D(0), "row_index": index,
-                                    "audit_queue": number(row["queue"])}
+                orders[order_id] = {
+                    **row,
+                    "audit_filled": D(0),
+                    "row_index": index,
+                    "audit_queue": number(row["queue"]),
+                }
             elif kind == "FILL":
                 if row["source"] == "TRADE_THROUGH":
                     inference_key = (row["order_id"], row["source_id"])
@@ -270,8 +280,9 @@ def reconstruct(rows, profile, *, owner_reserve=False, price_priority=False):
     }
 
 
-def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rules,
-                      *, priority_inferences=()):
+def audit_raw_support(
+    history, orders, fills, chosen, evaluations, envelope, rules, *, priority_inferences=()
+):
     selected = [row for row in fills if row["order_id"] in chosen]
     for evaluation in evaluations:
         selected.append(
@@ -290,7 +301,10 @@ def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rul
     maker_windows = []
     for order_id in chosen:
         supporting = [
-            row for row in selected if row["order_id"] == order_id and row["source"] == "TRADE"
+            row
+            for row in selected
+            if row["order_id"] == order_id
+            and row["source"] == "TRADE"
             and row["time_us"] < orders[order_id].get("priority_clear_us", row["time_us"] + 1)
         ]
         clearance = orders[order_id].get("priority_clear_us")
@@ -300,16 +314,23 @@ def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rul
                 {
                     "order_id": order_id,
                     "start": order["active_us"],
-                    "end": max([row["time_us"] for row in supporting] +
-                               ([clearance] if clearance is not None else [])),
+                    "end": max(
+                        [row["time_us"] for row in supporting]
+                        + ([clearance] if clearance is not None else [])
+                    ),
                     "price": number(order["price"]),
                     "buyer_maker": order["side"] == "BUY",
                     "queue": number(order["queue"]),
                     "volume": D(0),
                     "filled": D(0),
-                    "inference": next((row for row in priority_inferences
-                                       if row["order_id"] == order_id
-                                       and row["time_us"] == clearance), None),
+                    "inference": next(
+                        (
+                            row
+                            for row in priority_inferences
+                            if row["order_id"] == order_id and row["time_us"] == clearance
+                        ),
+                        None,
+                    ),
                 }
             )
     windows = sorted(maker_windows, key=lambda row: row["start"])
@@ -355,8 +376,9 @@ def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rul
                         if stamp > cutoff:
                             break
                         active = [window for window in active if stamp <= window["end"]]
-                        while (next_window < len(relevant)
-                               and relevant[next_window]["start"] < stamp):
+                        while (
+                            next_window < len(relevant) and relevant[next_window]["start"] < stamp
+                        ):
                             window = relevant[next_window]
                             if stamp <= window["end"]:
                                 active.append(window)
@@ -380,9 +402,11 @@ def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rul
                                 window["volume"] += quantity
                             inference = window["inference"]
                             if inference is not None and trade_id == inference["trade_id"]:
-                                same(inference["queue_before"],
-                                     max(D(0), window["queue"] - window["volume"]),
-                                     "RAW_QUEUE_BEFORE_PRIORITY_INFERENCE")
+                                same(
+                                    inference["queue_before"],
+                                    max(D(0), window["queue"] - window["volume"]),
+                                    "RAW_QUEUE_BEFORE_PRIORITY_INFERENCE",
+                                )
                             for fill in fill_at[(window["order_id"], trade_id)]:
                                 window["filled"] += number(fill["quantity"])
                                 if window["volume"] + EPSILON < window["queue"] + window["filled"]:
@@ -400,10 +424,10 @@ def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rul
                 else:
                     order = orders[fill["order_id"]]
                     limit = number(order["price"])
-                    if (
-                        order.get("priority_clear_us", fill["time_us"] + 1) > fill["time_us"]
-                        or not (raw["price"] < limit if fill["side"] == "BUY"
-                                else raw["price"] > limit)
+                    if order.get("priority_clear_us", fill["time_us"] + 1) > fill[
+                        "time_us"
+                    ] or not (
+                        raw["price"] < limit if fill["side"] == "BUY" else raw["price"] > limit
                     ):
                         raise ValueError("RAW_PRIORITY_THROUGH_UNSUPPORTED")
                     same(fill["price"], limit, "RAW_PRIORITY_OWN_LIMIT")
@@ -433,8 +457,10 @@ def audit_raw_support(history, orders, fills, chosen, evaluations, envelope, rul
                     raise ValueError("RELEASE_FILL_BELOW_LIMIT")
         for inference in priority_inferences:
             raw = wanted_rows[inference["trade_id"]]
-            if (raw["time_us"] != inference["time_us"]
-                    or raw["buyer_maker"] != inference["buyer_maker"]):
+            if (
+                raw["time_us"] != inference["time_us"]
+                or raw["buyer_maker"] != inference["buyer_maker"]
+            ):
                 raise ValueError("PRIORITY_INFERENCE_RAW_IDENTITY_MISMATCH")
             same(inference["raw_price"], raw["price"], "PRIORITY_INFERENCE_RAW_PRICE")
             same(inference["raw_quantity"], raw["quantity"], "PRIORITY_INFERENCE_RAW_QUANTITY")
@@ -625,8 +651,7 @@ def audit_m014(config_path, folder, *, sample=100, model_id="M014"):
     if expected_config and digest(config_path) != expected_config:
         raise ValueError("M014_CONFIG_HASH_MISMATCH")
     selected_profile = next(
-        item for item in config["profiles"]
-        if item["profile"]["name"] == "B_REALISTIC_CONSERVATIVE"
+        item for item in config["profiles"] if item["profile"]["name"] == "B_REALISTIC_CONSERVATIVE"
     )
     profile, envelope = selected_profile["profile"], selected_profile["envelope"]
     engine_state = replay_payload["execution"]["state"]
@@ -645,8 +670,9 @@ def audit_m014(config_path, folder, *, sample=100, model_id="M014"):
             same(replay_payload["envelope"][key], value, "M014_ENVELOPE_" + key)
     if model_id == "M015" and run_manifest.get("priority_trade_through") is not True:
         raise ValueError("M015_HYPOTHESIS_BINDING_REQUIRED")
-    ledger = reconstruct(iter_rows(audit_path), profile, owner_reserve=True,
-                         price_priority=model_id == "M015")
+    ledger = reconstruct(
+        iter_rows(audit_path), profile, owner_reserve=True, price_priority=model_id == "M015"
+    )
     ordinary = [row for row in ledger["settlements"] if not row["release"]]
     releases = [row for row in ledger["settlements"] if row["release"]]
     with localcontext() as context:
@@ -735,14 +761,21 @@ def audit_m014(config_path, folder, *, sample=100, model_id="M014"):
         "ordinary_total": len(ordinary),
         "release_settlements": len(releases),
         "price_priority_inferences": len(ledger["priority_inferences"]),
-        "price_priority_raw_fills": sum(row["source"] == "TRADE_THROUGH"
-                                        for row in ledger["fills"]),
+        "price_priority_raw_fills": sum(
+            row["source"] == "TRADE_THROUGH" for row in ledger["fills"]
+        ),
         "raw_support": support,
         "limitations": ["PASS_CONDITIONAL is an audit status, not strategy PASS."]
-        + ([f"Only {len(ordinary)} ordinary cycles available; fewer than 100."]
-           if len(ordinary) < 100 else [])
-        + (["Price-through queue clearance is counterfactual inference, not observed L2."]
-           if model_id == "M015" else []),
+        + (
+            [f"Only {len(ordinary)} ordinary cycles available; fewer than 100."]
+            if len(ordinary) < 100
+            else []
+        )
+        + (
+            ["Price-through queue clearance is counterfactual inference, not observed L2."]
+            if model_id == "M015"
+            else []
+        ),
     }
 
 
@@ -757,8 +790,7 @@ def passive_cycle_upper_bound(buy_flow, sell_flow, queue):
         return 1 + int(min(buy_flow, sell_flow) // queue)
 
 
-def _validate_priority_capacity_inputs(buy_volume, sell_volume, queue,
-                                       bid_down, ask_up):
+def _validate_priority_capacity_inputs(buy_volume, sell_volume, queue, bid_down, ask_up):
     values = (buy_volume, sell_volume, queue)
     if any(not isinstance(value, Decimal) for value in values):
         values = tuple(D(value) for value in values)
@@ -767,9 +799,14 @@ def _validate_priority_capacity_inputs(buy_volume, sell_volume, queue,
         raise ValueError("INVALID_PRIORITY_CAPACITY_INPUT")
     if buy_volume < 0 or sell_volume < 0:
         raise ValueError("INVALID_PRIORITY_CAPACITY_INPUT")
-    if (not isinstance(bid_down, int) or isinstance(bid_down, bool)
-            or not isinstance(ask_up, int) or isinstance(ask_up, bool)
-            or bid_down < 0 or ask_up < 0):
+    if (
+        not isinstance(bid_down, int)
+        or isinstance(bid_down, bool)
+        or not isinstance(ask_up, int)
+        or isinstance(ask_up, bool)
+        or bid_down < 0
+        or ask_up < 0
+    ):
         raise ValueError("INVALID_PRIORITY_CAPACITY_MOVEMENT_COUNT")
     return buy_volume, sell_volume, queue
 
@@ -779,12 +816,10 @@ def priority_capacity_upper_bound(buy_volume, sell_volume, queue, bid_down, ask_
     buy_volume, sell_volume, queue = _validate_priority_capacity_inputs(
         buy_volume, sell_volume, queue, bid_down, ask_up
     )
-    return 1 + min(int(buy_volume // queue) + bid_down,
-                   int(sell_volume // queue) + ask_up)
+    return 1 + min(int(buy_volume // queue) + bid_down, int(sell_volume // queue) + ask_up)
 
 
-def hybrid_priority_capacity_upper_bound(buy_volume, sell_volume, queue, bid_down,
-                                         ask_up):
+def hybrid_priority_capacity_upper_bound(buy_volume, sell_volume, queue, bid_down, ask_up):
     """Positive serial hybrid cycles: passive queues or a distinct quote change."""
     buy_volume, sell_volume, queue = _validate_priority_capacity_inputs(
         buy_volume, sell_volume, queue, bid_down, ask_up
@@ -796,8 +831,10 @@ def _priority_book_quote(mark, tick, buyer_maker, half_spread):
     """Reproduce the frozen BookEnvelope quote without importing replay code."""
     bid = mark - (D(0) if buyer_maker else half_spread * 2)
     ask = mark + (half_spread * 2 if buyer_maker else D(0))
-    return ((bid / tick).to_integral_value(rounding=ROUND_FLOOR) * tick,
-            (ask / tick).to_integral_value(rounding=ROUND_CEILING) * tick)
+    return (
+        (bid / tick).to_integral_value(rounding=ROUND_FLOOR) * tick,
+        (ask / tick).to_integral_value(rounding=ROUND_CEILING) * tick,
+    )
 
 
 def audit_priority_capacity_week1(config_path):
@@ -809,8 +846,9 @@ def audit_priority_capacity_week1(config_path):
     history = json.loads(history_path.read_bytes())
     if history["symbol"] != "USDCUSDT" or history["kind"] != "trades":
         raise ValueError("PRIORITY_CAPACITY_USDCUSDT_TRADES_REQUIRED")
-    profile = next(item for item in config["profiles"]
-                   if item["profile"]["name"] == "B_REALISTIC_CONSERVATIVE")
+    profile = next(
+        item for item in config["profiles"] if item["profile"]["name"] == "B_REALISTIC_CONSERVATIVE"
+    )
     envelope = profile["envelope"]
     half_spread = D(envelope["half_spread"])
     queue = D(profile["profile"]["queue_ahead"])
@@ -821,16 +859,26 @@ def audit_priority_capacity_week1(config_path):
             raise ValueError("PRIORITY_CAPACITY_NONNEGATIVE_FEES_REQUIRED")
     if not half_spread.is_finite() or half_spread <= 0:
         raise ValueError("INVALID_PRIORITY_CAPACITY_ENVELOPE")
-    archives = sorted((item for item in history["archives"]
-                       if "2026-01-01" <= item["utc_date"] < "2026-01-08"),
-                      key=lambda item: item["utc_date"])
+    archives = sorted(
+        (item for item in history["archives"] if "2026-01-01" <= item["utc_date"] < "2026-01-08"),
+        key=lambda item: item["utc_date"],
+    )
     expected_days = [f"2026-01-{day:02}" for day in range(1, 8)]
     if [item["utc_date"] for item in archives] != expected_days:
         raise ValueError("PRIORITY_CAPACITY_EXACT_SEVEN_DAYS_REQUIRED")
-    days = {day: {"trades": 0, "buy_volume": D(0), "sell_volume": D(0),
-                  "bid_down": 0, "ask_up": 0, "spread_violations": 0,
-                  "min_grid_tick": None, "max_grid_tick": None}
-            for day in expected_days}
+    days = {
+        day: {
+            "trades": 0,
+            "buy_volume": D(0),
+            "sell_volume": D(0),
+            "bid_down": 0,
+            "ask_up": 0,
+            "spread_violations": 0,
+            "min_grid_tick": None,
+            "max_grid_tick": None,
+        }
+        for day in expected_days
+    }
     previous_quote = None
     previous_id = None
     previous_stamp = None
@@ -842,8 +890,10 @@ def audit_priority_capacity_week1(config_path):
             path = Path(item["local_path"])
             if digest(path) != item["sha256"]:
                 raise ValueError("PRIORITY_CAPACITY_ZIP_HASH_MISMATCH")
-            first = int(datetime.fromisoformat(item["utc_date"]).replace(
-                tzinfo=UTC).timestamp()) * 1_000_000
+            first = (
+                int(datetime.fromisoformat(item["utc_date"]).replace(tzinfo=UTC).timestamp())
+                * 1_000_000
+            )
             day = days[item["utc_date"]]
             with zipfile.ZipFile(path) as archive:
                 members = [name for name in archive.namelist() if name.endswith(".csv")]
@@ -866,9 +916,13 @@ def audit_priority_capacity_week1(config_path):
                         price = D(fields[1].decode())
                         quantity = D(fields[2].decode())
                         maker = fields[5].lower()
-                        if (not price.is_finite() or not quantity.is_finite()
-                                or price <= 0 or quantity <= 0
-                                or maker not in (b"true", b"false")):
+                        if (
+                            not price.is_finite()
+                            or not quantity.is_finite()
+                            or price <= 0
+                            or quantity <= 0
+                            or maker not in (b"true", b"false")
+                        ):
                             raise ValueError("PRIORITY_CAPACITY_INVALID_TRADE")
                         if maker == b"true":
                             day["buy_volume"] += quantity
@@ -876,8 +930,14 @@ def audit_priority_capacity_week1(config_path):
                             day["sell_volume"] += quantity
                         day["trades"] += 1
                         total += 1
-                        rule = next((row["rule"] for row in config["rules"]
-                                     if row["start_us"] <= stamp < row["end_us"]), None)
+                        rule = next(
+                            (
+                                row["rule"]
+                                for row in config["rules"]
+                                if row["start_us"] <= stamp < row["end_us"]
+                            ),
+                            None,
+                        )
                         if rule is None:
                             raise ValueError("PRIORITY_CAPACITY_MISSING_RULE")
                         tick = D(rule["tick_size"])
@@ -888,8 +948,7 @@ def audit_priority_capacity_week1(config_path):
                         frozen_tick = tick
                         if price % tick:
                             raise ValueError("PRIORITY_CAPACITY_RAW_PRICE_OFF_GRID")
-                        bid, ask = _priority_book_quote(price, tick, maker == b"true",
-                                                        half_spread)
+                        bid, ask = _priority_book_quote(price, tick, maker == b"true", half_spread)
                         if bid <= 0 or ask <= 0 or bid % tick or ask % tick:
                             raise ValueError("PRIORITY_CAPACITY_INVALID_GRID")
                         spread = (ask - bid) / tick
@@ -898,10 +957,12 @@ def audit_priority_capacity_week1(config_path):
                             raise ValueError("PRIORITY_CAPACITY_SPREAD_NOT_ONE_TICK")
                         bid_grid, ask_grid = int(bid / tick), int(ask / tick)
                         lo, hi = min(bid_grid, ask_grid), max(bid_grid, ask_grid)
-                        day["min_grid_tick"] = lo if day["min_grid_tick"] is None else min(
-                            day["min_grid_tick"], lo)
-                        day["max_grid_tick"] = hi if day["max_grid_tick"] is None else max(
-                            day["max_grid_tick"], hi)
+                        day["min_grid_tick"] = (
+                            lo if day["min_grid_tick"] is None else min(day["min_grid_tick"], lo)
+                        )
+                        day["max_grid_tick"] = (
+                            hi if day["max_grid_tick"] is None else max(day["max_grid_tick"], hi)
+                        )
                         if previous_quote is not None:
                             day["bid_down"] += bid < previous_quote[0]
                             day["ask_up"] += ask > previous_quote[1]
@@ -911,41 +972,54 @@ def audit_priority_capacity_week1(config_path):
     rows = []
     for day_name in expected_days:
         row = days[day_name]
-        bound = priority_capacity_upper_bound(row["buy_volume"], row["sell_volume"],
-                                              queue, row["bid_down"], row["ask_up"])
+        bound = priority_capacity_upper_bound(
+            row["buy_volume"], row["sell_volume"], queue, row["bid_down"], row["ask_up"]
+        )
         archive = next(x for x in archives if x["utc_date"] == day_name)
-        rows.append({"day": day_name, "trades": row["trades"],
-                     "buy_compatible_volume": str(row["buy_volume"]),
-                     "sell_compatible_volume": str(row["sell_volume"]),
-                     "bid_down": row["bid_down"], "ask_up": row["ask_up"],
-                     "spread_violations": row["spread_violations"],
-                     "min_quote_grid_tick": row["min_grid_tick"],
-                     "max_quote_grid_tick": row["max_grid_tick"],
-                     "optimistic_priority_cycle_upper_bound": bound,
-                     "optimistic_hybrid_cycle_upper_bound":
-                         hybrid_priority_capacity_upper_bound(
-                             row["buy_volume"], row["sell_volume"], queue,
-                             row["bid_down"], row["ask_up"]),
-                     "archive": archive["local_path"],
-                     "archive_sha256": archive["sha256"]})
-    return {"schema": "priority-trade-through-capacity-bound-v1",
-            "status": "VERIFIED_NECESSARY_BOUND", "profile": profile["profile"]["name"],
-            "profile_config_sha256": digest(config_path),
-            "history_manifest_sha256": digest(history_path),
-            "queue_per_new_order": str(queue), "days": rows,
-            "formula": "1 + min(floor(buy/Q)+bid_down, floor(sell/Q)+ask_up)",
-            "hybrid_formula": "1 + floor(min(buy,sell)/Q) + bid_down + ask_up",
-            "assumptions": ["Inferred BookEnvelope quote movements; not observed historical BBO",
-                            "Constant tick, one-tick spread; limits on the same grid",
-                            "One serial lot; up to one free carry-in cycle each day",
-                            "Quote changes include the previous day's last quote",
-                            "Fresh Q for every new passive order; no cross-cycle priority reuse",
-                            "No raw-flow reuse; releases and partials are not full cycles",
-                            "Hybrid bound requires strictly positive cycles and nonnegative fees",
-                            "Ignore own quantity, latency, slippage and magnitude of costs"],
-            "minimum_500_possible_in_all_days": all(
-                row["optimistic_hybrid_cycle_upper_bound"] >= 500 for row in rows),
-            "scope": "FROZEN_PROFILE_PRIORITY_CAPACITY_DIAGNOSTIC_ONLY"}
+        rows.append(
+            {
+                "day": day_name,
+                "trades": row["trades"],
+                "buy_compatible_volume": str(row["buy_volume"]),
+                "sell_compatible_volume": str(row["sell_volume"]),
+                "bid_down": row["bid_down"],
+                "ask_up": row["ask_up"],
+                "spread_violations": row["spread_violations"],
+                "min_quote_grid_tick": row["min_grid_tick"],
+                "max_quote_grid_tick": row["max_grid_tick"],
+                "optimistic_priority_cycle_upper_bound": bound,
+                "optimistic_hybrid_cycle_upper_bound": hybrid_priority_capacity_upper_bound(
+                    row["buy_volume"], row["sell_volume"], queue, row["bid_down"], row["ask_up"]
+                ),
+                "archive": archive["local_path"],
+                "archive_sha256": archive["sha256"],
+            }
+        )
+    return {
+        "schema": "priority-trade-through-capacity-bound-v1",
+        "status": "VERIFIED_NECESSARY_BOUND",
+        "profile": profile["profile"]["name"],
+        "profile_config_sha256": digest(config_path),
+        "history_manifest_sha256": digest(history_path),
+        "queue_per_new_order": str(queue),
+        "days": rows,
+        "formula": "1 + min(floor(buy/Q)+bid_down, floor(sell/Q)+ask_up)",
+        "hybrid_formula": "1 + floor(min(buy,sell)/Q) + bid_down + ask_up",
+        "assumptions": [
+            "Inferred BookEnvelope quote movements; not observed historical BBO",
+            "Constant tick, one-tick spread; limits on the same grid",
+            "One serial lot; up to one free carry-in cycle each day",
+            "Quote changes include the previous day's last quote",
+            "Fresh Q for every new passive order; no cross-cycle priority reuse",
+            "No raw-flow reuse; releases and partials are not full cycles",
+            "Hybrid bound requires strictly positive cycles and nonnegative fees",
+            "Ignore own quantity, latency, slippage and magnitude of costs",
+        ],
+        "minimum_500_possible_in_all_days": all(
+            row["optimistic_hybrid_cycle_upper_bound"] >= 500 for row in rows
+        ),
+        "scope": "FROZEN_PROFILE_PRIORITY_CAPACITY_DIAGNOSTIC_ONLY",
+    }
 
 
 def audit_week1_passive_capacity(config_path):
@@ -957,12 +1031,16 @@ def audit_week1_passive_capacity(config_path):
     history = json.loads(history_path.read_bytes())
     if history["symbol"] != "USDCUSDT" or history["kind"] != "trades":
         raise ValueError("CAPACITY_USDCUSDT_TRADES_REQUIRED")
-    profile = next(item["profile"] for item in config["profiles"]
-                   if item["profile"]["name"] == "B_REALISTIC_CONSERVATIVE")
+    profile = next(
+        item["profile"]
+        for item in config["profiles"]
+        if item["profile"]["name"] == "B_REALISTIC_CONSERVATIVE"
+    )
     queue = D(profile["queue_ahead"])
-    archives = sorted((item for item in history["archives"]
-                       if "2026-01-01" <= item["utc_date"] < "2026-01-08"),
-                      key=lambda item: item["utc_date"])
+    archives = sorted(
+        (item for item in history["archives"] if "2026-01-01" <= item["utc_date"] < "2026-01-08"),
+        key=lambda item: item["utc_date"],
+    )
     if [item["utc_date"] for item in archives] != [f"2026-01-{day:02}" for day in range(1, 8)]:
         raise ValueError("CAPACITY_EXACT_SEVEN_DAYS_REQUIRED")
     rows = []
@@ -1000,28 +1078,42 @@ def audit_week1_passive_capacity(config_path):
                         else:
                             sell += quantity
                         count += 1
-            rows.append({"day": item["utc_date"], "trades": count,
-                         "buy_compatible_volume": str(buy), "sell_compatible_volume": str(sell),
-                         "total_volume": str(buy + sell),
-                         "optimistic_cycle_upper_bound": passive_cycle_upper_bound(
-                             buy, sell, queue),
-                         "archive": str(path), "archive_bytes": path.stat().st_size,
-                         "archive_sha256": item["sha256"]})
+            rows.append(
+                {
+                    "day": item["utc_date"],
+                    "trades": count,
+                    "buy_compatible_volume": str(buy),
+                    "sell_compatible_volume": str(sell),
+                    "total_volume": str(buy + sell),
+                    "optimistic_cycle_upper_bound": passive_cycle_upper_bound(buy, sell, queue),
+                    "archive": str(path),
+                    "archive_bytes": path.stat().st_size,
+                    "archive_sha256": item["sha256"],
+                }
+            )
     if sum(row["trades"] for row in rows) != 2489204:
         raise ValueError("CAPACITY_WEEK_1_COUNT_MISMATCH")
-    return {"schema": "passive-serial-capacity-bound-v1", "status": "VERIFIED_NECESSARY_BOUND",
-            "profile_config_sha256": digest(config_path),
-            "history_manifest_sha256": digest(history_path), "profile": profile["name"],
-            "queue_per_new_order": str(queue), "days": rows,
-            "formula": "1 + floor(min(buy_compatible_volume,sell_compatible_volume)/queue)",
-            "assumptions": ["One serial lot; new queue per ordinary BUY and SELL order",
-                            "Up to one carry-in cycle at each daily boundary",
-                            "Ignore own quantity, price, latency, sequence, fees and net profit",
-                            "Releases excluded; no trade-flow reuse or fictitious queue priority"],
-            "minimum_500_possible_in_all_days": all(
-                row["optimistic_cycle_upper_bound"] >= 500 for row in rows),
-            "scope": "FROZEN_PROFILE_MAKER_MAKER_ONLY; not a universal market impossibility",
-            "execution_semantics": "No economic replay, strategy tuning or week2 access"}
+    return {
+        "schema": "passive-serial-capacity-bound-v1",
+        "status": "VERIFIED_NECESSARY_BOUND",
+        "profile_config_sha256": digest(config_path),
+        "history_manifest_sha256": digest(history_path),
+        "profile": profile["name"],
+        "queue_per_new_order": str(queue),
+        "days": rows,
+        "formula": "1 + floor(min(buy_compatible_volume,sell_compatible_volume)/queue)",
+        "assumptions": [
+            "One serial lot; new queue per ordinary BUY and SELL order",
+            "Up to one carry-in cycle at each daily boundary",
+            "Ignore own quantity, price, latency, sequence, fees and net profit",
+            "Releases excluded; no trade-flow reuse or fictitious queue priority",
+        ],
+        "minimum_500_possible_in_all_days": all(
+            row["optimistic_cycle_upper_bound"] >= 500 for row in rows
+        ),
+        "scope": "FROZEN_PROFILE_MAKER_MAKER_ONLY; not a universal market impossibility",
+        "execution_semantics": "No economic replay, strategy tuning or week2 access",
+    }
 
 
 if __name__ == "__main__":

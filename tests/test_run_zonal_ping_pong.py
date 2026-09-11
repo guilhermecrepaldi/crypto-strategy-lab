@@ -167,9 +167,7 @@ def test_independent_audit_proves_both_cycle_legs() -> None:
     assert audit["cycles"] == 1
 
     unlinked = deepcopy(value.audit)
-    exit_fill = next(
-        row for row in unlinked if row["event"] == "FILL" and row["side"] == "SELL"
-    )
+    exit_fill = next(row for row in unlinked if row["event"] == "FILL" and row["side"] == "SELL")
     exit_fill["economic_source_order_ids"] = []
     with pytest.raises(ValueError, match="BUY_SELL_LINK_MISMATCH"):
         independent_execution_audit(unlinked, terminal, canonical, value.metrics())

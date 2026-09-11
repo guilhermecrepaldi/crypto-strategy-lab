@@ -229,9 +229,7 @@ def test_cancel_pending_remains_fillable_until_cancel_ack() -> None:
     target = next(order for order in value.active_buys if order.band_id == "Z004")
     value.cancel(target.order_id, time_us=4)
     assert target.status == "CANCEL_PENDING"
-    consumed = value.receive_trade(
-        trade(5, 40, target.price - D(".0001"), target.quantity, True)
-    )
+    consumed = value.receive_trade(trade(5, 40, target.price - D(".0001"), target.quantity, True))
     assert consumed == target.quantity
     assert target.status == "FILLED"
 
@@ -313,14 +311,10 @@ def test_fragmented_endowment_round_trip_counts_once() -> None:
     )
     second_sell = next(order for order in value.active_sells if order.band_id == "Z009")
     value.receive_book(book(10, bid="1.0002", ask="1.0003"))
-    value.receive_trade(
-        trade(11, 74, second_sell.price + D(".0001"), second_sell.quantity, False)
-    )
+    value.receive_trade(trade(11, 74, second_sell.price + D(".0001"), second_sell.quantity, False))
     second_buy = next(order for order in value.active_buys if order.band_id == "Z009")
     value.receive_book(book(12, bid="1.0002", ask="1.0003"))
-    value.receive_trade(
-        trade(13, 75, second_buy.price - D(".0001"), second_buy.quantity, True)
-    )
+    value.receive_trade(trade(13, 75, second_buy.price - D(".0001"), second_buy.quantity, True))
     assert value.cycles == 2
 
 
@@ -396,14 +390,11 @@ def test_unfilled_endowment_sells_remain_free_window_quotes() -> None:
     value.receive_book(book(9, bid=".9994", ask=".9995"))
     value.receive_book(book(12, bid=".9994", ask=".9995"))
     unfilled_entry_sells = [
-        order
-        for order in value.active_sells
-        if order.role == "ENTRY" and order.filled == ZERO
+        order for order in value.active_sells if order.role == "ENTRY" and order.filled == ZERO
     ]
     assert len(unfilled_entry_sells) <= 4
     assert all(
-        value._band_state[order.band_id] == "READY_FOR_BUY"
-        for order in unfilled_entry_sells
+        value._band_state[order.band_id] == "READY_FOR_BUY" for order in unfilled_entry_sells
     )
 
 

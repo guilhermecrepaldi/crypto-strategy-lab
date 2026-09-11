@@ -248,18 +248,13 @@ def test_owner_capacity_metric_contract_is_complete() -> None:
         "OWN_QUANTITY_AHEAD_AT_ACTIVATION_USDC",
     ):
         assert set(metrics[field]) == {"mean", "median", "p95", "max"}
-        assert all(
-            value is None or value >= 0 for value in metrics[field].values()
-        )
+        assert all(value is None or value >= 0 for value in metrics[field].values())
 
 
 def test_queue_zero_uses_ledger_ordinal_before_fill_or_cancel_ack() -> None:
     from types import SimpleNamespace
 
-    orders = {
-        order_id: SimpleNamespace(side="BUY", price=D("1.0000"))
-        for order_id in (1, 2, 3)
-    }
+    orders = {order_id: SimpleNamespace(side="BUY", price=D("1.0000")) for order_id in (1, 2, 3)}
     rows = [
         {
             "event": "ACTIVATED",

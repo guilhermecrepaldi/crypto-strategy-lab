@@ -179,9 +179,7 @@ def analyze_price_occupancy(
     workers: int = 1,
 ) -> dict[str, Any]:
     selection_start = max(start, manifest.first_timestamp)
-    selected = select_history_archives(
-        manifest, start=selection_start, end_exclusive=end_exclusive
-    )
+    selected = select_history_archives(manifest, start=selection_start, end_exclusive=end_exclusive)
     selected = tuple(sorted(selected, key=lambda item: item.first_timestamp))
     arguments = [(item.local_path, manifest.kind, tick_decimals) for item in selected]
     if workers == 1:
@@ -250,8 +248,7 @@ def analyze_price_occupancy(
     source_binding = hashlib.sha256("\n".join(source_paths).encode("utf-8")).hexdigest()
     archive_authority_binding = hashlib.sha256(
         "\n".join(
-            f"{item.utc_date.isoformat()}:{item.sha256}:{item.record_count}"
-            for item in selected
+            f"{item.utc_date.isoformat()}:{item.sha256}:{item.record_count}" for item in selected
         ).encode("utf-8")
     ).hexdigest()
     return {

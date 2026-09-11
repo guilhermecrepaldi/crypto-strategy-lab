@@ -28,8 +28,7 @@ def finalize() -> dict:
         result.get("run_hash") != EXPECTED_RUN_HASH
         or result.get("published_config_sha") != SOURCE_COMMIT
         or result.get("RUN_STATUS") != "COMPLETE"
-        or metrics.get("AUDIT")
-        != "PASS_M026_INDEPENDENT_LEDGER_AND_TERMINAL_AUDIT"
+        or metrics.get("AUDIT") != "PASS_M026_INDEPENDENT_LEDGER_AND_TERMINAL_AUDIT"
         or metrics.get("PHYSICAL_CYCLES") != 30
         or metrics.get("SLOT_EQUIVALENT_CYCLES") != 90
         or metrics.get("PHYSICAL_GATE_GT_12_3333_PASS") is not False
@@ -115,17 +114,13 @@ def finalize() -> dict:
                 "physical_cycles": metrics["PHYSICAL_CYCLES"],
                 "physical_cycles_per_hour": metrics["PHYSICAL_CYCLES_PER_HOUR"],
                 "slot_equivalent_cycles": metrics["SLOT_EQUIVALENT_CYCLES"],
-                "slot_equivalent_cycles_per_hour": metrics[
-                    "SLOT_EQUIVALENT_CYCLES_PER_HOUR"
-                ],
+                "slot_equivalent_cycles_per_hour": metrics["SLOT_EQUIVALENT_CYCLES_PER_HOUR"],
                 "final_marked_equity": metrics["FINAL_TOTAL_MARKED"],
                 "realized_cycle_pnl": metrics["REALIZED_CYCLE_PNL"],
                 "realized_disposal_pnl": metrics["REALIZED_DISPOSAL_PNL"],
                 "unrealized_pnl": metrics["UNREALIZED_PNL"],
                 "underfunded_promotions": metrics["UNDERFUNDED_PROMOTIONS"],
-                "mobility_reserve_exhaustion_events": metrics[
-                    "MOBILITY_RESERVE_EXHAUSTION_EVENTS"
-                ],
+                "mobility_reserve_exhaustion_events": metrics["MOBILITY_RESERVE_EXHAUSTION_EVENTS"],
             },
             replay={
                 "start": result["start"],

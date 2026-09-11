@@ -35,6 +35,8 @@ def _ledger_context(precision: int | None) -> Iterator[None]:
     with localcontext() as context:
         context.prec = precision
         yield
+
+
 USDCUSDT_TICK_CATALOG_SOURCE: Final[Literal["BINANCE_OFFICIAL"]] = "BINANCE_OFFICIAL"
 USDCUSDT_TICK_CHANGE = datetime(2026, 4, 14, 5, tzinfo=UTC)
 USDCUSDT_TICK_SOURCE_URL = (

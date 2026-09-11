@@ -102,12 +102,10 @@ def _git_output(*args: str) -> str:
 def validate_frozen_design(design: dict[str, Any], grid: dict[str, Any]) -> None:
     expected = expected_grid()
     observed_buy = tuple(
-        (row["slot_id"], row["entry_price"], row["return_price"])
-        for row in grid["buy_slots"]
+        (row["slot_id"], row["entry_price"], row["return_price"]) for row in grid["buy_slots"]
     )
     observed_sell = tuple(
-        (row["slot_id"], row["entry_price"], row["return_price"])
-        for row in grid["sell_slots"]
+        (row["slot_id"], row["entry_price"], row["return_price"]) for row in grid["sell_slots"]
     )
     if observed_buy != expected["buy"] or observed_sell != expected["sell"]:
         raise ValueError("M022_REQUIRES_IMMUTABLE_M021_LATTICE")
@@ -248,9 +246,7 @@ def manager_audit(
                 open_ids.discard(order_id)
         elif event == "CYCLE":
             lane = row["band_id"]
-            lane_profit_timeline[lane] = lane_profit_timeline.get(lane, D(0)) + D(
-                row["profit"]
-            )
+            lane_profit_timeline[lane] = lane_profit_timeline.get(lane, D(0)) + D(row["profit"])
             claims.pop(lane, None)
         elif event == "CANCEL_ACK" or event.startswith("REJECTED_"):
             open_ids.discard(int(row["order_id"]))
@@ -272,13 +268,9 @@ def manager_audit(
         raise ValueError("M022_RETURN_SUBMISSION_TRACE_MISMATCH")
     if counts["RETURN_FILL"] != int(metrics["return_fills"]):
         raise ValueError("M022_RETURN_FILL_TRACE_MISMATCH")
-    if counts["FREE_ORDER_CANCELED_FOR_RETURN"] != int(
-        metrics["free_orders_canceled_for_return"]
-    ):
+    if counts["FREE_ORDER_CANCELED_FOR_RETURN"] != int(metrics["free_orders_canceled_for_return"]):
         raise ValueError("M022_RETURN_CANCEL_TRACE_MISMATCH")
-    if counts["FREE_ORDER_CANCELED_FOR_FLOAT"] != int(
-        metrics["free_orders_canceled_for_float"]
-    ):
+    if counts["FREE_ORDER_CANCELED_FOR_FLOAT"] != int(metrics["free_orders_canceled_for_float"]):
         raise ValueError("M022_FLOAT_CANCEL_TRACE_MISMATCH")
     if counts["FREE_ORDER_REPOSTED"] != int(metrics["free_orders_reposted"]):
         raise ValueError("M022_REPOST_TRACE_MISMATCH")
@@ -377,8 +369,7 @@ def manager_audit(
             or D(initial["initial_usdc"]) != expected_usdc
             or D(reported["initial_usdt"]) != expected_usdt
             or D(reported["initial_usdc"]) != expected_usdc
-            or D(state["manager_lane_profit"][lane])
-            != lane_profit_timeline.get(lane, D(0))
+            or D(state["manager_lane_profit"][lane]) != lane_profit_timeline.get(lane, D(0))
             or D(reported["profit"]) != lane_profit_timeline.get(lane, D(0))
         ):
             raise ValueError("M022_LANE_OWNERSHIP_REPORT_MISMATCH")
@@ -543,9 +534,7 @@ def execute(
     total = int(metrics["total_positive_cycles"])
     delta = total - 19
     event_counts = Counter(row["event"] for row in engine.audit)
-    open_positions = sum(
-        bool(row["open_position_at_cutoff"]) for row in metrics["slot_report"]
-    )
+    open_positions = sum(bool(row["open_position_at_cutoff"]) for row in metrics["slot_report"])
     result = {
         **identity,
         "DISCLAIMER": ManagedDensePingPongProbe.normalized_label,
@@ -575,17 +564,13 @@ def execute(
         "RETURN_WAIT_TIME_MEDIAN": metrics["return_wait_time_median"],
         "RETURN_WAIT_TIME_P95": metrics["return_wait_time_p95"],
         "RETURN_BLOCKED_BY_FREE_ORDER_COUNT": metrics["return_blocked_by_free_order_count"],
-        "RETURN_BLOCKED_BY_OWNED_RETURN_COUNT": metrics[
-            "return_blocked_by_owned_return_count"
-        ],
+        "RETURN_BLOCKED_BY_OWNED_RETURN_COUNT": metrics["return_blocked_by_owned_return_count"],
         "SELF_CROSS_RECHECKS": metrics["self_cross_rechecks"],
         "POST_ONLY_REJECTIONS": metrics["post_only_rejections"],
         "QUEUE_BLOCKED_EVENTS": metrics["queue_blocked_events"],
         "MAX_SIMULTANEOUS_OPEN_ORDERS": metrics["max_simultaneous_open_orders"],
         "MEAN_ACTIVE_OPEN_ORDERS": metrics["mean_active_open_orders"],
-        "MIN_ACTIVE_OPEN_ORDERS_AFTER_WARMUP": metrics[
-            "min_active_open_orders_after_warmup"
-        ],
+        "MIN_ACTIVE_OPEN_ORDERS_AFTER_WARMUP": metrics["min_active_open_orders_after_warmup"],
         "PARKED_LANES_MEAN": metrics["parked_lanes_mean"],
         "UNIQUE_LANES_USED": metrics["unique_lanes_used"],
         "UNIQUE_PRICE_LEVELS_USED": metrics["unique_price_levels_used"],

@@ -12,12 +12,8 @@ from crypto_strategy_lab.ml.model_registry import BackendSpec, ModelRegistry, Mo
 from scripts.run_m026_24h_extension import OUTPUT, PARENT_LEDGER, PARENT_RESULT
 
 SOURCE_COMMIT = "915cc44c3957dba467bc758dbe9adf81e484b468"
-EXPECTED_CAMPAIGN_RUN_HASH = (
-    "cd0870708011efd12dd807b06cc68ad7fc025744b402459dcd3b50a4d1f025a3"
-)
-EXPECTED_LEDGER_SHA256 = (
-    "7d3fc1e67a41395c353009e829d1288562f8f25eb4554c3f2cf4db9743fd4bb8"
-)
+EXPECTED_CAMPAIGN_RUN_HASH = "cd0870708011efd12dd807b06cc68ad7fc025744b402459dcd3b50a4d1f025a3"
+EXPECTED_LEDGER_SHA256 = "7d3fc1e67a41395c353009e829d1288562f8f25eb4554c3f2cf4db9743fd4bb8"
 FAILURE_REPORT = Path("reports/usdcusdt/M028-technical-failure.json")
 
 
@@ -45,8 +41,7 @@ def build_failure_record() -> dict:
         raise ValueError("M028_TECHNICAL_FAILURE_EVIDENCE_MISMATCH")
 
     physical_files = {
-        str(path): file_sha(path)
-        for path in (manifest_path, ledger_path, failure_path)
+        str(path): file_sha(path) for path in (manifest_path, ledger_path, failure_path)
     }
     snapshot_id = canonical_hash(
         {
@@ -75,9 +70,7 @@ def build_failure_record() -> dict:
         "M026_PREFIX_GAIN_ABSOLUTE": str(prefix_final - initial),
         "M026_PREFIX_GAIN_PERCENT": str((prefix_final / initial - D(1)) * D(100)),
         "M026_PREFIX_PHYSICAL_CYCLES": parent_metrics["PHYSICAL_CYCLES"],
-        "M026_PREFIX_SLOT_EQUIVALENT_CYCLES": parent_metrics[
-            "SLOT_EQUIVALENT_CYCLES"
-        ],
+        "M026_PREFIX_SLOT_EQUIVALENT_CYCLES": parent_metrics["SLOT_EQUIVALENT_CYCLES"],
         "PREFIX_LEDGER_EXACT_BYTE_MATCH": True,
         "PREFIX_LEDGER_SHA256": EXPECTED_LEDGER_SHA256,
         "FAILURE": failure,

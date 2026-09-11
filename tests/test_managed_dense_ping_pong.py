@@ -133,16 +133,12 @@ def test_dynamic_claim_uses_filled_entry_price_not_band_exit() -> None:
 
 def test_return_preemption_is_real_cancel_ack_and_audited() -> None:
     value = ready()
-    accepted, blocked = value._manager_return_plan(
-        [("SELL", "B001", D(".9998"), D("1"))], 3
-    )
+    accepted, blocked = value._manager_return_plan([("SELL", "B001", D(".9998"), D("1"))], 3)
     assert not accepted
     assert ("SELL", "B001") in blocked
     assert value.metrics()["manager_blocked_free"] >= 2
     assert any(row["event"] == "RETURN_PREEMPTION" for row in value.audit)
-    assert sum(
-        row["event"] == "FREE_ORDER_CANCELED_FOR_RETURN" for row in value.audit
-    ) >= 2
+    assert sum(row["event"] == "FREE_ORDER_CANCELED_FOR_RETURN" for row in value.audit) >= 2
     value.receive_book(book(4))
     assert not any(
         order.band_id == "B002" and order.status == "CANCEL_PENDING"
@@ -167,9 +163,7 @@ def test_fragmented_return_wait_is_recorded_once_when_fully_filled() -> None:
     value.receive_trade(trade(3, "fragment-entry", ".9999", "1", True))
     value.receive_book(book(4))
     returned = next(
-        order
-        for order in value.active_orders
-        if order.band_id == "B001" and order.role == "EXIT"
+        order for order in value.active_orders if order.band_id == "B001" and order.role == "EXIT"
     )
     returned.queue = D("0")
     value.receive_trade(trade(5, "fragment-a", "1.0001", ".4", False))
@@ -229,9 +223,7 @@ def test_owned_return_sort_uses_claim_time_activation_lane_and_source_id() -> No
     second.activation_evaluated_us = 1
     first.activation_evaluated_us = 2
     value._manager_claim_times.update({"S001": 3, "S002": 3})
-    value._manager_claim_source_order_ids.update(
-        {"S001": first.order_id, "S002": second.order_id}
-    )
+    value._manager_claim_source_order_ids.update({"S001": first.order_id, "S002": second.order_id})
     accepted, blocked = value._manager_return_plan(
         [
             ("SELL", "S001", D("1.0001"), D("1")),
@@ -300,9 +292,7 @@ def test_s_lane_return_basis_is_restored_to_the_same_lane() -> None:
     assert restored._manager_s_free == value._manager_s_free
 
     replacement = next(
-        order
-        for order in value.active_orders
-        if order.band_id == "S001" and order.side == "SELL"
+        order for order in value.active_orders if order.band_id == "S001" and order.side == "SELL"
     )
     value.cancel(replacement.order_id, time_us=6)
     value._check_time(7)

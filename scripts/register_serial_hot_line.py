@@ -28,10 +28,8 @@ def validate_registration_design(design: dict) -> None:
         or design["candidate_radar_anchor"] != "1.0020"
         or design["buy_deck_cards"] != 100
         or design["sell_deck_cards"] != 100
-        or design["candidate_count_policy"]
-        != "TWO_CONSTANT_100_CARD_VIRTUAL_DECKS"
-        or design["hot_line_refill"]
-        != "FILLED_MIDDLE_POSITION_REFILLED_FROM_SAME_SIDE_FREE_EDGE"
+        or design["candidate_count_policy"] != "TWO_CONSTANT_100_CARD_VIRTUAL_DECKS"
+        or design["hot_line_refill"] != "FILLED_MIDDLE_POSITION_REFILLED_FROM_SAME_SIDE_FREE_EDGE"
         or design["buy_template_eviction"] != "HIGHEST_PRICE_FREE_BUY_FIRST"
         or design["sell_template_eviction"] != "LOWEST_PRICE_FREE_SELL_FIRST"
         or design["owned_or_armed_template_eviction_allowed"] is not False

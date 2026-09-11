@@ -661,8 +661,7 @@ class ObservedL2Replay(B10ReserveReplay):
         self.deadline_block_key: tuple[Any, ...] | None = None
         if (
             self.deadline_enabled
-            and identity.get("deadline_policy_hash")
-            != DEADLINE_POLICY_HASHES[identity["model_id"]]
+            and identity.get("deadline_policy_hash") != DEADLINE_POLICY_HASHES[identity["model_id"]]
         ):
             raise ValueError("M016_DEADLINE_POLICY_IDENTITY_REQUIRED")
         self.available_canonical_event = start_us * EVENT_ORDER_SCALE - 1

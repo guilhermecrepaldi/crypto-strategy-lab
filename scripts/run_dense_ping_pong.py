@@ -110,12 +110,10 @@ def expected_grid() -> dict[str, tuple[tuple[str, str, str], ...]]:
 def validate_frozen_design(design: dict[str, Any], grid: dict[str, Any]) -> None:
     expected = expected_grid()
     observed_buy = tuple(
-        (row["slot_id"], row["entry_price"], row["return_price"])
-        for row in grid["buy_slots"]
+        (row["slot_id"], row["entry_price"], row["return_price"]) for row in grid["buy_slots"]
     )
     observed_sell = tuple(
-        (row["slot_id"], row["entry_price"], row["return_price"])
-        for row in grid["sell_slots"]
+        (row["slot_id"], row["entry_price"], row["return_price"]) for row in grid["sell_slots"]
     )
     if observed_buy != expected["buy"] or observed_sell != expected["sell"]:
         raise ValueError("M021_GRID_ARTIFACT_MISMATCH")
@@ -290,9 +288,7 @@ def execute(
     bucket_ranking = sorted(buckets, key=lambda row: (-row["CYCLES"], row["BUCKET"]))
     event_counts = Counter(row["event"] for row in engine.audit)
     queue_blocked = int(metrics.get("queue_blocked_events", 0))
-    partial_stalls = sum(
-        1 for order in engine.orders if order.filled > 0 and order.remaining > 0
-    )
+    partial_stalls = sum(1 for order in engine.orders if order.filled > 0 and order.remaining > 0)
     open_positions = sum(bool(row["OPEN_POSITION_AT_CUTOFF"]) for row in slots)
     limiter = "UNDETERMINED_PENDING_POST_RUN_AUTOPSY"
     result = {

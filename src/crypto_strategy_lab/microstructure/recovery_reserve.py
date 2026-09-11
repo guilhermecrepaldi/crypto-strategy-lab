@@ -62,10 +62,7 @@ class ReserveConfig:
 
     @property
     def scenario_id(self) -> str:
-        return (
-            f"RRV2_H{self.lock_hours}_B{self.max_loss_bps:g}_"
-            f"F{self.reserve_floor:g}"
-        )
+        return f"RRV2_H{self.lock_hours}_B{self.max_loss_bps:g}_F{self.reserve_floor:g}"
 
     def payload(self) -> dict[str, Any]:
         return {
@@ -255,12 +252,10 @@ class RecoveryReserveRuntime:
         with localcontext() as context:
             context.prec = LEDGER_PRECISION
             cash_after_sale = state.cash + net
-            affordable = target / (
-                new_low * (D("1") + self.scenario.maker_fee_per_leg)
-            )
-            recovery_quantity = (
-                affordable / self.scenario.quantity_step
-            ).to_integral_value(rounding=ROUND_DOWN) * self.scenario.quantity_step
+            affordable = target / (new_low * (D("1") + self.scenario.maker_fee_per_leg))
+            recovery_quantity = (affordable / self.scenario.quantity_step).to_integral_value(
+                rounding=ROUND_DOWN
+            ) * self.scenario.quantity_step
             recovery_cycle_profit = (
                 recovery_quantity * new_high
                 - recovery_quantity * new_high * self.scenario.maker_fee_per_leg

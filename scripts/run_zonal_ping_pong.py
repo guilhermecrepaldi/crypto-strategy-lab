@@ -479,21 +479,15 @@ def independent_execution_audit(
             linked_fills = [
                 fill
                 for fill in fills
-                if fill["side"] == "SELL"
-                and key[1] in fill.get("economic_source_order_ids", [])
+                if fill["side"] == "SELL" and key[1] in fill.get("economic_source_order_ids", [])
             ]
             linked_exit = sum(
-                (
-                    D(fill["quantity"])
-                    for fill in linked_fills
-                ),
+                (D(fill["quantity"]) for fill in linked_fills),
                 D(0),
             )
             if linked_exit != cycle_quantity or linked_exit != D(source["quantity"]):
                 raise ValueError("M020_AUDIT_BUY_SELL_LINK_MISMATCH")
-            if sum((D(fill["realized_profit"]) for fill in linked_fills), D(0)) != D(
-                row["profit"]
-            ):
+            if sum((D(fill["realized_profit"]) for fill in linked_fills), D(0)) != D(row["profit"]):
                 raise ValueError("M020_AUDIT_BUY_SELL_PROFIT_MISMATCH")
         elif key[0] == "SELL_BUY":
             entry_sell_id = row.get("entry_sell_order_id")
@@ -677,18 +671,10 @@ def execute(
     }
     total = int(metrics["total_positive_cycles"])
     all_bands = []
-    submitted_by_band = Counter(
-        row["band_id"] for row in engine.audit if row["event"] == "SUBMIT"
-    )
-    fills_by_band = Counter(
-        row["band_id"] for row in engine.audit if row["event"] == "FILL"
-    )
+    submitted_by_band = Counter(row["band_id"] for row in engine.audit if row["event"] == "SUBMIT")
+    fills_by_band = Counter(row["band_id"] for row in engine.audit if row["event"] == "FILL")
     canceled_by_band = Counter(
-        next(
-            order.band_id
-            for order in engine.orders
-            if order.order_id == row["order_id"]
-        )
+        next(order.band_id for order in engine.orders if order.order_id == row["order_id"])
         for row in engine.audit
         if row["event"] == "CANCEL_ACK"
     )
@@ -716,11 +702,7 @@ def execute(
                 "ORDERS_REPOSITIONED": repositioned_by_band[band.band_id],
                 "OPEN_USDC": str(
                     sum(
-                        (
-                            lot.remaining
-                            for lot in engine.lots
-                            if lot.band_id == band.band_id
-                        ),
+                        (lot.remaining for lot in engine.lots if lot.band_id == band.band_id),
                         D(0),
                     )
                 ),
@@ -774,7 +756,9 @@ def execute(
         "TOP_5_SHARE": str(D(sum(top_counts)) / D(total)) if total else "0",
         "PERCENT_BANDS_RESPONSIBLE_FOR_80_PERCENT_CYCLES": str(
             D(bands_for_80) / D(len(bands)) * D(100)
-        ) if total else "0",
+        )
+        if total
+        else "0",
         "MAIN_LIMITER": limiter,
         "ORDERS_CANCELED": metrics["orders_canceled"],
         "ORDERS_REPOSITIONED": sum(repositioned_by_band.values()),

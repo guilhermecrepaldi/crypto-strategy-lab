@@ -66,9 +66,7 @@ def test_prefix_gate_requires_exact_ledger_and_normalized_state(
         "HOTLINE_EPOCHS": 30,
     }
     result = tmp_path / "result.json"
-    result.write_text(
-        json.dumps({"expected_trade_count": 1, "METRICS": metrics}), encoding="utf-8"
-    )
+    result.write_text(json.dumps({"expected_trade_count": 1, "METRICS": metrics}), encoding="utf-8")
 
     class FakeEngine:
         audit = rows
@@ -122,20 +120,14 @@ def test_bounded_native_events_rejects_incomplete_slice_set() -> None:
 def test_checkpoint_canonicalization_preserves_semantic_differences() -> None:
     normalized = runner._canonical_checkpoint_state({"queue": {1: D("2.50000000")}})
     assert normalized == {"queue": {"1": "2.50000000"}}
-    assert normalized != runner._canonical_checkpoint_state(
-        {"queue": {1: D("2.50000001")}}
-    )
+    assert normalized != runner._canonical_checkpoint_state({"queue": {1: D("2.50000001")}})
 
 
 def test_real_kernel_crosses_three_hour_boundary_without_reset() -> None:
     short_end = 10_800_000_000
     long_end = 14_400_000_000
-    short = DynamicHotline321Probe(
-        start_us=0, end_us=short_end, latency_us=0, cancel_latency_us=0
-    )
-    long = DynamicHotline321Probe(
-        start_us=0, end_us=long_end, latency_us=0, cancel_latency_us=0
-    )
+    short = DynamicHotline321Probe(start_us=0, end_us=short_end, latency_us=0, cancel_latency_us=0)
+    long = DynamicHotline321Probe(start_us=0, end_us=long_end, latency_us=0, cancel_latency_us=0)
     first_book = {
         "time_us": 1,
         "exchange_upper_us": 1,

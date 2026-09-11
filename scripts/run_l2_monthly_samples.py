@@ -115,9 +115,7 @@ M019_PREREGISTRATION = Path("docs/microstructure/M019_ADAPTIVE_LADDER_PREREGISTR
 M019_REVIEW = Path("reports/usdcusdt/M019-preflight-independent-review.md")
 M019_MODEL_ID = "M019"
 M019_CORE = Path("src/crypto_strategy_lab/microstructure/adaptive_stablecoin_ladder.py")
-M019_OWNER_DIRECTIVE = Path(
-    "docs/microstructure/ADAPTIVE_STABLECOIN_LADDER_OWNER_DIRECTIVE.md"
-)
+M019_OWNER_DIRECTIVE = Path("docs/microstructure/ADAPTIVE_STABLECOIN_LADDER_OWNER_DIRECTIVE.md")
 
 
 def require_owner_replay_approval(root=ROOT, model_id="M015") -> tuple[str, ...]:
@@ -167,6 +165,8 @@ def campaign_design_paths(model_id: str) -> tuple[Path, Path, Path]:
     if model_id == "M015":
         return SPEC, PROTOCOL, REVIEW
     raise ValueError("UNREGISTERED_CAMPAIGN_MODEL")
+
+
 OUTPUT = Path("artifacts/usdcusdt/l2-monthly-samples")
 SOURCE_PATHS = tuple(
     Path(item)
@@ -558,8 +558,7 @@ def audit_shared_trade_budget(
         allocation_rows = [
             row
             for row in coordinator_audit
-            if row.get("kind") == "SHARED_TRADE_ALLOCATION"
-            or "SHARED_TRADE_ALLOCATION" in row
+            if row.get("kind") == "SHARED_TRADE_ALLOCATION" or "SHARED_TRADE_ALLOCATION" in row
         ]
     for row in allocation_rows:
         payload = row.get("SHARED_TRADE_ALLOCATION", row)
@@ -1015,8 +1014,7 @@ def audit_m019_journal(
                     raise ValueError("M019_INVALID_ORDER")
                 orders[order_id] = row
                 reservations = [
-                    (str(lot_id), D(amount))
-                    for lot_id, amount in row.get("reserved_lots", [])
+                    (str(lot_id), D(amount)) for lot_id, amount in row.get("reserved_lots", [])
                 ]
                 reserved_quote = D(row.get("reserved_quote", "0"))
                 expected_quote = (
@@ -1029,9 +1027,10 @@ def audit_m019_journal(
                 if side == "BUY" and reservations:
                     raise ValueError("M019_BUY_RESERVED_BASE")
                 if side == "SELL":
-                    if reserved_quote != 0 or sum(
-                        (amount for _, amount in reservations), D(0)
-                    ) != quantity:
+                    if (
+                        reserved_quote != 0
+                        or sum((amount for _, amount in reservations), D(0)) != quantity
+                    ):
                         raise ValueError("M019_SELL_RESERVATION_MISMATCH")
                     for lot_id, amount in reservations:
                         if lot_id not in lot_created or amount <= 0:
@@ -1068,9 +1067,9 @@ def audit_m019_journal(
                 state = order_state[order_id]
                 if state["status"] not in {"PENDING", "CANCEL_PENDING"}:
                     raise ValueError("M019_DUPLICATE_OR_TERMINAL_ACTIVATION")
-                if str(row["side"]) != str(orders[order_id]["side"]) or D(
-                    row["price"]
-                ) != D(orders[order_id]["price"]):
+                if str(row["side"]) != str(orders[order_id]["side"]) or D(row["price"]) != D(
+                    orders[order_id]["price"]
+                ):
                     raise ValueError("M019_ACTIVATION_ORDER_MISMATCH")
                 side, price = str(row["side"]), D(row["price"])
                 bid = None if row.get("best_bid") is None else D(row["best_bid"])
@@ -1111,28 +1110,24 @@ def audit_m019_journal(
                     "CANCEL_PENDING",
                 }:
                     raise ValueError("M019_INVALID_REJECTION")
-                if str(row["side"]) != str(orders[order_id]["side"]) or D(
-                    row["price"]
-                ) != D(orders[order_id]["price"]):
+                if str(row["side"]) != str(orders[order_id]["side"]) or D(row["price"]) != D(
+                    orders[order_id]["price"]
+                ):
                     raise ValueError("M019_REJECTION_ORDER_MISMATCH")
                 bid = None if row.get("best_bid") is None else D(row["best_bid"])
                 ask = None if row.get("best_ask") is None else D(row["best_ask"])
                 price, side = D(row["price"]), str(row["side"])
-                floor = (
-                    None
-                    if row.get("known_bid_floor") is None
-                    else D(row["known_bid_floor"])
-                )
+                floor = None if row.get("known_bid_floor") is None else D(row["known_bid_floor"])
                 ceiling = (
-                    None
-                    if row.get("known_ask_ceiling") is None
-                    else D(row["known_ask_ceiling"])
+                    None if row.get("known_ask_ceiling") is None else D(row["known_ask_ceiling"])
                 )
                 public_cross = (side == "BUY" and ask is not None and price >= ask) or (
                     side == "SELL" and bid is not None and price <= bid
                 )
-                coverage_unknown = floor is None or ceiling is None or (
-                    price < floor if side == "BUY" else price > ceiling
+                coverage_unknown = (
+                    floor is None
+                    or ceiling is None
+                    or (price < floor if side == "BUY" else price > ceiling)
                 )
                 if event == "POST_ONLY_REJECTED" and not public_cross:
                     raise ValueError("M019_FALSE_POST_ONLY_REJECTION")
@@ -1141,15 +1136,11 @@ def audit_m019_journal(
                 if event == "SELF_CROSS_REJECTED":
                     self_cross = any(
                         other_id != order_id
-                        and other["status"]
-                        not in {"FILLED", "CANCELED", "REJECTED"}
+                        and other["status"] not in {"FILLED", "CANCELED", "REJECTED"}
                         and orders[other_id]["side"] != side
                         and (
                             (side == "BUY" and price >= D(orders[other_id]["price"]))
-                            or (
-                                side == "SELL"
-                                and price <= D(orders[other_id]["price"])
-                            )
+                            or (side == "SELL" and price <= D(orders[other_id]["price"]))
                         )
                         for other_id, other in order_state.items()
                     )
@@ -1214,28 +1205,23 @@ def audit_m019_journal(
                 through = (side == "BUY" and trade.price < order_price) or (
                     side == "SELL" and trade.price > order_price
                 )
-                if (source == "TRADE" and not exact) or (
-                    source == "TRADE_THROUGH" and not through
-                ):
+                if (source == "TRADE" and not exact) or (source == "TRADE_THROUGH" and not through):
                     raise ValueError("M019_FILL_PRICE_SOURCE_MISMATCH")
                 if source == "TRADE" and state["queue"] != 0:
                     raise ValueError("M019_FILL_BEFORE_QUEUE_DEPLETION")
                 state["remaining"] -= quantity
                 expected_status = "FILLED" if state["remaining"] == 0 else state["status"]
-                if D(row["remaining_after"]) != state["remaining"] or str(
-                    row["status_after"]
-                ) != expected_status:
+                if (
+                    D(row["remaining_after"]) != state["remaining"]
+                    or str(row["status_after"]) != expected_status
+                ):
                     raise ValueError("M019_FILL_TERMINAL_STATE_MISMATCH")
                 if side == "BUY":
-                    debit = quantity * order_price * (
-                        D(1) + D(engine.profile.maker_fee)
-                    )
+                    debit = quantity * order_price * (D(1) + D(engine.profile.maker_fee))
                     if debit > state["reserved_quote"]:
                         raise ValueError("M019_BUY_FILL_EXCEEDS_RESERVATION")
                     state["reserved_quote"] -= debit
-                    independent_fees += quantity * order_price * D(
-                        engine.profile.maker_fee
-                    )
+                    independent_fees += quantity * order_price * D(engine.profile.maker_fee)
                     buy_fill_quantity[order_id] += quantity
                 else:
                     sell_fill_quantity[order_id] += quantity
@@ -1251,9 +1237,10 @@ def audit_m019_journal(
                 if trade_id not in canonical or order_id not in orders:
                     raise ValueError("M019_QUEUE_UNKNOWN_SOURCE")
                 state = order_state[order_id]
-                if state["status"] not in {"ACTIVE", "CANCEL_PENDING"} or state[
-                    "activation_us"
-                ] is None:
+                if (
+                    state["status"] not in {"ACTIVE", "CANCEL_PENDING"}
+                    or state["activation_us"] is None
+                ):
                     raise ValueError("M019_QUEUE_WITHOUT_ACTIVE_ORDER")
                 trade = canonical[trade_id]
                 side, price = str(orders[order_id]["side"]), D(orders[order_id]["price"])
@@ -1264,11 +1251,7 @@ def audit_m019_journal(
                 ):
                     raise ValueError("M019_QUEUE_SOURCE_MISMATCH")
                 before, after = D(row["queue_before"]), D(row["queue_after"])
-                if (
-                    before != state["queue"]
-                    or before - after != D(row["quantity"])
-                    or after < 0
-                ):
+                if before != state["queue"] or before - after != D(row["quantity"]) or after < 0:
                     raise ValueError("M019_QUEUE_RECONCILIATION")
                 state["queue"] = after
                 queues_by_trade[trade_id] += D(row["quantity"])
@@ -1358,17 +1341,16 @@ def audit_m019_journal(
                     "status"
                 ] not in {"FILLED", "CANCELED"}:
                     raise ValueError("M019_CYCLE_BEFORE_TERMINAL_BUY")
-                expected_profit = sum(
-                    (lot_profit[str(lot["lot_id"])] for lot in linked), D(0)
-                )
+                expected_profit = sum((lot_profit[str(lot["lot_id"])] for lot in linked), D(0))
                 if expected_profit <= 0 or D(row["net_profit"]) != expected_profit:
                     raise ValueError("M019_CYCLE_PNL_RECONCILIATION")
     if seen_trades != set(canonical):
         raise ValueError("M019_CANONICAL_TRADE_COVERAGE_MISMATCH")
     for trade_id, filled in fills_by_trade.items():
-        if filled > consumed_by_trade[trade_id] or consumed_by_trade[trade_id] > canonical[
-            trade_id
-        ].quantity:
+        if (
+            filled > consumed_by_trade[trade_id]
+            or consumed_by_trade[trade_id] > canonical[trade_id].quantity
+        ):
             raise ValueError("M019_DUPLICATE_LIQUIDITY")
     for trade_id, consumed in consumed_by_trade.items():
         if fills_by_trade[trade_id] + queues_by_trade[trade_id] != consumed:
@@ -1381,14 +1363,17 @@ def audit_m019_journal(
         raise ValueError("M019_INDEPENDENT_CASH_RECONCILIATION")
     if independent_fees != engine.fees:
         raise ValueError("M019_INDEPENDENT_FEE_RECONCILIATION")
-    if sum(
-        (
-            state["reserved_quote"]
-            for state in order_state.values()
-            if state["status"] in {"PENDING", "ACTIVE", "CANCEL_PENDING"}
-        ),
-        D(0),
-    ) != engine.active_buy_notional:
+    if (
+        sum(
+            (
+                state["reserved_quote"]
+                for state in order_state.values()
+                if state["status"] in {"PENDING", "ACTIVE", "CANCEL_PENDING"}
+            ),
+            D(0),
+        )
+        != engine.active_buy_notional
+    ):
         raise ValueError("M019_INDEPENDENT_BUY_RESERVATION_RECONCILIATION")
     engine_reserved = Counter(
         {lot.lot_id: lot.reserved for lot in engine.lots if lot.reserved != 0}
@@ -1416,9 +1401,7 @@ def audit_m019_journal(
             source_order = orders.get(int(source_order_id))
             if source_order is None or source_order["side"] != "BUY":
                 raise ValueError("M019_LOT_WITHOUT_BUY")
-            expected_unit_cost = D(source_order["price"]) * (
-                D(1) + D(engine.profile.maker_fee)
-            )
+            expected_unit_cost = D(source_order["price"]) * (D(1) + D(engine.profile.maker_fee))
             if D(row["unit_cost"]) != expected_unit_cost:
                 raise ValueError("M019_BUY_COST_BASIS_RECONCILIATION")
             if bool(row.get("initial_endowment")):
@@ -1427,18 +1410,20 @@ def audit_m019_journal(
             raise ValueError("M019_UNBACKED_ENDOWMENT_LOT")
         if D(row["quantity"]) - lot_sold[lot_id] != terminal_lots[lot_id].remaining:
             raise ValueError("M019_TERMINAL_LOT_RECONCILIATION")
-    if not endowment_seen or sum(
-        (
-            D(row["quantity"])
-            for row in lot_created.values()
-            if row.get("source_order_id") is None
-        ),
-        D(0),
-    ) != endowment_quantity:
+    if (
+        not endowment_seen
+        or sum(
+            (
+                D(row["quantity"])
+                for row in lot_created.values()
+                if row.get("source_order_id") is None
+            ),
+            D(0),
+        )
+        != endowment_quantity
+    ):
         raise ValueError("M019_ENDOWMENT_LOT_RECONCILIATION")
-    remaining_cost = sum(
-        (lot.remaining * lot.unit_cost for lot in terminal_lots.values()), D(0)
-    )
+    remaining_cost = sum((lot.remaining * lot.unit_cost for lot in terminal_lots.values()), D(0))
     if remaining_cost != engine.inventory_cost:
         raise ValueError("M019_INDEPENDENT_INVENTORY_COST_MISMATCH")
     if engine.cash + engine.active_buy_notional + remaining_cost != (
@@ -1550,9 +1535,11 @@ def execute_m019_experiment(engine, canonical, events, validation, identity, out
                 native = event["data"]
                 trade = canonical.get(native["t"])
                 if trade is None:
-                    if identity["source_day_mapping"][0]["logical_start_us"] <= event[
-                        "exchange_us"
-                    ] < end_us:
+                    if (
+                        identity["source_day_mapping"][0]["logical_start_us"]
+                        <= event["exchange_us"]
+                        < end_us
+                    ):
                         raise ValueError("UNBOUND_INTERIOR_NATIVE_TRADE")
                     continue
                 if trade.trade_id in seen or not trade_timestamp_matches(
@@ -1628,25 +1615,15 @@ def execute_m019_experiment(engine, canonical, events, validation, identity, out
             for lot in engine.lots
         ]
         cycles_by_slot = Counter(int(row["source_slot"]) for row in engine.settlements)
-        slot_scoreboard = m019_slot_scoreboard(
-            engine, output / "execution-audit.jsonl", mark
-        )
+        slot_scoreboard = m019_slot_scoreboard(engine, output / "execution-audit.jsonl", mark)
         reprices = sum(row["REPRICES"] for row in slot_scoreboard.values())
         capital_locked = sum((lot.remaining * lot.unit_cost for lot in open_lots), D(0))
         underwater_locked = sum(
-            (
-                lot.remaining * lot.unit_cost
-                for lot in open_lots
-                if mark < lot.unit_cost
-            ),
+            (lot.remaining * lot.unit_cost for lot in open_lots if mark < lot.unit_cost),
             D(0),
         )
         profitable_exit_inventory = sum(
-            (
-                lot.remaining * lot.unit_cost
-                for lot in open_lots
-                if lot.reserved > 0
-            ),
+            (lot.remaining * lot.unit_cost for lot in open_lots if lot.reserved > 0),
             D(0),
         )
         underwater_inventory = sum(
@@ -1658,9 +1635,7 @@ def execute_m019_experiment(engine, canonical, events, validation, identity, out
             ),
             D(0),
         )
-        dormant_inventory = capital_locked - (
-            profitable_exit_inventory + underwater_inventory
-        )
+        dormant_inventory = capital_locked - (profitable_exit_inventory + underwater_inventory)
         top_slots = sorted(
             (
                 (name, row["CYCLES"])
@@ -1816,7 +1791,7 @@ def campaign_preflight(root=ROOT, model_id="M015"):
         if model.model["model_id"] != model_id:
             raise ValueError("DEADLINE_MODEL_ID_MISMATCH")
         if model_id == "M018" and (
-            tuple(model.model["source_dates"][:len(selected_dates)]) != selected_dates
+            tuple(model.model["source_dates"][: len(selected_dates)]) != selected_dates
             or model.model["initial_stage_days"] != 1
             or model.model["max_stage_days"] != 3
         ):
@@ -2083,19 +2058,13 @@ def run(model_id="M015"):
     ]
     mapping = stitched_mapping(selected_dates)
     window_name = (
-        "OWNER_GATED_DAY1"
-        if model_id in {"M018", M019_MODEL_ID}
-        else "SYNTHETIC_CONSECUTIVE_12D"
+        "OWNER_GATED_DAY1" if model_id in {"M018", M019_MODEL_ID} else "SYNTHETIC_CONSECUTIVE_12D"
     )
     with campaign_writer_lock():
         runtime, profile, envelope, rules_at, canonical = build_stitched_inputs(
             history, config, mapping
         )
-        names = (
-            ("PRICE_PRIORITY",)
-            if model_id in (*DEADLINE_MODELS, M019_MODEL_ID)
-            else ENVELOPES
-        )
+        names = ("PRICE_PRIORITY",) if model_id in (*DEADLINE_MODELS, M019_MODEL_ID) else ENVELOPES
         model = ModelRegistry().get(model_id)
         for name in names:
             identity = {
@@ -2107,18 +2076,12 @@ def run(model_id="M015"):
                 "published_config_sha": sha,
                 "expected_trade_count": len(canonical),
                 "protocol_sha256": file_sha(campaign_design_paths(model_id)[1]),
-                "preflight_review_sha256": file_sha(
-                    campaign_design_paths(model_id)[2]
-                ),
+                "preflight_review_sha256": file_sha(campaign_design_paths(model_id)[2]),
                 "data_manifest_sha256": file_sha(MANIFEST),
                 "validation_source_commit": VALIDATOR_SOURCE_COMMIT,
                 "source_sha256_lf": {
                     str(path): lf_sha(path)
-                    for path in (
-                        M019_REVIEW_SOURCES
-                        if model_id == M019_MODEL_ID
-                        else SOURCE_PATHS
-                    )
+                    for path in (M019_REVIEW_SOURCES if model_id == M019_MODEL_ID else SOURCE_PATHS)
                 },
                 "execution_envelope": name,
                 "source_day_mapping": mapping,

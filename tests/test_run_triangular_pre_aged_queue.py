@@ -330,9 +330,12 @@ def test_physical_audit_preserves_cancel_pending_during_later_activation():
             for earlier in engine.audit
         )
     )
-    assert next(
-        order for order in engine.orders if order.order_id == pending_activation["order_id"]
-    ).status == "CANCEL_PENDING"
+    assert (
+        next(
+            order for order in engine.orders if order.order_id == pending_activation["order_id"]
+        ).status
+        == "CANCEL_PENDING"
+    )
     metrics = engine.finish(time_us=runner.END_US)
     result = runner.independent_execution_audit(
         deepcopy(engine.audit), deepcopy(engine.checkpoint()), {}, deepcopy(metrics)

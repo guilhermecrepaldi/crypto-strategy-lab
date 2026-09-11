@@ -153,10 +153,13 @@ def validate_weekly_scope(design):
         or start != datetime(2026, 1, 1, tzinfo=UTC)
         or end != datetime(2026, 1, 8, tzinfo=UTC)
         or design.get("daily_positive_cycle_target") != 2000
-        or (design.get("model_id") == "M015" and (
-            design.get("minimum_daily_positive_cycles") != 500
-            or design.get("priority_trade_through") is not True
-        ))
+        or (
+            design.get("model_id") == "M015"
+            and (
+                design.get("minimum_daily_positive_cycles") != 500
+                or design.get("priority_trade_through") is not True
+            )
+        )
     ):
         raise ValueError("OWNER_WEEK_1_SCOPE_REQUIRED; EXTENSION_NOT_AUTHORIZED")
     return start, end
@@ -418,9 +421,11 @@ def stream_week(history, tape, begin, replay, identity, output):
                 "MINIMUM_DAILY_TARGET": identity.get("minimum_daily_positive_cycles"),
                 "NEXT_WEEK_AUTHORIZED": False,
                 "EXTENSION_STATUS": (
-                    "AWAITING_MINIMUM_AND_AUDIT_GATE" if identity.get("model_id") == "M015"
+                    "AWAITING_MINIMUM_AND_AUDIT_GATE"
+                    if identity.get("model_id") == "M015"
                     else "AWAITING_OWNER_APPROVAL"
-                ) if reason == "FINAL_WEEK_1"
+                )
+                if reason == "FINAL_WEEK_1"
                 else "NOT_AUTHORIZED",
                 "VERDICT": "PENDING_INDEPENDENT_AUDIT" if reason == "FINAL_WEEK_1" else "PENDING",
             }

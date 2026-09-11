@@ -84,7 +84,9 @@ def _validated_m017_configuration(run_root: Path | None = None) -> dict[str, Any
             "profit_funding": spec.get("profit_funding", UNAVAILABLE),
             "executable_loss_cap_bps": spec.get("executable_loss_cap_bps", UNAVAILABLE),
             "spec_sha256_lf": spec_hash,
-            "registry_model_hash": registry_entry.get("model_hash", UNAVAILABLE) if registry_entry else UNAVAILABLE,
+            "registry_model_hash": registry_entry.get("model_hash", UNAVAILABLE)
+            if registry_entry
+            else UNAVAILABLE,
         }
         if run_root is None or not run_root.exists():
             metadata["run_binding"] = "NOT_PRESENT"
@@ -129,7 +131,7 @@ def inspect_run(root):
             '"kind":"FILL"',
             "-e",
             '"kind":"RELEASE_SIGNAL"',
-            '-e',
+            "-e",
             '"kind":"DEADLINE_EXIT_SIGNAL"',
             str(ledger),
         ],
@@ -196,9 +198,7 @@ def inspect_run(root):
     daily = [json.loads((root / "daily" / f"{i:02}.json").read_bytes()) for i in range(1, 13)]
     gains = [D(r["net_profit"]) for r in settlements if D(r["net_profit"]) > 0]
     ordinary_gains = [
-        D(r["net_profit"])
-        for r in settlements
-        if not r["release"] and D(r["net_profit"]) > 0
+        D(r["net_profit"]) for r in settlements if not r["release"] and D(r["net_profit"]) > 0
     ]
     return {
         "summary": summary,
@@ -256,7 +256,11 @@ def _daily_series(rows: list[dict[str, Any]], key: str) -> list[str | None]:
 
 def _last_closed_day(rows: list[dict[str, Any]]) -> int:
     return max(
-        (int(row["logical_day"]) for row in rows if row.get("status") not in {UNAVAILABLE, "INVALID"}),
+        (
+            int(row["logical_day"])
+            for row in rows
+            if row.get("status") not in {UNAVAILABLE, "INVALID"}
+        ),
         default=0,
     )
 
@@ -298,15 +302,39 @@ def _prefix_summary(
     cutoff_us: int | None = None,
 ) -> dict[str, Any]:
     """Prefer the last closed daily checkpoint, with state-derived totals."""
-    rows = [row for row in daily if int(row["logical_day"]) <= day and row.get("status") not in {UNAVAILABLE, "INVALID"}]
+    rows = [
+        row
+        for row in daily
+        if int(row["logical_day"]) <= day and row.get("status") not in {UNAVAILABLE, "INVALID"}
+    ]
     latest = rows[-1] if rows else {}
     result = dict(summary)
     prefix_only_keys = (
-        "NET_PNL", "NET_POSITIVE_CYCLES", "FULL_FILL_CYCLES", "RELEASES", "TOTAL_EQUITY_FINAL",
-        "RESERVE_FINAL", "MIN_RESERVE", "RESERVE_FUNDING", "RESERVE_CONSUMPTION", "OPERATING_FINAL",
-        "OPERATING_BANK", "OPERATING_CASH", "MOTOR_UPTIME", "HOLDING_HOURS", "FLAT_HOURS",
-        "FULL_STOP_HOURS", "MAX_DRAWDOWN_PCT", "HARD_LOCK_VIOLATIONS", "ZERO_CYCLE_DAYS", "TRADES",
-        "L2_ROWS", "AUDIT_STATUS", "REALIZED_FEES_QUOTE", "UNREALIZED_PNL", "VERDICT",
+        "NET_PNL",
+        "NET_POSITIVE_CYCLES",
+        "FULL_FILL_CYCLES",
+        "RELEASES",
+        "TOTAL_EQUITY_FINAL",
+        "RESERVE_FINAL",
+        "MIN_RESERVE",
+        "RESERVE_FUNDING",
+        "RESERVE_CONSUMPTION",
+        "OPERATING_FINAL",
+        "OPERATING_BANK",
+        "OPERATING_CASH",
+        "MOTOR_UPTIME",
+        "HOLDING_HOURS",
+        "FLAT_HOURS",
+        "FULL_STOP_HOURS",
+        "MAX_DRAWDOWN_PCT",
+        "HARD_LOCK_VIOLATIONS",
+        "ZERO_CYCLE_DAYS",
+        "TRADES",
+        "L2_ROWS",
+        "AUDIT_STATUS",
+        "REALIZED_FEES_QUOTE",
+        "UNREALIZED_PNL",
+        "VERDICT",
     )
     if day < 12:
         for key in prefix_only_keys:
@@ -333,7 +361,9 @@ def _prefix_summary(
     if state is not None:
         settlements = state.get("settlements", [])
         if isinstance(settlements, list):
-            result["RELEASES"] = sum(bool(row.get("release")) for row in settlements if isinstance(row, dict))
+            result["RELEASES"] = sum(
+                bool(row.get("release")) for row in settlements if isinstance(row, dict)
+            )
             if all("reserve_consumption" in row for row in settlements if isinstance(row, dict)):
                 result["RESERVE_CONSUMPTION"] = str(
                     sum((D(str(row["reserve_consumption"])) for row in settlements), D(0))
@@ -352,21 +382,27 @@ def _prefix_summary(
                     )
                 else:
                     result["REALIZED_FEES_QUOTE"] = str(settlement_fees)
-            result["SIMULATION_TIMESTAMP_US"] = result.get("CUTOFF_US", latest.get("CAPTURE_TIME_US", 0))
+            result["SIMULATION_TIMESTAMP_US"] = result.get(
+                "CUTOFF_US", latest.get("CAPTURE_TIME_US", 0)
+            )
             result["NET_POSITIVE_CYCLES"] = sum(
                 not bool(row.get("release")) and D(str(row.get("net_profit", "0"))) > 0
                 for row in settlements
                 if isinstance(row, dict)
             )
-        result["MIN_RESERVE"] = str(state.get("reserve_min", latest.get("MIN_RESERVE", UNAVAILABLE)))
-        result["RESERVE_FLOOR"] = str(state.get("reserve_floor", latest.get("RESERVE_FLOOR", UNAVAILABLE)))
-        result["RESERVE_FINAL"] = str(state.get("reserve", latest.get("RESERVE_FINAL", UNAVAILABLE)))
+        result["MIN_RESERVE"] = str(
+            state.get("reserve_min", latest.get("MIN_RESERVE", UNAVAILABLE))
+        )
+        result["RESERVE_FLOOR"] = str(
+            state.get("reserve_floor", latest.get("RESERVE_FLOOR", UNAVAILABLE))
+        )
+        result["RESERVE_FINAL"] = str(
+            state.get("reserve", latest.get("RESERVE_FINAL", UNAVAILABLE))
+        )
         result["OPERATING_CASH"] = str(state.get("cash", latest.get("OPERATING_CASH", UNAVAILABLE)))
         if all(key in state for key in ("cash", "cost", "dust_cost")):
             result["OPERATING_BANK"] = str(
-                D(str(state["cash"]))
-                + D(str(state["cost"]))
-                + D(str(state["dust_cost"]))
+                D(str(state["cash"])) + D(str(state["cost"])) + D(str(state["dust_cost"]))
             )
         else:
             result["OPERATING_BANK"] = UNAVAILABLE
@@ -578,7 +614,9 @@ def _checkpoint_run(root: Path, label: str, max_day: int = 12) -> dict[str, Any]
                 base["debt_states"] = "AVAILABLE_PREFIX_ACCOUNTING_NO_SETTLEMENTS_POLICY_DEFERRED"
             elif cutoff_us is None:
                 base["debt_states"] = "POLICY_DEFERRED_MISSING_CUTOFF"
-                base["status"] = "M017_OWNER_PAUSED_AFTER_SCOPE" if scope_paused else "CHECKPOINT_PARTIAL"
+                base["status"] = (
+                    "M017_OWNER_PAUSED_AFTER_SCOPE" if scope_paused else "CHECKPOINT_PARTIAL"
+                )
                 base["checkpoint"] = True
                 base["error"] = "RUN_MANIFEST_CUTOFF_UNAVAILABLE"
                 return base
@@ -629,7 +667,9 @@ def _prefix_view(run: dict[str, Any], root: Path, day: int) -> dict[str, Any]:
     view["daily_equity"] = _daily_series(view["daily"], "TOTAL_EQUITY_FINAL")
     view["daily_reserve"] = _daily_series(view["daily"], "RESERVE_FINAL")
     cutoff_us = _checkpoint_cutoff(root, day)
-    view["summary"] = _prefix_summary(run.get("summary", {}), run.get("daily", []), state, day, cutoff_us)
+    view["summary"] = _prefix_summary(
+        run.get("summary", {}), run.get("daily", []), state, day, cutoff_us
+    )
     view["period_label"] = f"dias 1–{day} (mesmo prefixo comparável)"
     view["closed_day"] = day
     view["settlements"] = []
@@ -688,20 +728,38 @@ def _median_decimal(values: list[D]) -> D | None:
 def _augment_metrics(run: dict[str, Any]) -> dict[str, Any]:
     summary = dict(run.get("summary", {}))
     daily = run.get("daily", [])
-    cycles = [D(str(row["DAILY_NET_POSITIVE_CYCLES"])) for row in daily if row.get("DAILY_NET_POSITIVE_CYCLES") is not None]
+    cycles = [
+        D(str(row["DAILY_NET_POSITIVE_CYCLES"]))
+        for row in daily
+        if row.get("DAILY_NET_POSITIVE_CYCLES") is not None
+    ]
     summary["DAILY_CYCLES_MIN"] = int(min(cycles)) if cycles else UNAVAILABLE
-    summary["DAILY_CYCLES_MEDIAN"] = str(sorted(cycles)[len(cycles) // 2] if len(cycles) % 2 else (sorted(cycles)[len(cycles) // 2 - 1] + sorted(cycles)[len(cycles) // 2]) / D(2)) if cycles else UNAVAILABLE
+    summary["DAILY_CYCLES_MEDIAN"] = (
+        str(
+            sorted(cycles)[len(cycles) // 2]
+            if len(cycles) % 2
+            else (sorted(cycles)[len(cycles) // 2 - 1] + sorted(cycles)[len(cycles) // 2]) / D(2)
+        )
+        if cycles
+        else UNAVAILABLE
+    )
     summary["DAILY_CYCLES_MAX"] = int(max(cycles)) if cycles else UNAVAILABLE
     for threshold in (500, 1000, 2000):
-        summary[f"DAYS_BELOW_{threshold}"] = sum(value < threshold for value in cycles) if cycles else UNAVAILABLE
+        summary[f"DAYS_BELOW_{threshold}"] = (
+            sum(value < threshold for value in cycles) if cycles else UNAVAILABLE
+        )
     settlements = [row for row in run.get("settlements", []) if isinstance(row, dict)]
-    positive_pnl = [D(str(row["net_profit"])) for row in settlements if not row.get("release") and D(str(row.get("net_profit", "0"))) > 0]
-    release_losses = [
-        D(str(row.get("reserve_consumption", "0")))
+    positive_pnl = [
+        D(str(row["net_profit"]))
         for row in settlements
-        if row.get("release")
+        if not row.get("release") and D(str(row.get("net_profit", "0"))) > 0
     ]
-    summary["RELEASE_LOSS_MEAN"] = str(sum(release_losses, D(0)) / D(len(release_losses))) if release_losses else UNAVAILABLE
+    release_losses = [
+        D(str(row.get("reserve_consumption", "0"))) for row in settlements if row.get("release")
+    ]
+    summary["RELEASE_LOSS_MEAN"] = (
+        str(sum(release_losses, D(0)) / D(len(release_losses))) if release_losses else UNAVAILABLE
+    )
     if positive_pnl:
         summary["PNL_PER_CYCLE_DISTRIBUTION"] = dict(Counter(str(value) for value in positive_pnl))
         summary["PNL_PER_CYCLE_MIN"] = str(min(positive_pnl))
@@ -710,7 +768,12 @@ def _augment_metrics(run: dict[str, Any]) -> dict[str, Any]:
         summary["PNL_PER_CYCLE_MAX"] = str(max(positive_pnl))
     else:
         summary["PNL_PER_CYCLE_DISTRIBUTION"] = UNAVAILABLE
-        for key in ("PNL_PER_CYCLE_MIN", "PNL_PER_CYCLE_MEDIAN", "PNL_PER_CYCLE_P90", "PNL_PER_CYCLE_MAX"):
+        for key in (
+            "PNL_PER_CYCLE_MIN",
+            "PNL_PER_CYCLE_MEDIAN",
+            "PNL_PER_CYCLE_P90",
+            "PNL_PER_CYCLE_MAX",
+        ):
             summary[key] = UNAVAILABLE
     has_evidence = run.get("status") not in {UNAVAILABLE, "NOT_STARTED", "NO_COMPLETE_BOUND_STATE"}
     initial_default = "100" if has_evidence else UNAVAILABLE
@@ -727,19 +790,36 @@ def _augment_metrics(run: dict[str, Any]) -> dict[str, Any]:
         )
     else:
         summary["INITIAL_EQUITY"] = UNAVAILABLE
-    summary["FINAL_BANK"] = summary.get("OPERATING_FINAL", summary.get("OPERATING_BANK", UNAVAILABLE))
-    summary["FINAL_CAPITAL"] = summary.get("TOTAL_EQUITY_FINAL", summary.get("TOTAL_EQUITY", UNAVAILABLE))
-    summary["REALIZED_FEES_QUOTE"] = summary.get("REALIZED_FEES_QUOTE", summary.get("FEES", UNAVAILABLE))
+    summary["FINAL_BANK"] = summary.get(
+        "OPERATING_FINAL", summary.get("OPERATING_BANK", UNAVAILABLE)
+    )
+    summary["FINAL_CAPITAL"] = summary.get(
+        "TOTAL_EQUITY_FINAL", summary.get("TOTAL_EQUITY", UNAVAILABLE)
+    )
+    summary["REALIZED_FEES_QUOTE"] = summary.get(
+        "REALIZED_FEES_QUOTE", summary.get("FEES", UNAVAILABLE)
+    )
     summary["UNREALIZED_PNL"] = summary.get("UNREALIZED_PNL", UNAVAILABLE)
     summary["RESERVE_FLOOR"] = summary.get("RESERVE_FLOOR", UNAVAILABLE)
-    summary["CAPITAL_MODE"] = summary.get("CAPITAL_MODE", "COMPOUNDING" if has_evidence else UNAVAILABLE)
+    summary["CAPITAL_MODE"] = summary.get(
+        "CAPITAL_MODE", "COMPOUNDING" if has_evidence else UNAVAILABLE
+    )
     positions = run.get("positions", [])
     holds = [D(str(row["hold_hours"])) for row in positions if row.get("hold_hours") is not None]
     open_hold = run.get("open_hold")
-    if open_hold and not any(row.get("open_censored") for row in positions) and open_hold.get("age_hours") is not None:
+    if (
+        open_hold
+        and not any(row.get("open_censored") for row in positions)
+        and open_hold.get("age_hours") is not None
+    ):
         holds.append(D(str(open_hold["age_hours"])))
     if not run.get("positions_evidence_available", True):
-        for key in ("HOLD_GT_2H_COUNT", "HOLD_GT_2H_EXCESS_HOURS", "HOLD_GT_2H_EXCESS_SECONDS", "MAX_HOLD_HOURS"):
+        for key in (
+            "HOLD_GT_2H_COUNT",
+            "HOLD_GT_2H_EXCESS_HOURS",
+            "HOLD_GT_2H_EXCESS_SECONDS",
+            "MAX_HOLD_HOURS",
+        ):
             summary[key] = UNAVAILABLE
     elif holds:
         excess = sum((max(D(0), hold - D(2)) for hold in holds), D(0))
@@ -748,17 +828,29 @@ def _augment_metrics(run: dict[str, Any]) -> dict[str, Any]:
         summary["HOLD_GT_2H_EXCESS_SECONDS"] = str(excess * D(3600))
         summary["MAX_HOLD_HOURS"] = str(max(holds))
     else:
-        for key in ("HOLD_GT_2H_COUNT", "HOLD_GT_2H_EXCESS_HOURS", "HOLD_GT_2H_EXCESS_SECONDS", "MAX_HOLD_HOURS"):
+        for key in (
+            "HOLD_GT_2H_COUNT",
+            "HOLD_GT_2H_EXCESS_HOURS",
+            "HOLD_GT_2H_EXCESS_SECONDS",
+            "MAX_HOLD_HOURS",
+        ):
             summary[key] = summary.get(key, UNAVAILABLE)
     summary["CAPITAL_PRODUCTIVE_UPTIME"] = UNAVAILABLE
     summary["PROTECTION_TIME"] = NOT_IMPLEMENTED
     recovery = run.get("recovery_sensitivity", {}).get("0.10")
     if recovery:
-        completed = [tranche for tranche in recovery.get("tranches", []) if tranche.get("recovery_cycles") is not None]
+        completed = [
+            tranche
+            for tranche in recovery.get("tranches", [])
+            if tranche.get("recovery_cycles") is not None
+        ]
         summary["RECOVERY_CENSORED_COUNT"] = recovery.get("censored_count", UNAVAILABLE)
         summary["DEBT_FINAL"] = recovery.get("outstanding_debt", UNAVAILABLE)
         summary["RESERVE_SURPLUS_CONTRIBUTION"] = recovery.get("surplus_contributions", UNAVAILABLE)
-        summary["RECOVERY_OVERLAP_COUNT"] = sum(int(tranche.get("new_release_while_pending_count", 0)) for tranche in recovery.get("tranches", []))
+        summary["RECOVERY_OVERLAP_COUNT"] = sum(
+            int(tranche.get("new_release_while_pending_count", 0))
+            for tranche in recovery.get("tranches", [])
+        )
         if completed:
             cycle_values = [D(str(tranche["recovery_cycles"])) for tranche in completed]
             hour_values = [D(str(tranche["elapsed_hours"])) for tranche in completed]
@@ -769,10 +861,28 @@ def _augment_metrics(run: dict[str, Any]) -> dict[str, Any]:
             summary["RECOVERY_MEDIAN_CYCLES"] = str(_median_decimal(cycle_values))
             summary["RECOVERY_MEDIAN_HOURS"] = str(_median_decimal(hour_values))
         else:
-            for key in ("RECOVERY_P90_CYCLES", "RECOVERY_P90_HOURS", "RECOVERY_MAX_CYCLES", "RECOVERY_MAX_HOURS", "RECOVERY_MEDIAN_CYCLES", "RECOVERY_MEDIAN_HOURS"):
+            for key in (
+                "RECOVERY_P90_CYCLES",
+                "RECOVERY_P90_HOURS",
+                "RECOVERY_MAX_CYCLES",
+                "RECOVERY_MAX_HOURS",
+                "RECOVERY_MEDIAN_CYCLES",
+                "RECOVERY_MEDIAN_HOURS",
+            ):
                 summary[key] = UNAVAILABLE
     else:
-        for key in ("RECOVERY_CENSORED_COUNT", "DEBT_FINAL", "RESERVE_SURPLUS_CONTRIBUTION", "RECOVERY_OVERLAP_COUNT", "RECOVERY_P90_CYCLES", "RECOVERY_P90_HOURS", "RECOVERY_MAX_CYCLES", "RECOVERY_MAX_HOURS", "RECOVERY_MEDIAN_CYCLES", "RECOVERY_MEDIAN_HOURS"):
+        for key in (
+            "RECOVERY_CENSORED_COUNT",
+            "DEBT_FINAL",
+            "RESERVE_SURPLUS_CONTRIBUTION",
+            "RECOVERY_OVERLAP_COUNT",
+            "RECOVERY_P90_CYCLES",
+            "RECOVERY_P90_HOURS",
+            "RECOVERY_MAX_CYCLES",
+            "RECOVERY_MAX_HOURS",
+            "RECOVERY_MEDIAN_CYCLES",
+            "RECOVERY_MEDIAN_HOURS",
+        ):
             summary[key] = UNAVAILABLE
     run["summary"] = summary
     return run
@@ -803,12 +913,12 @@ def build_model_comparison(
         for model_id in MODEL_IDS
     )
     comparison_day = (
-        min(int(full_models[model_id]["closed_day"]) for model_id in MODEL_IDS)
-        if comparable
-        else 0
+        min(int(full_models[model_id]["closed_day"]) for model_id in MODEL_IDS) if comparable else 0
     )
     models = {
-        model_id: _augment_metrics(_prefix_view(full_models[model_id], roots[model_id], comparison_day))
+        model_id: _augment_metrics(
+            _prefix_view(full_models[model_id], roots[model_id], comparison_day)
+        )
         for model_id in MODEL_IDS
     }
     metric_keys = (
@@ -959,7 +1069,9 @@ def render(data):
             shown_time = f"{D(time):.3f}" if time is not None else "—"
             debt_tranches = len(rec.get("tranches", []))
             releases = s.get("RELEASES", UNAVAILABLE)
-            no_loss_releases = max(0, releases - debt_tranches) if isinstance(releases, int) else UNAVAILABLE
+            no_loss_releases = (
+                max(0, releases - debt_tranches) if isinstance(releases, int) else UNAVAILABLE
+            )
             out.append(
                 f"<tr><td>{D(f) * 100:.0f}%</td><td>{rec['recovered_count']} / {debt_tranches}</td>"
                 f"<td>{no_loss_releases}</td>"
@@ -1017,7 +1129,9 @@ def _chart_svg(title: str, series: dict[str, list[str | None]], colors: dict[str
     if "ciclos" in title.lower():
         lower = min(D(0), lower)
     integer_axis = "ciclos" in title.lower()
-    format_axis = (lambda value: f"{D(value):.0f}") if integer_axis else (lambda value: f"{D(value):.6f}")
+    format_axis = (
+        (lambda value: f"{D(value):.0f}") if integer_axis else (lambda value: f"{D(value):.6f}")
+    )
     if lower == upper:
         lower -= D(1)
         upper += D(1)
@@ -1039,7 +1153,7 @@ def _chart_svg(title: str, series: dict[str, list[str | None]], colors: dict[str
             points.append(f"{x:.2f},{y:.2f}")
             marks.append(
                 f'<circle cx="{x:.2f}" cy="{y:.2f}" r="2.8" fill="{colors[name]}">'
-                f'<title>{escape(name)} dia {index + 1}: {format_axis(value)}</title></circle>'
+                f"<title>{escape(name)} dia {index + 1}: {format_axis(value)}</title></circle>"
             )
         if points:
             paths.append(
@@ -1057,12 +1171,12 @@ def _chart_svg(title: str, series: dict[str, list[str | None]], colors: dict[str
     return (
         f'<div class="chart"><h4>{escape(title)}</h4><svg viewBox="0 0 {width} {height}" '
         f'role="img" aria-label="{escape(title)}">'
-        f'<title>{escape(title)}: min={format_axis(lower)}, max={format_axis(upper)}</title>'
+        f"<title>{escape(title)}: min={format_axis(lower)}, max={format_axis(upper)}</title>"
         f'<line x1="{left}" y1="{top + plot_height}" x2="{left + plot_width}" '
         f'y2="{top + plot_height}" stroke="#cbd5e1" />'
         f'<text x="2" y="{top + 4}" font-size="12">{format_axis(upper)}</text>'
         f'<text x="2" y="{top + plot_height}" font-size="12">{format_axis(lower)}</text>'
-        f'{labels}{"".join(paths)}{"".join(marks)}</svg>'
+        f"{labels}{''.join(paths)}{''.join(marks)}</svg>"
         f'<div class="legend">{legend}</div></div>'
     )
 
@@ -1245,7 +1359,9 @@ def _owner_summary(comparison: dict[str, Any]) -> str:
         recovered = count(recovery.get("recovered_count"))
         debt_cohort = count(len(recovery.get("tranches", [])))
         recovery_label = f"{recovered}/{debt_cohort} recuperados"
-        recovery_note = "N/T não estimáveis" if recovery.get("recovered_count", 0) == 0 else "coorte recuperada"
+        recovery_note = (
+            "N/T não estimáveis" if recovery.get("recovered_count", 0) == 0 else "coorte recuperada"
+        )
     daily_min = summary.get("DAILY_CYCLES_MIN", UNAVAILABLE)
     daily_max = summary.get("DAILY_CYCLES_MAX", UNAVAILABLE)
     status = model.get("status", UNAVAILABLE)
@@ -1288,19 +1404,19 @@ def render_model_comparison(comparison: dict[str, Any]) -> str:
         f"<h2>{escape(model_title)}</h2>",
         f'<p class="owner-summary">{_owner_summary(comparison)}</p>',
         f'<p class="note">São {len(model_ids)} replays simulados, todos com funding real de 10%. '
-        'A sensibilidade de funding abaixo é somente diagnóstico dos mesmos settlements; não é um novo replay.</p>',
+        "A sensibilidade de funding abaixo é somente diagnóstico dos mesmos settlements; não é um novo replay.</p>",
         f'<p class="note">Classificação: <code>{escape(classification)}</code>. '
-        f'Cenário: <code>{escape(scenario_kind)}</code>. '
-        f'Período comparável: <code>{escape(comparison["comparison_period"])}</code>. '
-        f'Histórico: <code>{escape(comparison.get("historical_control_period", UNAVAILABLE))}</code>. '
-        f'Janela OWNER aprovada: <code>1–{comparison.get("approved_window_days", UNAVAILABLE)} dias</code>; '
-        'qualquer resultado M017 além dela está fora do escopo desta entrega.</p>',
+        f"Cenário: <code>{escape(scenario_kind)}</code>. "
+        f"Período comparável: <code>{escape(comparison['comparison_period'])}</code>. "
+        f"Histórico: <code>{escape(comparison.get('historical_control_period', UNAVAILABLE))}</code>. "
+        f"Janela OWNER aprovada: <code>1–{comparison.get('approved_window_days', UNAVAILABLE)} dias</code>; "
+        "qualquer resultado M017 além dela está fora do escopo desta entrega.</p>",
         '<p class="note">Recuperar em quatro ciclos só ajuda se esses quatro ciclos realmente ocorrerem logo; '
-        'enquanto a posição está travada, a fila serial não produz os próximos ciclos. Maior funding não acelera '
-        'esse relógio. Os limites de 2h aparecem como excesso em horas e segundos; hard-lock de 24h é uma régua legada distinta.</p>',
+        "enquanto a posição está travada, a fila serial não produz os próximos ciclos. Maior funding não acelera "
+        "esse relógio. Os limites de 2h aparecem como excesso em horas e segundos; hard-lock de 24h é uma régua legada distinta.</p>",
         '<p class="note">Aritmética ilustrativa, não previsão nem replay novo: um lucro de 0.0099 USDT a 80% '
-        'aporta 0.00792; uma perda de 0.1683 exigiria 22 desses ciclos, enquanto quatro aportariam 0.03168. '
-        'Isto separa o cap financeiro da frequência causal de novos ciclos.</p>',
+        "aporta 0.00792; uma perda de 0.1683 exigiria 22 desses ciclos, enquanto quatro aportariam 0.03168. "
+        "Isto separa o cap financeiro da frequência causal de novos ciclos.</p>",
     ]
     out.append('<div class="comparison-charts">')
     out.append(
@@ -1326,10 +1442,10 @@ def render_model_comparison(comparison: dict[str, Any]) -> str:
     )
     out.append("</div>")
     out.append(
-        '<details><summary>Placar completo e definições</summary>'
+        "<details><summary>Placar completo e definições</summary>"
         '<div class="table-wrap"><table><thead><tr><th>Métrica</th>'
         + "".join(
-            f'<th>{escape(model_id)} · {escape(str(models[model_id].get("period_label", "UNAVAILABLE")))}</th>'
+            f"<th>{escape(model_id)} · {escape(str(models[model_id].get('period_label', 'UNAVAILABLE')))}</th>"
             for model_id in model_ids
         )
         + "</tr></thead><tbody>"
@@ -1337,7 +1453,9 @@ def render_model_comparison(comparison: dict[str, Any]) -> str:
     for key, values in comparison["metrics"].items():
         out.append(
             f"<tr><td>{escape(_METRIC_LABELS.get(key, key))}</td>"
-            + "".join(f"<td>{_display_metric(values[model_id], key)}</td>" for model_id in model_ids)
+            + "".join(
+                f"<td>{_display_metric(values[model_id], key)}</td>" for model_id in model_ids
+            )
             + "</tr>"
         )
     out.append("</tbody></table></div>")
@@ -1346,10 +1464,13 @@ def render_model_comparison(comparison: dict[str, Any]) -> str:
         + "".join(f"<th>{escape(model_id)}</th>" for model_id in model_ids)
         + "</tr></thead><tbody>"
         + "<tr><td>artifact</td>"
-        + "".join(f"<td>{_display_metric(models[model_id]['status'])}</td>" for model_id in model_ids)
+        + "".join(
+            f"<td>{_display_metric(models[model_id]['status'])}</td>" for model_id in model_ids
+        )
         + "</tr><tr><td>estado de dívida/política</td>"
         + "".join(
-            f"<td>{_display_metric(comparison['debt_states'][model_id])}</td>" for model_id in model_ids
+            f"<td>{_display_metric(comparison['debt_states'][model_id])}</td>"
+            for model_id in model_ids
         )
         + "</tr></tbody></table></div>"
     )
@@ -1388,10 +1509,10 @@ def render_model_comparison(comparison: dict[str, Any]) -> str:
     out.append("</tbody></table></div>")
     out.append(
         '<h3>Recuperação FIFO</h3><p class="note">Médias/medianas de recuperação só aparecem '
-        'quando há releases quitados. Sem quitados: UNAVAILABLE; estados NORMAL/RECUPERAÇÃO/PROTEÇÃO '
-        'ainda não implementados; deadlines executados são medidos por runtime, enquanto a contabilidade '
-        'de settlements do prefixo pode estar disponível. Dívida aberta é o ledger FIFO, não '
-        '10 menos a reserva final; o aporte excedente pré-perda aparece separado e não quita dívida futura.</p>'
+        "quando há releases quitados. Sem quitados: UNAVAILABLE; estados NORMAL/RECUPERAÇÃO/PROTEÇÃO "
+        "ainda não implementados; deadlines executados são medidos por runtime, enquanto a contabilidade "
+        "de settlements do prefixo pode estar disponível. Dívida aberta é o ledger FIFO, não "
+        "10 menos a reserva final; o aporte excedente pré-perda aparece separado e não quita dívida futura.</p>"
         '<div class="table-wrap"><table><thead><tr><th>Funding</th>'
         + "".join(f"<th>{model_id} perdas recuperadas / com dívida</th>" for model_id in model_ids)
         + "".join(f"<th>{model_id} releases sem perda</th>" for model_id in model_ids)
@@ -1410,7 +1531,9 @@ def render_model_comparison(comparison: dict[str, Any]) -> str:
                 cells.append(f"<td>{UNAVAILABLE}</td>")
                 continue
             debt_tranches = len(recovery.get("tranches", []))
-            cells.append(f"<td>{recovery.get('recovered_count', UNAVAILABLE)} / {debt_tranches}</td>")
+            cells.append(
+                f"<td>{recovery.get('recovered_count', UNAVAILABLE)} / {debt_tranches}</td>"
+            )
         for name in model_ids:
             run = models[name]
             recovery = run.get("recovery_sensitivity", {}).get(funding)
@@ -1438,7 +1561,11 @@ def render_model_comparison(comparison: dict[str, Any]) -> str:
             if not recovery or recovery.get("recovered_count", 0) == 0:
                 cells.append(f"<td>{UNAVAILABLE}</td>")
             else:
-                cycles = [D(str(row["recovery_cycles"])) for row in recovery.get("tranches", []) if row.get("recovery_cycles") is not None]
+                cycles = [
+                    D(str(row["recovery_cycles"]))
+                    for row in recovery.get("tranches", [])
+                    if row.get("recovery_cycles") is not None
+                ]
                 cells.append(
                     f"<td>{_display_metric(recovery.get('p90_recovery_cycles'), 'RECOVERY_P90_CYCLES')} / "
                     f"{_display_metric(max(cycles) if cycles else None, 'RECOVERY_MAX_CYCLES')}</td>"
@@ -1457,7 +1584,7 @@ def render_model_comparison(comparison: dict[str, Any]) -> str:
     out.append(
         "</tbody></table></div>"
         '<p class="note">Fonte: summary.json, daily/NN.json e, quando COMPLETE, terminal state e closed audit. '
-        'Nenhum valor ausente foi estimado; campos não persistidos permanecem UNAVAILABLE/NOT_IMPLEMENTED.</p>'
+        "Nenhum valor ausente foi estimado; campos não persistidos permanecem UNAVAILABLE/NOT_IMPLEMENTED.</p>"
         "</details></section>"
     )
     return "\n".join(out)
@@ -1484,8 +1611,13 @@ def main():
             html = left + block + tail.split(end, 1)[1]
         else:
             html = html.replace('<section id="conclusao">', block + '\n<section id="conclusao">', 1)
-        comparison_start, comparison_end = "<!-- M015_M016_COMPARISON_START -->", "<!-- M015_M016_COMPARISON_END -->"
-        comparison_block = comparison_start + "\n" + render_model_comparison(comparison) + "\n" + comparison_end
+        comparison_start, comparison_end = (
+            "<!-- M015_M016_COMPARISON_START -->",
+            "<!-- M015_M016_COMPARISON_END -->",
+        )
+        comparison_block = (
+            comparison_start + "\n" + render_model_comparison(comparison) + "\n" + comparison_end
+        )
         if comparison_start in html:
             left, tail = html.split(comparison_start, 1)
             html = left + tail.split(comparison_end, 1)[1]

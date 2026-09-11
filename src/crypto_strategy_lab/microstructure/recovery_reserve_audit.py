@@ -202,9 +202,7 @@ def _audit_ledger(
         "maximum_drawdown": str(drawdown),
         "operating_maximum_drawdown": str(operating_drawdown),
         "min_reserve_balance": str(reserve_min),
-        "max_reserve_balance": str(
-            max((D(point["reserve"]) for point in series), default=D(5))
-        ),
+        "max_reserve_balance": str(max((D(point["reserve"]) for point in series), default=D(5))),
         "reserve_depletion_events": depletion_count,
         "total_skim": str(total_skim),
         "total_release_loss": str(total_loss),

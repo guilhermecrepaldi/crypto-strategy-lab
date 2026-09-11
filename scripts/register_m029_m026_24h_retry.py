@@ -31,9 +31,7 @@ def validate_registration_design(design: dict[str, Any]) -> None:
         "end_exclusive": "2025-01-02T00:00:00Z",
         "economic_duration_hours": 24,
         "only_economic_change_from_parent": "END_EXCLUSIVE_3H_TO_24H",
-        "only_technical_change_from_m028": (
-            "CANONICAL_JSON_CHECKPOINT_STATE_COMPARISON"
-        ),
+        "only_technical_change_from_m028": ("CANONICAL_JSON_CHECKPOINT_STATE_COMPARISON"),
         "levels_per_side": 15,
         "initial_physical_orders": 60,
         "initial_operational_slot_units": 140,

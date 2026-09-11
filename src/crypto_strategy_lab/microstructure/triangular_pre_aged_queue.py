@@ -187,11 +187,7 @@ class TriangularPreAgedQueueProbe:
         self._active_order_time_us += elapsed * self.open_order_count
         mark = self._last_book["bids"][0][0] if self._last_book else ZERO
         active_capital = sum(
-            (
-                order.remaining * order.price
-                if order.side == "BUY"
-                else order.remaining * mark
-            )
+            (order.remaining * order.price if order.side == "BUY" else order.remaining * mark)
             for order in self.active_orders
         )
         self._active_capital_time_us += active_capital * D(elapsed)
@@ -552,9 +548,9 @@ class TriangularPreAgedQueueProbe:
                 shadow["activation_native_upper_us"] = int(
                     (self._last_book or {}).get("exchange_upper_us") or now
                 )
-                shadow["public_remaining"] = _s(self._displayed_queue(
-                    _dec(shadow["price"]), shadow["side"]
-                ))
+                shadow["public_remaining"] = _s(
+                    self._displayed_queue(_dec(shadow["price"]), shadow["side"])
+                )
                 group = self.groups.get((shadow["side"], _dec(shadow["price"])))
                 shadow["own_remaining"] = _s(
                     sum(
@@ -685,9 +681,7 @@ class TriangularPreAgedQueueProbe:
             for own_id in segment.order_ids:
                 if own_id == order_id:
                     return ahead
-                predecessor = next(
-                    (item for item in self.orders if item.order_id == own_id), None
-                )
+                predecessor = next((item for item in self.orders if item.order_id == own_id), None)
                 if predecessor is not None:
                     ahead += predecessor.remaining
         return None
@@ -941,11 +935,7 @@ class TriangularPreAgedQueueProbe:
     def _rolling_prices(self, side: str) -> list[D]:
         if self._last_book is None:
             return []
-        anchor = (
-            self._last_book["bids"][0][0]
-            if side == "BUY"
-            else self._last_book["asks"][0][0]
-        )
+        anchor = self._last_book["bids"][0][0] if side == "BUY" else self._last_book["asks"][0][0]
         if side == "BUY":
             return [_floor_tick(anchor - D(rank) * M021_TICK_SIZE) for rank in range(50)]
         return [_ceil_tick(anchor + D(rank) * M021_TICK_SIZE) for rank in range(50)]
@@ -965,9 +955,7 @@ class TriangularPreAgedQueueProbe:
             occupied = {order.price for order in active_free}
             missing = [price for price in desired if price not in occupied]
 
-            ready = next(
-                (item for item in self._rolling_ready if item["side"] == side), None
-            )
+            ready = next((item for item in self._rolling_ready if item["side"] == side), None)
             while ready is not None and missing and self.open_order_count < self.max_open_orders:
                 price = missing[0]
                 if side == "SELL" and ready["asset_basis"] > ZERO:
@@ -1004,9 +992,7 @@ class TriangularPreAgedQueueProbe:
                 )
                 occupied.add(price)
                 missing = [candidate for candidate in desired if candidate not in occupied]
-                ready = next(
-                    (item for item in self._rolling_ready if item["side"] == side), None
-                )
+                ready = next((item for item in self._rolling_ready if item["side"] == side), None)
 
             deficit = len(missing) - sum(
                 item["side"] == side for item in self._rolling_pending.values()
@@ -1026,9 +1012,7 @@ class TriangularPreAgedQueueProbe:
                 and order.order_id not in self._rolling_pending
             ]
             anchor = (
-                self._last_book["bids"][0][0]
-                if side == "BUY"
-                else self._last_book["asks"][0][0]
+                self._last_book["bids"][0][0] if side == "BUY" else self._last_book["asks"][0][0]
             )
             stale.sort(
                 key=lambda order: (
@@ -1061,11 +1045,7 @@ class TriangularPreAgedQueueProbe:
         pending = sorted(
             self._deferred_returns.items(),
             key=lambda item: next(
-                (
-                    (lot.created_us, lot.lot_id)
-                    for lot in self.lots
-                    if lot.lot_id == item[1]
-                ),
+                ((lot.created_us, lot.lot_id) for lot in self.lots if lot.lot_id == item[1]),
                 (self.end_us, item[1]),
             ),
         )
@@ -1106,12 +1086,8 @@ class TriangularPreAgedQueueProbe:
                         "c2_order_id": aged.order_id,
                         "c1_fill_us": now,
                         "c2_activation_us": aged.activation_evaluated_us,
-                        "queue_ahead_at_activation_c1": _s(
-                            order.queue_ahead_at_activation
-                        ),
-                        "queue_ahead_at_activation_c2": _s(
-                            aged.queue_ahead_at_activation
-                        ),
+                        "queue_ahead_at_activation_c1": _s(order.queue_ahead_at_activation),
+                        "queue_ahead_at_activation_c2": _s(aged.queue_ahead_at_activation),
                         "queue_ahead_at_c1_fill_for_c2": _s(
                             self._queue_ahead_for_order(aged.order_id) or ZERO
                         ),
@@ -1217,9 +1193,7 @@ class TriangularPreAgedQueueProbe:
                     cell_id=source.cell_id,
                 )
             else:
-                lot = next(
-                    (item for item in self.lots if item.lot_id in order.lot_ids), None
-                )
+                lot = next((item for item in self.lots if item.lot_id in order.lot_ids), None)
                 prices = self._rolling_prices("SELL") or [source.price]
                 price = prices[min(max(source.level, 1), len(prices)) - 1]
                 if lot is not None:
@@ -1300,11 +1274,7 @@ class TriangularPreAgedQueueProbe:
         )
         if lot is None:
             raise ValueError("M024_RETURN_FILL_LOT_MISSING")
-        if (
-            order.side == "SELL"
-            and order.asset_basis > ZERO
-            and order.price <= lot.asset_basis
-        ):
+        if order.side == "SELL" and order.asset_basis > ZERO and order.price <= lot.asset_basis:
             raise ValueError("M024_NEGATIVE_EXIT_FILL_PROHIBITED")
         if order.role == "RETURN":
             lot.closed_quantity += amount
@@ -1346,14 +1316,10 @@ class TriangularPreAgedQueueProbe:
         return amount
 
     def _eligible_order(self, order: QueueOrder, native_us: int) -> bool:
-        return (
-            order.activation_evaluated_us is not None
-            and native_us
-            > max(
-                order.active_us,
-                order.activation_evaluated_us,
-                order.activation_native_upper_us,
-            )
+        return order.activation_evaluated_us is not None and native_us > max(
+            order.active_us,
+            order.activation_evaluated_us,
+            order.activation_native_upper_us,
         )
 
     def _eligible_groups(
@@ -1760,8 +1726,7 @@ class TriangularPreAgedQueueProbe:
             "GROWTH_POOL_FINAL": _s(self.growth_pool),
             "LOCKED_SELL_PROCEEDS_USDT": _s(self._locked_sell_proceeds()),
             "PARTIAL_SUBSTEP_LOCKED_LOTS": sum(
-                lot.stage
-                in {"SUBSTEP_INVENTORY_LOCKED", "SUBSTEP_RETURN_DEBT_LOCKED"}
+                lot.stage in {"SUBSTEP_INVENTORY_LOCKED", "SUBSTEP_RETURN_DEBT_LOCKED"}
                 for lot in self.lots
             ),
             "NEW_QUEUE_CELLS_FUNDED_BY_PROFIT": self._growth_cells,
@@ -1776,9 +1741,7 @@ class TriangularPreAgedQueueProbe:
             "DEPTH_1_LEVELS": sum(depth == 1 for depth in active_depths),
             "DEPTH_2_LEVELS": sum(depth == 2 for depth in active_depths),
             "DEPTH_3_PLUS_LEVELS": sum(depth >= 3 for depth in active_depths),
-            "RECTANGLE_DEPTH_2_REACHED": all(
-                len(rows) >= 2 for rows in active_free_groups.values()
-            )
+            "RECTANGLE_DEPTH_2_REACHED": all(len(rows) >= 2 for rows in active_free_groups.values())
             if active_free_groups
             else False,
             "RECTANGLE_TARGET_DEPTH_8_REACHED": all(
@@ -1802,10 +1765,7 @@ class TriangularPreAgedQueueProbe:
             "INVENTORY_COST_BASIS": _s(inventory_cost),
             "TOTAL_EQUITY_CHANGE": _s(equity - self.initial_mark),
             "PNL_IDENTITY_RESIDUAL": _s(
-                equity
-                - self.initial_mark
-                - self.realized_disposal_pnl
-                - inventory_unrealized
+                equity - self.initial_mark - self.realized_disposal_pnl - inventory_unrealized
             ),
             "CYCLES_PER_100_USDT_EQ": _s(
                 D(self._cycles) / D("3") * D("100") / self.initial_mark
@@ -1816,8 +1776,7 @@ class TriangularPreAgedQueueProbe:
                 _s(self.initial_mark / D(self._cycles)) if self._cycles else None
             ),
             "CAPITAL_UTILIZATION": _s(
-                self._active_capital_time_us
-                / (self.initial_mark * D(self.end_us - self.start_us))
+                self._active_capital_time_us / (self.initial_mark * D(self.end_us - self.start_us))
                 if self.initial_mark > ZERO
                 else ZERO
             ),
@@ -1884,13 +1843,7 @@ class TriangularPreAgedQueueProbe:
             if marked_qty != physical_qty:
                 raise ValueError("M024_INVENTORY_LAYER_QUANTITY_DRIFT")
             equity = self.cash + self.reserved_usdt + physical_qty * mark
-            if (
-                equity
-                - self.initial_mark
-                - self.realized_disposal_pnl
-                - unrealized
-                != ZERO
-            ):
+            if equity - self.initial_mark - self.realized_disposal_pnl - unrealized != ZERO:
                 raise ValueError("M024_PNL_IDENTITY_DRIFT")
 
     def _state(self) -> dict[str, Any]:
@@ -1969,8 +1922,7 @@ class TriangularPreAgedQueueProbe:
                 for order_id, row in self._rolling_pending.items()
             },
             "rolling_ready": [
-                {**row, "asset_basis": _s(row["asset_basis"])}
-                for row in self._rolling_ready
+                {**row, "asset_basis": _s(row["asset_basis"])} for row in self._rolling_ready
             ],
             "rolling_cancels": self._rolling_cancels,
             "rolling_replacements": self._rolling_replacements,

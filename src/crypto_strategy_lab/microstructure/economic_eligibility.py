@@ -255,9 +255,7 @@ class ThresholdRegistry:
         return row.value
 
     def validate_effective_at(self, time_us: int) -> None:
-        if time_us < 0 or any(
-            row.effective_from_us > time_us for row in self._by_name.values()
-        ):
+        if time_us < 0 or any(row.effective_from_us > time_us for row in self._by_name.values()):
             raise ValueError("M034_THRESHOLD_NOT_EFFECTIVE")
 
 
@@ -485,9 +483,7 @@ class CausalAssetMarkRegistry:
             raise ValueError("M034_DUPLICATE_CAUSAL_ASSET_MARK")
         self._marks.append(mark)
 
-    def resolve(
-        self, *, base_asset: str, quote_asset: str, time_us: int
-    ) -> CausalAssetMark | None:
+    def resolve(self, *, base_asset: str, quote_asset: str, time_us: int) -> CausalAssetMark | None:
         matches = [
             mark
             for mark in self._marks
@@ -620,8 +616,10 @@ class EconomicCandidate:
     account_context: str | None = None
 
     def __post_init__(self) -> None:
-        if self.pair.venue != self.venue or self.route.venue != self.venue or any(
-            leg.book.venue != self.venue for leg in self.fee_legs
+        if (
+            self.pair.venue != self.venue
+            or self.route.venue != self.venue
+            or any(leg.book.venue != self.venue for leg in self.fee_legs)
         ):
             raise ValueError("M034_CANDIDATE_VENUE_IDENTITY_MISMATCH")
         if (
@@ -634,9 +632,7 @@ class EconomicCandidate:
                 or route_leg.from_asset != fee_leg.from_asset
                 or route_leg.to_asset != fee_leg.to_asset
                 or route_leg.maker != fee_leg.maker
-                for route_leg, fee_leg in zip(
-                    self.route.legs, self.fee_legs, strict=True
-                )
+                for route_leg, fee_leg in zip(self.route.legs, self.fee_legs, strict=True)
             )
             or self.side != self.fee_legs[0].side
         ):
@@ -764,9 +760,7 @@ class EconomicEligibilityGate:
             reasons.append(DecisionReasonCode.CURRENCY_MARK_UNPROVEN)
         profiles: list[VenueFeeProfile] = []
         for leg in candidate.fee_legs:
-            pair_evidence = self.pair_universe.resolve(
-                leg.book, time_us=candidate.decision_time_us
-            )
+            pair_evidence = self.pair_universe.resolve(leg.book, time_us=candidate.decision_time_us)
             if pair_evidence is None or not pair_evidence.available:
                 reasons.append(DecisionReasonCode.PAIR_UNAVAILABLE)
             elif not pair_evidence.eligible:
@@ -884,18 +878,13 @@ class EconomicEligibilityGate:
             if expected_net_edge < self.policy.minimum_net_edge_bps:
                 reasons.append(DecisionReasonCode.EDGE_BELOW_MINIMUM)
         decision_currency_usd_rate = (
-            decision_currency_usd_mark.rate
-            if decision_currency_usd_mark is not None
-            else None
+            decision_currency_usd_mark.rate if decision_currency_usd_mark is not None else None
         )
         if decision_currency_usd_rate is not None:
             capital_required_usd = candidate.capital_required * decision_currency_usd_rate
             if capital_required_usd > self.policy.maximum_inventory_exposure:
                 reasons.append(DecisionReasonCode.INVENTORY_EXPOSURE_TOO_HIGH)
-            if (
-                candidate.tail_risk_cost * decision_currency_usd_rate
-                > self.policy.tail_risk_bound
-            ):
+            if candidate.tail_risk_cost * decision_currency_usd_rate > self.policy.tail_risk_bound:
                 reasons.append(DecisionReasonCode.TAIL_RISK_TOO_HIGH)
 
         reasons = list(dict.fromkeys(reasons))
@@ -972,17 +961,12 @@ class EligibilityDecisionLedger:
             if reason != DecisionReasonCode.ELIGIBLE
         )
         return {
-            "ELIGIBILITY_ACCEPT_COUNT": sum(
-                decision.eligible for decision in economic_decisions
-            ),
+            "ELIGIBILITY_ACCEPT_COUNT": sum(decision.eligible for decision in economic_decisions),
             "ELIGIBILITY_REJECT_COUNT": sum(
                 not decision.eligible for decision in economic_decisions
             ),
-            "SLOTS_AUTHORIZED": sum(
-                decision.slots_authorized for decision in economic_decisions
-            ),
-            "DORMANT_VENUE_DIAGNOSTIC_COUNT": len(self.decisions)
-            - len(economic_decisions),
+            "SLOTS_AUTHORIZED": sum(decision.slots_authorized for decision in economic_decisions),
+            "DORMANT_VENUE_DIAGNOSTIC_COUNT": len(self.decisions) - len(economic_decisions),
             "REJECTION_REASONS": dict(sorted(reason_counts.items())),
             "CAPITAL_STATE_EVENTS": len(self.capital_states),
             "IDLE_NO_ELIGIBLE_OPPORTUNITY_EVENTS": sum(
@@ -1091,9 +1075,7 @@ class M034EconomicAllocationEngine:
             ZERO,
         )
         allocatable_capital = max(available_capital - blocked_owned_capital, ZERO)
-        selected = self.allocator.choose_eligible(
-            scores, available_capital=allocatable_capital
-        )
+        selected = self.allocator.choose_eligible(scores, available_capital=allocatable_capital)
         score_by_id = {score.candidate_id: score for score in scores}
         selected_ids = {score.candidate_id for score in selected}
         final: list[EligibilityDecision] = []
@@ -1499,8 +1481,10 @@ class BinancePairUniverse:
 
     def resolve(self, book: BookKey, *, time_us: int) -> BinancePairEvidence | None:
         row = self.evidence.get(book)
-        if row is None or time_us < row.effective_start_us or (
-            row.effective_end_us is not None and time_us >= row.effective_end_us
+        if (
+            row is None
+            or time_us < row.effective_start_us
+            or (row.effective_end_us is not None and time_us >= row.effective_end_us)
         ):
             return None
         return row
@@ -1511,13 +1495,7 @@ class BinancePairUniverse:
 
     @property
     def eligible_books(self) -> tuple[BookKey, ...]:
-        return tuple(
-            sorted(
-                book
-                for book, row in self.evidence.items()
-                if row.eligible
-            )
-        )
+        return tuple(sorted(book for book, row in self.evidence.items() if row.eligible))
 
 
 __all__ = [

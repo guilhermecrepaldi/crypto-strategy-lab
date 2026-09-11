@@ -274,9 +274,11 @@ def publish(folder, tests_passed=None, tests_failed=None):
             f"\nMeta de 2.000 ciclos positivos: {score['DAYS_MEETING_2000_TARGET']} de "
             f"{len(daily)} dias fechados. Releases não entram na meta.\n\n"
             "O resultado é condicional às hipóteses de execução; não é uma operação real. "
-            + ("Próxima semana condicionada a500/dia e auditoria; verificar gate abaixo.\n\n"
-               if model_id == "M015" else
-               "Próxima semana NÃO autorizada, mesmo que a meta seja atingida.\n\n")
+            + (
+                "Próxima semana condicionada a500/dia e auditoria; verificar gate abaixo.\n\n"
+                if model_id == "M015"
+                else "Próxima semana NÃO autorizada, mesmo que a meta seja atingida.\n\n"
+            )
             + f"[Diagnóstico dos gargalos e comparação com B10]({model_id}-week1-autopsy.md).\n"
         )
         (ROOT / f"{model_id}-reality-scoreboard.json").write_text(
@@ -366,12 +368,12 @@ def publish(folder, tests_passed=None, tests_failed=None):
             (
                 "Gate atingido; validar e publicar continuação preservando estado "
                 "e fonte econômica."
-                if score.get("GATE_TO_WEEK_2") else
-                "Consultar autópsia e diagnóstico de capacidade no diário; semana 2 bloqueada "
+                if score.get("GATE_TO_WEEK_2")
+                else "Consultar autópsia e diagnóstico de capacidade no diário; semana 2 bloqueada "
                 "pelo mínimo/auditoria."
             )
-            if model_id == "M015" and score.get("RUN_STATUS") == "COMPLETE" else
-            "Semana encerrada; consultar auditoria e aguardar aprovação OWNER para extensão."
+            if model_id == "M015" and score.get("RUN_STATUS") == "COMPLETE"
+            else "Semana encerrada; consultar auditoria e aguardar aprovação OWNER para extensão."
             if model_id in ("M014", "M015") and score.get("RUN_STATUS") == "COMPLETE"
             else "Continuar somente intervalo autorizado; publicar marcos e auditar."
         )
@@ -381,9 +383,11 @@ def publish(folder, tests_passed=None, tests_failed=None):
     if model_id in ("M014", "M015"):
         current += (
             "\nOWNER_GATE="
-            + ("Week2 preauthorized only after500 positive ordinary cycles each day plus audit."
-               if model_id == "M015" else
-               "First week only; explicit approval required before any following week.")
+            + (
+                "Week2 preauthorized only after500 positive ordinary cycles each day plus audit."
+                if model_id == "M015"
+                else "First week only; explicit approval required before any following week."
+            )
             + "\nM013=INVALIDATED_TECHNICAL_PRESERVED\n"
         )
     if model_id == "M015":

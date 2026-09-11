@@ -72,10 +72,7 @@ def test_manager_audit_rejects_cap_breach() -> None:
         ]
         terminal = {
             "state": {
-                "orders": [
-                    {"order_id": index, "status": "ACTIVE"}
-                    for index in range(1, 162)
-                ]
+                "orders": [{"order_id": index, "status": "ACTIVE"} for index in range(1, 162)]
             }
         }
         runner.manager_audit(rows, terminal, metrics)
@@ -223,7 +220,5 @@ def test_manager_audit_reconstructs_s_lane_ownership_independently() -> None:
         mirror = tampered_terminal["state"]["manager_s_free"][lane]
         tampered_metrics["lane_ownership"][lane]["free_usdc"] = mirror["quantity"]
         tampered_metrics["lane_ownership"][lane]["free_usdc_cost"] = mirror["cost"]
-    with pytest.raises(
-        ValueError, match="M022_S_LANE_OWNERSHIP_RECONSTRUCTION_MISMATCH"
-    ):
+    with pytest.raises(ValueError, match="M022_S_LANE_OWNERSHIP_RECONSTRUCTION_MISMATCH"):
         runner.manager_audit(engine.audit, tampered_terminal, tampered_metrics)

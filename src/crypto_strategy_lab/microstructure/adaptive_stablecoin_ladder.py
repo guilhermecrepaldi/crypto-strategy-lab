@@ -254,15 +254,15 @@ class AdaptiveStablecoinLadder:
                     break
                 amount = band_quantity if band < SLOT_COUNT - 1 else remaining
                 lot = LadderLot(
-                        lot_id=f"{self.lane_id}:endowment-{band}",
-                        quantity=amount,
-                        remaining=amount,
-                        unit_cost=bid,
-                        entry_us=time_us,
-                        initial_endowment=True,
-                        band_id=band,
-                        source_slot=band,
-                    )
+                    lot_id=f"{self.lane_id}:endowment-{band}",
+                    quantity=amount,
+                    remaining=amount,
+                    unit_cost=bid,
+                    entry_us=time_us,
+                    initial_endowment=True,
+                    band_id=band,
+                    source_slot=band,
+                )
                 self.lots.append(lot)
                 self._record(
                     "LOT_CREATED",
@@ -308,11 +308,7 @@ class AdaptiveStablecoinLadder:
         active_by_key = {(order.side, order.slot): order for order in self.active_orders}
         fee_rate = D(getattr(self.profile, "maker_fee", ZERO))
         projected_inventory_mark = self.inventory * bid + sum(
-            (
-                order.remaining * bid
-                for order in self.active_orders
-                if order.side == "BUY"
-            ),
+            (order.remaining * bid for order in self.active_orders if order.side == "BUY"),
             ZERO,
         )
         projected_equity = self._marked_equity(bid) + sum(
@@ -337,9 +333,7 @@ class AdaptiveStablecoinLadder:
                 _floor_step(affordable / (price * (ONE + fee_rate)), self.step_size),
             )
             candidate_inventory_mark = projected_inventory_mark + quantity * bid
-            candidate_equity = projected_equity + quantity * (
-                bid - price * (ONE + fee_rate)
-            )
+            candidate_equity = projected_equity + quantity * (bid - price * (ONE + fee_rate))
             if (
                 self._valid_quantity(price, quantity)
                 and price * quantity >= self.safe_min_notional
@@ -373,9 +367,7 @@ class AdaptiveStablecoinLadder:
                 price = max(price, self._break_even_exit(lot))
                 if selected_quantity * price >= self.safe_min_notional:
                     break
-            own_buys = [
-                order.price for order in self.active_orders if order.side == "BUY"
-            ] + [
+            own_buys = [order.price for order in self.active_orders if order.side == "BUY"] + [
                 desired_price
                 for (desired_side, _), (desired_price, _) in desired.items()
                 if desired_side == "BUY"
@@ -604,14 +596,10 @@ class AdaptiveStablecoinLadder:
                 best_bid=None if bid is None else _str_decimal(bid),
                 best_ask=None if ask is None else _str_decimal(ask),
                 known_bid_floor=(
-                    None
-                    if self.known_bid_floor is None
-                    else _str_decimal(self.known_bid_floor)
+                    None if self.known_bid_floor is None else _str_decimal(self.known_bid_floor)
                 ),
                 known_ask_ceiling=(
-                    None
-                    if self.known_ask_ceiling is None
-                    else _str_decimal(self.known_ask_ceiling)
+                    None if self.known_ask_ceiling is None else _str_decimal(self.known_ask_ceiling)
                 ),
                 released_quote=_str_decimal(released_quote),
                 released_base=_str_decimal(released_base),
@@ -706,9 +694,7 @@ class AdaptiveStablecoinLadder:
                 # remaining quantity is zero, so they cannot be reserved again.
         order.reserved_lots = allocations
         for source_order_id in affected_buy_orders:
-            source_order = next(
-                item for item in self.orders if item.order_id == source_order_id
-            )
+            source_order = next(item for item in self.orders if item.order_id == source_order_id)
             self._maybe_settle_buy_order(source_order, time_us)
         return sold
 
@@ -1104,9 +1090,7 @@ class AdaptiveStablecoinLadder:
         self._submission_times = [int(value) for value in state.get("submission_times", [])]
         self._cancel_times = [int(value) for value in state.get("cancel_times", [])]
         self._finished = bool(state.get("finished", False))
-        self._finished_us = (
-            None if state.get("finished_us") is None else int(state["finished_us"])
-        )
+        self._finished_us = None if state.get("finished_us") is None else int(state["finished_us"])
 
     @classmethod
     def from_checkpoint(

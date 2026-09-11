@@ -56,9 +56,7 @@ class SlotLedger:
         self.fill_attribution: dict[str, FillAttribution] = {}
         self.turnover_us: list[int] = []
         self.inventory_reduction_turnover_us: list[int] = []
-        self.inventory_reduction_authorizations: dict[
-            str, InventoryReductionAuthorization
-        ] = {}
+        self.inventory_reduction_authorizations: dict[str, InventoryReductionAuthorization] = {}
         self.processed_inventory_authorization_ids: set[str] = set()
         self.negative_exit_count = 0
         self.negative_exit_cost = ZERO
@@ -440,8 +438,7 @@ class SlotLedger:
             raise ValueError("M034_DUPLICATE_INVENTORY_REDUCTION")
         if (
             self.inventory_reduction_authorizations.get(reduction_id) != authorization
-            or
-            authorization.authorization_id != reduction_id
+            or authorization.authorization_id != reduction_id
             or authorization.slot_id != slot_id
             or authorization.slot_epoch != slot.slot_epoch
             or not authorization.decided_at_us <= now_us <= authorization.expires_at_us
@@ -469,11 +466,7 @@ class SlotLedger:
             or sum(
                 (
                     row.fill.input_quantity
-                    + (
-                        row.fill.fee_quantity
-                        if row.fill.fee_asset == row.fill.from_asset
-                        else ZERO
-                    )
+                    + (row.fill.fee_quantity if row.fill.fee_asset == row.fill.from_asset else ZERO)
                     for row in exit_fills
                 ),
                 ZERO,
@@ -488,9 +481,7 @@ class SlotLedger:
         ):
             raise ValueError("M034_INVENTORY_REDUCTION_PHYSICAL_EXIT_UNPROVEN")
         final_quantity = self.owned[slot_id].get(slot.origin_asset, ZERO)
-        physical_exit_output = sum(
-            (row.fill.output_quantity_net for row in exit_fills), ZERO
-        )
+        physical_exit_output = sum((row.fill.output_quantity_net for row in exit_fills), ZERO)
         if final_quantity != physical_exit_output:
             raise ValueError("M034_INVENTORY_REDUCTION_ORIGIN_RESIDUAL_MISMATCH")
         external_fee_rows = [
@@ -516,21 +507,13 @@ class SlotLedger:
             )
         except (KeyError, ValueError) as exc:
             raise ValueError("M034_EXTERNAL_FEE_MARK_UNPROVEN") from exc
-        loss = (
-            authorization.origin_cost_basis
-            - final_quantity
-            + external_fee_cost_origin
-        )
+        loss = authorization.origin_cost_basis - final_quantity + external_fee_cost_origin
         hold_cost = (
             authorization.expected_hold_loss
             + authorization.opportunity_cost_of_lock
             + authorization.tail_risk_increase
         )
-        if (
-            loss <= ZERO
-            or loss > authorization.realized_loss_of_exit
-            or hold_cost <= loss
-        ):
+        if loss <= ZERO or loss > authorization.realized_loss_of_exit or hold_cost <= loss:
             raise ValueError("M034_INVENTORY_REDUCTION_INEQUALITY_NOT_SATISFIED")
         if slot.capital_lock_started_at_us is None:
             raise ValueError("M034_INVENTORY_REDUCTION_WITHOUT_CAPITAL_LOCK")

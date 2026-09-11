@@ -193,11 +193,7 @@ def reconstruct_m029_hot_coverage(
             return False
         if order["filled"] != 0:
             return False
-        distance = (
-            hotline - order["line_price"]
-            if side == "BUY"
-            else order["line_price"] - hotline
-        )
+        distance = hotline - order["line_price"] if side == "BUY" else order["line_price"] - hotline
         rank = int(distance / TICK) if distance > 0 and distance % TICK == 0 else None
         return not (rank in range(1, 6) and int(order["slot_count"]) == 3)
 
@@ -491,9 +487,7 @@ def reconstruct_m030_administrative_capacity(
             order["filled"] += amount
             remaining = order["quantity"] - order["filled"]
             if order["side"] == "BUY":
-                order["usdt_lock"] = min(
-                    order["usdt_lock_original"], remaining * order["price"]
-                )
+                order["usdt_lock"] = min(order["usdt_lock_original"], remaining * order["price"])
                 if order["role"] == "RETURN" and order["direction"] == "SELL_FIRST":
                     operational_usdc += amount
                     if remaining == 0:
@@ -598,9 +592,7 @@ def normalize_m030_reporting_metrics(
         {
             "RAW_ENGINE_RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT": raw_full,
             "RAW_ENGINE_RANDOM_3H_RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT": raw_eval,
-            "HOT_INCOMPLETE_WITH_ADMINISTRATIVE_CAPACITY_TIME_PCT": broad[
-                "FULL_DAY_TIME_PCT"
-            ],
+            "HOT_INCOMPLETE_WITH_ADMINISTRATIVE_CAPACITY_TIME_PCT": broad["FULL_DAY_TIME_PCT"],
             "RANDOM_3H_HOT_INCOMPLETE_WITH_ADMINISTRATIVE_CAPACITY_TIME_PCT": broad[
                 "RANDOM_3H_TIME_PCT"
             ],
@@ -781,9 +773,7 @@ def independent_m030_audit(
     }
     class_counts = Counter(row["category"] for row in zero_fill_terminals)
     terminal_reclaimable = _terminal_reclaimable_capital(terminal)
-    terminal_true_shortfall = _terminal_true_capital_shortfall(
-        terminal, terminal_reclaimable
-    )
+    terminal_true_shortfall = _terminal_true_capital_shortfall(terminal, terminal_reclaimable)
     reclaimed_pool = {"USDT": D(0), "USDC": D(0)}
     for row in rows:
         if row["event"] in {

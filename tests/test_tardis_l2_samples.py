@@ -152,7 +152,10 @@ def test_raw_sidecar_gzip_and_immutability(monkeypatch: pytest.MonkeyPatch, tmp_
     assert result["gzip_integrity"] == "PASS"
     before = path.read_bytes()
     second = collector._raw_slice(
-        date(2025, 1, 1), 0, tmp_path / "raw", 1.0,
+        date(2025, 1, 1),
+        0,
+        tmp_path / "raw",
+        1.0,
         result,
     )
     assert second["status"] == "ORIGINAL_PRESENT"
@@ -184,9 +187,7 @@ def test_raw_orphan_revalidation_preserves_mismatch(
             return remote
 
     monkeypatch.setattr(collector, "urlopen", lambda request, timeout: Response())
-    result = collector._raw_slice(
-        date(2025, 1, 1), 0, root, 1.0, revalidate_orphans=True
-    )
+    result = collector._raw_slice(date(2025, 1, 1), 0, root, 1.0, revalidate_orphans=True)
     assert result["status"] == "INVALID"
     assert Path(result["verification_path"]).read_bytes() == remote
     assert original.read_bytes() != remote
@@ -198,7 +199,10 @@ def test_raw_existing_requires_sidecar_provenance(tmp_path: Path) -> None:
     original.parent.mkdir(parents=True)
     original.write_bytes(gzip.compress(b"local\n"))
     result = collector._raw_slice(
-        date(2025, 1, 1), 0, root, 1.0,
+        date(2025, 1, 1),
+        0,
+        root,
+        1.0,
         {
             "status": "AVAILABLE",
             "sha256": collector.hashlib.sha256(original.read_bytes()).hexdigest(),
@@ -224,9 +228,15 @@ def test_raw_subset_preserves_other_dates_and_checkpoints_each_slice(tmp_path, m
         checkpoints.append(json.loads(path.read_text()))
 
     monkeypatch.setattr(collector, "_write_raw_manifest", checkpoint)
-    monkeypatch.setattr(collector, "_raw_slice", lambda day, offset, *args: {
-        "offset": offset, "status": "UNAVAILABLE", "http_status": 401,
-    })
+    monkeypatch.setattr(
+        collector,
+        "_raw_slice",
+        lambda day, offset, *args: {
+            "offset": offset,
+            "status": "UNAVAILABLE",
+            "http_status": 401,
+        },
+    )
     collector.collect_raw(dates=[date(2025, 1, 1)], manifest_path=manifest, root=tmp_path)
     assert len(checkpoints) == 145
     assert len(checkpoints[0]["dates"][0]["raw_slices"]) == 1
@@ -242,12 +252,16 @@ def test_raw_orphan_recovered_with_http_evidence_then_sidecar_only_reused(tmp_pa
 
     class Response:
         status = 200
+
         def __init__(self):
             self.headers = {"X-Slice-Size": "10", "Content-Length": str(len(payload))}
+
         def __enter__(self):
             return self
+
         def __exit__(self, *args):
             pass
+
         def read(self):
             return payload
 
@@ -265,20 +279,33 @@ def test_raw_orphan_recovered_with_http_evidence_then_sidecar_only_reused(tmp_pa
 
 def test_manifest_permission_retry_and_executor_failure_not_masked(tmp_path, monkeypatch):
     calls = []
+
     def transient(*args):
         calls.append(1)
         if len(calls) == 1:
             raise PermissionError("locked")
+
     monkeypatch.setattr(collector, "_write_raw_manifest", transient)
     monkeypatch.setattr(collector.time, "sleep", lambda seconds: None)
     collector._persist_raw_manifest(tmp_path / "m.json", {}, {})
     assert len(calls) == 2
+
     def failure(*args):
         raise PermissionError("persistent writer failure")
+
     monkeypatch.setattr(collector, "_persist_raw_manifest", failure)
-    monkeypatch.setattr(collector, "_raw_slice", lambda day, offset, *args: {
-        "offset": offset, "status": "UNAVAILABLE",
-    })
+    monkeypatch.setattr(
+        collector,
+        "_raw_slice",
+        lambda day, offset, *args: {
+            "offset": offset,
+            "status": "UNAVAILABLE",
+        },
+    )
     with pytest.raises(PermissionError, match="persistent writer failure"):
-        collector.collect_raw(dates=[date(2025, 1, 1)], root=tmp_path,
-                              manifest_path=tmp_path / "m.json", concurrency=1)
+        collector.collect_raw(
+            dates=[date(2025, 1, 1)],
+            root=tmp_path,
+            manifest_path=tmp_path / "m.json",
+            concurrency=1,
+        )

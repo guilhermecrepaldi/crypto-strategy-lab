@@ -32,8 +32,7 @@ def finalize() -> dict:
         physical["model_id"] != "M022"
         or physical["published_config_sha"] != SOURCE_COMMIT
         or physical["RUN_STATUS"] != "COMPLETE"
-        or physical["AUDIT"]["status"]
-        != "PASS_M022_MANAGER_LEDGER_EXECUTION_LIQUIDITY"
+        or physical["AUDIT"]["status"] != "PASS_M022_MANAGER_LEDGER_EXECUTION_LIQUIDITY"
         or physical["TOTAL_COMPLETE_CYCLES"] != 19
         or physical["DELTA_VS_M021"] != 0
     ):
@@ -69,9 +68,7 @@ def finalize() -> dict:
             ),
             "PHYSICAL_RUN_HASH": physical_hash,
             "PHYSICAL_FILE_SHA256": physical_files,
-            "MAIN_LIMITER": (
-                "FIXED_RETURN_PUBLIC_POST_ONLY_CONFLICT_WITH_QUEUE_LIMITED_REMAINDER"
-            ),
+            "MAIN_LIMITER": ("FIXED_RETURN_PUBLIC_POST_ONLY_CONFLICT_WITH_QUEUE_LIMITED_REMAINDER"),
             "SUM_ROUNDTRIP_CYCLE_PROFIT": str(cycle_profit),
             "ROUNDTRIP_PROFIT_BY_DIRECTION": {
                 key: str(value) for key, value in sorted(cycle_profit_by_direction.items())
@@ -184,9 +181,7 @@ def finalize() -> dict:
                 "physical_run_hash": physical_hash,
                 "identity_run_hash": report["run_hash"],
                 "audit_status": report["AUDIT"]["status"],
-                "post_write_presentation_failure": report[
-                    "POST_WRITE_PRESENTATION_FAILURE"
-                ],
+                "post_write_presentation_failure": report["POST_WRITE_PRESENTATION_FAILURE"],
                 "reporting_correction": report["REPORTING_CORRECTION"],
             },
         ),

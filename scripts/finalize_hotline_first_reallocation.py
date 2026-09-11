@@ -37,8 +37,7 @@ def finalize() -> dict:
         or result.get("REPORTING_RECOVERY", {}).get("EVENTS_DELIVERED_DURING_RECOVERY") != 0
         or metrics.get("M030_EVAL_PHYSICAL_CYCLES") != 13
         or comparison.get("BASELINE", {}).get("PHYSICAL_CYCLES") != 6
-        or comparison.get("PHYSICAL_CYCLE_IMPROVEMENT_PCT")
-        != "116.6666666666666666666666667"
+        or comparison.get("PHYSICAL_CYCLE_IMPROVEMENT_PCT") != "116.6666666666666666666666667"
         or metrics.get("PHYSICAL_CYCLES") != 170
         or metrics.get("SLOT_EQUIVALENT_CYCLES") != 509
         or metrics.get("INITIAL_TOTAL_MARKED") != "156.25220000"
@@ -114,9 +113,7 @@ def finalize() -> dict:
                 "random_hours_utc": result["RANDOM_EVALUATION"]["HOURS_UTC"],
                 "m029_matched_physical_cycles": 6,
                 "m030_matched_physical_cycles": 13,
-                "physical_cycle_improvement_pct": comparison[
-                    "PHYSICAL_CYCLE_IMPROVEMENT_PCT"
-                ],
+                "physical_cycle_improvement_pct": comparison["PHYSICAL_CYCLE_IMPROVEMENT_PCT"],
             },
             criteria={
                 "physical_audit_pass": True,
@@ -138,9 +135,7 @@ def finalize() -> dict:
                 "random_3h_slot_cycles": metrics["M030_EVAL_SLOT_CYCLES"],
                 "full_day_physical_cycles": metrics["PHYSICAL_CYCLES"],
                 "full_day_slot_cycles": metrics["SLOT_EQUIVALENT_CYCLES"],
-                "hot_coverage_random_3h": metrics[
-                    "HOT_FUNDING_COVERAGE_RANDOM_3H_TIME_WEIGHTED"
-                ],
+                "hot_coverage_random_3h": metrics["HOT_FUNDING_COVERAGE_RANDOM_3H_TIME_WEIGHTED"],
                 "literal_reclaimable_stranded_random_3h_pct": metrics[
                     "RANDOM_3H_RECLAIMABLE_CAPITAL_STRANDED_TIME_PCT"
                 ],

@@ -35,9 +35,7 @@ def normalize_full_day_metrics(
             "PARENT_STRATEGY": "M026",
             "PERIOD": "24H",
             "PHYSICAL_CYCLES_PER_HOUR": _s(D(value["PHYSICAL_CYCLES"]) / HOURS),
-            "SLOT_EQUIVALENT_CYCLES_PER_HOUR": _s(
-                D(value["SLOT_EQUIVALENT_CYCLES"]) / HOURS
-            ),
+            "SLOT_EQUIVALENT_CYCLES_PER_HOUR": _s(D(value["SLOT_EQUIVALENT_CYCLES"]) / HOURS),
             "INITIAL_MARKED_EQUITY_BEFORE": _s(initial),
             "FINAL_MARKED_EQUITY_AFTER": _s(final),
             "TOTAL_MARKED_GAIN": _s(gain),
@@ -84,8 +82,7 @@ def independent_m026_24h_audit(
     require(config.get("start_us") == START_US, "TERMINAL_START")
     require(config.get("end_us") == END_US, "TERMINAL_END")
     require(
-        D(metrics["PHYSICAL_CYCLES_PER_HOUR"])
-        == D(metrics["PHYSICAL_CYCLES"]) / HOURS,
+        D(metrics["PHYSICAL_CYCLES_PER_HOUR"]) == D(metrics["PHYSICAL_CYCLES"]) / HOURS,
         "PHYSICAL_RATE",
     )
     require(
@@ -106,18 +103,15 @@ def independent_m026_24h_audit(
         "POST_3H_GAIN",
     )
     require(
-        D(metrics["POST_3H_MARKED_GAIN_PCT"])
-        == (final - M026_3H_FINAL) / M026_3H_FINAL * D(100),
+        D(metrics["POST_3H_MARKED_GAIN_PCT"]) == (final - M026_3H_FINAL) / M026_3H_FINAL * D(100),
         "POST_3H_GAIN_PCT",
     )
     require(
-        metrics["AUXILIARY_PHYSICAL_RULER_304_PASS"]
-        is (int(metrics["PHYSICAL_CYCLES"]) >= 304),
+        metrics["AUXILIARY_PHYSICAL_RULER_304_PASS"] is (int(metrics["PHYSICAL_CYCLES"]) >= 304),
         "PHYSICAL_RULER",
     )
     require(
-        metrics["AUXILIARY_SLOT_RULER_480_PASS"]
-        is (int(metrics["SLOT_EQUIVALENT_CYCLES"]) >= 480),
+        metrics["AUXILIARY_SLOT_RULER_480_PASS"] is (int(metrics["SLOT_EQUIVALENT_CYCLES"]) >= 480),
         "SLOT_RULER",
     )
     require(metrics["AUXILIARY_RULERS_ARE_NOT_OWNER_PROMISES"] is True, "RULER_SCOPE")

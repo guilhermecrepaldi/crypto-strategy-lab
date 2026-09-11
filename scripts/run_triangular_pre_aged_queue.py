@@ -355,8 +355,7 @@ def independent_execution_audit(rows, terminal, canonical, metrics):
             order = orders[oid]
             cancel_was_pending = order["status"] == "CANCEL_PENDING"
             require(
-                order["status"] in {"PENDING", "CANCEL_PENDING"}
-                and now >= order["active_us"],
+                order["status"] in {"PENDING", "CANCEL_PENDING"} and now >= order["active_us"],
                 "ACTIVATION",
             )
             require(group_key(row) == group_key(order), "ACTIVATION_PRICE")
@@ -515,8 +514,7 @@ def independent_execution_audit(rows, terminal, canonical, metrics):
                 )
             else:
                 require(
-                    order["status"] in {"PENDING", "CANCEL_PENDING"}
-                    and now >= order["active_us"],
+                    order["status"] in {"PENDING", "CANCEL_PENDING"} and now >= order["active_us"],
                     "REJECTION",
                 )
             quote, base = order["reserved_quote"], order["reserved_base"]
@@ -550,8 +548,10 @@ def independent_execution_audit(rows, terminal, canonical, metrics):
                 and source["status"] == "FILLED",
                 "INCOMPLETE_OR_DUPLICATE_CYCLE",
             )
-            expected = D(order["quantity"]) * (D(order["price"]) - D(source["price"])) * (
-                1 if source["side"] == "BUY" else -1
+            expected = (
+                D(order["quantity"])
+                * (D(order["price"]) - D(source["price"]))
+                * (1 if source["side"] == "BUY" else -1)
             )
             require(expected >= D(".0001") and D(row["profit"]) == expected, "NONPOSITIVE_CYCLE")
             require(row["source_order_id"] == source["order_id"], "CYCLE_SOURCE")
@@ -605,8 +605,7 @@ def independent_execution_audit(rows, terminal, canonical, metrics):
                     "INITIAL_GEOMETRY",
                 )
                 require(
-                    D(order["asset_basis"])
-                    == (D("1.0019") if order["side"] == "SELL" else 0),
+                    D(order["asset_basis"]) == (D("1.0019") if order["side"] == "SELL" else 0),
                     "INITIAL_ASSET_BASIS",
                 )
             require(

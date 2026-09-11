@@ -409,16 +409,12 @@ def run_study() -> dict[str, Any]:
         with localcontext() as context:
             context.prec = LEDGER_PRECISION
             interval_microseconds = D(
-                _datetime_to_micros(result.end_exclusive)
-                - _datetime_to_micros(result.start)
+                _datetime_to_micros(result.end_exclusive) - _datetime_to_micros(result.start)
             )
             interval_days = interval_microseconds / D(86_400_000_000)
             interval_hours = interval_microseconds / D(3_600_000_000)
             holds = [
-                D(
-                    _datetime_to_micros(c.exit_timestamp)
-                    - _datetime_to_micros(c.entry_timestamp)
-                )
+                D(_datetime_to_micros(c.exit_timestamp) - _datetime_to_micros(c.entry_timestamp))
                 / D(3_600_000_000)
                 for c in (*result.cycles, *result.release_closures)
             ]
@@ -458,9 +454,7 @@ def run_study() -> dict[str, Any]:
                 else None
             )
             lock_hours_per_reserve = (
-                (baseline["lock_hours"] - row["lock_hours"]) / consumed
-                if consumed
-                else None
+                (baseline["lock_hours"] - row["lock_hours"]) / consumed if consumed else None
             )
             reserve_efficiency = attributable_profit / consumed if consumed else None
             cycles_per_reserve = (
@@ -484,8 +478,7 @@ def run_study() -> dict[str, Any]:
                 "elapsed_seconds": time.monotonic() - began,
                 "lock_hours_avoided": baseline["lock_hours"] - row["lock_hours"],
                 "total_release_loss": consumed,
-                "cycles_gained_vs_m007": result.completed_cycles
-                - baseline_result.completed_cycles,
+                "cycles_gained_vs_m007": result.completed_cycles - baseline_result.completed_cycles,
                 "cycle_multiplier": D(result.completed_cycles)
                 / D(baseline_result.completed_cycles),
                 "zero_days_avoided": baseline_result.zero_cycle_days - result.zero_cycle_days,
@@ -520,8 +513,7 @@ def run_study() -> dict[str, Any]:
                     else None
                 ),
                 "replenishment_right_censored_count": sum(
-                    item["time_to_replenish_seconds"] is None
-                    for item in runtime.replenishments
+                    item["time_to_replenish_seconds"] is None for item in runtime.replenishments
                 ),
                 "reserve_burn_rate_per_day": burn_per_day,
                 "reserve_burn_rate_per_30_days": burn_per_30_days,
@@ -538,8 +530,7 @@ def run_study() -> dict[str, Any]:
                     else None
                 ),
                 "lock_hours_avoided_per_intervention": (
-                    (baseline["lock_hours"] - row["lock_hours"])
-                    / D(len(runtime.releases))
+                    (baseline["lock_hours"] - row["lock_hours"]) / D(len(runtime.releases))
                     if runtime.releases
                     else None
                 ),
@@ -552,9 +543,7 @@ def run_study() -> dict[str, Any]:
                 "zero_days_avoided_per_reserve_usdt": zero_days_per_reserve,
                 "lock_hours_avoided_per_reserve_usdt": lock_hours_per_reserve,
                 "decision_counts": dict(runtime.evaluations),
-                "monthly": monthly_metrics(
-                    result, audit, runtime.releases, config.skim_rate
-                ),
+                "monthly": monthly_metrics(result, audit, runtime.releases, config.skim_rate),
                 "efficiency_classification": (
                     "RETROSPECTIVE_POLICY_COMPARISON_PROXY_NOT_IDENTIFIED_CAUSAL_EFFECT"
                 ),

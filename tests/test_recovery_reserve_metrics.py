@@ -34,9 +34,7 @@ def test_summary_uses_24_hour_ruler_and_segregated_reserve():
     assert out["lock_hours"] == Decimal("0")
     assert out["operating_uptime"] == Decimal("1")
     assert out["maximum_drawdown"] is None
-    assert out["total_return"].quantize(Decimal("0.0000000001")) == Decimal(
-        "0.0190476190"
-    )
+    assert out["total_return"].quantize(Decimal("0.0000000001")) == Decimal("0.0190476190")
     assert out["hours_gt24h"] == out["lock_hours"]
 
 

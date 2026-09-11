@@ -51,13 +51,9 @@ def _public_queue_zero_observations(
             segments = public_segments.setdefault(key, [])
             cohort = int(row["cohort_activation_us"])
             if not segments or int(segments[-1]["cohort"]) != cohort:
-                segments.append(
-                    {"cohort": cohort, "remaining": _dec(row["public_barrier_added"])}
-                )
+                segments.append({"cohort": cohort, "remaining": _dec(row["public_barrier_added"])})
             order_id = int(row["order_id"])
-            relevant_segments[order_id] = tuple(
-                int(segment["cohort"]) for segment in segments
-            )
+            relevant_segments[order_id] = tuple(int(segment["cohort"]) for segment in segments)
             if sum((segment["remaining"] for segment in segments), ZERO) == ZERO:
                 observed[order_id] = int(row["time_us"])
         elif row["event"] == "PUBLIC_QUEUE_CONSUMED":
@@ -79,11 +75,7 @@ def _public_queue_zero_observations(
                     continue
                 if (
                     sum(
-                        (
-                            item["remaining"]
-                            for item in segments
-                            if int(item["cohort"]) in cohorts
-                        ),
+                        (item["remaining"] for item in segments if int(item["cohort"]) in cohorts),
                         ZERO,
                     )
                     == ZERO

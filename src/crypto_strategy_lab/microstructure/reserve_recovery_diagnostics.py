@@ -180,11 +180,7 @@ def analyze_recovery(
                 )
 
             debt_after = sum(
-                (
-                    tranche.remaining
-                    for tranche in tranches
-                    if tranche.recovery_time_us is None
-                ),
+                (tranche.remaining for tranche in tranches if tranche.recovery_time_us is None),
                 D(0),
             )
             total_consumption += consumption
@@ -242,9 +238,7 @@ def analyze_recovery(
                 "recovery_timestamp_us": recovery_timestamp,
                 "recovery_timestamp": recovery_timestamp,
                 "recoverytimestamp": recovery_timestamp,
-                "recovery_cycles": (
-                    int(recovery_cycles) if recovery_cycles is not None else None
-                ),
+                "recovery_cycles": (int(recovery_cycles) if recovery_cycles is not None else None),
                 "elapsed_hours": _string(elapsed),
                 "elapsedhours": _string(elapsed),
                 "age_hours": _string(age_hours),
@@ -281,12 +275,11 @@ def analyze_recovery(
         "ordinary_positive_cycle_count": ordinary_positive_cycles,
         "recovered_count": len(recovered_cycles),
         "censored_count": len(censored_cycles),
-        "p90_recovery_cycles": (
-            int(p90_cycles) if p90_cycles is not None else None
-        ),
+        "p90_recovery_cycles": (int(p90_cycles) if p90_cycles is not None else None),
         "p90_recovery_hours": _string(p90_hours),
         "median_recovery_cycles": (
-            int(median_cycles) if median_cycles is not None and median_cycles == int(median_cycles)
+            int(median_cycles)
+            if median_cycles is not None and median_cycles == int(median_cycles)
             else _string(median_cycles)
         ),
         "median_recovery_hours": _string(median_hours),

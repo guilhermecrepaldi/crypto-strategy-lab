@@ -460,9 +460,7 @@ def test_negative_exit_risk_rule_requires_true_inequality_and_is_not_a_cycle() -
     ledger.apply_fill(
         "ENTRY", PhysicalFill("F1", "USDCUSDT", "USDT", "USDC", D("5"), D("4.9"), "USDC", D("0"), 2)
     )
-    ledger.register_inventory_reduction_authorization(
-        assessment.authorization, now_us=3
-    )
+    ledger.register_inventory_reduction_authorization(assessment.authorization, now_us=3)
     ledger.reserve_owned("S", "RETURN", asset="USDC", quantity=D("4.9"), now_us=4)
     ledger.activate("RETURN", now_us=4)
     ledger.apply_fill(
@@ -526,9 +524,7 @@ def test_future_observations_cannot_change_completion_lock_or_adverse_decision_a
         lock.estimate(context="CTX", now_us=100_000_000, feature_cutoff_us=100_000_000),
     )
     history.add(
-        CompletionObservation(
-            "FUTURE", "CTX", 101_000_000, 401_000_000, 300, False, D("300")
-        )
+        CompletionObservation("FUTURE", "CTX", 101_000_000, 401_000_000, 300, False, D("300"))
     )
     after = (
         completion.estimate(context="CTX", now_us=100_000_000, feature_cutoff_us=100_000_000),
@@ -684,17 +680,13 @@ def test_inventory_reduction_requires_physical_return_to_origin() -> None:
         "synthetic preregistration",
         DecisionReasonCode.PEG_RISK_ESCALATED,
     )
-    ledger = SlotLedger(
-        {"USDT": "10", "USDC": "0"}, marks_usd={"USDT": "1", "USDC": "1"}
-    )
+    ledger = SlotLedger({"USDT": "10", "USDC": "0"}, marks_usd={"USDT": "1", "USDC": "1"})
     ledger.create_slot("S", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
     ledger.reserve_free("S", "ENTRY", asset="USDT", quantity=D("5"), now_us=1)
     ledger.activate("ENTRY", now_us=1)
     ledger.apply_fill(
         "ENTRY",
-        PhysicalFill(
-            "F1", "USDCUSDT", "USDT", "USDC", D("5"), D("5"), "USDC", D("0"), 2
-        ),
+        PhysicalFill("F1", "USDCUSDT", "USDT", "USDC", D("5"), D("5"), "USDC", D("0"), 2),
     )
     assessment = InventoryExitDecisionEngine.evaluate(
         authorization_id="REDUCE-NO-RETURN",
@@ -715,9 +707,7 @@ def test_inventory_reduction_requires_physical_return_to_origin() -> None:
         rule=rule,
     )
     assert assessment.authorization is not None
-    ledger.register_inventory_reduction_authorization(
-        assessment.authorization, now_us=3
-    )
+    ledger.register_inventory_reduction_authorization(assessment.authorization, now_us=3)
     with pytest.raises(ValueError, match="PHYSICAL_EXIT_UNPROVEN"):
         ledger.settle_inventory_reduction(
             "S",
@@ -730,25 +720,19 @@ def test_inventory_reduction_requires_physical_return_to_origin() -> None:
 
 
 def test_inventory_reduction_authorization_cannot_be_retroactive() -> None:
-    ledger = SlotLedger(
-        {"USDT": "10", "USDC": "0"}, marks_usd={"USDT": "1", "USDC": "1"}
-    )
+    ledger = SlotLedger({"USDT": "10", "USDC": "0"}, marks_usd={"USDT": "1", "USDC": "1"})
     ledger.create_slot("S", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
     ledger.reserve_free("S", "ENTRY", asset="USDT", quantity=D("5"), now_us=1)
     ledger.activate("ENTRY", now_us=1)
     ledger.apply_fill(
         "ENTRY",
-        PhysicalFill(
-            "F1", "USDCUSDT", "USDT", "USDC", D("5"), D("4.9"), "USDC", D("0"), 2
-        ),
+        PhysicalFill("F1", "USDCUSDT", "USDT", "USDC", D("5"), D("4.9"), "USDC", D("0"), 2),
     )
     ledger.reserve_owned("S", "RETURN", asset="USDC", quantity=D("4.9"), now_us=3)
     ledger.activate("RETURN", now_us=3)
     ledger.apply_fill(
         "RETURN",
-        PhysicalFill(
-            "F2", "USDCUSDT", "USDC", "USDT", D("4.9"), D("4.9"), "USDT", D("0"), 4
-        ),
+        PhysicalFill("F2", "USDCUSDT", "USDC", "USDT", D("4.9"), D("4.9"), "USDT", D("0"), 4),
     )
     authorization = InventoryReductionAuthorization(
         authorization_id="RETRO",
@@ -842,9 +826,7 @@ def test_allocation_rejects_mixed_currency_without_causal_conversion() -> None:
     engine = M034EconomicAllocationEngine(gate=gate(), decision_ledger=ledger)
     with pytest.raises(ValueError, match="ALLOCATION_CURRENCY_MISMATCH"):
         engine.evaluate_and_allocate(
-            [
-                candidate(decision_currency="EUR")
-            ],
+            [candidate(decision_currency="EUR")],
             mode=EvaluationMode.HISTORICAL_REPLAY,
             available_capital=D("5"),
             available_capital_currency="USDT",
@@ -862,17 +844,11 @@ def test_data_gap_capital_is_blocked_data_not_idle() -> None:
 def test_censored_observation_is_not_exact_lock_duration() -> None:
     history = CausalCompletionHistory()
     history.add(CompletionObservation("DONE", "CTX", 0, 30_000_000, 300, True, D("30")))
-    history.add(
-        CompletionObservation(
-            "CENSORED", "CTX", 0, 300_000_000, 300, False, D("300")
-        )
-    )
+    history.add(CompletionObservation("CENSORED", "CTX", 0, 300_000_000, 300, False, D("300")))
     estimator = ExpectedLockTimeEstimator(
         history, minimum_samples=1, training_cutoff_us=300_000_000, horizon_seconds=300
     )
-    estimate = estimator.estimate(
-        context="CTX", now_us=300_000_000, feature_cutoff_us=300_000_000
-    )
+    estimate = estimator.estimate(context="CTX", now_us=300_000_000, feature_cutoff_us=300_000_000)
     assert estimate is None
     with pytest.raises(ValueError, match="INVALID_COMPLETION_OBSERVATION"):
         CompletionObservation("IMPOSSIBLE", "CTX", 0, 1, 300, True, D("299"))
@@ -901,12 +877,8 @@ def test_order_funding_must_cover_the_first_physical_leg() -> None:
     )
     assert not decision.eligible
     assert DecisionReasonCode.ORDER_CAPITAL_MISMATCH in decision.decision_reason_codes
-    spent_fee = fee_registry(
-        replace(fee_profile(), fee_asset_semantics="SPENT_ASSET")
-    )
-    fee_shortfall = gate(spent_fee).evaluate(
-        candidate(), mode=EvaluationMode.HISTORICAL_REPLAY
-    )
+    spent_fee = fee_registry(replace(fee_profile(), fee_asset_semantics="SPENT_ASSET"))
+    fee_shortfall = gate(spent_fee).evaluate(candidate(), mode=EvaluationMode.HISTORICAL_REPLAY)
     assert DecisionReasonCode.ORDER_CAPITAL_MISMATCH in fee_shortfall.decision_reason_codes
 
 
@@ -942,9 +914,7 @@ def test_every_route_book_requires_universe_rules_and_fees() -> None:
 
 def test_currency_mark_requires_temporal_registry_evidence() -> None:
     missing = CausalAssetMarkRegistry()
-    decision = gate(marks=missing).evaluate(
-        candidate(), mode=EvaluationMode.HISTORICAL_REPLAY
-    )
+    decision = gate(marks=missing).evaluate(candidate(), mode=EvaluationMode.HISTORICAL_REPLAY)
     assert DecisionReasonCode.CURRENCY_MARK_UNPROVEN in decision.decision_reason_codes
     with pytest.raises(ValueError, match="INVALID_CAUSAL_ASSET_MARK"):
         CausalAssetMark("USDT", "USD", D("1"), 101, 100, "x", "source", "prov")
@@ -990,9 +960,7 @@ def test_external_fee_is_included_in_negative_exit_limit() -> None:
     ledger.activate("ENTRY", now_us=1)
     ledger.apply_fill(
         "ENTRY",
-        PhysicalFill(
-            "F1", "USDCUSDT", "USDT", "USDC", D("5"), D("5"), "USDC", D("0"), 2
-        ),
+        PhysicalFill("F1", "USDCUSDT", "USDT", "USDC", D("5"), D("5"), "USDC", D("0"), 2),
     )
     ledger.register_inventory_reduction_authorization(assessment.authorization, now_us=3)
     ledger.reserve_owned("S", "RETURN", asset="USDC", quantity=D("5"), now_us=4)
@@ -1046,17 +1014,13 @@ def test_spent_asset_fee_counts_toward_authorized_inventory_consumption() -> Non
         rule=rule,
     )
     assert assessment.authorization is not None
-    ledger = SlotLedger(
-        {"USDT": "10", "USDC": "0"}, marks_usd={"USDT": "1", "USDC": "1"}
-    )
+    ledger = SlotLedger({"USDT": "10", "USDC": "0"}, marks_usd={"USDT": "1", "USDC": "1"})
     ledger.create_slot("S", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
     ledger.reserve_free("S", "ENTRY", asset="USDT", quantity=D("5"), now_us=1)
     ledger.activate("ENTRY", now_us=1)
     ledger.apply_fill(
         "ENTRY",
-        PhysicalFill(
-            "F1", "USDCUSDT", "USDT", "USDC", D("5"), D("5"), "USDC", D("0"), 2
-        ),
+        PhysicalFill("F1", "USDCUSDT", "USDT", "USDC", D("5"), D("5"), "USDC", D("0"), 2),
     )
     ledger.register_inventory_reduction_authorization(assessment.authorization, now_us=3)
     ledger.reserve_owned("S", "RETURN", asset="USDC", quantity=D("5"), now_us=4)

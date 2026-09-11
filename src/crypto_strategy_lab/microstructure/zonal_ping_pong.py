@@ -1765,8 +1765,7 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
     """M022 order manager over the unchanged M021 economic lanes."""
 
     normalized_label = (
-        "M022 DENSE PING-PONG ORDER MANAGER V2. NORMALIZED 1-USDC ORDERS "
-        "ARE NOT LIVE-EXECUTABLE."
+        "M022 DENSE PING-PONG ORDER MANAGER V2. NORMALIZED 1-USDC ORDERS ARE NOT LIVE-EXECUTABLE."
     )
     MAX_OPEN_ORDERS = 160
     TARGET_FREE_PER_SIDE = 80
@@ -1938,10 +1937,7 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
             state = self._band_state[band.band_id]
             lots = self._lots_for_band(band.band_id)
             if band.band_id.startswith("B"):
-                if (
-                    state == "USDC_INVENTORY"
-                    and lots
-                ):
+                if state == "USDC_INVENTORY" and lots:
                     claim = self._manager_claims.get(band.band_id)
                     if claim is not None and claim[0] == "SELL":
                         price = claim[1]
@@ -2093,9 +2089,7 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
                         return_lane=lane,
                         return_side=side,
                         return_price=_s(price),
-                        blocking_order_id=(
-                            None if conflict.order_id == -1 else conflict.order_id
-                        ),
+                        blocking_order_id=(None if conflict.order_id == -1 else conflict.order_id),
                     )
                     blocked.add(key)
                 continue
@@ -2103,9 +2097,7 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
                 blocked.add(key)
                 continue
             accepted_conflicts = [
-                row
-                for row in accepted
-                if self._manager_prices_cross(side, price, row[0], row[2])
+                row for row in accepted if self._manager_prices_cross(side, price, row[0], row[2])
             ]
             if accepted_conflicts:
                 self._manager_blocked_owned += 1
@@ -2140,19 +2132,13 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
             price
             for price in self.manager_lattice
             if price < mid
-            and not any(
-                side == "SELL" and price >= claim_price
-                for side, claim_price in claims
-            )
+            and not any(side == "SELL" and price >= claim_price for side, claim_price in claims)
         ]
         sells = [
             price
             for price in self.manager_lattice
             if price > mid
-            and not any(
-                side == "BUY" and price <= claim_price
-                for side, claim_price in claims
-            )
+            and not any(side == "BUY" and price <= claim_price for side, claim_price in claims)
         ]
         buys.sort(reverse=True)
         sells.sort()
@@ -2237,20 +2223,15 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
         open_count = self._manager_snapshot_open_count
         self._manager_observation_us += elapsed
         self._manager_weighted_active += D(open_count) * elapsed
-        self._manager_weighted_parked += (
-            D(self._manager_snapshot_parked_free_count) * elapsed
-        )
+        self._manager_weighted_parked += D(self._manager_snapshot_parked_free_count) * elapsed
         active_prices = self._manager_snapshot_active_prices
         self._manager_active_order_time += D(len(active_prices)) * elapsed
         distances = [
-            abs(price - self._manager_snapshot_mid) / M021_TICK_SIZE
-            for price in active_prices
+            abs(price - self._manager_snapshot_mid) / M021_TICK_SIZE for price in active_prices
         ]
         self._manager_weighted_distance += sum(distances, ZERO) * elapsed
         self._manager_within5 += D(sum(distance <= D("5") for distance in distances)) * elapsed
-        self._manager_within10 += D(
-            sum(distance <= D("10") for distance in distances)
-        ) * elapsed
+        self._manager_within10 += D(sum(distance <= D("10") for distance in distances)) * elapsed
         if self._manager_warmup_started:
             self._manager_min_active_after_warmup = (
                 open_count
@@ -2314,14 +2295,10 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
 
     def _advance(self, now: int) -> None:
         cancel_pending = {
-            order.order_id
-            for order in self.active_orders
-            if order.status == "CANCEL_PENDING"
+            order.order_id for order in self.active_orders if order.status == "CANCEL_PENDING"
         }
         activated_before = {
-            order.order_id
-            for order in self.orders
-            if order.activation_evaluated_us is not None
+            order.order_id for order in self.orders if order.activation_evaluated_us is not None
         }
         super()._advance(now)
         for order in self.orders:
@@ -2466,9 +2443,7 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
         for lane, ownership in self._manager_lane_ownership.items():
             if lane.startswith("S") and D(ownership.get("initial_usdc", "0")) != ONE:
                 raise ValueError("M022_S_LANE_OWNERSHIP_DRIFT")
-        mirror_quantity = sum(
-            (value["quantity"] for value in self._manager_s_free.values()), ZERO
-        )
+        mirror_quantity = sum((value["quantity"] for value in self._manager_s_free.values()), ZERO)
         mirror_cost = sum((value["cost"] for value in self._manager_s_free.values()), ZERO)
         if mirror_quantity != self.endowment_free_quantity:
             raise ValueError("M022_S_FREE_QUANTITY_DRIFT")
@@ -2536,9 +2511,7 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
                         item
                         for item in self.orders
                         if item.order_id
-                        == int(
-                            row.get("entry_sell_order_id", row.get("source_order_id", -1))
-                        )
+                        == int(row.get("entry_sell_order_id", row.get("source_order_id", -1)))
                     ),
                     None,
                 )
@@ -2575,9 +2548,7 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
     def metrics(self) -> dict[str, Any]:
         result = super().metrics()
         observation = D(self._manager_observation_us)
-        mean_wait, median_wait, p95_wait = self._manager_wait_stats(
-            self._manager_return_wait_us
-        )
+        mean_wait, median_wait, p95_wait = self._manager_wait_stats(self._manager_return_wait_us)
         submission_stats = self._manager_wait_stats(self._manager_return_submission_wait_us)
         activation_stats = self._manager_wait_stats(self._manager_return_activation_wait_us)
         unique_lanes = {order.band_id for order in self.orders}
@@ -2611,17 +2582,13 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
                 "return_activation_wait_time_median_us": activation_stats[1],
                 "return_activation_wait_time_p95_us": activation_stats[2],
                 "censored_return_claim_count": len(censored_ages),
-                "censored_return_claim_max_age_us": (
-                    censored_ages[-1] if censored_ages else None
-                ),
+                "censored_return_claim_max_age_us": (censored_ages[-1] if censored_ages else None),
                 "return_blocked_by_free_order_count": self._manager_free_canceled_return,
                 "return_blocked_by_owned_return_count": self._manager_blocked_owned,
                 "return_blocked_free_count": self._manager_blocked_free,
                 "manager_blocked_free": self._manager_blocked_free,
                 "active_order_time_us": _s(self._manager_active_order_time),
-                "partial_residual_blocked_count": len(
-                    self._manager_partial_residual_order_ids
-                ),
+                "partial_residual_blocked_count": len(self._manager_partial_residual_order_ids),
                 "partial_residual_blocked_order_ids": sorted(
                     self._manager_partial_residual_order_ids
                 ),
@@ -2644,20 +2611,12 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
                 "percent_active_orders_within_5_ticks_of_mid": (
                     None
                     if self._manager_active_order_time == ZERO
-                    else _s(
-                        self._manager_within5
-                        / self._manager_active_order_time
-                        * D("100")
-                    )
+                    else _s(self._manager_within5 / self._manager_active_order_time * D("100"))
                 ),
                 "percent_active_orders_within_10_ticks_of_mid": (
                     None
                     if self._manager_active_order_time == ZERO
-                    else _s(
-                        self._manager_within10
-                        / self._manager_active_order_time
-                        * D("100")
-                    )
+                    else _s(self._manager_within10 / self._manager_active_order_time * D("100"))
                 ),
                 "time_weighted_distance_from_mid": (
                     None
@@ -2765,12 +2724,8 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
                 "manager_return_submissions": self._manager_return_submissions,
                 "manager_return_fills": self._manager_return_fills,
                 "manager_return_wait_us": list(self._manager_return_wait_us),
-                "manager_return_submission_wait_us": list(
-                    self._manager_return_submission_wait_us
-                ),
-                "manager_return_activation_wait_us": list(
-                    self._manager_return_activation_wait_us
-                ),
+                "manager_return_submission_wait_us": list(self._manager_return_submission_wait_us),
+                "manager_return_activation_wait_us": list(self._manager_return_activation_wait_us),
                 "manager_return_submission_claims": [
                     list(token) for token in sorted(self._manager_return_submission_claims)
                 ],
@@ -2851,9 +2806,7 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
         self._manager_lane_cycles = {
             lane: int(value) for lane, value in state.get("manager_lane_cycles", {}).items()
         }
-        self._manager_cycle_prices = [
-            D(value) for value in state.get("manager_cycle_prices", [])
-        ]
+        self._manager_cycle_prices = [D(value) for value in state.get("manager_cycle_prices", [])]
         self._manager_lane_ownership = {
             lane: dict(value)
             for lane, value in state.get(
@@ -2917,16 +2870,12 @@ class ManagedDensePingPongProbe(DensePingPongProbe):
         )
         self._manager_active_order_time = D(state.get("manager_active_order_time", "0"))
         self._manager_snapshot_mid = (
-            None
-            if state.get("manager_snapshot_mid") is None
-            else D(state["manager_snapshot_mid"])
+            None if state.get("manager_snapshot_mid") is None else D(state["manager_snapshot_mid"])
         )
         self._manager_snapshot_prices = tuple(
             D(value) for value in state.get("manager_snapshot_prices", [])
         )
-        self._manager_snapshot_active_count = int(
-            state.get("manager_snapshot_active_count", 0)
-        )
+        self._manager_snapshot_active_count = int(state.get("manager_snapshot_active_count", 0))
         self._manager_snapshot_open_count = int(
             state.get("manager_snapshot_open_count", self._manager_snapshot_active_count)
         )

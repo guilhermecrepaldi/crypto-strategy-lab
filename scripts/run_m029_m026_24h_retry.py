@@ -125,9 +125,7 @@ def run():
             "parent_model_hash": registry.get("M026").model_hash,
             "technical_failure_predecessor": "M028",
             "capital_mode": "PHYSICAL_DYNAMIC_NORMALIZED_MECHANICS_BANK",
-            "order_notional_mode": (
-                "SLOT_BASE_1_USDT_EQ_QUANTIZED_WHOLE_USDC_NON_EXECUTABLE"
-            ),
+            "order_notional_mode": ("SLOT_BASE_1_USDT_EQ_QUANTIZED_WHOLE_USDC_NON_EXECUTABLE"),
             "virtual_filter_override": "MIN_NOTIONAL_ONLY",
             "start": "2025-01-01T00:00:00Z",
             "end_exclusive": "2025-01-02T00:00:00Z",

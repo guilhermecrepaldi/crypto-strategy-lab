@@ -45,8 +45,7 @@ def _validate_result(result: dict) -> None:
             value.get("run_hash") != expected_run_hash
             or value.get("published_config_sha") != SOURCE_COMMIT
             or value.get("RUN_STATUS") != "COMPLETE"
-            or value.get("AUDIT", {}).get("ledger_sha256")
-            != EXPECTED_LEDGER_HASHES[scenario]
+            or value.get("AUDIT", {}).get("ledger_sha256") != EXPECTED_LEDGER_HASHES[scenario]
             or value.get("METRICS", {}).get("TOTAL_FILLS") != 0
             or value.get("METRICS", {}).get("PHYSICAL_CYCLES") != 0
         ):
@@ -151,9 +150,7 @@ def finalize() -> dict:
                 "control_total_fills": 0,
                 "treatment_total_fills": 0,
                 "micro_unique_price_touches": 0,
-                "capital_match_error_pct": result["COMPARISON"][
-                    "CAPITAL_MATCH_ERROR_PCT"
-                ],
+                "capital_match_error_pct": result["COMPARISON"]["CAPITAL_MATCH_ERROR_PCT"],
             },
             replay={
                 "start": treatment["start"],
@@ -188,8 +185,7 @@ def finalize() -> dict:
         "status": "INCONCLUSIVE",
         "scenario_count": 2,
         "registry_run_hashes": {
-            scenario: event["payload"]["RUN_HASH"]
-            for scenario, event in run_events.items()
+            scenario: event["payload"]["RUN_HASH"] for scenario, event in run_events.items()
         },
         "physical_campaign_hash": canonical_hash(physical_files),
         "physical_file_sha256": physical_files,
@@ -209,12 +205,8 @@ if __name__ == "__main__":
             {
                 "MODEL": value["MODEL"],
                 "MODEL_STATUS": value["MODEL_STATUS"],
-                "CONTROL_PHYSICAL_CYCLES": value["COMPARISON"][
-                    "CONTROL_PHYSICAL_CYCLES"
-                ],
-                "TREATMENT_PHYSICAL_CYCLES": value["COMPARISON"][
-                    "TREATMENT_PHYSICAL_CYCLES"
-                ],
+                "CONTROL_PHYSICAL_CYCLES": value["COMPARISON"]["CONTROL_PHYSICAL_CYCLES"],
+                "TREATMENT_PHYSICAL_CYCLES": value["COMPARISON"]["TREATMENT_PHYSICAL_CYCLES"],
                 "RERUN": False,
             },
             sort_keys=True,

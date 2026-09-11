@@ -33,9 +33,7 @@ def validate_registration_design(design: dict[str, Any]) -> None:
         "initial_slot_base_usdt_eq": "1",
         "quantity_quantization": "ROUND_HALF_UP_HISTORICAL_STEP_MIN_ONE",
         "normalized_balance_quantum": "0.00000001",
-        "slot_base_balance_quantization": (
-            "ROUND_DOWN_TO_NORMALIZED_BALANCE_QUANTUM_AT_NEW_EPOCH"
-        ),
+        "slot_base_balance_quantization": ("ROUND_DOWN_TO_NORMALIZED_BALANCE_QUANTUM_AT_NEW_EPOCH"),
         "levels_per_side": 15,
         "initial_physical_orders": 60,
         "initial_operational_slot_units": 140,

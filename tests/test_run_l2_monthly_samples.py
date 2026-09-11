@@ -61,8 +61,17 @@ def test_m019_executor_writes_complete_audited_day_without_serial_engine(tmp_pat
 
     profile = ExecutionProfile("M019-test", "a" * 64, 10, 10, D(".001"), D("0"), D("0"))
     rules = SymbolRules(
-        D(".0001"), D(".01"), D(".01"), D("10000"), D("5"), D("100000"),
-        D(".01"), D("100"), "b" * 64, orders_per_window=1000, window_us=1_000_000,
+        D(".0001"),
+        D(".01"),
+        D(".01"),
+        D("10000"),
+        D("5"),
+        D("100000"),
+        D(".01"),
+        D("100"),
+        "b" * 64,
+        orders_per_window=1000,
+        window_us=1_000_000,
     )
     engine = AdaptiveStablecoinLadder(profile, rules, lane_id="fixture")
     trade = Trade(1_000_000, 1, D(".90"), D(".05"), True)
@@ -70,24 +79,43 @@ def test_m019_executor_writes_complete_audited_day_without_serial_engine(tmp_pat
     events = [
         {"kind": "SEAM", "local_us": 0, "source_date": "2025-01-01"},
         {
-            "kind": "BOOK", "exchange_us": 0, "local_us": 100, "capture_order": 1,
-            "native_update_id": 1, "bids": ((D("1"), D("100")),),
-            "asks": ((D("1.01"), D("100")),), "known_bid_floor": D(".9"),
-            "known_ask_ceiling": D("1.1"), "sequence_validated": True,
-            "is_snapshot": True, "changes": None, "exchange_upper_us": 0,
+            "kind": "BOOK",
+            "exchange_us": 0,
+            "local_us": 100,
+            "capture_order": 1,
+            "native_update_id": 1,
+            "bids": ((D("1"), D("100")),),
+            "asks": ((D("1.01"), D("100")),),
+            "known_bid_floor": D(".9"),
+            "known_ask_ceiling": D("1.1"),
+            "sequence_validated": True,
+            "is_snapshot": True,
+            "changes": None,
+            "exchange_upper_us": 0,
             "exchange_precision": "EXACT_MICROSECONDS",
         },
         {
-            "kind": "BOOK", "exchange_us": 500, "local_us": 600, "capture_order": 2,
-            "native_update_id": 2, "bids": ((D("1"), D("100")),),
-            "asks": ((D("1.01"), D("100")),), "known_bid_floor": D(".9"),
-            "known_ask_ceiling": D("1.1"), "sequence_validated": True,
-            "is_snapshot": False, "changes": None, "exchange_upper_us": 500,
+            "kind": "BOOK",
+            "exchange_us": 500,
+            "local_us": 600,
+            "capture_order": 2,
+            "native_update_id": 2,
+            "bids": ((D("1"), D("100")),),
+            "asks": ((D("1.01"), D("100")),),
+            "known_bid_floor": D(".9"),
+            "known_ask_ceiling": D("1.1"),
+            "sequence_validated": True,
+            "is_snapshot": False,
+            "changes": None,
+            "exchange_upper_us": 500,
             "exchange_precision": "EXACT_MICROSECONDS",
         },
         {
-            "kind": "TRADE", "exchange_us": 1_000_000, "local_us": 1_000_100,
-            "capture_order": 3, "clock_offset_us": 0,
+            "kind": "TRADE",
+            "exchange_us": 1_000_000,
+            "local_us": 1_000_100,
+            "capture_order": 3,
+            "clock_offset_us": 0,
             "data": {"t": 1, "T": 1000, "p": ".90", "q": ".05", "m": True},
         },
         {"kind": "SEAM", "local_us": runner.DAY_US, "source_date": "END"},
@@ -149,9 +177,7 @@ def test_m019_executor_writes_complete_audited_day_without_serial_engine(tmp_pat
         ),
         "buy-reservation": (
             lambda data: next(
-                row
-                for row in data
-                if row.get("event") == "SUBMIT" and row.get("side") == "BUY"
+                row for row in data if row.get("event") == "SUBMIT" and row.get("side") == "BUY"
             ).update(reserved_quote="999"),
             "M019_ORDER_QUOTE_RESERVATION_MISMATCH",
         ),
@@ -159,29 +185,26 @@ def test_m019_executor_writes_complete_audited_day_without_serial_engine(tmp_pat
             lambda data: next(
                 row
                 for row in data
-                if row.get("event") == "LOT_CREATED"
-                and row.get("source_order_id") is not None
+                if row.get("event") == "LOT_CREATED" and row.get("source_order_id") is not None
             ).update(quantity="999"),
             "M019_BUY_FILL_LOT_LINK_MISMATCH|M019_TERMINAL_LOT_RECONCILIATION",
         ),
         "endowment-cash": (
-            lambda data: next(
-                row for row in data if row.get("event") == "ENDOWMENT"
-            ).update(cash="999"),
+            lambda data: next(row for row in data if row.get("event") == "ENDOWMENT").update(
+                cash="999"
+            ),
             "M019_ENDOWMENT_CASH_RECONCILIATION",
         ),
         "activation-bbo": (
             lambda data: next(
-                row
-                for row in data
-                if row.get("event") == "ACTIVATED" and row.get("side") == "BUY"
+                row for row in data if row.get("event") == "ACTIVATED" and row.get("side") == "BUY"
             ).update(best_ask="0"),
             "M019_INVALID_ACTIVATION_CONTEXT",
         ),
         "blocked-trade-consumption": (
-            lambda data: next(
-                row for row in data if row.get("event") == "TRADE"
-            ).update(event="TRADE_BLOCKED_FUTURE_BOOK"),
+            lambda data: next(row for row in data if row.get("event") == "TRADE").update(
+                event="TRADE_BLOCKED_FUTURE_BOOK"
+            ),
             "M019_BLOCKED_TRADE_CONSUMED_LIQUIDITY",
         ),
     }
@@ -208,15 +231,31 @@ def test_m019_independent_auditor_reconstructs_a_complete_positive_cycle(tmp_pat
 
     profile = ExecutionProfile("audit-cycle", "a" * 64, 10, 10, D(".001"), D(".001"), D(".001"))
     rules = SymbolRules(
-        D(".0001"), D(".01"), D(".01"), D("10000"), D("5"), D("100000"),
-        D(".01"), D("100"), "b" * 64, orders_per_window=1000, window_us=1_000_000,
+        D(".0001"),
+        D(".01"),
+        D(".01"),
+        D("10000"),
+        D("5"),
+        D("100000"),
+        D(".01"),
+        D("100"),
+        "b" * 64,
+        orders_per_window=1000,
+        window_us=1_000_000,
     )
 
     def book(exchange_us, capture_us, update_id):
         return ObservedBookBatch(
-            exchange_us, capture_us, update_id, update_id,
-            ((D("1"), D("100")),), ((D("1.01"), D("100")),),
-            D(".9"), D("1.1"), True, exchange_upper_us=exchange_us,
+            exchange_us,
+            capture_us,
+            update_id,
+            update_id,
+            ((D("1"), D("100")),),
+            ((D("1.01"), D("100")),),
+            D(".9"),
+            D("1.1"),
+            True,
+            exchange_upper_us=exchange_us,
         )
 
     engine = AdaptiveStablecoinLadder(profile, rules, endowment_notional=D("0"))
@@ -238,9 +277,7 @@ def test_m019_independent_auditor_reconstructs_a_complete_positive_cycle(tmp_pat
         "\n".join(json.dumps(row, sort_keys=True) for row in engine.audit) + "\n",
         encoding="utf-8",
     )
-    result = runner.audit_m019_journal(
-        audit_path, {1: buy_trade, 2: sell_trade}, engine
-    )
+    result = runner.audit_m019_journal(audit_path, {1: buy_trade, 2: sell_trade}, engine)
     assert result["cycles_checked"] == 1
     assert result["status"] == "PASS_M019_LEDGER_EXECUTION_AND_LIQUIDITY"
 
@@ -258,8 +295,7 @@ def test_m019_independent_auditor_reconstructs_a_complete_positive_cycle(tmp_pat
     activation = next(
         row
         for row in rows
-        if row.get("event") == "ACTIVATED"
-        and row.get("order_id") == buy.order_id
+        if row.get("event") == "ACTIVATED" and row.get("order_id") == buy.order_id
     )
     activation["queue"] = "1"
     audit_path.write_text(
@@ -291,15 +327,31 @@ def test_m019_partial_buy_exit_then_cancel_ack_orders_cycle_after_terminal(tmp_p
 
     profile = ExecutionProfile("partial-cycle", "a" * 64, 10, 1_000, D(".001"), D("0"), D("0"))
     rules = SymbolRules(
-        D(".0001"), D(".01"), D(".01"), D("10000"), D("5"), D("100000"),
-        D(".01"), D("100"), "b" * 64, orders_per_window=1000, window_us=1_000_000,
+        D(".0001"),
+        D(".01"),
+        D(".01"),
+        D("10000"),
+        D("5"),
+        D("100000"),
+        D(".01"),
+        D("100"),
+        "b" * 64,
+        orders_per_window=1000,
+        window_us=1_000_000,
     )
 
     def book(exchange_us, capture_us, update_id):
         return ObservedBookBatch(
-            exchange_us, capture_us, update_id, update_id,
-            ((D("1"), D("100")),), ((D("1.01"), D("100")),),
-            D(".9"), D("1.1"), True, exchange_upper_us=exchange_us,
+            exchange_us,
+            capture_us,
+            update_id,
+            update_id,
+            ((D("1"), D("100")),),
+            ((D("1.01"), D("100")),),
+            D(".9"),
+            D("1.1"),
+            True,
+            exchange_upper_us=exchange_us,
         )
 
     engine = AdaptiveStablecoinLadder(profile, rules, endowment_notional=D("0"))
@@ -329,9 +381,7 @@ def test_m019_partial_buy_exit_then_cancel_ack_orders_cycle_after_terminal(tmp_p
         "\n".join(json.dumps(row, sort_keys=True) for row in engine.audit) + "\n",
         encoding="utf-8",
     )
-    result = runner.audit_m019_journal(
-        audit_path, {1: buy_trade, 2: sell_trade}, engine
-    )
+    result = runner.audit_m019_journal(audit_path, {1: buy_trade, 2: sell_trade}, engine)
     assert result["cycles_checked"] == 1
 
 
@@ -340,8 +390,10 @@ def test_m018_owner_window_is_one_day_and_extensions_fail_closed(tmp_path):
 
     path = tmp_path / runner.OWNER_WINDOW_AUTHORITY
     path.parent.mkdir(parents=True)
-    base = ("APPROVED_COMPARISON_DAYS={days}\nEXTENSION_AUTHORIZED=false\n"
-            "NEW_REPLAY_AUTHORIZED_NOW=true\nAUTHORIZED_MODEL=M018\n")
+    base = (
+        "APPROVED_COMPARISON_DAYS={days}\nEXTENSION_AUTHORIZED=false\n"
+        "NEW_REPLAY_AUTHORIZED_NOW=true\nAUTHORIZED_MODEL=M018\n"
+    )
     path.write_text(base.format(days=1), encoding="utf-8")
     assert runner.require_owner_replay_approval(tmp_path, "M018") == ("2025-01-01",)
     for days in (2, 3, 12, 21):
@@ -364,8 +416,10 @@ def test_m018_run_verifies_and_builds_only_first_day(monkeypatch, tmp_path):
     )
     monkeypatch.setattr(runner, "OWNER_WINDOW_AUTHORITY", authority)
     first = "2025-01-01"
-    manifest = {"canonical_trade_manifest_sha256": "sha",
-                "dates": [{"date": first}, {"date": "2025-02-01", "poison": True}]}
+    manifest = {
+        "canonical_trade_manifest_sha256": "sha",
+        "dates": [{"date": first}, {"date": "2025-02-01", "poison": True}],
+    }
     validation = {"days": manifest["dates"]}
     monkeypatch.setattr(runner, "campaign_preflight", lambda **kw: ("source", manifest, validation))
     monkeypatch.setattr(runner, "PROFILE_CONFIG", SimpleNamespace(read_bytes=lambda: b"{}"))

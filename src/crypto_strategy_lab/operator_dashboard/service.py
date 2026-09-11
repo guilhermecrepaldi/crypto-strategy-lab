@@ -295,12 +295,8 @@ class OperatorService:
             if credentials is None:
                 raise RuntimeError("CREDENTIAL_STATE_DIVERGENCE")
             exchange_orders = self.observer.open_orders(credentials)
-            local_order_ids = {
-                str(order.get("exchange_order_id")) for order in self.store.orders()
-            }
-            exchange_order_ids = {
-                str(order.get("exchange_order_id")) for order in exchange_orders
-            }
+            local_order_ids = {str(order.get("exchange_order_id")) for order in self.store.orders()}
+            exchange_order_ids = {str(order.get("exchange_order_id")) for order in exchange_orders}
             self._exchange_open_orders = exchange_orders
             self._state_divergence = local_order_ids != exchange_order_ids
             if self._state_divergence:
@@ -546,9 +542,7 @@ class OperatorService:
             "idle_capital_percent": 100,
             "active_queues": int(current.get("OPERATING_QUEUES_ACTIVE", 0)),
             "full_stop_time_today_seconds": status["uptime_seconds"] if running else 0,
-            "full_stop_time_total_seconds": round(
-                float(current.get("FULL_STOP_HOURS", 0)) * 3600
-            ),
+            "full_stop_time_total_seconds": round(float(current.get("FULL_STOP_HOURS", 0)) * 3600),
             "zero_cycle_days": int(current.get("ZERO_CYCLE_DAYS", 0)),
         }
 
