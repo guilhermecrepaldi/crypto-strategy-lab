@@ -200,3 +200,108 @@ formulation: the best mechanical upper bound produced two cycles and the first n
 fee scenario produced none. The individual zero-loss invariant held, but it did not
 deliver competitive throughput. This is calibration evidence, not OOS, a strategy
 pass or a live-profitability claim.
+
+## Verification diagrams
+
+### Evidence and audit chain
+
+```mermaid
+flowchart LR
+    A["Validated Binance tape<br/>71,222 books + 29,538 trades"] --> B["Frozen configuration<br/>d85a3bbe..."]
+    B --> C["Economic source<br/>2a895e5"]
+    C --> D["Pre-run Astra review<br/>PASS"]
+    D --> E["Atomic one-shot claim"]
+    E --> F["F0 / F1 / F2 / F5 / F10<br/>100,760 events each"]
+    F --> G["All events processed"]
+    G --> H{"Accounting residual"}
+    H -->|"Numerically zero<br/>with decimal scale"| I["Reporter string-comparison failure"]
+    I --> J["Complete prefix preserved<br/>SHA 1cd9447b..."]
+    J --> K["Postprocessing-only recovery"]
+    K --> L["REPLAY_RERUNS = 0"]
+    L --> M["Post-run Astra audit<br/>PASS / no P1 or P2"]
+```
+
+### Frozen fee scenarios
+
+```mermaid
+flowchart TB
+    A["200 USDT<br/>3 hours / Binance"] --> F0["F0 / 0 bp per leg"]
+    A --> F1["F1 / 1 bp per leg"]
+    A --> F2["F2 / 2 bps per leg"]
+    A --> F5["F5 / 5 bps per leg"]
+    A --> F10["F10 / 10 bps per leg"]
+
+    F0 --> R0["2 positive cycles<br/>PnL +0.007193700 USD<br/>Final 200.007193700 USD<br/>Return +0.00359685%"]
+    F1 --> R1["0 cycles / final 200 USD"]
+    F2 --> R2["0 cycles / final 200 USD"]
+    F5 --> R5["0 cycles / final 200 USD"]
+    F10 --> R10["0 cycles / final 200 USD"]
+
+    R1 --> D["Fee dust prevents<br/>full no-residue return"]
+    R2 --> D
+    R5 --> D
+    R10 --> D
+
+    R0 --> Z["Negative cycles = 0<br/>Negative risk exits = 0<br/>Residual inventory = 0"]
+    D --> Z
+    Z --> P["ZERO_LOSS_ECONOMIC_PASS = true<br/>F1-F10 have no productivity evidence"]
+```
+
+### Capital conservation and owned return
+
+```mermaid
+flowchart LR
+    A["Initial capital<br/>200 USDT"] --> B["FREE"]
+    B -->|"eligible candidate"| C["RESERVED"]
+    C -->|"physical entry fill"| D["USDC INVENTORY"]
+    D -->|"absolute priority"| E["OWNED_RETURN"]
+    E -->|"full return plus costs<br/>net PnL >= 0"| F["CLOSED CYCLE"]
+    F --> B
+
+    D -->|"cutoff without return"| G["Marked inventory<br/>unrealized PnL required"]
+    D -->|"preregistered safety"| H["Negative risk exit"]
+    H --> I["ZERO_LOSS = FAIL"]
+
+    C -->|"cancel request"| J["Capital remains reserved"]
+    J -->|"cancel ACK"| B
+
+    F --> K["F0: 2 cycles<br/>+0.007193700 USD"]
+    G --> L["Final USDC = 0"]
+    C --> M["Final 18.036903510 USDT<br/>in unfilled entry reservations"]
+```
+
+### Individual zero-loss attribution
+
+```mermaid
+flowchart TB
+    A["Audit each cycle_id independently"] --> B["Proceeds"]
+    B --> C["minus cost basis"]
+    C --> D["minus fees"]
+    D --> E["minus execution cost"]
+    E --> F["minus adverse selection"]
+    F --> G["CYCLE_NET_PNL"]
+
+    G -->|"below zero"| H["NEGATIVE_CLOSED_CYCLES += 1<br/>ZERO_LOSS = FAIL"]
+    G -->|"equal to zero"| I["ZERO_PNL_CYCLES += 1"]
+    G -->|"above zero"| J["POSITIVE_CLOSED_CYCLES += 1"]
+
+    J --> K["Cycle 1<br/>+0.003596940 USD"]
+    J --> L["Cycle 2<br/>+0.003596760 USD"]
+    K --> M["No cross-subsidy"]
+    L --> M
+    H --> M
+```
+
+### Productivity comparison
+
+```mermaid
+flowchart LR
+    M026["M026<br/>30 cycles<br/>10 cycles/hour"] --> C{"Same-window<br/>descriptive comparison"}
+    F0["M034 F0<br/>2 cycles<br/>0.6667 cycle/hour"] --> C
+    FEE["M034 F1-F10<br/>0 cycles"] --> C
+
+    C --> D0["F0 versus M026<br/>-28 cycles / -93.33%"]
+    C --> D1["F1-F10 versus M026<br/>-30 cycles / -100%"]
+    D0 --> V["Zero-loss confirmed<br/>Productivity not supported"]
+    D1 --> V
+```
