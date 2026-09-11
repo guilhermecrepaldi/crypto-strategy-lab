@@ -4,8 +4,9 @@
 
 Seguir `docs/microstructure/M034_BINANCE_ECONOMIC_ELIGIBILITY_PRODUCTIVITY.md`
 e o prompt oficial refinado do OWNER. M034 é uma camada incremental sobre M032/M033:
-execução econômica exclusivamente Binance, com Kraken preservada no código/adapters/
-testes/documentos e dormente para alocação econômica. O gate precede produtividade e
+execução econômica exclusivamente Binance. Nova ordem OWNER: Kraken não será mais usada
+no M034; fica RETIRED/DISABLED antes de gate/ranking/obrigação/capital/KPIs, preservando
+somente código/testes/documentos históricos do M033 como provenance. O gate precede produtividade e
 valida universo do par e exchange rules temporais na decisão;
 fee histórica não provada, custo desconhecido sem bound pré-registrado, dados/safety,
 completion ou lock inválidos autorizam zero slots. Capital sem oportunidade permanece
@@ -17,8 +18,8 @@ owned-return e cancel-ACK. Owned-return reserva capital antes de qualquer NEW_EN
 saída negativa deve ser autorizada no ledger antes do fill e comprovar retorno físico
 integral ao ativo de origem, sem resíduo e com fees externas all-in. Todos os books da
 rota canônica passam por universo/rules/fees; funding físico e mark causal são
-obrigatórios; Kraken não entra nos KPIs econômicos. Reviews de `d009653` e `1dd2f3d`
-bloquearam a source; a segunda correção está em revisão. Sem thresholds operacionais, universo,
+obrigatórios. Reviews de `d009653`, `1dd2f3d` e `e55bb7b` bloquearam a source;
+a terceira correção está em revisão. Sem thresholds operacionais, universo,
 fee histórica selecionada, dataset/janela, runner, registro ou protocolo de replay.
 Nenhum replay, conta, Testnet, live, nova venue, leverage, perp, AMM ou yield.
 

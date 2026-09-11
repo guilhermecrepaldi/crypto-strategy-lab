@@ -66,3 +66,18 @@ is required; no replay has run.
 Second-correction full validation collected 1,172 tests and exited green with 1,170
 passed and 2 skipped. Repository-wide Ruff, strict mypy on the seven affected modules,
 JSON parsing and `git diff --check` passed.
+
+The third published review, bound to
+`e55bb7bb4c768d78fc82c3238ee8ac9120c8f070`, returned BLOCK on two remaining cases:
+a Kraken owned-return diagnostic could still reserve Binance capital indirectly, and a
+valid reduction whose fee was debited from the spent inventory asset was rejected.
+During that review the OWNER clarified: "não vamos usar mais o Kraken". M034 therefore
+retires Kraken before all economic evaluation, ranking, obligation, capital and KPI
+paths while retaining only M033 historical code/evidence. The spent-asset proof now
+counts `input_quantity + fee_quantity` when the fee asset is the input asset. Forty-four
+M034 tests plus 51 M032 and 46 M033 regressions pass (141 focused). A fourth published
+source-bound review is required; no replay has run.
+
+Third-correction full validation collected 1,174 tests and exited green with 1,172
+passed and 2 skipped. Repository-wide Ruff, strict mypy on the seven affected modules,
+JSON parsing and `git diff --check` passed.

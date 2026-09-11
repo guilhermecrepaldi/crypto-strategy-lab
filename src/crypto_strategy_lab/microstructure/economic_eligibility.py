@@ -1039,18 +1039,24 @@ class M034EconomicAllocationEngine:
     ) -> AllocationResult:
         if available_capital < ZERO or not available_capital_currency or now_us < 0:
             raise ValueError("M034_INVALID_AVAILABLE_CAPITAL")
-        candidate_ids = [candidate.candidate_id for candidate in candidates]
+        economic_candidates = [
+            candidate
+            for candidate in candidates
+            if candidate.venue in self.gate.execution_policy.economic_venues
+        ]
+        candidate_ids = [candidate.candidate_id for candidate in economic_candidates]
         if len(candidate_ids) != len(set(candidate_ids)):
             raise ValueError("M034_DUPLICATE_CANDIDATE_ID")
-        if any(candidate.decision_time_us != now_us for candidate in candidates):
+        if any(candidate.decision_time_us != now_us for candidate in economic_candidates):
             raise ValueError("M034_ALLOCATION_TIME_MISMATCH")
         if any(
             candidate.decision_currency != available_capital_currency
-            for candidate in candidates
+            for candidate in economic_candidates
         ):
             raise ValueError("M034_ALLOCATION_CURRENCY_MISMATCH")
         evaluated = [
-            (candidate, self.gate.evaluate(candidate, mode=mode)) for candidate in candidates
+            (candidate, self.gate.evaluate(candidate, mode=mode))
+            for candidate in economic_candidates
         ]
         eligible_opportunities: list[EligibleOpportunity] = []
         candidate_by_id = {candidate.candidate_id: candidate for candidate, _ in evaluated}
@@ -1201,7 +1207,7 @@ class M034EconomicAllocationEngine:
             if not selected
             else (
                 AllocationState.ALLOCATED
-                if len(selected) == len(candidates)
+                if len(selected) == len(economic_candidates)
                 else AllocationState.PARTIALLY_ALLOCATED
             )
         )

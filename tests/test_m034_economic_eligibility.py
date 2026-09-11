@@ -1016,3 +1016,95 @@ def test_external_fee_is_included_in_negative_exit_limit() -> None:
             "S", now_us=6, reduction_id="EXT-FEE", authorization=assessment.authorization
         )
     assert ledger.negative_exit_count == 0
+
+
+def test_spent_asset_fee_counts_toward_authorized_inventory_consumption() -> None:
+    rule = InventoryExitRule(
+        "PEG-RISK-SPENT-FEE",
+        "rule-hash",
+        0,
+        20,
+        "synthetic preregistration",
+        DecisionReasonCode.PEG_RISK_ESCALATED,
+    )
+    assessment = InventoryExitDecisionEngine.evaluate(
+        authorization_id="SPENT-FEE",
+        slot_id="S",
+        slot_epoch=1,
+        quantity=D("5"),
+        origin_cost_basis=D("5"),
+        inventory_asset="USDC",
+        origin_asset="USDT",
+        exit_reservation_id="RETURN",
+        external_fee_marks=(),
+        now_us=3,
+        expires_at_us=10,
+        expected_hold_loss=D("0.3"),
+        opportunity_cost_of_lock=D("0"),
+        tail_risk_increase=D("0"),
+        realized_loss_of_exit=D("0.2"),
+        rule=rule,
+    )
+    assert assessment.authorization is not None
+    ledger = SlotLedger(
+        {"USDT": "10", "USDC": "0"}, marks_usd={"USDT": "1", "USDC": "1"}
+    )
+    ledger.create_slot("S", origin_asset="USDT", usd_equivalent=D("5"), now_us=0)
+    ledger.reserve_free("S", "ENTRY", asset="USDT", quantity=D("5"), now_us=1)
+    ledger.activate("ENTRY", now_us=1)
+    ledger.apply_fill(
+        "ENTRY",
+        PhysicalFill(
+            "F1", "USDCUSDT", "USDT", "USDC", D("5"), D("5"), "USDC", D("0"), 2
+        ),
+    )
+    ledger.register_inventory_reduction_authorization(assessment.authorization, now_us=3)
+    ledger.reserve_owned("S", "RETURN", asset="USDC", quantity=D("5"), now_us=4)
+    ledger.activate("RETURN", now_us=4)
+    ledger.apply_fill(
+        "RETURN",
+        PhysicalFill(
+            "F2",
+            "USDCUSDT",
+            "USDC",
+            "USDT",
+            D("4.9"),
+            D("4.85"),
+            "USDC",
+            D("0.1"),
+            5,
+        ),
+    )
+    pnl = ledger.settle_inventory_reduction(
+        "S", now_us=6, reduction_id="SPENT-FEE", authorization=assessment.authorization
+    )
+    assert pnl == D("-0.15")
+    assert ledger.negative_exit_cost == D("0.15")
+    assert ledger.negative_exit_count == 1
+
+
+def test_retired_kraken_obligation_cannot_block_binance_allocation() -> None:
+    kraken_route = VenueRoute(
+        "USDT->USDC->USDT",
+        "USDT",
+        (
+            VenueRouteLeg(KRAKEN, "USDT", "USDC", True),
+            VenueRouteLeg(KRAKEN, "USDC", "USDT", True),
+        ),
+    )
+    retired = candidate(
+        "KRAKEN-OWNED",
+        venue=Venue.KRAKEN,
+        pair=KRAKEN,
+        route=kraken_route,
+        intent=DecisionIntent.OWNED_RETURN,
+        priority_class=1,
+        fee_legs=(
+            FeeLeg(KRAKEN, True, "USDT", "USDC", "BUY", D("1"), D("5")),
+            FeeLeg(KRAKEN, True, "USDC", "USDT", "SELL", D("1"), D("5")),
+        ),
+    )
+    result, ledger = allocate([retired, candidate("BINANCE")])
+    assert result.selected_candidate_ids == ("BINANCE",)
+    assert all(decision.venue == Venue.BINANCE for decision in ledger.decisions)
+    assert all(row.state != CapitalState.LOCKED_INVENTORY for row in ledger.capital_states)

@@ -466,7 +466,18 @@ class SlotLedger:
                 or row.fill.to_asset != authorization.origin_asset
                 for row in exit_fills
             )
-            or sum((row.fill.input_quantity for row in exit_fills), ZERO)
+            or sum(
+                (
+                    row.fill.input_quantity
+                    + (
+                        row.fill.fee_quantity
+                        if row.fill.fee_asset == row.fill.from_asset
+                        else ZERO
+                    )
+                    for row in exit_fills
+                ),
+                ZERO,
+            )
             != authorization.quantity
             or any(
                 quantity != ZERO

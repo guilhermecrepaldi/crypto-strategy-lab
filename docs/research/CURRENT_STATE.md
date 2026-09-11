@@ -18,8 +18,8 @@ NEXT_CAMPAIGN_WINDOW=UNSELECTED_NO_CSPRNG_DRAW
 NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=UNRESOLVED_NOT_TO_EXCEED_EXISTING_200_USD_EQ_LIMIT
 
 M034 adds a Binance-only economic eligibility and productivity layer over the
-reviewed M032/M033 libraries. Kraken remains compiled, tested and available for
-future research but receives zero M034 economic slots. Unknown or unproven fee,
+reviewed M032/M033 libraries. Per the latest OWNER directive, Kraken is retired from
+all M034 economic paths; only its historical M033 provenance remains. Unknown or unproven fee,
 cost, data, market safety, completion or lock evidence fails closed; no eligible
 opportunity leaves capital explicitly idle. Thresholds are mandatory typed inputs
 with provenance and hashes, but no operational values are frozen. The first published

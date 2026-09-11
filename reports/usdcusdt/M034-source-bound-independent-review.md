@@ -66,3 +66,21 @@ mark registry; and separates dormant-venue diagnostic counts from Binance KPIs.
 
 The post-review correction locally passes 139 focused checks: 42 M034, 51 M032 and 46
 M033. A third independent review must be bound to the next published source SHA.
+
+## Review 3 — blocked corrected source
+
+- Reviewer: GPT-6 Astra, independent source review
+- Reviewed source: `e55bb7bb4c768d78fc82c3238ee8ac9120c8f070`
+- Verdict: `IMPLEMENTATION_REVIEW=BLOCK`
+- Replay: `READY_FOR_REPLAY=false`
+
+The six Review 2 defects were corrected in their reported scope. Two interactions
+remained. First, a disabled Kraken `OWNED_RETURN` still entered obligation reservation
+and could block valid Binance allocation. The OWNER then clarified that Kraken will no
+longer be used; it is now retired before every M034 economic path while historical M033
+code/evidence remains intact. Second, physical-exit proof did not count a fee debited in
+the spent inventory asset toward the authorized quantity. The third correction counts
+that fee exactly as the canonical fill ledger does.
+
+The post-review correction locally passes 141 focused checks: 44 M034, 51 M032 and 46
+M033. A fourth independent review must be bound to the next published source SHA.

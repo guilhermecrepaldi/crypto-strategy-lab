@@ -4,9 +4,10 @@ Status: `SOURCE_CORRECTION_PENDING_SOURCE_BOUND_REVIEW`.
 
 M034 is an incremental admission and allocation layer over the reviewed M032/M033
 libraries. It is not a parallel strategy, a replay result or evidence of economic
-profitability. The only economic execution venue in this phase is Binance. Kraken
-remains implemented, tested and available for future L3 research, but it receives
-zero M034 economic slots.
+profitability. The only economic execution venue is Binance. By the latest OWNER
+directive, Kraken is `RETIRED/DISABLED` from every M034 economic path. Its M033 code,
+tests and documents remain only as historical provenance; it receives no evaluation,
+ranking, obligation reserve, capital state, slot or KPI contribution in M034.
 
 ## Phase 0 - verified starting state
 
@@ -73,10 +74,11 @@ causal venue+book snapshot
 ## Venue policy
 
 `ECONOMIC_EXECUTION_VENUES={BINANCE}` is represented by one validated
-`EconomicExecutionPolicy`. Any Kraken economic candidate is rejected before ranking
-with `VENUE_DISABLED_FOR_ECONOMIC_EXECUTION`; it cannot receive slots or enter M034
-economic KPIs. Kraken code, adapters, tests, documents and future research capability
-remain intact.
+`EconomicExecutionPolicy`. The standalone diagnostic gate can explain a Kraken object
+as `VENUE_DISABLED_FOR_ECONOMIC_EXECUTION`, but the allocation engine removes retired
+venues before economic evaluation. Therefore Kraken cannot receive slots, reserve an
+owned-return obligation, alter Binance capital state or enter M034 KPIs. Its M033 code,
+adapters, tests and documents remain intact solely as historical provenance.
 
 ## Temporal fee evidence
 
@@ -300,7 +302,7 @@ slot and rejection-reason economic aggregates include Binance only.
 
 ## Invariants
 
-1. Binance is the only M034 economic venue; Kraken remains dormant and intact.
+1. Binance is the only M034 economic venue; Kraken is retired before all M034 economics.
 2. No ineligible candidate reaches productivity ranking or reservation.
 3. Zero authorized slots is valid and auditable.
 4. `BookKey(venue, native_symbol)` remains the physical identity boundary.
@@ -353,9 +355,10 @@ cost/latency policy, registered model identity, integrated runner and replay pro
 No account, key, Testnet, live order, replay, random window draw or registry mutation is
 authorized by this source implementation.
 
-Published source reviews of `d009653afaf4dd361dcc4095090e97788b2015f4` and
-`1dd2f3de2c11449bb5f65f9dfae2a076bfccb01b` returned
-`IMPLEMENTATION_REVIEW=BLOCK`. The second correction must itself receive a new
+Published source reviews of `d009653afaf4dd361dcc4095090e97788b2015f4`,
+`1dd2f3de2c11449bb5f65f9dfae2a076bfccb01b` and
+`e55bb7bb4c768d78fc82c3238ee8ac9120c8f070` returned
+`IMPLEMENTATION_REVIEW=BLOCK`. The third correction must itself receive a new
 source-bound independent review before this document can claim source architecture
 PASS. The blocked review is preserved in the M034 journal and review report; it was not
 reclassified as a strategy result.
