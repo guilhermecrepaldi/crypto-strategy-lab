@@ -9,6 +9,7 @@ from crypto_strategy_lab.microstructure.m034_forward_paper import (
     CANONICAL_SYMBOLS,
     ForwardDiagnosticError,
     ForwardPaperDiagnosticRunner,
+    claim_identity,
     default_public_client,
     load_config,
 )
@@ -17,10 +18,9 @@ from crypto_strategy_lab.microstructure.public_market import connect_market_stre
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_PATHS = (
     "scripts/run_m034_forward_diagnostic.py",
-    "src/crypto_strategy_lab/microstructure/economic_eligibility.py",
-    "src/crypto_strategy_lab/microstructure/m034_forward_paper.py",
-    "src/crypto_strategy_lab/microstructure/public_calibration.py",
-    "src/crypto_strategy_lab/microstructure/public_market.py",
+    "src/crypto_strategy_lab/microstructure",
+    "pyproject.toml",
+    "uv.lock",
 )
 
 
@@ -55,6 +55,15 @@ def verify_artifact(path_value: str, expected_sha256: str, *, label: str) -> Non
     actual = hashlib.sha256(artifact.read_bytes()).hexdigest()
     if actual != expected_sha256:
         raise ForwardDiagnosticError(f"M034_FORWARD_{label}_HASH_MISMATCH")
+    relative = artifact.relative_to(ROOT).as_posix()
+    if git("status", "--porcelain", "--", relative):
+        raise ForwardDiagnosticError(f"M034_FORWARD_{label}_NOT_FROZEN")
+    try:
+        tracked = git("ls-files", "--error-unmatch", "--", relative)
+    except subprocess.CalledProcessError as exc:
+        raise ForwardDiagnosticError(f"M034_FORWARD_{label}_NOT_PUBLISHED") from exc
+    if tracked != relative:
+        raise ForwardDiagnosticError(f"M034_FORWARD_{label}_NOT_PUBLISHED")
 
 
 def parse_args() -> argparse.Namespace:
@@ -70,10 +79,19 @@ def main() -> None:
     args = parse_args()
     config_path = args.config.resolve()
     output_path = args.output.resolve()
+    if ROOT not in config_path.parents:
+        raise ForwardDiagnosticError("M034_FORWARD_CONFIG_MUST_BE_INSIDE_REPOSITORY")
     if ROOT not in output_path.parents:
         raise ForwardDiagnosticError("M034_FORWARD_OUTPUT_MUST_BE_INSIDE_REPOSITORY")
+    if output_path.exists():
+        raise ForwardDiagnosticError("M034_FORWARD_OUTPUT_ALREADY_EXISTS")
     config = load_config(config_path)
     verify_published_source(config.source_sha)
+    verify_artifact(
+        config_path.relative_to(ROOT).as_posix(),
+        hashlib.sha256(config_path.read_bytes()).hexdigest(),
+        label="CONFIGURATION",
+    )
     verify_artifact(
         config.source_review_artifact,
         config.source_review_sha256,
@@ -84,6 +102,7 @@ def main() -> None:
         config.fee_evidence_sha256,
         label="FEE_EVIDENCE",
     )
+    claim_artifact = claim_identity(config, output_path, root=ROOT)
     runner = ForwardPaperDiagnosticRunner(
         config=config,
         public_client=default_public_client(),
@@ -92,6 +111,7 @@ def main() -> None:
             depth_interval_ms=1000,
             forward_depth=True,
         ),
+        claim_artifact=claim_artifact,
     )
     if tuple(CANONICAL_SYMBOLS) != tuple(runner.states) and runner.states:
         raise ForwardDiagnosticError("M034_FORWARD_PREEXISTING_RUNTIME_STATE")

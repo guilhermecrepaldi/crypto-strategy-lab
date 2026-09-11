@@ -20,6 +20,7 @@ from crypto_strategy_lab.microstructure.m034_forward_paper import (
     PaperOrderState,
     PaperQueueModel,
     SymbolState,
+    claim_identity,
     parse_forward_rule,
 )
 from crypto_strategy_lab.microstructure.public_calibration import LocalDepth
@@ -61,6 +62,7 @@ def config_payload() -> dict[str, object]:
         "source_review_status": "PASS_GPT_6_ASTRA",
         "source_review_artifact": "reports/m034/source-review.json",
         "source_review_sha256": "b" * 64,
+        "run_claim_artifact": "data/m034/M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD.claim.json",
         "duration_seconds": 10800,
         "warmup_seconds": 900,
         "initial_equity_usdt": "200",
@@ -73,12 +75,23 @@ def config_payload() -> dict[str, object]:
         "depth_band_bps": "10",
         "max_stream_silence_seconds": 30,
         "rule_refresh_seconds": 1800,
+        "max_market_clock_lead_us": 5_000_000,
+        "max_market_clock_lag_us": 30_000_000,
         "fee_maker_rate": "0.001",
         "fee_taker_rate": "0.001",
         "fee_evidence_status": "PROVEN_FORWARD",
         "fee_source_reference": "https://www.binance.com/en/fee/trading",
         "fee_evidence_artifact": "reports/m034/fee-evidence.json",
         "fee_evidence_sha256": "c" * 64,
+        "fee_applicable_symbols": [
+            "USDCUSDT",
+            "FDUSDUSDT",
+            "FDUSDUSDC",
+            "USD1USDT",
+            "USD1USDC",
+            "TUSDUSDT",
+            "USDPUSDT",
+        ],
         "fee_observed_at_us": 1,
         "thresholds": threshold_rows(),
     }
@@ -136,6 +149,17 @@ def test_diagnostic_config_is_exact_and_hash_stable() -> None:
     changed["duration_seconds"] = 10799
     with pytest.raises(ForwardDiagnosticError, match="FIXED_WINDOW"):
         DiagnosticConfig.from_mapping(changed)
+
+
+def test_identity_claim_is_canonical_and_one_shot(tmp_path: Path) -> None:
+    configuration = DiagnosticConfig.from_mapping(config_payload())
+    output = tmp_path / "output"
+    marker = claim_identity(configuration, output, root=tmp_path)
+    assert marker.is_file()
+    payload = json.loads(marker.read_text(encoding="utf-8"))
+    assert payload["configuration_hash"] == configuration.configuration_hash
+    with pytest.raises(ForwardDiagnosticError, match="IDENTITY_ALREADY_CLAIMED"):
+        claim_identity(configuration, tmp_path / "other-output", root=tmp_path)
 
 
 def test_rule_capture_requires_trading_and_all_required_filters() -> None:
@@ -240,6 +264,37 @@ def test_cancel_pending_keeps_fifo_until_ack_and_trade_ids_are_unique() -> None:
     assert order.state == PaperOrderState.CANCELED
 
 
+def test_c1_c2_share_public_queue_ahead_once() -> None:
+    model = PaperQueueModel()
+    orders = [
+        model.place(
+            order_id=order_id,
+            symbol="USDCUSDT",
+            side="BUY",
+            price=D("0.9999"),
+            quantity=D("5"),
+            now_us=10 + index,
+            activation_latency_us=1,
+            best_bid=D("0.9999"),
+            best_ask=D("1.0001"),
+            public_quantity_at_price=D("10"),
+        )
+        for index, order_id in enumerate(("C1", "C2"))
+    ]
+    for order in orders:
+        PaperQueueModel.activate(order, now_us=20, best_bid=D("0.9999"), best_ask=D("1.0001"))
+    fills = model.consume_trade(
+        symbol="USDCUSDT",
+        trade_id=4,
+        price=D("0.9999"),
+        quantity=D("20"),
+        buyer_is_maker=True,
+        trade_time_us=21,
+    )
+    assert fills == {"C1": D("5"), "C2": D("5")}
+    assert all(order.state == PaperOrderState.FILLED for order in orders)
+
+
 class NoopClient:
     last_response = None
 
@@ -279,7 +334,7 @@ def test_unknown_estimators_flow_through_gate_and_block_all_capital() -> None:
         book=book,
         acquired_at_us=1,
         rule_evidence_hash="d" * 64,
-        last_event_us=10,
+        last_depth_event_us=10,
     )
     decisions = runner.evaluate(now_us=10)
     assert decisions and all(not row.eligible for row in decisions)
@@ -289,6 +344,89 @@ def test_unknown_estimators_flow_through_gate_and_block_all_capital() -> None:
     )
     assert runner.decision_ledger.capital_states[-1].state == CapitalState.BLOCKED_DATA
     assert runner.paper_queue.orders == {}
+
+
+def test_trade_and_duplicate_depth_do_not_refresh_stale_book() -> None:
+    configuration = DiagnosticConfig.from_mapping(config_payload())
+    runner = ForwardPaperDiagnosticRunner(
+        config=configuration,
+        public_client=NoopClient(),
+        stream_factory=lambda _symbols: pytest.fail("stream must not be used"),
+    )
+    base_us = 2_000_000_000_000_000
+    rule, _ = parse_forward_rule(exchange_info(), symbol="USDCUSDT", acquired_at_us=base_us - 100)
+    book = LocalDepth(expected_symbol="USDCUSDT")
+    book.snapshot({"lastUpdateId": 1, "bids": [["0.9999", "1000"]], "asks": [["1.0001", "1000"]]})
+    book.apply(
+        {
+            "e": "depthUpdate",
+            "s": "USDCUSDT",
+            "E": base_us,
+            "U": 2,
+            "u": 2,
+            "b": [],
+            "a": [],
+        }
+    )
+    runner.states["USDCUSDT"] = SymbolState(
+        symbol="USDCUSDT",
+        base_asset="USDC",
+        quote_asset="USDT",
+        rule=rule,
+        book=book,
+        acquired_at_us=base_us - 100,
+        rule_evidence_hash="d" * 64,
+        last_depth_event_us=base_us,
+    )
+    runner._apply_event(
+        {
+            "e": "trade",
+            "s": "USDCUSDT",
+            "T": base_us + 4_000_000,
+            "t": 1,
+            "p": "1.0000",
+            "q": "2",
+            "m": True,
+        },
+        received_us=base_us + 4_000_100,
+        received_monotonic_ns=4_000_100_000,
+    )
+    runner._apply_event(
+        {
+            "e": "depthUpdate",
+            "s": "USDCUSDT",
+            "E": base_us + 4_100_000,
+            "U": 2,
+            "u": 2,
+            "b": [],
+            "a": [],
+        },
+        received_us=base_us + 4_100_100,
+        received_monotonic_ns=4_100_100_000,
+    )
+    assert runner.states["USDCUSDT"].last_depth_event_us == base_us
+    assert runner.states["USDCUSDT"].last_trade_event_us == base_us + 4_000_000
+    decisions = runner.evaluate(now_us=base_us + 4_100_000)
+    assert decisions
+    assert all(
+        DecisionReasonCode.DATA_INSUFFICIENT in row.decision_reason_codes for row in decisions
+    )
+
+
+def test_exchange_timestamp_is_required() -> None:
+    configuration = DiagnosticConfig.from_mapping(config_payload())
+    runner = ForwardPaperDiagnosticRunner(
+        config=configuration,
+        public_client=NoopClient(),
+        stream_factory=lambda _symbols: pytest.fail("stream must not be used"),
+    )
+    runner._capture_rules()
+    with pytest.raises(ForwardDiagnosticError, match="EXCHANGE_TIMESTAMP_REQUIRED"):
+        runner._apply_event(
+            {"e": "trade", "s": "USDCUSDT", "t": 1, "p": "1", "q": "1", "m": True},
+            received_us=2_000_000_000_000_000,
+            received_monotonic_ns=1,
+        )
 
 
 class FakeStream:
@@ -336,13 +474,16 @@ def test_runner_uses_exact_market_window_and_writes_seven_checkpoints(tmp_path: 
             }
         ),
     ]
-    monotonic_values = iter([0, 900_000_000_000, 900_000_000_001])
+    monotonic_values = iter([0, 900_000_000_000, 11_700_000_000_000])
+    claim = tmp_path / "claim.json"
+    claim.write_text("{}\n", encoding="utf-8")
     runner = ForwardPaperDiagnosticRunner(
         config=configuration,
         public_client=NoopClient(),
         stream_factory=lambda _symbols: fake_stream(messages),
         wall_time_us=lambda: start_us - 1,
         monotonic_ns=lambda: next(monotonic_values),
+        claim_artifact=claim,
     )
     output = tmp_path / "one-shot"
     result = runner.run(output)
@@ -360,3 +501,55 @@ def test_runner_uses_exact_market_window_and_writes_seven_checkpoints(tmp_path: 
     assert result["PHYSICAL_CYCLES"] == 0
     assert result["CAPITAL_UTILIZATION_PCT"] == "0.00"
     assert (output / "manifest.json").is_file()
+    snapshots = json.loads((output / "depth-snapshots.json").read_text(encoding="utf-8"))
+    assert len(snapshots) == 7
+    assert snapshots[0]["snapshot"]["bids"]
+
+
+def test_timestamp_jump_cannot_fake_three_hours(tmp_path: Path) -> None:
+    configuration = DiagnosticConfig.from_mapping(config_payload())
+    start_us = 2_000_000_000_000_000
+    messages = [
+        json.dumps(
+            {
+                "data": {
+                    "e": "depthUpdate",
+                    "s": "USDCUSDT",
+                    "E": start_us,
+                    "U": 2,
+                    "u": 2,
+                    "b": [],
+                    "a": [],
+                }
+            }
+        ),
+        json.dumps(
+            {
+                "data": {
+                    "e": "depthUpdate",
+                    "s": "USDCUSDT",
+                    "E": start_us + 10_800_000_000,
+                    "U": 3,
+                    "u": 3,
+                    "b": [],
+                    "a": [],
+                }
+            }
+        ),
+    ]
+    monotonic_values = iter([0, 900_000_000_000, 900_000_000_001])
+    claim = tmp_path / "claim.json"
+    claim.write_text("{}\n", encoding="utf-8")
+    runner = ForwardPaperDiagnosticRunner(
+        config=configuration,
+        public_client=NoopClient(),
+        stream_factory=lambda _symbols: fake_stream(messages),
+        wall_time_us=lambda: start_us - 1,
+        monotonic_ns=lambda: next(monotonic_values),
+        claim_artifact=claim,
+    )
+    result = runner.run(tmp_path / "jump")
+    assert result["status"] == "INVALIDATED_TECHNICAL"
+    assert result["failure"] == "ForwardDiagnosticError:M034_FORWARD_MARKET_CLOCK_JUMP"
+    assert result["DURATION_HOURS"] == "0.000"
+    assert result["END_TIMESTAMP_US"] == result["START_TIMESTAMP_US"]

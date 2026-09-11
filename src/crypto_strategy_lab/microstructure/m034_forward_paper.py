@@ -27,9 +27,11 @@ from crypto_strategy_lab.microstructure.economic_eligibility import (
     BinancePairEvidence,
     BinancePairUniverse,
     CapitalState,
+    CapitalStateRecord,
     CausalAssetMarkRegistry,
     DataState,
     DecisionIntent,
+    DecisionReasonCode,
     EconomicCandidate,
     EconomicEligibilityGate,
     EconomicExecutionPolicy,
@@ -106,11 +108,21 @@ class PaperMakerOrder:
     cancel_ack_due_us: int | None = None
 
 
+@dataclass
+class PaperQueueCohort:
+    symbol: str
+    side: str
+    price: D
+    public_queue_ahead: D
+    order_ids: list[str]
+
+
 class PaperQueueModel:
     """Conservative exact-price FIFO model using only later public trades."""
 
     def __init__(self) -> None:
         self.orders: dict[str, PaperMakerOrder] = {}
+        self.cohorts: dict[tuple[str, str, D], PaperQueueCohort] = {}
         self.consumed_trade_ids: set[tuple[str, int]] = set()
 
     def place(
@@ -147,6 +159,18 @@ class PaperQueueModel:
             remaining=quantity,
         )
         self.orders[order_id] = order
+        cohort_key = (symbol, side, price)
+        cohort = self.cohorts.get(cohort_key)
+        if cohort is None:
+            cohort = PaperQueueCohort(
+                symbol=symbol,
+                side=side,
+                price=price,
+                public_queue_ahead=public_quantity_at_price,
+                order_ids=[],
+            )
+            self.cohorts[cohort_key] = cohort
+        cohort.order_ids.append(order_id)
         return order
 
     @staticmethod
@@ -198,26 +222,35 @@ class PaperQueueModel:
         self.consumed_trade_ids.add(trade_key)
         left = quantity
         fills: dict[str, D] = {}
-        for order in sorted(self.orders.values(), key=lambda row: (row.placed_at_us, row.order_id)):
+        side = "BUY" if buyer_is_maker else "SELL"
+        cohort = self.cohorts.get((symbol, side, price))
+        if cohort is None:
+            return fills
+        eligible_orders: list[PaperMakerOrder] = []
+        for order_id in cohort.order_ids:
+            order = self.orders[order_id]
+            activated_at_us = order.activated_at_us
             if (
-                order.symbol != symbol
-                or order.price != price
-                or order.state
-                not in {
+                order.state
+                in {
                     PaperOrderState.LIVE,
                     PaperOrderState.PARTIAL,
                     PaperOrderState.CANCEL_PENDING,
                 }
-                or order.activated_at_us is None
-                or trade_time_us < order.activated_at_us
-                or (order.side == "BUY") != buyer_is_maker
+                and activated_at_us is not None
+                and trade_time_us >= activated_at_us
             ):
-                continue
-            ahead = min(order.queue_ahead, left)
-            order.queue_ahead -= ahead
-            left -= ahead
-            if left <= ZERO:
-                break
+                eligible_orders.append(order)
+        if not eligible_orders:
+            return fills
+        ahead = min(cohort.public_queue_ahead, left)
+        cohort.public_queue_ahead -= ahead
+        left -= ahead
+        for order_id in cohort.order_ids:
+            self.orders[order_id].queue_ahead = cohort.public_queue_ahead
+        if left <= ZERO:
+            return fills
+        for order in sorted(eligible_orders, key=lambda row: (row.placed_at_us, row.order_id)):
             own_fill = min(order.remaining, left)
             if own_fill > ZERO:
                 order.remaining -= own_fill
@@ -244,6 +277,7 @@ class DiagnosticConfig:
     source_review_status: str
     source_review_artifact: str
     source_review_sha256: str
+    run_claim_artifact: str
     duration_seconds: int
     warmup_seconds: int
     initial_equity_usdt: D
@@ -256,12 +290,15 @@ class DiagnosticConfig:
     depth_band_bps: D
     max_stream_silence_seconds: int
     rule_refresh_seconds: int
+    max_market_clock_lead_us: int
+    max_market_clock_lag_us: int
     fee_maker_rate: D
     fee_taker_rate: D
     fee_evidence_status: str
     fee_source_reference: str
     fee_evidence_artifact: str
     fee_evidence_sha256: str
+    fee_applicable_symbols: tuple[str, ...]
     fee_observed_at_us: int
     thresholds: tuple[ThresholdDefinition, ...]
 
@@ -294,6 +331,7 @@ class DiagnosticConfig:
             source_review_status=str(payload["source_review_status"]),
             source_review_artifact=str(payload["source_review_artifact"]),
             source_review_sha256=str(payload["source_review_sha256"]),
+            run_claim_artifact=str(payload["run_claim_artifact"]),
             duration_seconds=int(payload["duration_seconds"]),
             warmup_seconds=int(payload["warmup_seconds"]),
             initial_equity_usdt=D(str(payload["initial_equity_usdt"])),
@@ -306,12 +344,15 @@ class DiagnosticConfig:
             depth_band_bps=D(str(payload["depth_band_bps"])),
             max_stream_silence_seconds=int(payload["max_stream_silence_seconds"]),
             rule_refresh_seconds=int(payload["rule_refresh_seconds"]),
+            max_market_clock_lead_us=int(payload["max_market_clock_lead_us"]),
+            max_market_clock_lag_us=int(payload["max_market_clock_lag_us"]),
             fee_maker_rate=D(str(payload["fee_maker_rate"])),
             fee_taker_rate=D(str(payload["fee_taker_rate"])),
             fee_evidence_status=str(payload["fee_evidence_status"]),
             fee_source_reference=str(payload["fee_source_reference"]),
             fee_evidence_artifact=str(payload["fee_evidence_artifact"]),
             fee_evidence_sha256=str(payload["fee_evidence_sha256"]),
+            fee_applicable_symbols=tuple(str(row) for row in payload["fee_applicable_symbols"]),
             fee_observed_at_us=int(payload["fee_observed_at_us"]),
             thresholds=definitions,
         )
@@ -326,6 +367,8 @@ class DiagnosticConfig:
             or self.source_review_status != "PASS_GPT_6_ASTRA"
             or not self.source_review_artifact
             or len(self.source_review_sha256) != 64
+            or self.run_claim_artifact
+            != "data/m034/M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD.claim.json"
         ):
             raise ForwardDiagnosticError("M034_FORWARD_SOURCE_REVIEW_REQUIRED")
         if self.duration_seconds != 10_800 or self.warmup_seconds != 900:
@@ -342,6 +385,8 @@ class DiagnosticConfig:
                 self.flow_window_seconds,
                 self.max_stream_silence_seconds,
                 self.rule_refresh_seconds,
+                self.max_market_clock_lead_us,
+                self.max_market_clock_lag_us,
                 self.fee_observed_at_us,
             )
         ):
@@ -354,6 +399,7 @@ class DiagnosticConfig:
             not self.fee_source_reference
             or not self.fee_evidence_artifact
             or len(self.fee_evidence_sha256) != 64
+            or self.fee_applicable_symbols != CANONICAL_SYMBOLS
             or min(self.fee_maker_rate, self.fee_taker_rate) < ZERO
         ):
             raise ForwardDiagnosticError("M034_FORWARD_INVALID_FEE_EVIDENCE")
@@ -375,6 +421,7 @@ class DiagnosticConfig:
             "source_review_status": self.source_review_status,
             "source_review_artifact": self.source_review_artifact,
             "source_review_sha256": self.source_review_sha256,
+            "run_claim_artifact": self.run_claim_artifact,
             "duration_seconds": self.duration_seconds,
             "warmup_seconds": self.warmup_seconds,
             "initial_equity_usdt": str(self.initial_equity_usdt),
@@ -387,12 +434,15 @@ class DiagnosticConfig:
             "depth_band_bps": str(self.depth_band_bps),
             "max_stream_silence_seconds": self.max_stream_silence_seconds,
             "rule_refresh_seconds": self.rule_refresh_seconds,
+            "max_market_clock_lead_us": self.max_market_clock_lead_us,
+            "max_market_clock_lag_us": self.max_market_clock_lag_us,
             "fee_maker_rate": str(self.fee_maker_rate),
             "fee_taker_rate": str(self.fee_taker_rate),
             "fee_evidence_status": self.fee_evidence_status,
             "fee_source_reference": self.fee_source_reference,
             "fee_evidence_artifact": self.fee_evidence_artifact,
             "fee_evidence_sha256": self.fee_evidence_sha256,
+            "fee_applicable_symbols": list(self.fee_applicable_symbols),
             "fee_observed_at_us": self.fee_observed_at_us,
             "threshold_config_hash": self.threshold_config_hash,
             "unknown_cost_policy": UnknownCostPolicy.REJECT.value,
@@ -411,7 +461,11 @@ class SymbolState:
     book: LocalDepth
     acquired_at_us: int
     rule_evidence_hash: str
-    last_event_us: int | None = None
+    last_depth_event_us: int | None = None
+    last_depth_received_us: int | None = None
+    last_depth_received_monotonic_ns: int | None = None
+    last_trade_event_us: int | None = None
+    last_trade_received_us: int | None = None
     last_trade_id: int | None = None
     trades: deque[tuple[int, D]] | None = None
     gaps: int = 0
@@ -444,11 +498,15 @@ class PublicClient(Protocol):
     def depth_snapshot(self, symbol: str, *, limit: int = 5000) -> dict[str, Any]: ...
 
 
-def _event_time_us(data: Mapping[str, Any], received_us: int) -> int:
-    raw = data.get("T", data.get("E"))
+def _event_time_us(data: Mapping[str, Any]) -> int:
+    event_type = data.get("e")
+    raw = data.get("T") if event_type == "trade" else data.get("E")
     if type(raw) is not int or raw <= 0:
-        return received_us
-    return raw * 1000 if raw < 10**15 else raw
+        raise ForwardDiagnosticError("M034_FORWARD_EXCHANGE_TIMESTAMP_REQUIRED")
+    normalized = raw * 1000 if raw < 10**15 else raw
+    if not 10**14 <= normalized < 10**17:
+        raise ForwardDiagnosticError("M034_FORWARD_INVALID_EXCHANGE_TIMESTAMP")
+    return normalized
 
 
 def _decimal(value: Any, name: str) -> D:
@@ -529,16 +587,19 @@ class ForwardPaperDiagnosticRunner:
         stream_factory: PublicStreamFactory,
         wall_time_us: Callable[[], int] | None = None,
         monotonic_ns: Callable[[], int] | None = None,
+        claim_artifact: Path | None = None,
     ) -> None:
         self.config = config
         self.public_client = public_client
         self.stream_factory = stream_factory
         self.wall_time_us = wall_time_us or (lambda: time.time_ns() // 1000)
         self.monotonic_ns = monotonic_ns or time.monotonic_ns
+        self.claim_artifact = claim_artifact
         self.ledger = SlotLedger({"USDT": config.initial_equity_usdt}, marks_usd={"USDT": D("1")})
         self.decision_ledger = EligibilityDecisionLedger()
         self.paper_queue = PaperQueueModel()
         self.states: dict[str, SymbolState] = {}
+        self.pair_status: dict[str, dict[str, Any]] = {}
         self.rejections: Counter[str] = Counter()
         self.event_counts: Counter[str] = Counter()
         self.capital_state_durations_us: Counter[str] = Counter()
@@ -548,11 +609,32 @@ class ForwardPaperDiagnosticRunner:
     def _capture_rules(self) -> list[dict[str, Any]]:
         records = []
         for symbol in CANONICAL_SYMBOLS:
-            payload = self.public_client.exchange_info(symbol)
-            acquired_at_us = self.wall_time_us()
-            rule, evidence = parse_forward_rule(
-                payload, symbol=symbol, acquired_at_us=acquired_at_us
-            )
+            requested_at_us = self.wall_time_us()
+            payload: Mapping[str, Any] | None = None
+            try:
+                payload = self.public_client.exchange_info(symbol)
+                acquired_at_us = self.wall_time_us()
+                rule, evidence = parse_forward_rule(
+                    payload, symbol=symbol, acquired_at_us=acquired_at_us
+                )
+            except (ForwardDiagnosticError, OSError, TimeoutError, ValueError) as exc:
+                acquired_at_us = self.wall_time_us()
+                reason = f"{type(exc).__name__}:{exc}"
+                self.pair_status[symbol] = {
+                    "state": "INELIGIBLE_RULE_EVIDENCE",
+                    "reason": reason,
+                }
+                records.append(
+                    {
+                        "symbol": symbol,
+                        "requested_at_us": requested_at_us,
+                        "acquired_at_us": acquired_at_us,
+                        "evidence_status": RuleEvidenceStatus.UNPROVEN.value,
+                        "reason": reason,
+                        "payload": payload,
+                    }
+                )
+                continue
             evidence_hash = hashlib.sha256(
                 json.dumps(evidence, sort_keys=True, separators=(",", ":")).encode()
             ).hexdigest()
@@ -565,9 +647,18 @@ class ForwardPaperDiagnosticRunner:
                 acquired_at_us=acquired_at_us,
                 rule_evidence_hash=evidence_hash,
             )
+            self.pair_status[symbol] = {
+                "state": (
+                    "ELIGIBILITY_EVALUATED"
+                    if rule.quote_asset == "USDT"
+                    else "OBSERVED_NOT_FUNDED_FROM_INITIAL_USDT"
+                ),
+                "reason": None,
+            }
             records.append(
                 {
                     "acquired_at_us": acquired_at_us,
+                    "requested_at_us": requested_at_us,
                     "source_reference": (
                         "https://data-api.binance.vision/api/v3/exchangeInfo?symbol=" + symbol
                     ),
@@ -581,8 +672,27 @@ class ForwardPaperDiagnosticRunner:
     def _snapshot_books(self) -> list[dict[str, Any]]:
         snapshots = []
         for symbol, state in self.states.items():
-            payload = self.public_client.depth_snapshot(symbol, limit=5000)
+            try:
+                payload = self.public_client.depth_snapshot(symbol, limit=5000)
+            except (OSError, TimeoutError, ValueError) as exc:
+                reason = f"{type(exc).__name__}:{exc}"
+                state.book.valid = False
+                self.pair_status[symbol] = {
+                    "state": "INELIGIBLE_DEPTH_SNAPSHOT",
+                    "reason": reason,
+                }
+                snapshots.append(
+                    {
+                        "symbol": symbol,
+                        "acquired_at_us": self.wall_time_us(),
+                        "snapshot": None,
+                        "reason": reason,
+                    }
+                )
+                continue
             state.book.snapshot(payload)
+            request = self.public_client.last_response or {}
+            response_body = request.get("body")
             snapshots.append(
                 {
                     "symbol": symbol,
@@ -593,6 +703,19 @@ class ForwardPaperDiagnosticRunner:
                         + symbol
                         + "&limit=5000"
                     ),
+                    "request_evidence": {
+                        "url": request.get("url"),
+                        "sent_us": request.get("sent_us"),
+                        "received_us": request.get("received_us"),
+                        "rtt_us": request.get("rtt_us"),
+                        "status": request.get("status"),
+                        "body_sha256": (
+                            hashlib.sha256(response_body.encode()).hexdigest()
+                            if isinstance(response_body, str)
+                            else None
+                        ),
+                    },
+                    "snapshot": payload,
                 }
             )
         return snapshots
@@ -600,11 +723,31 @@ class ForwardPaperDiagnosticRunner:
     def _refresh_rules(self) -> list[dict[str, Any]]:
         observations: list[dict[str, Any]] = []
         for symbol, state in self.states.items():
-            payload = self.public_client.exchange_info(symbol)
-            acquired_at_us = self.wall_time_us()
-            rule, evidence = parse_forward_rule(
-                payload, symbol=symbol, acquired_at_us=acquired_at_us
-            )
+            requested_at_us = self.wall_time_us()
+            try:
+                payload = self.public_client.exchange_info(symbol)
+                acquired_at_us = self.wall_time_us()
+                rule, evidence = parse_forward_rule(
+                    payload, symbol=symbol, acquired_at_us=acquired_at_us
+                )
+            except (ForwardDiagnosticError, OSError, TimeoutError, ValueError) as exc:
+                acquired_at_us = self.wall_time_us()
+                reason = f"{type(exc).__name__}:{exc}"
+                state.book.valid = False
+                self.pair_status[symbol] = {
+                    "state": "INELIGIBLE_RULE_REFRESH",
+                    "reason": reason,
+                }
+                observations.append(
+                    {
+                        "symbol": symbol,
+                        "requested_at_us": requested_at_us,
+                        "acquired_at_us": acquired_at_us,
+                        "evidence_status": RuleEvidenceStatus.UNPROVEN.value,
+                        "reason": reason,
+                    }
+                )
+                continue
             evidence_hash = hashlib.sha256(
                 json.dumps(evidence, sort_keys=True, separators=(",", ":")).encode()
             ).hexdigest()
@@ -617,6 +760,7 @@ class ForwardPaperDiagnosticRunner:
             observations.append(
                 {
                     "symbol": symbol,
+                    "requested_at_us": requested_at_us,
                     "acquired_at_us": acquired_at_us,
                     "changed_since_previous_observation": changed,
                     "observation_sha256": evidence_hash,
@@ -676,8 +820,8 @@ class ForwardPaperDiagnosticRunner:
             )
             fresh = (
                 state.book.valid
-                and state.last_event_us is not None
-                and now_us - state.last_event_us <= self.config.max_book_age_us
+                and state.last_depth_event_us is not None
+                and now_us - state.last_depth_event_us <= self.config.max_book_age_us
             )
             pair_evidence.append(
                 BinancePairEvidence(
@@ -745,11 +889,12 @@ class ForwardPaperDiagnosticRunner:
                 now_us=now_us, window_seconds=self.config.flow_window_seconds
             )
             fresh = (
-                state.last_event_us is not None
-                and now_us - state.last_event_us <= self.config.max_book_age_us
+                state.book.valid
+                and state.last_depth_event_us is not None
+                and now_us - state.last_depth_event_us <= self.config.max_book_age_us
             )
             market = MarketRegimeSnapshot(
-                observed_at_us=state.last_event_us or now_us,
+                observed_at_us=state.last_depth_event_us or now_us,
                 regime="FORWARD_OBSERVED",
                 peg_deviation=midpoint - D(1),
                 spread_bps=spread_bps,
@@ -840,19 +985,37 @@ class ForwardPaperDiagnosticRunner:
         return candidates
 
     def evaluate(self, *, now_us: int) -> tuple[EligibilityDecision, ...]:
+        candidates = self._candidates(now_us=now_us)
+        if not candidates:
+            self.decision_ledger.append_capital_state(
+                CapitalStateRecord(
+                    timestamp_us=now_us,
+                    state=CapitalState.BLOCKED_DATA,
+                    capital=self.ledger.free["USDT"],
+                    currency="USDT",
+                    reason_code=DecisionReasonCode.DATA_INSUFFICIENT,
+                )
+            )
+            self.rejections[DecisionReasonCode.DATA_INSUFFICIENT.value] += 1
         engine = M034EconomicAllocationEngine(
             gate=self._gate(now_us=now_us), decision_ledger=self.decision_ledger
         )
-        result = engine.evaluate_and_allocate(
-            self._candidates(now_us=now_us),
-            mode=EvaluationMode.FORWARD,
-            available_capital=self.ledger.free["USDT"],
-            available_capital_currency="USDT",
-            now_us=now_us,
-        )
-        if result.selected_candidate_ids:
+        if candidates:
+            result = engine.evaluate_and_allocate(
+                candidates,
+                mode=EvaluationMode.FORWARD,
+                available_capital=self.ledger.free["USDT"],
+                available_capital_currency="USDT",
+                now_us=now_us,
+            )
+            decisions = result.decisions
+            selected_candidate_ids = result.selected_candidate_ids
+        else:
+            decisions = ()
+            selected_candidate_ids = ()
+        if selected_candidate_ids:
             raise ForwardDiagnosticError("M034_FORWARD_UNKNOWN_ESTIMATORS_MUST_BLOCK_ORDERS")
-        for decision in result.decisions:
+        for decision in decisions:
             for reason in decision.decision_reason_codes:
                 if reason.value != "ELIGIBLE":
                     self.rejections[reason.value] += 1
@@ -864,22 +1027,39 @@ class ForwardPaperDiagnosticRunner:
                 )
             self.last_capital_state = state
             self.last_capital_state_at_us = now_us
-        return result.decisions
+        return decisions
 
-    def _apply_event(self, data: Mapping[str, Any], *, received_us: int) -> int:
+    def _apply_event(
+        self,
+        data: Mapping[str, Any],
+        *,
+        received_us: int,
+        received_monotonic_ns: int,
+    ) -> int:
         symbol = str(data.get("s", ""))
         state = self.states.get(symbol)
         if state is None:
+            if symbol in CANONICAL_SYMBOLS:
+                self.event_counts["ignored_ineligible_pair_event"] += 1
+                return _event_time_us(data)
             raise ForwardDiagnosticError("M034_FORWARD_UNEXPECTED_SYMBOL")
-        event_time_us = _event_time_us(data, received_us)
+        event_time_us = _event_time_us(data)
         event_type = data.get("e")
         if event_type == "depthUpdate":
             try:
-                state.book.apply(dict(data))
+                applied = state.book.apply(dict(data))
+                if applied:
+                    if (
+                        state.last_depth_event_us is not None
+                        and event_time_us < state.last_depth_event_us
+                    ):
+                        raise BookGap("DEPTH_TIMESTAMP_REGRESSION")
+                    state.last_depth_event_us = event_time_us
+                    state.last_depth_received_us = received_us
+                    state.last_depth_received_monotonic_ns = received_monotonic_ns
             except BookGap:
                 state.gaps += 1
                 state.book.valid = False
-            state.last_event_us = event_time_us
             self.event_counts["depth"] += 1
         elif event_type == "trade":
             trade_id = data.get("t")
@@ -895,7 +1075,8 @@ class ForwardPaperDiagnosticRunner:
             state.last_trade_id = trade_id
             assert state.trades is not None
             state.trades.append((event_time_us, quantity))
-            state.last_event_us = event_time_us
+            state.last_trade_event_us = event_time_us
+            state.last_trade_received_us = received_us
             self.paper_queue.consume_trade(
                 symbol=symbol,
                 trade_id=trade_id,
@@ -910,6 +1091,9 @@ class ForwardPaperDiagnosticRunner:
         return event_time_us
 
     def run(self, output: Path) -> dict[str, Any]:
+        if self.claim_artifact is None or not self.claim_artifact.is_file():
+            raise ForwardDiagnosticError("M034_FORWARD_CANONICAL_RUN_CLAIM_REQUIRED")
+        claim_sha256 = hashlib.sha256(self.claim_artifact.read_bytes()).hexdigest()
         output.mkdir(parents=True, exist_ok=False)
         configuration_path = output / "configuration.json"
         configuration_path.write_text(
@@ -919,6 +1103,8 @@ class ForwardPaperDiagnosticRunner:
                     "source_sha": self.config.source_sha,
                     "source_review_artifact": self.config.source_review_artifact,
                     "source_review_sha256": self.config.source_review_sha256,
+                    "run_claim_artifact": self.config.run_claim_artifact,
+                    "run_claim_sha256": claim_sha256,
                     "threshold_config_hash": self.config.threshold_config_hash,
                     "configuration_hash": self.config.configuration_hash,
                     "duration_seconds": self.config.duration_seconds,
@@ -927,8 +1113,11 @@ class ForwardPaperDiagnosticRunner:
                     "estimator_policy": "UNKNOWN_BLOCKS",
                     "depth_band_bps": str(self.config.depth_band_bps),
                     "rule_refresh_seconds": self.config.rule_refresh_seconds,
+                    "max_market_clock_lead_us": self.config.max_market_clock_lead_us,
+                    "max_market_clock_lag_us": self.config.max_market_clock_lag_us,
                     "fee_evidence_artifact": self.config.fee_evidence_artifact,
                     "fee_evidence_sha256": self.config.fee_evidence_sha256,
+                    "fee_applicable_symbols": list(self.config.fee_applicable_symbols),
                     "economic_venue": Venue.BINANCE.value,
                     "kraken": "RETIRED_DISABLED",
                 },
@@ -943,6 +1132,7 @@ class ForwardPaperDiagnosticRunner:
         warmup_started_mono = self.monotonic_ns()
         warmup_deadline_mono = warmup_started_mono + self.config.warmup_seconds * 1_000_000_000
         economic_start_us: int | None = None
+        economic_start_mono_ns: int | None = None
         economic_end_us: int | None = None
         next_decision_us: int | None = None
         checkpoints: list[dict[str, Any]] = []
@@ -953,6 +1143,7 @@ class ForwardPaperDiagnosticRunner:
         failure: str | None = None
         last_message_mono = warmup_started_mono
         market_watermark_us: int | None = None
+        validated_market_watermark_us: int | None = None
         raw_path = output / "raw-market.jsonl.gz"
         decisions_path = output / "eligibility-decisions.jsonl.gz"
         try:
@@ -984,7 +1175,7 @@ class ForwardPaperDiagnosticRunner:
                     if not isinstance(data, dict):
                         raise ForwardDiagnosticError("M034_FORWARD_INVALID_STREAM_DATA")
                     ingest_sequence += 1
-                    event_time_us = _event_time_us(data, received_us)
+                    event_time_us = _event_time_us(data)
                     market_watermark_us = max(market_watermark_us or event_time_us, event_time_us)
                     included = economic_end_us is None or market_watermark_us < economic_end_us
                     raw_file.write(
@@ -1000,11 +1191,33 @@ class ForwardPaperDiagnosticRunner:
                         )
                         + "\n"
                     )
-                    if economic_end_us is not None and market_watermark_us >= economic_end_us:
-                        break
-                    self._apply_event(data, received_us=received_us)
+                    if economic_start_us is not None and economic_start_mono_ns is not None:
+                        market_elapsed_us = market_watermark_us - economic_start_us
+                        monotonic_elapsed_us = (received_mono - economic_start_mono_ns) // 1000
+                        if (
+                            market_elapsed_us
+                            > monotonic_elapsed_us + self.config.max_market_clock_lead_us
+                        ):
+                            raise ForwardDiagnosticError("M034_FORWARD_MARKET_CLOCK_JUMP")
+                        if (
+                            monotonic_elapsed_us
+                            > market_elapsed_us + self.config.max_market_clock_lag_us
+                        ):
+                            raise ForwardDiagnosticError("M034_FORWARD_MARKET_CLOCK_STALLED")
+                        validated_market_watermark_us = market_watermark_us
+                        if economic_end_us is not None and market_watermark_us >= economic_end_us:
+                            if monotonic_elapsed_us < self.config.duration_seconds * 1_000_000:
+                                raise ForwardDiagnosticError("M034_FORWARD_THREE_HOURS_NOT_ELAPSED")
+                            break
+                    self._apply_event(
+                        data,
+                        received_us=received_us,
+                        received_monotonic_ns=received_mono,
+                    )
                     if economic_start_us is None and received_mono >= warmup_deadline_mono:
                         economic_start_us = market_watermark_us
+                        economic_start_mono_ns = received_mono
+                        validated_market_watermark_us = market_watermark_us
                         economic_end_us = (
                             economic_start_us + self.config.duration_seconds * 1_000_000
                         )
@@ -1081,16 +1294,24 @@ class ForwardPaperDiagnosticRunner:
         except Exception as exc:
             status = "INVALIDATED_TECHNICAL"
             failure = f"{type(exc).__name__}:{exc}"
-        if economic_start_us is not None and self.last_capital_state_at_us is not None:
-            duration_end = (
-                economic_end_us
-                if status == "COMPLETE" and economic_end_us is not None
-                else self.last_capital_state_at_us
+        observed_end_us = (
+            None
+            if economic_start_us is None or validated_market_watermark_us is None
+            else min(
+                validated_market_watermark_us,
+                economic_end_us or validated_market_watermark_us,
             )
+        )
+        if economic_start_us is not None and self.last_capital_state_at_us is not None:
+            duration_end = observed_end_us or self.last_capital_state_at_us
             self.capital_state_durations_us[self.last_capital_state.value] += max(
                 0, duration_end - self.last_capital_state_at_us
             )
-        duration_us = self.config.duration_seconds * 1_000_000 if status == "COMPLETE" else 0
+        duration_us = (
+            0
+            if economic_start_us is None or observed_end_us is None
+            else max(0, observed_end_us - economic_start_us)
+        )
         blocked_data_us = self.capital_state_durations_us[CapitalState.BLOCKED_DATA.value]
         idle_us = self.capital_state_durations_us[CapitalState.IDLE_NO_ELIGIBLE_OPPORTUNITY.value]
         result: dict[str, Any] = {
@@ -1103,10 +1324,13 @@ class ForwardPaperDiagnosticRunner:
             "source_review_status": self.config.source_review_status,
             "threshold_config_hash": self.config.threshold_config_hash,
             "configuration_hash": self.config.configuration_hash,
+            "RUN_CLAIM_ARTIFACT": self.config.run_claim_artifact,
+            "RUN_CLAIM_SHA256": claim_sha256,
             "START_TIMESTAMP_US": economic_start_us,
-            "END_TIMESTAMP_US": economic_end_us,
+            "END_TIMESTAMP_US": observed_end_us,
+            "PLANNED_END_TIMESTAMP_US": economic_end_us,
             "INITIAL_BANK_USD": "200.00",
-            "DURATION_HOURS": "3.000",
+            "DURATION_HOURS": str((D(duration_us) / D(3_600_000_000)).quantize(D("0.001"))),
             "PHYSICAL_CYCLES": 0,
             "SLOT_EQUIVALENT_CYCLES": 0,
             "GROSS_REALIZED_PNL_USD": "0.0000",
@@ -1140,6 +1364,7 @@ class ForwardPaperDiagnosticRunner:
             "CAPITAL_STATE_DURATIONS_US": dict(sorted(self.capital_state_durations_us.items())),
             "EVENT_COUNTS": dict(sorted(self.event_counts.items())),
             "BOOK_GAPS": {symbol: state.gaps for symbol, state in self.states.items()},
+            "PAIR_STATUS": dict(sorted(self.pair_status.items())),
             "checkpoints": checkpoints,
             "cycles": [],
             "ECONOMIC_REPLAY_RUNS": 0,
@@ -1166,6 +1391,8 @@ class ForwardPaperDiagnosticRunner:
             "status": status,
             "files": files,
             "real_order_endpoints_present": False,
+            "run_claim_artifact": self.config.run_claim_artifact,
+            "run_claim_sha256": claim_sha256,
         }
         (output / "manifest.json").write_text(
             json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
@@ -1178,6 +1405,28 @@ def load_config(path: Path) -> DiagnosticConfig:
     if not isinstance(payload, dict):
         raise ForwardDiagnosticError("M034_FORWARD_CONFIG_MUST_BE_OBJECT")
     return DiagnosticConfig.from_mapping(payload)
+
+
+def claim_identity(config: DiagnosticConfig, output_path: Path, *, root: Path) -> Path:
+    marker = (root / config.run_claim_artifact).resolve()
+    if root.resolve() not in marker.parents:
+        raise ForwardDiagnosticError("M034_FORWARD_RUN_CLAIM_OUTSIDE_REPOSITORY")
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "identity": config.identity,
+        "claimed_at": datetime.now(UTC).isoformat(),
+        "source_sha": config.source_sha,
+        "configuration_hash": config.configuration_hash,
+        "output": str(output_path),
+        "rule": "ONE_SHOT_PRESERVE_ON_SUCCESS_OR_FAILURE",
+    }
+    try:
+        with marker.open("x", encoding="utf-8", newline="\n") as stream:
+            json.dump(payload, stream, indent=2)
+            stream.write("\n")
+    except FileExistsError as exc:
+        raise ForwardDiagnosticError("M034_FORWARD_IDENTITY_ALREADY_CLAIMED") from exc
+    return marker
 
 
 def default_public_client() -> PublicMarketClient:
@@ -1194,6 +1443,7 @@ __all__ = [
     "PaperMakerOrder",
     "PaperOrderState",
     "PaperQueueModel",
+    "claim_identity",
     "load_config",
     "parse_forward_rule",
 ]
