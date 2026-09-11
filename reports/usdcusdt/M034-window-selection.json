@@ -1,0 +1,19 @@
+{
+  "schema": "m034-window-selection-v1",
+  "registered_at": "2026-09-10T22:00:00-03:00",
+  "status": "NOT_SELECTED",
+  "method": null,
+  "eligible_pool_hash": null,
+  "fixed_window": null,
+  "csprng_algorithm": null,
+  "seed_provenance": null,
+  "draw_output": null,
+  "official_draw_count": 0,
+  "reroll_count": 0,
+  "blockers": [
+    "ECONOMIC_ELIGIBLE_POOL_EMPTY",
+    "DURATION_AND_CALENDAR_OWNER_VALUE_REQUIRED",
+    "THRESHOLDS_ESTIMATORS_PROTOCOL_AND_CAPITAL_NOT_FROZEN"
+  ],
+  "economic_replay_runs": 0
+}

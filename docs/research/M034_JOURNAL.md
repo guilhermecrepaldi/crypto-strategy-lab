@@ -90,3 +90,53 @@ censoring and calibration/OOS separation. No P1/P2 remained in the reviewed M034
 library scope. `M034_SOURCE_ARCHITECTURE_PASS=true`; `READY_FOR_REPLAY=false` and
 `STRATEGY_PASS=false`. No replay, dataset/window draw, model registration, account,
 Testnet or live action occurred.
+
+## 2026-09-10 - pre-replay hardening and evidence inventory
+
+Starting from clean `HEAD=origin/main=989c1d4b9ecc31136e599ce094f540e32e1642e0`,
+GitHub Actions was confirmed to fail exclusively at `uv run ruff format --check .`
+before mypy/pytest. Ruff formatted 64 already-versioned Python files in isolated commit
+`420c99e825eea9c28a370b8f3f815bad923c60ce`; `ruff check`, format check and
+`git diff --check` passed. Full-package mypy then reproduced the known baseline of 117
+errors in 13 legacy files. The exact `uv run pytest` console-script invocation on
+Windows failed collection because the repository root was absent from `sys.path`; the
+same suite remains to be rerun through the documented module invocation. These are
+recorded separately from M034 introduced failures.
+
+Before inspecting market-content eligibility, the ex-ante pre-replay protocol was
+published at `f6fd64039843184458ef8470f2b605d2214d92c9`. GPT-6 Astra returned
+`PASS_FOR_EX_ANTE_REGISTRATION`, required performance-blind date/pair selection,
+semantic calibration/OOS identity, conservative censoring, and prohibited excluding
+OOS dates by their later realized safety regime.
+
+The subsequent physical inventory found the seven canonical M032 candidate books. Only
+USDCUSDT has local L2+individual-trade units: 12 of 21 first-of-month days pass the
+native-sequence, normalized-binding, trade-binding and coverage gates. All 12 were
+already exposed to M016-M030 work and are registered as `CALIBRATION`; the independent
+OOS pool is empty. No unit has a complete, date-bounded historical fee profile and
+complete historical symbol-rule set. Current fee/rule material remains forward-only.
+Thus the frozen candidate universe contains zero economic candidates.
+
+Operational estimator labels, censoring method, execution-cost evidence and latency
+authority are absent and remain unknown. All canonical threshold values, capital,
+currency and SLOT_BASE require objective evidence or explicit OWNER preregistration;
+no threshold hash was generated. The replay protocol and draft experiment manifest
+make all nulls explicit. No master hash or model identity was registered; no window was
+selected; official draw count remains zero. An integrated runner is still absent and is
+not fabricated while its economic authorities are undefined.
+
+Independent GPT-6 Astra review then bound the format-only source commit `420c99e` and
+returned `IMPLEMENTATION_REVIEW=PASS`: all 64 changed Python ASTs are equivalent to
+`4054dfd`, formatting the prior content reproduces the published files exactly, 141
+focused tests passed, Ruff check/format, strict mypy on seven modules and diff check
+passed. This closes the source-review gate only; it does not close any economic gate.
+
+Final local reproduction passed the exact 141-test focused selection and the root-aware
+full suite with 1,172 passed and 2 skipped. The bare Windows `uv run pytest` command's
+earlier 25 collection errors are therefore classified as console-script `sys.path`
+environment failure, not test failures. GitHub Actions now passes Ruff and reaches the
+global mypy step, where it fails on the existing cross-platform baseline: 128 errors in
+16 legacy files on Linux versus 117 errors in 13 files locally. Strict mypy remains green
+for all seven M034-affected source modules; CI is truthfully non-green.
+
+`READY_FOR_REPLAY=false`; `ECONOMIC_REPLAY_RUNS=0`; `STRATEGY_PASS=false`.

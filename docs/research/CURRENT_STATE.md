@@ -1,18 +1,18 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=NONE
-CAMPAIGN_STATUS=M034_SOURCE_ARCHITECTURE_PASS_BLOCKED_PRE_REPLAY
-CAMPAIGN_EXECUTION_SOURCE_SHA=4054dfd3d02d2075516e9272a4c03046e5e0e277
+CAMPAIGN_STATUS=M034_PRE_REPLAY_EVIDENCE_PUBLISHED_BLOCKED
+CAMPAIGN_EXECUTION_SOURCE_SHA=420c99e825eea9c28a370b8f3f815bad923c60ce
 CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
 CAMPAIGN_VERDICT=BLOCKED_PRE_RUN
 CAMPAIGN_PROGRESS_FILE=docs/research/M034_JOURNAL.md
 CAMPAIGN_JOURNAL=docs/research/M034_JOURNAL.md
 CAMPAIGN_SCOREBOARD=reports/usdcusdt/M034-implementation-status.json
-CURRENT_ACTIVE_RESEARCH_MODEL=NONE_AWAITING_M034_EVIDENCE_AND_CONFIGURATION
-OWNER_NEXT_RESEARCH=M034_EVIDENCE_THRESHOLDS_CONFIGURATION_RUNNER_PROTOCOL
+CURRENT_ACTIVE_RESEARCH_MODEL=NONE_AWAITING_M034_OWNER_VALUES_AND_NEW_EVIDENCE
+OWNER_NEXT_RESEARCH=PROVIDE_OR_AUTHORIZE_HISTORICAL_FEE_RULE_OOS_DATA_AND_THRESHOLD_CAPITAL_VALUES
 OWNER_DIRECTIVE=docs/microstructure/M034_BINANCE_ECONOMIC_ELIGIBILITY_PRODUCTIVITY.md
-NEXT_CAMPAIGN_STATUS=BLOCKED_PRE_REPLAY_CONFIGURATION_AND_EVIDENCE
+NEXT_CAMPAIGN_STATUS=BLOCKED_PRE_REPLAY_OBJECTIVE_GATES
 NEXT_CAMPAIGN_MODEL_HASH=UNREGISTERED
 NEXT_CAMPAIGN_WINDOW=UNSELECTED_NO_CSPRNG_DRAW
 NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=UNRESOLVED_NOT_TO_EXCEED_EXISTING_200_USD_EQ_LIMIT
@@ -22,11 +22,22 @@ reviewed M032/M033 libraries. Per the latest OWNER directive, Kraken is retired 
 all M034 economic paths; only its historical M033 provenance remains. Unknown or unproven fee,
 cost, data, market safety, completion or lock evidence fails closed; no eligible
 opportunity leaves capital explicitly idle. Thresholds are mandatory typed inputs
-with provenance and hashes, but no operational values are frozen. The first published
+with provenance and hashes, but no operational values are frozen. Pre-replay protocol,
+Binance evidence pack, seven-book candidate universe, physical dataset manifest,
+calibration role registry, blocked estimator/cost artifacts, replay protocol and draft
+experimental identity are now published. Twelve USDCUSDT days have valid physical
+L2+trades, but every one is calibration-contaminated by prior development and none has
+complete historical fee+rule proof; economic/OOS pools are empty. No window was selected
+and no CSPRNG draw occurred. The first published
 reviews at `d009653`, `1dd2f3d` and `e55bb7b` blocked causal/economic invariants;
-the fourth source-bound review passed at `4054dfd`. No operational pair
-universe, dataset, window, model registration, integrated
-runner or economic replay exists. `SOURCE_ARCHITECTURE_PASS != STRATEGY_PASS`.
+the fourth semantic source-bound review passed at `4054dfd`; the independent exact
+post-format GPT-6 Astra review also passed at `420c99e`, proving the Python delta is
+Ruff-format-only and AST-equivalent. No threshold hash, OOS pool, frozen replay dataset,
+window, registered model identity, integrated runner or economic replay exists.
+Local root-aware validation passes 1,172 tests with 2 skips, while GitHub Actions is
+still non-green at the pre-existing full-package mypy gate (128 errors/16 legacy files
+on Linux; 117/13 locally); strict mypy on all seven M034-affected modules passes.
+`SOURCE_ARCHITECTURE_PASS != STRATEGY_PASS`.
 
 <!-- Historical M033 state below is retained as provenance. -->
 
