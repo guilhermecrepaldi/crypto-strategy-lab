@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import Counter, deque
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP
 from decimal import Decimal as D
 from statistics import median
@@ -217,6 +217,15 @@ class BacktestOrder:
     filled_quantity: D = ZERO
 
 
+class BacktestExecutionError(RuntimeError):
+    """Execution failure carrying the complete causal prefix for preservation."""
+
+    def __init__(self, cause: BaseException, evidence: list[dict[str, Any]]) -> None:
+        super().__init__(str(cause))
+        self.cause_type = type(cause).__name__
+        self.evidence = evidence
+
+
 class M034ZeroLossScenario:
     """One fee scenario sharing the same immutable event sequence with its peers."""
 
@@ -254,6 +263,7 @@ class M034ZeroLossScenario:
         self.adverse_selection_cost_total = ZERO
         self.negative_risk_exits = 0
         self.risk_exit_assessments = 0
+        self.risk_exit_signals: dict[str, int] = {}
         self.locked_integral_usd_us = ZERO
         self.idle_integral_usd_us = ZERO
         self.max_capital_lock_usd = ZERO
@@ -397,7 +407,7 @@ class M034ZeroLossScenario:
         self.flow[side].append((now_us, quantity))
         self._prune_flow(now_us)
         self._advance_orders(now_us)
-        if self.last_book is not None and int(self.last_book["exchange_upper_us"]) > native_us:
+        if self.last_book is not None and int(self.last_book["exchange_upper_us"]) >= native_us:
             return
         eligible_ids = {
             order.order_id
@@ -632,7 +642,15 @@ class M034ZeroLossScenario:
         inventory = sum(
             (bucket.get("USDC", ZERO) * mark for bucket in self.ledger.owned.values()), ZERO
         )
-        return reserved_entry + inventory
+        reserved_return = sum(
+            (
+                self.ledger.reservations[order.reservation_id].remaining * mark
+                for order in self._active_orders(kind="RETURN")
+                if order.reservation_id in self.ledger.reservations
+            ),
+            ZERO,
+        )
+        return reserved_entry + inventory + reserved_return
 
     def _try_allocate_entries(self, now_us: int) -> None:
         if self.last_book is None or self.hotline is None:
@@ -723,6 +741,8 @@ class M034ZeroLossScenario:
             if order.status != "PENDING" or now_us < order.activate_at_us:
                 continue
             assert self.last_book is not None
+            if int(self.last_book["exchange_upper_us"]) < order.activate_at_us:
+                continue
             bid, ask = self.last_book["bids"][0][0], self.last_book["asks"][0][0]
             if (order.side == "BUY" and order.price >= ask) or (
                 order.side == "SELL" and order.price <= bid
@@ -742,7 +762,9 @@ class M034ZeroLossScenario:
             )
             self.ledger.activate(order.reservation_id, now_us=now_us)
             order.status = "ACTIVE"
-            order.activation_native_upper_us = int(self.last_book["exchange_upper_us"])
+            order.activation_native_upper_us = max(
+                int(self.last_book["exchange_upper_us"]), order.activate_at_us
+            )
 
     def _request_stale_c2_cancels(self, now_us: int, new_hotline: D) -> None:
         for order in self._active_orders(kind="ENTRY"):
@@ -893,7 +915,16 @@ class M034ZeroLossScenario:
         bid = self.last_book["bids"][0][0]
         ask = self.last_book["asks"][0][0]
         midpoint = (bid + ask) / D(2)
+        available_bids = [[price, depth] for price, depth in self.last_book["bids"]]
         for slot_id, bucket in sorted(self.ledger.owned.items()):
+            entry_reservation_order = next(
+                (
+                    row
+                    for row in self._active_orders(kind="ENTRY")
+                    if row.slot_id == slot_id and row.reservation_id in self.ledger.reservations
+                ),
+                None,
+            )
             return_order = next(
                 (row for row in self._active_orders(kind="RETURN") if row.slot_id == slot_id),
                 None,
@@ -904,6 +935,11 @@ class M034ZeroLossScenario:
             quantity = bucket.get("USDC", ZERO) + reserved_quantity
             slot = self.ledger.slots[slot_id]
             if quantity <= ZERO:
+                self.risk_exit_signals.pop(slot_id, None)
+                continue
+            if entry_reservation_order is not None:
+                self.risk_exit_signals.pop(slot_id, None)
+                self.rejections["PARTIAL_ENTRY_PROTECTED"] += 1
                 continue
             entry = next(
                 (
@@ -915,12 +951,19 @@ class M034ZeroLossScenario:
             )
             if entry is None:
                 continue
+            if return_order is not None and return_order.filled_quantity > ZERO:
+                self.risk_exit_signals.pop(slot_id, None)
+                self.rejections["PARTIAL_OWNED_RETURN_PROTECTED"] += 1
+                continue
             self.risk_exit_assessments += 1
             gross_proceeds = ZERO
             remaining = quantity
-            for price, depth in self.last_book["bids"]:
+            depth_allocations: list[tuple[int, D]] = []
+            for index, (price, depth) in enumerate(available_bids):
                 amount = min(remaining, depth)
                 gross_proceeds += amount * price
+                if amount > ZERO:
+                    depth_allocations.append((index, amount))
                 remaining -= amount
                 if remaining == ZERO:
                     break
@@ -944,9 +987,11 @@ class M034ZeroLossScenario:
                 tail_risk_increase=tail_increase,
                 realized_loss_of_exit=loss,
             ):
+                self.risk_exit_signals.pop(slot_id, None)
                 self.rejections["NEGATIVE_EXIT_NOT_ALLOWED_COSMETIC"] += 1
                 continue
             if return_order is not None:
+                self.risk_exit_signals.setdefault(slot_id, now_us)
                 if return_order.status != "CANCEL_PENDING":
                     self.ledger.request_cancel(return_order.reservation_id, now_us=now_us)
                     return_order.status = "CANCEL_PENDING"
@@ -954,6 +999,12 @@ class M034ZeroLossScenario:
                 continue
             if slot.reservation_id is not None:
                 raise ValueError("M034_ZERO_LOSS_RISK_EXIT_RESERVATION_NOT_OWNED_RETURN")
+            signal_at_us = self.risk_exit_signals.setdefault(slot_id, now_us)
+            if now_us < signal_at_us + self.config.activation_latency_us:
+                self.rejections["RISK_EXIT_WAITING_FOR_ACTIVATION"] += 1
+                continue
+            for index, amount in depth_allocations:
+                available_bids[index][1] -= amount
             self._execute_negative_risk_exit(
                 entry=entry,
                 quantity=quantity,
@@ -965,6 +1016,7 @@ class M034ZeroLossScenario:
                 loss=loss,
                 now_us=now_us,
             )
+            self.risk_exit_signals.pop(slot_id, None)
 
     def _execute_negative_risk_exit(
         self,
@@ -1091,7 +1143,6 @@ class M034ZeroLossScenario:
         self.cycles.append(row)
         if pnl < ZERO:
             self.negative_cycles.append(row)
-        self._try_allocate_entries(now_us)
 
     def finish(self) -> dict[str, Any]:
         self._advance_clock(self.config.end_us)
@@ -1104,10 +1155,14 @@ class M034ZeroLossScenario:
         cycle_pnls = [D(row["net_pnl"]) for row in self.cycles]
         locks = [D(row["duration_seconds"]) for row in self.cycles]
         for order in self.orders.values():
-            if order.kind == "ENTRY" and order.status not in {"CLOSED", "CANCELLED"}:
+            if order.kind == "ENTRY" and order.status not in {
+                "CLOSED",
+                "CANCELLED",
+                "RISK_EXITED",
+            }:
                 locks.append(D(self.config.end_us - order.submitted_at_us) / D(1_000_000))
         duration_us = D(self.config.end_us - self.config.start_us)
-        capital_time = self.config.initial_bank_usdt * duration_us
+        observed_capital_time = self.locked_integral_usd_us + self.idle_integral_usd_us
         positive = sum(value > ZERO for value in cycle_pnls)
         zero = sum(value == ZERO for value in cycle_pnls)
         negative = sum(value < ZERO for value in cycle_pnls)
@@ -1149,9 +1204,17 @@ class M034ZeroLossScenario:
             "TOTAL_FEES": _s(self.total_fees_usd),
             "EXECUTION_COST_TOTAL": _s(self.execution_cost_total),
             "ADVERSE_SELECTION_COST_TOTAL": _s(self.adverse_selection_cost_total),
-            "CAPITAL_UTILIZATION_PCT": _s(self.locked_integral_usd_us / capital_time * D(100)),
-            "IDLE_CAPITAL_PCT": _s(self.idle_integral_usd_us / capital_time * D(100)),
-            "LOCKED_INVENTORY_PCT": _s(self.locked_integral_usd_us / capital_time * D(100)),
+            "CAPITAL_UTILIZATION_PCT": _s(
+                self.locked_integral_usd_us / observed_capital_time * D(100)
+            ),
+            "IDLE_CAPITAL_PCT": _s(self.idle_integral_usd_us / observed_capital_time * D(100)),
+            "LOCKED_INVENTORY_PCT": _s(
+                self.locked_integral_usd_us / observed_capital_time * D(100)
+            ),
+            "MARKED_PNL_PER_INITIAL_CAPITAL_HOUR": _s(
+                (marked_equity - self.config.initial_bank_usdt)
+                / (self.config.initial_bank_usdt * duration_us / D(3_600_000_000))
+            ),
             "MAX_LOCK_SECONDS": None if not locks else _s(max(locks)),
             "P50_LOCK_SECONDS": None if not locks else _s(D(str(median(locks)))),
             "P90_LOCK_SECONDS": None if not locks else _s(_percentile(locks, D("0.90")) or ZERO),
@@ -1168,34 +1231,102 @@ class M034ZeroLossScenario:
             "CHECKPOINTS": self.checkpoints,
         }
 
+    def evidence_snapshot(self) -> dict[str, Any]:
+        """Return sufficient physical state to independently reconcile the prefix."""
+        return {
+            "scenario": self.name,
+            "event_counts": {
+                "events": self.event_count,
+                "books": self.book_count,
+                "trades": self.trade_count,
+            },
+            "ledger": {
+                "free": self.ledger.free,
+                "asset_totals": self.ledger.asset_totals(),
+                "owned": self.ledger.owned,
+                "reservations": {
+                    key: asdict(value) for key, value in self.ledger.reservations.items()
+                },
+                "slots": {key: asdict(value) for key, value in self.ledger.slots.items()},
+                "realized_pnl_by_asset": self.ledger.realized_pnl_by_asset,
+                "negative_exit_count": self.ledger.negative_exit_count,
+                "negative_exit_cost": self.ledger.negative_exit_cost,
+                "audit": self.ledger.audit,
+                "fill_attribution": [
+                    {
+                        "reservation_id": row.reservation_id,
+                        "reservation_created_at_us": row.reservation_created_at_us,
+                        "slot_id": row.slot_id,
+                        "fill": asdict(row.fill),
+                    }
+                    for row in self.ledger.fill_attribution.values()
+                ],
+            },
+            "eligibility": {
+                "decisions": [asdict(row) for row in self.decisions.decisions],
+                "capital_states": [asdict(row) for row in self.decisions.capital_states],
+            },
+            "orders": [asdict(row) for row in self.orders.values()],
+            "queue": {
+                "groups": [
+                    {
+                        "book": group.book,
+                        "side": group.side,
+                        "price": group.price,
+                        "public_remaining": group.public_remaining,
+                        "own_orders": [asdict(row) for row in group.own_orders],
+                    }
+                    for group in self.queue.groups.values()
+                ],
+                "processed_event_count": len(self.queue.processed_event_ids),
+                "last_time_us": self.queue.last_time_us,
+            },
+            "cycles": self.cycles,
+            "checkpoints": self.checkpoints,
+            "rejections": dict(sorted(self.rejections.items())),
+            "risk_exit_signals": self.risk_exit_signals,
+        }
+
 
 def run_scenarios(
     config: ZeroLossConfig, events: Iterable[Mapping[str, Any]]
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+) -> tuple[
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
     scenarios = [M034ZeroLossScenario(config, fee_bps=fee) for fee in config.fee_scenarios_bps]
-    for event in events:
-        if not (
-            config.start_us <= int(event["local_us"]) < config.end_us
-            and config.start_us <= int(event["exchange_us"]) < config.end_us
-        ):
-            raise ValueError("M034_ZERO_LOSS_EVENT_ESCAPED_WINDOW")
-        for scenario in scenarios:
-            if event["kind"] == "BOOK":
-                scenario.receive_book(event)
-            elif event["kind"] == "TRADE":
-                scenario.receive_trade(event)
-            else:
-                raise ValueError("M034_ZERO_LOSS_UNKNOWN_EVENT")
-    results = [scenario.finish() for scenario in scenarios]
+    try:
+        for event in events:
+            if not (
+                config.start_us <= int(event["local_us"]) < config.end_us
+                and config.start_us <= int(event["exchange_us"]) < config.end_us
+            ):
+                raise ValueError("M034_ZERO_LOSS_EVENT_ESCAPED_WINDOW")
+            for scenario in scenarios:
+                if event["kind"] == "BOOK":
+                    scenario.receive_book(event)
+                elif event["kind"] == "TRADE":
+                    scenario.receive_trade(event)
+                else:
+                    raise ValueError("M034_ZERO_LOSS_UNKNOWN_EVENT")
+        results = [scenario.finish() for scenario in scenarios]
+    except BaseException as exc:
+        raise BacktestExecutionError(
+            exc, [scenario.evidence_snapshot() for scenario in scenarios]
+        ) from exc
     cycles = [row for scenario in scenarios for row in scenario.cycles]
     checkpoints = [row for scenario in scenarios for row in scenario.checkpoints]
+    evidence = [scenario.evidence_snapshot() for scenario in scenarios]
     counts = {(row["EVENT_COUNT"], row["BOOK_COUNT"], row["TRADE_COUNT"]) for row in results}
     if len(counts) != 1:
         raise ValueError("M034_ZERO_LOSS_SCENARIOS_DID_NOT_SHARE_TAPE")
-    return results, cycles, checkpoints
+    return results, cycles, checkpoints, evidence
 
 
 __all__ = [
+    "BacktestExecutionError",
     "M034ZeroLossScenario",
     "ZeroLossConfig",
     "negative_risk_exit_allowed",

@@ -5,6 +5,7 @@ from decimal import Decimal as D
 import pytest
 
 from crypto_strategy_lab.microstructure.m034_zero_loss_backtest import (
+    BacktestExecutionError,
     M034ZeroLossScenario,
     ZeroLossConfig,
     negative_risk_exit_allowed,
@@ -74,23 +75,39 @@ def config(**changes) -> ZeroLossConfig:
     return ZeroLossConfig.from_mapping(config_row(**changes))
 
 
-def book(local_us: int, *, bid="0.9999", ask="1.0001", upper_us=None):
+def book(
+    local_us: int,
+    *,
+    bid="0.9999",
+    ask="1.0001",
+    bid_quantity="100000",
+    ask_quantity="100000",
+    upper_us=None,
+):
     return {
         "kind": "BOOK",
         "local_us": local_us,
         "exchange_us": local_us,
         "exchange_upper_us": local_us if upper_us is None else upper_us,
         "sequence_validated": True,
-        "bids": [(D(bid), D("100000"))],
-        "asks": [(D(ask), D("100000"))],
+        "bids": [(D(bid), D(bid_quantity))],
+        "asks": [(D(ask), D(ask_quantity))],
     }
 
 
-def trade(local_us: int, trade_id: int, *, price: str, quantity="1000", buyer_maker=True):
+def trade(
+    local_us: int,
+    trade_id: int,
+    *,
+    price: str,
+    quantity="1000",
+    buyer_maker=True,
+    exchange_us=None,
+):
     return {
         "kind": "TRADE",
         "local_us": local_us,
-        "exchange_us": local_us,
+        "exchange_us": local_us if exchange_us is None else exchange_us,
         "data": {
             "t": trade_id,
             "p": price,
@@ -245,6 +262,24 @@ def test_no_future_event_changes_decision() -> None:
     assert all(order.filled_quantity == 0 for order in scenario.orders.values())
 
 
+def test_delayed_trade_native_time_before_activation_cannot_fill() -> None:
+    scenario = M034ZeroLossScenario(config(), fee_bps=D(0))
+    scenario.receive_trade(trade(START + 1_000_000, 1, price="0.9999", buyer_maker=True))
+    scenario.receive_trade(trade(START + 2_000_000, 2, price="1.0001", buyer_maker=False))
+    scenario.receive_book(book(START + 3_000_000))
+    scenario.receive_trade(
+        trade(
+            START + 6_000_000,
+            3,
+            price="0.9997",
+            quantity="20",
+            buyer_maker=True,
+            exchange_us=START + 3_500_000,
+        )
+    )
+    assert all(order.filled_quantity == 0 for order in scenario.orders.values())
+
+
 def test_capital_conservation() -> None:
     ledger = SlotLedger({"USDT": D(200), "USDC": D(0)}, marks_usd={"USDT": D(1), "USDC": D(1)})
     ledger.create_slot("s", origin_asset="USDT", usd_equivalent=D(10), now_us=1)
@@ -266,13 +301,24 @@ def test_fee_grid_is_frozen_before_results() -> None:
 
 
 def test_same_tape_all_scenarios() -> None:
-    results, cycles, checkpoints = run_scenarios(config(), [])
+    results, cycles, checkpoints, evidence = run_scenarios(config(), [])
     assert not cycles
     assert len(checkpoints) == 35
     assert {(row["EVENT_COUNT"], row["BOOK_COUNT"], row["TRADE_COUNT"]) for row in results} == {
         (0, 0, 0)
     }
     assert {row["INITIAL_BANK_USD"] for row in results} == {"200"}
+    assert len(evidence) == 5
+    assert all("ledger" in row and "queue" in row and "eligibility" in row for row in evidence)
+
+
+def test_failure_preserves_executed_prefix_evidence() -> None:
+    invalid = book(START + 1_000_000)
+    invalid["kind"] = "UNKNOWN"
+    with pytest.raises(BacktestExecutionError) as captured:
+        run_scenarios(config(), [invalid])
+    assert len(captured.value.evidence) == 5
+    assert all(row["event_counts"]["events"] == 0 for row in captured.value.evidence)
 
 
 def test_fee_zero_physical_cycle_closes_without_cross_subsidy() -> None:
@@ -334,3 +380,85 @@ def test_negative_risk_exit_waits_for_return_cancel_ack_and_is_realized() -> Non
     assert result["ZERO_LOSS_ECONOMIC_PASS"] is False
     assert D(result["NET_REALIZED_PNL_USD"]) < 0
     assert D(result["UNREALIZED_PNL_USD"]) == 0
+
+
+def test_owned_return_reservations_remain_inside_global_exposure_cap() -> None:
+    scenario = M034ZeroLossScenario(config(), fee_bps=D(0))
+    scenario.receive_trade(
+        trade(START + 1_000_000, 1, price="0.9999", quantity="600", buyer_maker=True)
+    )
+    scenario.receive_trade(
+        trade(START + 2_000_000, 2, price="1.0001", quantity="600", buyer_maker=False)
+    )
+    scenario.receive_book(book(START + 3_000_000))
+    scenario.receive_book(book(START + 5_000_000))
+    scenario.receive_trade(
+        trade(START + 6_000_000, 3, price="0.9997", quantity="20", buyer_maker=True)
+    )
+    assert D("19") < scenario._potential_exposure() <= D("20")
+    before = len(scenario._active_orders(kind="ENTRY"))
+    scenario.receive_book(book(START + 8_000_000))
+    assert len(scenario._active_orders(kind="ENTRY")) == before
+
+
+def test_partial_entry_is_protected_from_risk_exit() -> None:
+    scenario = M034ZeroLossScenario(config(), fee_bps=D(0))
+    scenario.receive_trade(
+        trade(START + 1_000_000, 1, price="0.9999", quantity="600", buyer_maker=True)
+    )
+    scenario.receive_trade(
+        trade(START + 2_000_000, 2, price="1.0001", quantity="600", buyer_maker=False)
+    )
+    scenario.receive_book(book(START + 3_000_000))
+    scenario.receive_book(book(START + 5_000_000))
+    scenario.receive_trade(
+        trade(START + 6_000_000, 3, price="0.9997", quantity="5", buyer_maker=True)
+    )
+    scenario.receive_book(book(START + 8_000_000, bid="0.9940", ask="0.9942"))
+    assert scenario.negative_risk_exits == 0
+    assert scenario.rejections["PARTIAL_ENTRY_PROTECTED"] > 0
+
+
+def test_partial_owned_return_is_protected_from_risk_cancel() -> None:
+    scenario = M034ZeroLossScenario(config(), fee_bps=D(0))
+    scenario.receive_trade(
+        trade(START + 1_000_000, 1, price="0.9999", quantity="600", buyer_maker=True)
+    )
+    scenario.receive_trade(
+        trade(START + 2_000_000, 2, price="1.0001", quantity="600", buyer_maker=False)
+    )
+    scenario.receive_book(book(START + 3_000_000))
+    scenario.receive_book(book(START + 5_000_000))
+    scenario.receive_trade(
+        trade(START + 6_000_000, 3, price="0.9997", quantity="10", buyer_maker=True)
+    )
+    scenario.receive_book(book(START + 8_000_000))
+    scenario.receive_trade(
+        trade(START + 10_000_000, 4, price="1.0003", quantity="5", buyer_maker=False)
+    )
+    return_order = next(order for order in scenario.orders.values() if order.kind == "RETURN")
+    assert return_order.status == "PARTIAL"
+    scenario.receive_book(book(START + 12_000_000, bid="0.9940", ask="0.9942"))
+    assert return_order.status == "PARTIAL"
+    assert scenario.negative_risk_exits == 0
+    assert scenario.rejections["PARTIAL_OWNED_RETURN_PROTECTED"] > 0
+
+
+def test_risk_exit_consumes_displayed_depth_once_across_slots() -> None:
+    scenario = M034ZeroLossScenario(config(), fee_bps=D(0))
+    scenario.receive_trade(
+        trade(START + 1_000_000, 1, price="0.9999", quantity="600", buyer_maker=True)
+    )
+    scenario.receive_trade(
+        trade(START + 2_000_000, 2, price="1.0001", quantity="600", buyer_maker=False)
+    )
+    scenario.receive_book(book(START + 3_000_000))
+    scenario.receive_book(book(START + 5_000_000))
+    scenario.receive_trade(
+        trade(START + 6_000_000, 3, price="0.9997", quantity="20", buyer_maker=True)
+    )
+    scenario.receive_book(book(START + 8_000_000, bid="0.9940", ask="0.9942", bid_quantity="10"))
+    scenario.receive_book(book(START + 10_000_000, bid="0.9940", ask="0.9942", bid_quantity="10"))
+    assert scenario.negative_risk_exits == 1
+    assert scenario.rejections["RISK_EXIT_DEPTH_INSUFFICIENT"] > 0
+    assert scenario._residual_inventory() == {"USDC": "10"}

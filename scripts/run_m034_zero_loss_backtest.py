@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from crypto_strategy_lab.microstructure.m034_zero_loss_backtest import (
+    BacktestExecutionError,
     ZeroLossConfig,
     run_scenarios,
 )
@@ -233,8 +234,9 @@ def execute(
         raise ValueError("M034_ZERO_LOSS_INPUT_OR_LATENCY_BINDING_CHANGED")
     _claim(head, source_sha, config_payload["configuration_hash"])
     OUTPUT.mkdir(parents=True, exist_ok=False)
+    evidence: list[dict[str, Any]] = []
     try:
-        results, cycles, checkpoints = run_scenarios(
+        results, cycles, checkpoints, evidence = run_scenarios(
             config, input_authority.bounded_native_events(slices)
         )
         event_counts = {
@@ -256,6 +258,7 @@ def execute(
                 "PRIOR_CYCLES_PER_HOUR": "10",
                 "M034_CYCLES_PER_HOUR": row["CYCLES_PER_HOUR"],
                 "NET_PNL_PER_INITIAL_CAPITAL_HOUR": str(D(row["NET_REALIZED_PNL_USD"]) / D(600)),
+                "MARKED_PNL_PER_INITIAL_CAPITAL_HOUR": row["MARKED_PNL_PER_INITIAL_CAPITAL_HOUR"],
             }
             for row in results
         }
@@ -296,6 +299,7 @@ def execute(
             "CYCLE_ARTIFACT": CYCLES.as_posix(),
             "EQUITY_ARTIFACT": EQUITY.as_posix(),
             "NEGATIVE_CYCLE_ARTIFACT": NEGATIVE.as_posix(),
+            "PHYSICAL_EVIDENCE_DIRECTORY": OUTPUT.as_posix(),
         }
         _write_csv(
             CYCLES,
@@ -340,6 +344,11 @@ def execute(
         write_json(NEGATIVE, {"identity": IDENTITY, "negative_cycles": negative})
         write_json(RESULT, result)
         write_json(OUTPUT / "result.json", result)
+        evidence_paths = []
+        for snapshot in evidence:
+            path = OUTPUT / f"physical-evidence-{snapshot['scenario']}.json"
+            write_json(path, snapshot)
+            evidence_paths.append(path)
         manifest_payload = {
             "identity": IDENTITY,
             "claim_sha256": file_sha(CLAIM),
@@ -349,18 +358,27 @@ def execute(
             },
             "event_counts": list(next(iter(event_counts))),
             "same_tape_all_scenarios": True,
+            "physical_evidence": {path.as_posix(): file_sha(path) for path in evidence_paths},
         }
         write_json(OUTPUT / "manifest.json", manifest_payload)
         return result
     except BaseException as exc:
+        prefix_evidence = exc.evidence if isinstance(exc, BacktestExecutionError) else evidence
+        if prefix_evidence:
+            write_json(OUTPUT / "failure-prefix-evidence.json", prefix_evidence)
         write_json(
             OUTPUT / "failure.json",
             {
                 "identity": IDENTITY,
                 "run_status": "INCOMPLETE_PRESERVED_NO_RERUN",
-                "exception_type": type(exc).__name__,
+                "exception_type": (
+                    exc.cause_type
+                    if isinstance(exc, BacktestExecutionError)
+                    else type(exc).__name__
+                ),
                 "error": str(exc),
                 "claim_sha256": file_sha(CLAIM),
+                "prefix_evidence_preserved": bool(prefix_evidence),
             },
         )
         raise
