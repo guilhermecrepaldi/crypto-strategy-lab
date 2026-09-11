@@ -1,6 +1,6 @@
 # M034 - Binance economic eligibility and productivity
 
-Status: `SOURCE_CORRECTION_PENDING_SOURCE_BOUND_REVIEW`.
+Status: `M034_SOURCE_ARCHITECTURE_PASS_BLOCKED_PRE_REPLAY`.
 
 M034 is an incremental admission and allocation layer over the reviewed M032/M033
 libraries. It is not a parallel strategy, a replay result or evidence of economic
@@ -358,9 +358,9 @@ authorized by this source implementation.
 Published source reviews of `d009653afaf4dd361dcc4095090e97788b2015f4`,
 `1dd2f3de2c11449bb5f65f9dfae2a076bfccb01b` and
 `e55bb7bb4c768d78fc82c3238ee8ac9120c8f070` returned
-`IMPLEMENTATION_REVIEW=BLOCK`. The third correction must itself receive a new
-source-bound independent review before this document can claim source architecture
-PASS. The blocked review is preserved in the M034 journal and review report; it was not
-reclassified as a strategy result.
+`IMPLEMENTATION_REVIEW=BLOCK`. The fourth independent review passed on published source
+`4054dfd3d02d2075516e9272a4c03046e5e0e277`. All blocked reviews remain preserved in
+the M034 journal and review report; none was reclassified as a strategy result.
+`M034_SOURCE_ARCHITECTURE_PASS` does not authorize replay.
 
 `M034_SOURCE_ARCHITECTURE_PASS != M034_STRATEGY_PASS`.

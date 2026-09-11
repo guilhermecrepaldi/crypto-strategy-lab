@@ -9,7 +9,8 @@
   "second_source_review": "BLOCK",
   "third_published_source": "e55bb7bb4c768d78fc82c3238ee8ac9120c8f070",
   "third_source_review": "BLOCK",
-  "corrected_source": null,
+  "corrected_source": "4054dfd3d02d2075516e9272a4c03046e5e0e277",
+  "final_source_review": "PASS",
   "registration_status": "UNREGISTERED_BLOCKED_PRE_REPLAY_CONFIGURATION_AND_EVIDENCE",
   "economic_execution_venues": ["BINANCE"],
   "retired_historical_venues": ["KRAKEN"],
@@ -25,6 +26,6 @@
   "model_registered": false,
   "economic_replay_runs": 0,
   "ready_for_replay": false,
-  "source_architecture_pass": false,
+  "source_architecture_pass": true,
   "strategy_pass": false
 }

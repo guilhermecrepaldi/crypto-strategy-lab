@@ -18,8 +18,9 @@ owned-return e cancel-ACK. Owned-return reserva capital antes de qualquer NEW_EN
 saída negativa deve ser autorizada no ledger antes do fill e comprovar retorno físico
 integral ao ativo de origem, sem resíduo e com fees externas all-in. Todos os books da
 rota canônica passam por universo/rules/fees; funding físico e mark causal são
-obrigatórios. Reviews de `d009653`, `1dd2f3d` e `e55bb7b` bloquearam a source;
-a terceira correção está em revisão. Sem thresholds operacionais, universo,
+obrigatórios. Após BLOCKs preservados em `d009653`, `1dd2f3d` e `e55bb7b`, a revisão
+independente Astra do source publicado `4054dfd` passou. Source architecture PASS não
+é strategy/replay PASS. Sem thresholds operacionais, universo,
 fee histórica selecionada, dataset/janela, runner, registro ou protocolo de replay.
 Nenhum replay, conta, Testnet, live, nova venue, leverage, perp, AMM ou yield.
 

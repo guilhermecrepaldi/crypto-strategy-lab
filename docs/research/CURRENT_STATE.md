@@ -1,16 +1,16 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=NONE
-CAMPAIGN_STATUS=M034_SOURCE_CORRECTION_PENDING_SOURCE_BOUND_REVIEW
-CAMPAIGN_EXECUTION_SOURCE_SHA=UNPUBLISHED_SECOND_CORRECTION_WORKTREE
+CAMPAIGN_STATUS=M034_SOURCE_ARCHITECTURE_PASS_BLOCKED_PRE_REPLAY
+CAMPAIGN_EXECUTION_SOURCE_SHA=4054dfd3d02d2075516e9272a4c03046e5e0e277
 CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
 CAMPAIGN_VERDICT=BLOCKED_PRE_RUN
 CAMPAIGN_PROGRESS_FILE=docs/research/M034_JOURNAL.md
 CAMPAIGN_JOURNAL=docs/research/M034_JOURNAL.md
 CAMPAIGN_SCOREBOARD=reports/usdcusdt/M034-implementation-status.json
-CURRENT_ACTIVE_RESEARCH_MODEL=NONE_AWAITING_M034_CORRECTED_SOURCE_REVIEW_AND_EVIDENCE
-OWNER_NEXT_RESEARCH=M034_CORRECTED_SOURCE_BOUND_REVIEW_THEN_EVIDENCE_AND_CONFIGURATION
+CURRENT_ACTIVE_RESEARCH_MODEL=NONE_AWAITING_M034_EVIDENCE_AND_CONFIGURATION
+OWNER_NEXT_RESEARCH=M034_EVIDENCE_THRESHOLDS_CONFIGURATION_RUNNER_PROTOCOL
 OWNER_DIRECTIVE=docs/microstructure/M034_BINANCE_ECONOMIC_ELIGIBILITY_PRODUCTIVITY.md
 NEXT_CAMPAIGN_STATUS=BLOCKED_PRE_REPLAY_CONFIGURATION_AND_EVIDENCE
 NEXT_CAMPAIGN_MODEL_HASH=UNREGISTERED
@@ -23,8 +23,8 @@ all M034 economic paths; only its historical M033 provenance remains. Unknown or
 cost, data, market safety, completion or lock evidence fails closed; no eligible
 opportunity leaves capital explicitly idle. Thresholds are mandatory typed inputs
 with provenance and hashes, but no operational values are frozen. The first published
-reviews at `d009653` and `1dd2f3d` blocked causal/economic invariants; the second
-correction adds adversarial coverage and is pending a new source-bound review. No operational pair
+reviews at `d009653`, `1dd2f3d` and `e55bb7b` blocked causal/economic invariants;
+the fourth source-bound review passed at `4054dfd`. No operational pair
 universe, dataset, window, model registration, integrated
 runner or economic replay exists. `SOURCE_ARCHITECTURE_PASS != STRATEGY_PASS`.
 

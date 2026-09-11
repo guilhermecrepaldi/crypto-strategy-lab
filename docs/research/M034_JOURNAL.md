@@ -81,3 +81,12 @@ source-bound review is required; no replay has run.
 Third-correction full validation collected 1,174 tests and exited green with 1,172
 passed and 2 skipped. Repository-wide Ruff, strict mypy on the seven affected modules,
 JSON parsing and `git diff --check` passed.
+
+The fourth independent GPT-6 Astra review passed on published source
+`4054dfd3d02d2075516e9272a4c03046e5e0e277`. It ran 141 focused tests and independent
+combination probes covering retired Kraken injection, spent/received/external fees,
+partial fills, duplicate settlement, temporal fee/mark evidence, threshold bounds,
+censoring and calibration/OOS separation. No P1/P2 remained in the reviewed M034
+library scope. `M034_SOURCE_ARCHITECTURE_PASS=true`; `READY_FOR_REPLAY=false` and
+`STRATEGY_PASS=false`. No replay, dataset/window draw, model registration, account,
+Testnet or live action occurred.
