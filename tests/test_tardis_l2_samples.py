@@ -139,6 +139,32 @@ def test_raw_url_has_exact_slice_and_filters() -> None:
     assert all(channel in query["filters"][0] for channel in collector.RAW_CHANNELS)
 
 
+def test_raw_url_is_symbol_parameterized() -> None:
+    query = parse_qs(
+        urlparse(collector._raw_url(date(2025, 1, 1), 0, "FDUSDUSDT")).query
+    )
+    assert "fdusdusdt" in query["filters"][0]
+
+
+def test_fdusd_raw_scope_is_exact_first_three_hours(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="EXACT_00_TO_03"):
+        collector.collect_raw(
+            dates=[date(2025, 1, 1)],
+            root=tmp_path,
+            manifest_path=tmp_path / "m.json",
+            symbol="FDUSDUSDT",
+            offsets=[180],
+        )
+    with pytest.raises(ValueError, match="RAW_SYMBOL_OUTSIDE"):
+        collector.collect_raw(
+            dates=[date(2025, 1, 1)],
+            root=tmp_path,
+            manifest_path=tmp_path / "m.json",
+            symbol="BTCUSDT",
+            offsets=range(0, 180, 10),
+        )
+
+
 def test_raw_sidecar_gzip_and_immutability(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     payload = gzip.compress(b'{"timestamp":"2025-01-01T00:00:00Z"}\n')
 

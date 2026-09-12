@@ -301,9 +301,9 @@ def _write_manifest(path: Path, results: dict[str, dict[str, object]], days: lis
     temporary.replace(path)
 
 
-def _raw_url(day: date, offset: int) -> str:
+def _raw_url(day: date, offset: int, symbol: str = "USDCUSDT") -> str:
     filters = json.dumps(
-        [{"channel": channel, "symbols": ["usdcusdt"]} for channel in RAW_CHANNELS],
+        [{"channel": channel, "symbols": [symbol.lower()]} for channel in RAW_CHANNELS],
         separators=(",", ":"),
     )
     query = urlencode(
@@ -335,12 +335,13 @@ def _raw_slice(
     timeout: float,
     prior: dict[str, object] | None = None,
     revalidate_orphans: bool = False,
+    symbol: str = "USDCUSDT",
 ) -> dict[str, object]:
     if not START <= day <= END or day.day != 1:
         raise ValueError("ONLY_AUTHORIZED_MONTHLY_CANDIDATES_ALLOWED")
     if offset < 0 or offset >= 1440 or offset % 10:
         raise ValueError("RAW_OFFSET_MUST_BE_0_TO_1430_STEP_10")
-    url = _raw_url(day, offset)
+    url = _raw_url(day, offset, symbol)
     directory = root / day.isoformat() / "raw"
     directory.mkdir(parents=True, exist_ok=True)
     stem = directory / f"{offset:04d}.ndjson"
@@ -560,7 +561,12 @@ def collect_raw(
     timeout: float = 60.0,
     concurrency: int = 6,
     revalidate_orphans: bool = False,
+    symbol: str = "USDCUSDT",
+    offsets: Iterable[int] | None = None,
 ) -> dict[str, object]:
+    symbol = symbol.upper()
+    if symbol not in {"USDCUSDT", "FDUSDUSDT"}:
+        raise ValueError("RAW_SYMBOL_OUTSIDE_AUTHORIZED_SCOPE")
     authorized = candidate_dates()
     days = list(authorized if dates is None else dates)
     if not days or len(set(days)) != len(days) or any(day not in authorized for day in days):
@@ -570,7 +576,13 @@ def collect_raw(
     payload = (
         json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {}
     )
-    payload["canonical_trade_manifest_sha256"] = AUDITED_SHA
+    if payload.get("symbol", symbol.upper()) != symbol.upper():
+        raise ValueError("RAW_MANIFEST_SYMBOL_MISMATCH")
+    payload["symbol"] = symbol.upper()
+    if symbol.upper() == "USDCUSDT":
+        payload["canonical_trade_manifest_sha256"] = AUDITED_SHA
+    else:
+        payload.pop("canonical_trade_manifest_sha256", None)
     payload["raw_acquisition_source_commit"] = subprocess.check_output(
         ["git", "rev-parse", "HEAD"], text=True
     ).strip()
@@ -579,7 +591,16 @@ def collect_raw(
         day: {int(item["offset"]): item for item in entry.get("raw_slices", [])}
         for day, entry in entries.items()
     }
-    jobs = [(day, offset) for day in days for offset in range(0, 1440, 10)]
+    selected_offsets = list(range(0, 1440, 10) if offsets is None else offsets)
+    if symbol == "FDUSDUSDT" and selected_offsets != list(range(0, 180, 10)):
+        raise ValueError("FDUSDUSDT_ONLY_EXACT_00_TO_03_UTC_OFFSETS_AUTHORIZED")
+    if (
+        not selected_offsets
+        or len(set(selected_offsets)) != len(selected_offsets)
+        or any(offset not in range(0, 1440, 10) for offset in selected_offsets)
+    ):
+        raise ValueError("RAW_OFFSETS_MUST_BE_UNIQUE_0_TO_1430_STEP_10")
+    jobs = [(day, offset) for day in days for offset in selected_offsets]
     pool = ThreadPoolExecutor(max_workers=concurrency)
     futures = {}
     try:
@@ -592,6 +613,7 @@ def collect_raw(
                 timeout,
                 prior_offsets.get(day.isoformat(), {}).get(offset),
                 revalidate_orphans,
+                symbol,
             ): (day, offset)
             for day, offset in jobs
         }
@@ -628,7 +650,7 @@ def collect_raw(
     payload.update(
         {
             "schema_version": payload.get("schema_version", "tardis-free-l2-v1"),
-            "symbol": "USDCUSDT",
+            "symbol": symbol.upper(),
             "source": "Tardis",
             "dates": [entries[day.isoformat()] for day in days],
         }
@@ -645,7 +667,7 @@ def _write_raw_manifest(
     merged.update(
         {
             "schema_version": payload.get("schema_version", "tardis-free-l2-v1"),
-            "symbol": "USDCUSDT",
+            "symbol": payload.get("symbol", "USDCUSDT"),
             "source": "Tardis",
             "dates": [entries[key] for key in sorted(entries)],
         }

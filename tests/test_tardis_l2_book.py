@@ -161,6 +161,48 @@ def test_raw_trade_channel_shape_validated_without_altering_depth():
     assert validate_raw_lines([snap(), bad, delta(local=3)])["L2_DAY_VALID"] is False
 
 
+def test_raw_validator_accepts_explicit_fdusdusdt_identity() -> None:
+    lines = [snap(), delta(bids=[["1", "3"]])]
+    fdusd = [
+        line.replace("usdcusdt", "fdusdusdt").replace("USDCUSDT", "FDUSDUSDT")
+        for line in lines
+    ]
+    result = validate_raw_lines(fdusd, expected_symbol="FDUSDUSDT")
+    assert result["sequence_gate"] == "PASS"
+    rows = list(iter_native_delta_rows(fdusd, expected_symbol="FDUSDUSDT"))
+    assert {row["symbol"] for row in rows} == {"FDUSDUSDT"}
+
+
+def test_raw_trade_continuity_fails_closed() -> None:
+    def trade(trade_id: int, stamp: int, local: int) -> str:
+        return native(
+            dict(
+                e="trade",
+                s="USDCUSDT",
+                t=trade_id,
+                T=stamp,
+                E=stamp,
+                p="1",
+                q="1",
+                m=True,
+            ),
+            local,
+        ).replace("@depth", "@trade")
+
+    for second in (trade(9, 2000, 3), trade(12, 2000, 3), trade(10, 1000, 3)):
+        result = validate_raw_lines([snap(), trade(10, 2000, 2), second, delta(local=4)])
+        assert result["sequence_gate"] == "FAIL"
+
+
+def test_native_projection_rejects_cross_symbol_depth_stream() -> None:
+    from crypto_strategy_lab.microstructure.tardis_l2 import iter_native_events
+
+    lines = [snap(), delta()]
+    fdusd_snapshot = lines[0].replace("usdcusdt", "fdusdusdt")
+    with pytest.raises(ValueError, match="wrong native depth stream"):
+        list(iter_native_events([fdusd_snapshot, lines[1]], expected_symbol="FDUSDUSDT"))
+
+
 def test_delta_binding_equivalent_decimal_format_and_level_order():
     raw = [snap(), delta(bids=[["1.00", "2.000"]], asks=[["2", "3"]])]
     rows = list(iter_native_delta_rows(raw))

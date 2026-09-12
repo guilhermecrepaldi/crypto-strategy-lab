@@ -180,7 +180,9 @@ def validate_csv_file(path: str | Path) -> dict[str, Any]:
     return validate_csv_rows(iter_csv_rows(path))
 
 
-def validate_raw_lines(lines: Iterable[str]) -> dict[str, Any]:
+def validate_raw_lines(
+    lines: Iterable[str], *, expected_symbol: str = "USDCUSDT"
+) -> dict[str, Any]:
     """Validate native Binance U/u messages in Tardis capture order.
 
     Lines are ``ISO_LOCAL_TIMESTAMP {stream:...,data:...}``; blank lines mean
@@ -196,6 +198,7 @@ def validate_raw_lines(lines: Iterable[str]) -> dict[str, Any]:
     buffered: list[dict[str, Any]] = []
     first_local = previous_local = None
     first_exchange = previous_exchange = None
+    previous_trade_id = previous_trade_exchange = None
     bridged = False
 
     def levels(data: Mapping[str, Any], snapshot: bool) -> list[tuple[str, Decimal, Decimal]]:
@@ -257,13 +260,14 @@ def validate_raw_lines(lines: Iterable[str]) -> dict[str, Any]:
             payload = json.loads(payload_text)
             data = payload["data"]
             stream = payload["stream"]
-            is_trade = stream.lower() == "usdcusdt@trade"
-            if not stream.lower().startswith("usdcusdt@depth") and not is_trade:
+            symbol_lower = expected_symbol.lower()
+            is_trade = stream.lower() == f"{symbol_lower}@trade"
+            if not stream.lower().startswith(f"{symbol_lower}@depth") and not is_trade:
                 raise ValueError("unexpected native stream")
-            if "s" in data and data["s"] != "USDCUSDT":
+            if "s" in data and data["s"] != expected_symbol.upper():
                 raise ValueError("wrong native symbol")
             if is_trade:
-                if data.get("e") != "trade" or data.get("s") != "USDCUSDT":
+                if data.get("e") != "trade" or data.get("s") != expected_symbol.upper():
                     raise ValueError("unexpected trade event")
                 if any(type(data[key]) is not int or data[key] < 0 for key in ("t", "T", "E")):
                     raise ValueError("invalid trade ID or timestamp")
@@ -272,6 +276,17 @@ def validate_raw_lines(lines: Iterable[str]) -> dict[str, Any]:
                 _, quantity = _level(data["p"], data["q"])
                 if quantity == 0:
                     raise ValueError("zero trade quantity")
+                trade_exchange = native_exchange_microseconds(data["T"])
+                if previous_trade_id is not None:
+                    counts["trade_id_regressions"] += data["t"] < previous_trade_id
+                    counts["trade_id_duplicates"] += data["t"] == previous_trade_id
+                    counts["trade_id_gaps"] += data["t"] > previous_trade_id + 1
+                counts["trade_time_regressions"] += (
+                    previous_trade_exchange is not None
+                    and trade_exchange < previous_trade_exchange
+                )
+                previous_trade_id = data["t"]
+                previous_trade_exchange = trade_exchange
                 counts["trades"] += 1
             elif "lastUpdateId" in data:
                 changes = levels(data, True)
@@ -313,6 +328,10 @@ def validate_raw_lines(lines: Iterable[str]) -> dict[str, Any]:
             "crossed_states",
             "local_time_regressions",
             "malformed_records",
+            "trade_id_regressions",
+            "trade_id_duplicates",
+            "trade_id_gaps",
+            "trade_time_regressions",
         )
     )
     sequence_pass = bool(counts["snapshots"] and bridged and not buffered and not fail)
@@ -343,7 +362,9 @@ def _local_microseconds(text: str) -> int:
     return ((elapsed.days * 86400 + elapsed.seconds) * 1_000_000) + elapsed.microseconds
 
 
-def iter_native_delta_rows(lines: Iterable[str]) -> Iterator[dict[str, str]]:
+def iter_native_delta_rows(
+    lines: Iterable[str], *, expected_symbol: str = "USDCUSDT"
+) -> Iterator[dict[str, str]]:
     """Project *all captured* native depth changes, without accepting/repairing them.
 
     This is for provenance binding only. It is NOT an execution feed: stale,
@@ -359,9 +380,9 @@ def iter_native_delta_rows(lines: Iterable[str]) -> Iterator[dict[str, str]]:
         data = payload["data"]
         if data.get("e") != "depthUpdate":
             continue
-        if not payload["stream"].lower().startswith("usdcusdt@depth"):
+        if not payload["stream"].lower().startswith(f"{expected_symbol.lower()}@depth"):
             raise ValueError("unexpected native depth stream")
-        if data.get("s", "USDCUSDT") != "USDCUSDT":
+        if data.get("s", expected_symbol.upper()) != expected_symbol.upper():
             raise ValueError("wrong native symbol")
         local = str(_local_microseconds(local_text))
         if type(data["E"]) is not int:
@@ -371,7 +392,7 @@ def iter_native_delta_rows(lines: Iterable[str]) -> Iterator[dict[str, str]]:
                 price, amount = _level(*item)
                 yield {
                     "exchange": "binance",
-                    "symbol": "USDCUSDT",
+                    "symbol": expected_symbol.upper(),
                     "timestamp": str(native_exchange_microseconds(data["E"])),
                     "local_timestamp": local,
                     "is_snapshot": "false",
@@ -385,6 +406,7 @@ def iter_native_events(
     lines: Iterable[str],
     *,
     include_book: bool = True,
+    expected_symbol: str = "USDCUSDT",
 ) -> Iterator[dict[str, Any]]:
     """Reconstruct Tardis snapshot-plus-buffer normalization in capture order.
 
@@ -440,11 +462,15 @@ def iter_native_events(
         local = _local_microseconds(local_text)
         snapshot = "lastUpdateId" in data
         if data.get("e") == "trade":
-            if payload["stream"].lower() != "usdcusdt@trade" or data.get("s") != "USDCUSDT":
+            if (
+                payload["stream"].lower() != f"{expected_symbol.lower()}@trade"
+                or data.get("s") != expected_symbol.upper()
+            ):
                 raise ValueError("wrong native trade identity")
             exchange, exchange_upper, precision = native_exchange_interval(data["T"])
             yield {
                 "kind": "TRADE",
+                "symbol": expected_symbol.upper(),
                 "local_us": local,
                 "exchange_us": exchange,
                 "exchange_upper_us": exchange_upper,
@@ -454,8 +480,10 @@ def iter_native_events(
             }
             continue
         if snapshot:
-            if not payload["stream"].lower().startswith("usdcusdt@depth"):
+            if not payload["stream"].lower().startswith(f"{expected_symbol.lower()}@depth"):
                 raise ValueError("wrong snapshot stream")
+            if "s" in data and data["s"] != expected_symbol.upper():
+                raise ValueError("wrong native symbol")
             last_id = data["lastUpdateId"]
             if type(last_id) is not int or last_id < 0:
                 raise ValueError("invalid snapshot ID")
@@ -488,7 +516,9 @@ def iter_native_events(
             exchange = local
             exchange_upper, precision = local, "CAPTURE_BOUND"
         elif data.get("e") == "depthUpdate":
-            if data.get("s", "USDCUSDT") != "USDCUSDT":
+            if not payload["stream"].lower().startswith(f"{expected_symbol.lower()}@depth"):
+                raise ValueError("wrong native depth stream")
+            if data.get("s", expected_symbol.upper()) != expected_symbol.upper():
                 raise ValueError("wrong native symbol")
             if last_id is None:
                 pending.append(data)
@@ -502,6 +532,7 @@ def iter_native_events(
             continue
         event: dict[str, Any] = {
             "kind": "BOOK",
+            "symbol": expected_symbol.upper(),
             "local_us": local,
             "exchange_us": exchange,
             "exchange_upper_us": exchange_upper,
@@ -520,15 +551,19 @@ def iter_native_events(
         yield event
 
 
-def iter_reconstructed_native_rows(lines: Iterable[str]) -> Iterator[dict[str, str]]:
+def iter_reconstructed_native_rows(
+    lines: Iterable[str], *, expected_symbol: str = "USDCUSDT"
+) -> Iterator[dict[str, str]]:
     """Normalized projection of the single native-event reconstruction authority."""
-    for event in iter_native_events(lines, include_book=False):
+    for event in iter_native_events(
+        lines, include_book=False, expected_symbol=expected_symbol
+    ):
         if event["kind"] != "BOOK":
             continue
         for side, price, quantity in event["changes"]:
             yield {
                 "exchange": "binance",
-                "symbol": "USDCUSDT",
+                "symbol": expected_symbol.upper(),
                 "timestamp": str(event["exchange_us"]),
                 "local_timestamp": str(event["local_us"]),
                 "is_snapshot": "true" if event["is_snapshot"] else "false",
