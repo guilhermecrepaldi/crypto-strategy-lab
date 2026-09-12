@@ -1,0 +1,101 @@
+{
+  "all_required_gates_pass": true,
+  "checks": {
+    "ATOMIC_FILL": {
+      "evidence": "test_failed_fill_does_not_mutate_physical_queue",
+      "status": "PASS"
+    },
+    "C1_FIFO_PRESERVATION": {
+      "evidence": "test_economic_grid_preserves_c1_and_c2_capital_until_cancel_ack",
+      "status": "PASS"
+    },
+    "C2_MOBILITY": {
+      "evidence": "test_economic_grid_preserves_c1_and_c2_capital_until_cancel_ack",
+      "status": "PASS"
+    },
+    "CANCEL_ACK": {
+      "evidence": "C2 remains CANCEL_PENDING before 1179525us and is cancelled only at ACK",
+      "status": "PASS"
+    },
+    "DETERMINISTIC_MERGE_ORDERING": {
+      "evidence": "test_merged_timeline_has_deterministic_pair_tie_break",
+      "status": "PASS"
+    },
+    "DUAL_TAPE_ALIGNMENT": {
+      "evidence": "reports/m035/M035_DUAL_TAPE_VALIDATION.json: 149046 merged events in the frozen common window",
+      "status": "PASS"
+    },
+    "DUAL_TAPE_CONTINUITY": {
+      "evidence": "Both native snapshot/delta streams are sequence-valid with zero gaps, regressions or crossed books",
+      "status": "PASS"
+    },
+    "DUST_ACCOUNTING": {
+      "evidence": "test_fee_dust_is_retained_and_does_not_reject_entry; test_tradeable_dust_reenters_owned_return_pipeline",
+      "status": "PASS"
+    },
+    "EXCLUSIVE_ONE_SHOT_CLAIM": {
+      "evidence": "test_one_shot_claim_creation_is_exclusive",
+      "status": "PASS"
+    },
+    "GLOBAL_CAPITAL_CONSERVATION": {
+      "evidence": "test_parallel_scenario_uses_one_shared_200_usdt_bank; full Decimal reconciliation in finish()",
+      "status": "PASS"
+    },
+    "GRID_FOLLOWS_HOTLINE": {
+      "evidence": "test_economic_grid_preserves_c1_and_c2_capital_until_cancel_ack; test_hotline_move_cannot_create_same_price_column_collision",
+      "status": "PASS"
+    },
+    "HOTLINE_ISOLATION": {
+      "evidence": "test_economic_pair_hotlines_and_grids_are_isolated",
+      "status": "PASS"
+    },
+    "NO_DOUBLE_CAPITAL": {
+      "evidence": "test_parallel_scenario_uses_one_shared_200_usdt_bank; test_insufficient_capital_never_commits_250",
+      "status": "PASS"
+    },
+    "NO_FUTURE_DATA": {
+      "evidence": "test_economic_engine_rejects_future_event; frozen end is exclusive",
+      "status": "PASS"
+    },
+    "NO_SELF_FILL": {
+      "evidence": "test_no_self_fill on the shared CausalQueueEstimator authority; economic engine accepts only public TRADE events",
+      "status": "PASS"
+    },
+    "OWNED_RETURN_PRIORITY": {
+      "evidence": "test_owned_return_priority_precedes_new_entry; economic receive_book submits owned returns before allocation",
+      "status": "PASS"
+    },
+    "PREFIX_PRESERVATION": {
+      "evidence": "test_run_mode_preserves_all_fee_prefixes_on_failure",
+      "status": "PASS"
+    },
+    "ZERO_LOSS_ATTRIBUTION": {
+      "evidence": "test_complete_physical_cycle_is_positive_and_has_no_cross_subsidy; test_positive_aggregate_cannot_hide_negative_cycle",
+      "status": "PASS"
+    }
+  },
+  "classification": "SOFTWARE_AND_DATA_CONFORMANCE_NOT_ECONOMIC_RESULT",
+  "config_sha256": "422faab9011cf6d9ae509694f138efd3920cb85edea004072693ccbf5bfd3867",
+  "full_regression": {
+    "collected_tests": 1298,
+    "command": ".venv/Scripts/python.exe -m pytest -q",
+    "skipped": 2,
+    "status": "PASS"
+  },
+  "identity": "M035_200USD_3H_PARALLEL_DEVELOPMENT_BACKTEST_V1",
+  "pair_a_data_hash": "22696126494561e7a23354570bf3f7aa60f9ff6389a6d36d304e5a7d54ccce52",
+  "pair_b_data_hash": "fd2d83ebc8bf0301616a3679da302e20cd56c8cde1235758c8aedc6f8b07eb09",
+  "source_review_status": "PENDING_SOURCE_BOUND_ASTRA_REVIEW",
+  "status": "PASS",
+  "targeted_regression": {
+    "command": ".venv/Scripts/python.exe -m pytest tests/test_m035_economic_backtest.py tests/test_m035_parallel_pair_capital_manager.py tests/test_m035_fdusdusdt_21_days.py tests/test_m035_dual_pair_capture.py -q",
+    "passed": 72,
+    "status": "PASS"
+  },
+  "tested_source_commit": "5c675c10246c27652145511d98f6c542fc5040ed",
+  "type_checks": {
+    "mypy_strict": "PASS",
+    "ruff": "PASS"
+  },
+  "window_hash": "327142fa6be8a51a70b8f845842e97a596b52b8ab744ab95f68ba72261d60b9b"
+}
