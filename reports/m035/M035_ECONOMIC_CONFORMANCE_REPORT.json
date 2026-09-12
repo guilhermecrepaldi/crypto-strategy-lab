@@ -17,6 +17,10 @@
       "evidence": "C2 remains CANCEL_PENDING before 1179525us and is cancelled only at ACK",
       "status": "PASS"
     },
+    "CAUSAL_L2_COVERAGE": {
+      "evidence": "test_price_outside_known_l2_coverage_cannot_activate_or_fill",
+      "status": "PASS"
+    },
     "DETERMINISTIC_MERGE_ORDERING": {
       "evidence": "test_merged_timeline_has_deterministic_pair_tie_break",
       "status": "PASS"
@@ -30,7 +34,7 @@
       "status": "PASS"
     },
     "DUST_ACCOUNTING": {
-      "evidence": "test_fee_dust_is_retained_and_does_not_reject_entry; test_tradeable_dust_reenters_owned_return_pipeline",
+      "evidence": "test_fee_dust_is_retained_and_does_not_reject_entry; test_tradeable_dust_reenters_owned_return_pipeline; test_partial_cancel_below_minimum_moves_inventory_to_owned_dust",
       "status": "PASS"
     },
     "EXCLUSIVE_ONE_SHOT_CLAIM": {
@@ -65,8 +69,16 @@
       "evidence": "test_owned_return_priority_precedes_new_entry; economic receive_book submits owned returns before allocation",
       "status": "PASS"
     },
+    "PARTIAL_RETURN_REALIZATION": {
+      "evidence": "test_partial_return_fill_is_reflected_in_realized_pnl_and_dust_lock_is_censored",
+      "status": "PASS"
+    },
     "PREFIX_PRESERVATION": {
-      "evidence": "test_run_mode_preserves_all_fee_prefixes_on_failure",
+      "evidence": "test_run_mode_preserves_all_fee_prefixes_on_failure; runner persists SINGLE_PAIR and PARALLEL_TWO_PAIR before reporting",
+      "status": "PASS"
+    },
+    "RETURN_DUST_QUEUE_ISOLATION": {
+      "evidence": "test_owned_return_and_dust_return_share_price_column_occupancy",
       "status": "PASS"
     },
     "ZERO_LOSS_ATTRIBUTION": {
@@ -77,7 +89,7 @@
   "classification": "SOFTWARE_AND_DATA_CONFORMANCE_NOT_ECONOMIC_RESULT",
   "config_sha256": "422faab9011cf6d9ae509694f138efd3920cb85edea004072693ccbf5bfd3867",
   "full_regression": {
-    "collected_tests": 1298,
+    "collected_tests": 1302,
     "command": ".venv/Scripts/python.exe -m pytest -q",
     "skipped": 2,
     "status": "PASS"
@@ -89,10 +101,10 @@
   "status": "PASS",
   "targeted_regression": {
     "command": ".venv/Scripts/python.exe -m pytest tests/test_m035_economic_backtest.py tests/test_m035_parallel_pair_capital_manager.py tests/test_m035_fdusdusdt_21_days.py tests/test_m035_dual_pair_capture.py -q",
-    "passed": 72,
+    "passed": 76,
     "status": "PASS"
   },
-  "tested_source_commit": "5c675c10246c27652145511d98f6c542fc5040ed",
+  "tested_source_commit": "d8322d0c36d79a58ccec1e2a7d958f1363f806ef",
   "type_checks": {
     "mypy_strict": "PASS",
     "ruff": "PASS"
