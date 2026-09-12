@@ -1,0 +1,18 @@
+{
+  "algorithm": "SHA256(seed|catalog_sha256) mod candidate_count",
+  "candidate_catalog": "10-minute-aligned 3h windows within 21 first-of-month evidence days, 2025-01-01 through 2026-09-01",
+  "candidate_count": 2667,
+  "catalog_sha256": "0b9c97052faa9fd83c87f51701023fd64a24c961c851fa09ba4df6754133d034",
+  "economic_values_inspected_before_draw": false,
+  "end_exclusive": "2026-02-01T04:00:00Z",
+  "end_us": 1769918400000000,
+  "identity": "M035_200USD_RANDOM_3H_PARALLEL_DEVELOPMENT_BACKTEST_V2",
+  "reroll_allowed": false,
+  "seed_hex": "bc895e20515f5a6f821419c897fdcf2174359e8082e7730fdcfafa3189af3bef",
+  "selected_index": 1657,
+  "selection_digest": "87e24ec2b6ca2f038bda3bf7be6abaf34431cc6d9704af6806b15fe6e991545c",
+  "start": "2026-02-01T01:00:00Z",
+  "start_offset_minutes": 60,
+  "start_us": 1769907600000000,
+  "status": "FROZEN_BEFORE_DATA_VALIDATION_AND_ECONOMIC_RUN"
+}
