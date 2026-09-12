@@ -1,0 +1,330 @@
+{
+  "generated_at": "2026-09-12T02:40:26.484180+00:00",
+  "identity": "M035_DUAL_TAPE_2025_01_01_00_03_V1",
+  "merged_event_counts": {
+    "FDUSDUSDT": {
+      "books": 28540,
+      "trades": 19746
+    },
+    "USDCUSDT": {
+      "books": 71222,
+      "trades": 29538
+    }
+  },
+  "merged_events": 149046,
+  "no_pnl_inspected": true,
+  "pairs": {
+    "FDUSDUSDT": {
+      "all_books_sequence_validated": true,
+      "book_events": 28540,
+      "end_exclusive": "2025-01-01T03:00:00Z",
+      "native_official_trade_binding": "PASS",
+      "official_trade_archive": {
+        "path": "data/raw/binance-microstructure/FDUSDUSDT/trades/2025-01-01/FDUSDUSDT-trades-2025-01-01.zip",
+        "sha256": "371130e1b16db2029622b7394253d831abb2cf23474b04a081252957c808cbd9"
+      },
+      "pair_data_hash": "fd2d83ebc8bf0301616a3679da302e20cd56c8cde1235758c8aedc6f8b07eb09",
+      "raw_slices": [
+        {
+          "bytes": 75763,
+          "offset": 0,
+          "sha256": "838132a01820bb8ff7dfd859ae16b0b009d154a8a0f42c8314a0b9a9a5f17208",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=0&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 53559,
+          "offset": 10,
+          "sha256": "8e25c1db3583e99079f2bf38d7d9d66bc289c1c31954e49bfccdb91419a5fbac",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=10&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 54568,
+          "offset": 20,
+          "sha256": "b265dcd98871cd00743d85d9456e0c3aa3a3250f16f3588ce9dd14f7d8917a08",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=20&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 65839,
+          "offset": 30,
+          "sha256": "8bc102577ce9a8cd44f6d8ed3f403bb019bb8fb020317ae5a5e01f484c2c4bd2",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=30&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 48020,
+          "offset": 40,
+          "sha256": "ed1fbeb6bbae4ac120df417d3b2aef0fb65246dbfbca9d73efac777bac587797",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=40&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 87090,
+          "offset": 50,
+          "sha256": "af0761a67a8fc47d5ee58977e2ba2c29fad3b898b69d582ffcff134869a14423",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=50&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 52760,
+          "offset": 60,
+          "sha256": "fa104b44e2599ef367de465aec2c463a30561a19ac9f206b09173477444ea93e",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=60&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 55160,
+          "offset": 70,
+          "sha256": "99eee26c67b5c70fc2ff469b417847848794503241e85d452aa82a66ab5f816f",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=70&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 46483,
+          "offset": 80,
+          "sha256": "71355c481b6bc7fe5bc89415d38b034061d7c63ebc6c88a97bf83079e8ab3dbe",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=80&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 60057,
+          "offset": 90,
+          "sha256": "f5402f069b45b3229418baf2d8d95f58af0ea600e1f9d9f27f576a9753ffc096",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=90&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 50032,
+          "offset": 100,
+          "sha256": "ba166dc5902f83e5075e0470037f153dd920bace2a5e92048d69de649d647129",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=100&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 56391,
+          "offset": 110,
+          "sha256": "30aa5d0d51cb935c32c9a1096d6b9a569d1239109a7894d86bea8b275f7868fd",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=110&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 70059,
+          "offset": 120,
+          "sha256": "0d1d2721be3ae6fa50882e42e1e1aee8188cc0ada7b4feae2d67a1e6ec2b2c79",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=120&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 50689,
+          "offset": 130,
+          "sha256": "e1863158277fc2b376883d5a651a9c5e4c2dfad99b4bfee1506895d643375867",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=130&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 52701,
+          "offset": 140,
+          "sha256": "3325dd826fc19f35c09d03008a1830c94c2e7b76e67f745490669766e49bd578",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=140&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 80612,
+          "offset": 150,
+          "sha256": "546de0697db00bc932374cc04f08a05da453cb46dda953f1c2d438a4d4edbf26",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=150&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 60319,
+          "offset": 160,
+          "sha256": "6c16fb0f376d09c75f4eedd6dcb0d96d2f07e0fb9259e36a0de5f96ef18b3a1f",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=160&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 46804,
+          "offset": 170,
+          "sha256": "25da0f214b9b44722023d7f76269437b361f46990ec3969e3ae18522240af604",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=170&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22fdusdusdt%22%5D%7D%5D"
+        }
+      ],
+      "raw_validation": {
+        "counts": {
+          "applied_deltas": 28540,
+          "crossed_states": 0,
+          "deltas": 28543,
+          "exchange_time_regressions": 0,
+          "lines": 48290,
+          "local_time_regressions": 0,
+          "one_sided_states": 0,
+          "snapshots": 1,
+          "stale_updates_ignored": 3,
+          "trade_id_duplicates": 0,
+          "trade_id_gaps": 0,
+          "trade_id_regressions": 0,
+          "trade_time_regressions": 0,
+          "trades": 19746
+        },
+        "first_local_timestamp": "2025-01-01T00:00:00.095323+00:00",
+        "last_local_timestamp": "2025-01-01T02:59:59.594949+00:00",
+        "last_update_id": 414345436,
+        "sequence_gate": "PASS"
+      },
+      "start": "2025-01-01T00:00:00Z",
+      "symbol": "FDUSDUSDT",
+      "trade_events": 19746,
+      "venue": "BINANCE_SPOT"
+    },
+    "USDCUSDT": {
+      "all_books_sequence_validated": true,
+      "book_events": 71222,
+      "end_exclusive": "2025-01-01T03:00:00Z",
+      "native_official_trade_binding": "PASS",
+      "official_trade_archive": {
+        "path": "data/raw/binance-microstructure/USDCUSDT/trades/USDCUSDT-trades-2025-01-01.zip",
+        "sha256": "80e7138acd1ad8255bb2dac1d1a1c7d60ef0c104f4979da70e15d1af27b2e572"
+      },
+      "pair_data_hash": "22696126494561e7a23354570bf3f7aa60f9ff6389a6d36d304e5a7d54ccce52",
+      "raw_slices": [
+        {
+          "bytes": 146703,
+          "offset": 0,
+          "sha256": "c06d885c8b1602841b9cb246ceffab1aff9ae1bfde5bb3571e7f9e87b1e90173",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=0&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 128647,
+          "offset": 10,
+          "sha256": "9f5b21416f75e77b2283c7fec2c51fb7e7e731dddb041901e483979c8791f205",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=10&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 106568,
+          "offset": 20,
+          "sha256": "3493865a4ee55426cbd29cb204041a305ca978544df5f78921b2c9896654aa1c",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=20&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 112528,
+          "offset": 30,
+          "sha256": "2e99a78e8025ace7b77224aed348cdb6f2a6290b841fbad1f9bd4976c7f1f5fa",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=30&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 97225,
+          "offset": 40,
+          "sha256": "08fd581ef1c08a4283f410a390ded3d429d12541c2f2f415902ea30af7fb8c19",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=40&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 196185,
+          "offset": 50,
+          "sha256": "3d33ad78bdbed4163d2261e9c77456e81330126bf3401d6dc0e5f9b4b4a33991",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=50&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 108438,
+          "offset": 60,
+          "sha256": "828f65276939ada153621ea4a1cd6cb5e87b8cbb2ceb290fd91cc25ed61b420c",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=60&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 94527,
+          "offset": 70,
+          "sha256": "707e0c137b49201afc7d469e9fc0ddf2aa833fc0d0f01f5c28b3ef596635c9c8",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=70&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 100027,
+          "offset": 80,
+          "sha256": "de2dd614e1ea30f645dbd40da1604673602f04721a50f686508b94ec5450200d",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=80&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 115103,
+          "offset": 90,
+          "sha256": "2c196cdcdc36ecf75d632a69de65e3f29d2e9aed83a1a94e4decaa6c50825076",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=90&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 108801,
+          "offset": 100,
+          "sha256": "1a3252457c13cdfc514da350f733497aa2e4ad68da68ca12ace997eb1ab231d1",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=100&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 128067,
+          "offset": 110,
+          "sha256": "5cb9edc71fdee01e439c95447a7030e6e5a3db90bdd6e8fcd2e19b587e038f07",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=110&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 116109,
+          "offset": 120,
+          "sha256": "087475c10fc09524ac1d65e2b2d09836ebfa60b50c12ca7ca693dd832332f7be",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=120&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 106215,
+          "offset": 130,
+          "sha256": "2fd14d3eaa87ec2ef7577407b6a7397347ce0591cea2c92909f0e93a84fc3bad",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=130&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 90326,
+          "offset": 140,
+          "sha256": "a2985ba218268b812bcb484c14e2729f37d619fc7977402ba8b53092483f049b",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=140&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 118947,
+          "offset": 150,
+          "sha256": "dc10ea8c90f704ed7f1025cfd3c65dbcbd46efe47b68a7dfb93ebc3f310025b4",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=150&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 119688,
+          "offset": 160,
+          "sha256": "5c48e391b2dcff86e407393b7ef96e688a8d25185a9f68641fe578b8f50070b2",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=160&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        },
+        {
+          "bytes": 106825,
+          "offset": 170,
+          "sha256": "55382d92bd6eaa3d81ed8bf16986a64bd201e8c9b4d6609d75879d8e8c8e2108",
+          "url": "https://api.tardis.dev/v1/data-feeds/binance?from=2025-01-01&offset=170&sliceSize=10&compression=gzip&filters=%5B%7B%22channel%22%3A%22depth%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22depthSnapshot%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%2C%7B%22channel%22%3A%22trade%22%2C%22symbols%22%3A%5B%22usdcusdt%22%5D%7D%5D"
+        }
+      ],
+      "raw_validation": {
+        "counts": {
+          "applied_deltas": 71228,
+          "crossed_states": 0,
+          "deltas": 71308,
+          "exchange_time_regressions": 0,
+          "lines": 100847,
+          "local_time_regressions": 0,
+          "one_sided_states": 0,
+          "snapshots": 1,
+          "stale_updates_ignored": 80,
+          "trade_id_duplicates": 0,
+          "trade_id_gaps": 0,
+          "trade_id_regressions": 0,
+          "trade_time_regressions": 0,
+          "trades": 29538
+        },
+        "first_local_timestamp": "2025-01-01T00:00:00.009568+00:00",
+        "last_local_timestamp": "2025-01-01T02:59:59.939467+00:00",
+        "last_update_id": 1204218017,
+        "sequence_gate": "PASS"
+      },
+      "start": "2025-01-01T00:00:00Z",
+      "symbol": "USDCUSDT",
+      "trade_events": 29538,
+      "venue": "BINANCE_SPOT"
+    }
+  },
+  "sources": {
+    "L2": "TARDIS_BINANCE_NATIVE_DEPTH_AND_SNAPSHOT",
+    "MIXED_SOURCE_DISCLOSURE": true,
+    "TRADES_CANONICAL_BINDING": "BINANCE_VISION_INDIVIDUAL_TRADES",
+    "TRADES_NATIVE": "TARDIS_BINANCE_NATIVE_TRADE"
+  },
+  "status": "PASS",
+  "window": {
+    "end_us": 1735700400000000,
+    "pair_hashes": {
+      "FDUSDUSDT": "fd2d83ebc8bf0301616a3679da302e20cd56c8cde1235758c8aedc6f8b07eb09",
+      "USDCUSDT": "22696126494561e7a23354570bf3f7aa60f9ff6389a6d36d304e5a7d54ccce52"
+    },
+    "selection": "OWNER_ABSOLUTE_PREFERENCE_VALIDATED_NOT_PNL_SELECTED",
+    "start_us": 1735689600000000,
+    "tie_break": "local_us,exchange_us,PAIR_A_before_PAIR_B,capture_order"
+  },
+  "window_hash": "327142fa6be8a51a70b8f845842e97a596b52b8ab744ab95f68ba72261d60b9b"
+}

@@ -1,0 +1,71 @@
+{
+  "identity": "M035_200USD_3H_PARALLEL_DEVELOPMENT_BACKTEST_V1",
+  "classification": "DEVELOPMENT_DIAGNOSTIC_BACKTEST_NOT_OOS_NOT_LIVE",
+  "venue": "BINANCE_SPOT",
+  "start": "2025-01-01T00:00:00Z",
+  "end_exclusive": "2025-01-01T03:00:00Z",
+  "start_us": 1735689600000000,
+  "end_us": 1735700400000000,
+  "window_selection": "OWNER_ABSOLUTE_PREFERENCE_VALIDATED_NOT_PNL_SELECTED",
+  "window_hash": "327142fa6be8a51a70b8f845842e97a596b52b8ab744ab95f68ba72261d60b9b",
+  "pair_a": "USDCUSDT",
+  "pair_b": "FDUSDUSDT",
+  "pair_a_data_hash": "22696126494561e7a23354570bf3f7aa60f9ff6389a6d36d304e5a7d54ccce52",
+  "pair_b_data_hash": "fd2d83ebc8bf0301616a3679da302e20cd56c8cde1235758c8aedc6f8b07eb09",
+  "initial_bank_usdt": "200",
+  "fee_scenarios_bps": [
+    "0",
+    "1",
+    "2",
+    "5",
+    "10"
+  ],
+  "order_quantity": "10",
+  "tick_size": "0.0001",
+  "quantity_step": "1",
+  "minimum_quantity": "1",
+  "minimum_notional": "5",
+  "activation_latency_us": 1179525,
+  "cancel_ack_latency_us": 1179525,
+  "execution_cost_bps_round_trip": "1",
+  "adverse_selection_bps_round_trip": "1",
+  "risk_buffer_bps": "2",
+  "minimum_net_edge_bps": "1",
+  "maximum_spread_bps": "5",
+  "minimum_depth_usd": "1000",
+  "minimum_compatible_flow_asset_per_second": "10",
+  "flow_window_seconds": 60,
+  "maximum_book_age_us": 2000000,
+  "emergency_peg_deviation": "0.0025",
+  "taker_contingency_fee_bps": "10",
+  "geometry": {
+    "ranks_per_pair": 7,
+    "columns": {
+      "C1": "PERSISTENT",
+      "C2": "OPPORTUNISTIC"
+    },
+    "routes": [
+      "USDT->USDC->USDT",
+      "USDT->FDUSD->USDT"
+    ]
+  },
+  "execution_order": [
+    "5_SINGLE_PAIR_SCENARIOS",
+    "5_PARALLEL_TWO_PAIR_SCENARIOS"
+  ],
+  "deterministic_merge_tie_break": [
+    "local_us",
+    "exchange_us",
+    "PAIR_A_BEFORE_PAIR_B",
+    "capture_order"
+  ],
+  "provenance": {
+    "fees": "OWNER_DIAGNOSTIC_ASSUMPTION_NOT_HISTORICAL_ACCOUNT_PROOF",
+    "rules": "OWNER_DIAGNOSTIC_RULE_ASSUMPTION_M026_COMPARABILITY",
+    "costs": "OWNER_DIAGNOSTIC_ASSUMPTION",
+    "l2": "TARDIS_BINANCE_NATIVE_DEPTH_AND_SNAPSHOT",
+    "trades": "TARDIS_NATIVE_BOUND_EXACTLY_TO_BINANCE_VISION_INDIVIDUAL_TRADES"
+  },
+  "economic_run_authorized": true,
+  "rerun_allowed": false
+}

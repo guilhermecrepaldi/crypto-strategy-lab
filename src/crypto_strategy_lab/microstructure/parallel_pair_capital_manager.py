@@ -169,9 +169,7 @@ class RiskExitAuthorization:
             )
             < ZERO
             or self.quantity <= ZERO
-            or self.expected_hold_loss_usdt
-            + self.opportunity_cost_usdt
-            + self.tail_risk_usdt
+            or self.expected_hold_loss_usdt + self.opportunity_cost_usdt + self.tail_risk_usdt
             <= self.loss_if_exit_now_usdt
         ):
             raise ValueError("M035_INVALID_RISK_EXIT_AUTHORIZATION")
@@ -352,9 +350,7 @@ class GlobalCapitalLedger:
             raise ValueError("M035_CAPITAL_NOT_CANCELABLE")
         position.state = CapitalState.CANCEL_PENDING
         position.cancel_requested_at_us = now_us
-        self.audit.append(
-            {"event": "CANCEL_REQUEST", "time_us": now_us, "capital_id": capital_id}
-        )
+        self.audit.append({"event": "CANCEL_REQUEST", "time_us": now_us, "capital_id": capital_id})
         self._commit(now_us)
         self.reconcile()
 
@@ -478,6 +474,66 @@ class GlobalCapitalLedger:
         self._commit(now_us)
         self.reconcile()
 
+    def consolidate_inventory(
+        self, capital_ids: Iterable[str], *, pair_id: str, asset: str, now_us: int
+    ) -> str:
+        """Atomically combine partial entry lots without changing equity or ownership."""
+        self._causal(now_us)
+        ids = tuple(dict.fromkeys(capital_ids))
+        if not ids:
+            raise ValueError("M035_INVENTORY_CONSOLIDATION_EMPTY")
+        rows = [self.positions[capital_id] for capital_id in ids]
+        expected_state = _pair_state(pair_id, inventory=True)
+        if any(
+            row.pair_id != pair_id or row.asset != asset or row.state != expected_state
+            for row in rows
+        ):
+            raise ValueError("M035_INVENTORY_CONSOLIDATION_MISMATCH")
+        self._sequence += 1
+        capital_id = f"M035-CAP-{self._sequence:06d}"
+        quantity = sum((row.quantity for row in rows), ZERO)
+        cost_basis = sum((row.cost_basis_usdt for row in rows), ZERO)
+        attributable = sum((row.attributable_costs_usdt for row in rows), ZERO)
+        marked = sum((row.marked_value_usdt for row in rows), ZERO)
+        sources = tuple(
+            dict.fromkeys(
+                source for row in rows for source in (*row.source_capital_ids, row.capital_id)
+            )
+        )
+        cycles = tuple(dict.fromkeys(cycle for row in rows for cycle in row.source_cycles))
+        created_at = min(row.created_at_us for row in rows)
+        source_candidate = rows[0].source_candidate_id
+        for old_id in ids:
+            del self.positions[old_id]
+        self.positions[capital_id] = CapitalPosition(
+            capital_id=capital_id,
+            pair_id=pair_id,
+            state=expected_state,
+            cost_basis_usdt=cost_basis,
+            marked_value_usdt=marked,
+            asset=asset,
+            quantity=quantity,
+            created_at_us=created_at,
+            source_candidate_id=source_candidate,
+            source_capital_ids=sources,
+            source_cycles=cycles,
+            attributable_costs_usdt=attributable,
+        )
+        self.audit.append(
+            {
+                "event": "INVENTORY_CONSOLIDATED",
+                "time_us": now_us,
+                "capital_id": capital_id,
+                "source_capital_ids": ids,
+                "pair_id": pair_id,
+                "asset": asset,
+                "quantity": str(quantity),
+            }
+        )
+        self._commit(now_us)
+        self.reconcile()
+        return capital_id
+
     def register_risk_exit_authorization(
         self, authorization: RiskExitAuthorization, *, now_us: int
     ) -> None:
@@ -488,7 +544,8 @@ class GlobalCapitalLedger:
             or authorization.authorization_id in self.risk_exit_authorizations
             or authorization.authorization_id in self.consumed_risk_exit_authorizations
             or position.pair_id != authorization.pair_id
-            or position.state not in {
+            or position.state
+            not in {
                 CapitalState.INVENTORY_PAIR_A,
                 CapitalState.INVENTORY_PAIR_B,
                 CapitalState.RETURN_PAIR_A,
@@ -538,9 +595,7 @@ class GlobalCapitalLedger:
         sold_attributable_cost = (
             position.attributable_costs_usdt * sold_quantity / quantity_before_fill
         )
-        residual_attributable_cost = (
-            position.attributable_costs_usdt - sold_attributable_cost
-        )
+        residual_attributable_cost = position.attributable_costs_usdt - sold_attributable_cost
         if position.pending_cycle_id not in {None, cycle_id}:
             raise ValueError("M035_RETURN_CYCLE_ID_CHANGED_MID_ORDER")
         if cycle_id in self.cycles.cycles:
@@ -574,9 +629,7 @@ class GlobalCapitalLedger:
             position.quantity = residual_quantity
             position.cost_basis_usdt = residual_cost_basis
             position.attributable_costs_usdt = residual_attributable_cost
-            position.marked_value_usdt = (
-                residual_quantity * self.asset_marks_usdt[position.asset]
-            )
+            position.marked_value_usdt = residual_quantity * self.asset_marks_usdt[position.asset]
             position.returned_proceeds_usdt = cumulative_proceeds
             position.returned_quantity = cumulative_sold_quantity
             position.returned_cost_basis_usdt = cumulative_cost_basis
@@ -776,9 +829,7 @@ class ParallelPairCapitalAllocator:
                 position = self.ledger.positions[candidate.existing_capital_id]
                 if position.pair_id != candidate.pair_id:
                     raise ValueError("M035_OWNED_RETURN_PAIR_MISMATCH")
-                self.ledger.reserve_owned_return(
-                    candidate.existing_capital_id, now_us=now_us
-                )
+                self.ledger.reserve_owned_return(candidate.existing_capital_id, now_us=now_us)
                 grants.append(
                     AllocationGrant(
                         candidate_id=candidate.candidate_id,
@@ -987,9 +1038,7 @@ class PairEngine:
                 order.price = self._target_price(side=order.side, rank=order.rank)
                 continue
             if order.status == OrderStatus.CANCEL_PENDING and order.column == 2:
-                order.replacement_price = self._target_price(
-                    side=order.side, rank=order.rank
-                )
+                order.replacement_price = self._target_price(side=order.side, rank=order.rank)
                 affected.append(f"{order.side}:R{order.rank}:C{order.column}")
                 continue
             if order.status not in {OrderStatus.ACTIVE, OrderStatus.PARTIAL}:
@@ -1048,8 +1097,7 @@ class PairEngine:
         if (
             position.pair_id != self.state.pair_id
             or position.asset != "USDT"
-            or position.state
-            not in {CapitalState.RESERVED_PAIR_A, CapitalState.RESERVED_PAIR_B}
+            or position.state not in {CapitalState.RESERVED_PAIR_A, CapitalState.RESERVED_PAIR_B}
             or order.side != "BUY"
             or order.role != "ENTRY"
             or position.cost_basis_usdt < order.price * order.quantity
@@ -1283,8 +1331,7 @@ class PairEngine:
                 order.role != "RETURN"
                 or order.side != "SELL"
                 or position.asset != self.state.pair_asset
-                or position.state
-                not in {CapitalState.RETURN_PAIR_A, CapitalState.RETURN_PAIR_B}
+                or position.state not in {CapitalState.RETURN_PAIR_A, CapitalState.RETURN_PAIR_B}
                 or amount > position.quantity
             ):
                 raise ValueError("M035_RETURN_FILL_NOT_FUNDED")
@@ -1354,9 +1401,7 @@ class PairEngine:
                 order.inventory_capital_ids.append(inventory_id)
                 self.state.inventory_quantity += net_inventory
             else:
-                fill_proceeds = (
-                    amount * price * (D("1") - fee_rate) - attributable_cost_usdt
-                )
+                fill_proceeds = amount * price * (D("1") - fee_rate) - attributable_cost_usdt
                 order.net_proceeds_usdt += fill_proceeds
                 assert order.cycle_id is not None
                 order_complete = order.filled_quantity == order.quantity

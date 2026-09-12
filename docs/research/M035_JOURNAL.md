@@ -142,3 +142,24 @@ mixed provenance are in `reports/m035/M035_FDUSDUSDT_21_DAY_DATA_REPORT.json`. T
 local under ignored `data/` paths and are not uploaded to Git. Because normalized Tardis L2 does not
 prove native Binance `U/u` continuity, the next gate is aligned Pair A/B validation and a later
 random, preregistered three-hour draw—not PnL inspection.
+
+## 2026-09-11 — Economic campaign authorized and dual tape frozen
+
+The latest OWNER directive supersedes the earlier random-window plan and explicitly authorizes
+`M035_200USD_3H_PARALLEL_DEVELOPMENT_BACKTEST_V1`. Its absolute window preference is
+2025-01-01 00:00–03:00 UTC when both pairs are physically valid; no economic result was inspected
+while selecting it.
+
+Both pairs passed the strengthened native gate. Every exposed book is snapshot-bridged and Binance
+`U/u` sequence validated. Every Tardis-native Binance trade matches the official Binance Vision
+individual-trade archive by ID, price, quantity, maker side and millisecond timestamp. The merged
+timeline contains 149,046 events: USDCUSDT has 71,222 books and 29,538 trades; FDUSDUSDT has 28,540
+books and 19,746 trades. The frozen window hash is
+`327142fa6be8a51a70b8f845842e97a596b52b8ab744ab95f68ba72261d60b9b`.
+
+The former `MULTI_PAIR_HISTORICAL_TEST_BLOCKED_BY_PAIR_B_DATA` condition is therefore resolved.
+The mixed provenance is explicit: Tardis provides Binance-native L2/snapshot and native trade
+replay; Binance Vision independently binds the complete individual-trade population. The economic
+configuration is frozen in `reports/m035/M035_200USD_3H_CONFIG.json`. No economic event has yet been
+consumed; source publication and a new GPT-6 Astra source-bound review remain the final pre-run
+gates.
