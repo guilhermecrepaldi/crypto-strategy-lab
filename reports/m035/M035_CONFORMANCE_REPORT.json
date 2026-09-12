@@ -1,0 +1,205 @@
+{
+  "ALL_REQUIRED_GATES_PASS": true,
+  "BASE_GIT_HEAD": "bad10f9718594f54d5600e082cd91d5b9c11066e",
+  "CHECKS": {
+    "C1_FIFO_PRESERVATION": {
+      "EVIDENCE": {
+        "AGED_C1_STATUS_AFTER_HOTLINE_MOVE": "ACTIVE",
+        "MOVE_AT_EQUALITY": false,
+        "MOVE_WHEN_STRICTLY_GREATER": true
+      },
+      "STATUS": "PASS"
+    },
+    "C2_MOBILITY": {
+      "EVIDENCE": {
+        "OLD_ORDER_REMAINED_QUEUED_BEFORE_ACK": true,
+        "REPLACEMENT_ACTIVATED_AT_US": 180000000,
+        "REPLACEMENT_PRICE": "1.0002"
+      },
+      "STATUS": "PASS"
+    },
+    "CANCEL_ACK": {
+      "EVIDENCE": {
+        "FREE_AFTER_ACK": "200",
+        "FREE_AFTER_REQUEST": "130"
+      },
+      "STATUS": "PASS"
+    },
+    "DUST_ACCOUNTING": {
+      "EVIDENCE": {
+        "AGGREGATED_CAPITAL_ID": "M035-CAP-000002",
+        "AGGREGATED_TRADEABLE": "0.9",
+        "DUST_AFTER_AGGREGATION": "0.0991",
+        "DUST_BEFORE_AGGREGATION": "0.9991",
+        "FIRST_RETURN_QUANTITY": "8",
+        "MARKED_EQUITY_BEFORE_AND_AFTER": "200.0007",
+        "ORIGINAL_NET_ASSET": "8.9991"
+      },
+      "STATUS": "PASS"
+    },
+    "GLOBAL_CAPITAL_CONSERVATION": {
+      "EVIDENCE": {
+        "FREE": "70",
+        "PAIR_A_COMMITTED": "70",
+        "PAIR_B_COMMITTED": "60",
+        "TOTAL_EQUITY": "200"
+      },
+      "STATUS": "PASS"
+    },
+    "GRID_FOLLOWS_HOTLINE": {
+      "EVIDENCE": {
+        "C1_PRICE": "0.9999",
+        "C1_STATUS": "ACTIVE",
+        "C2_OLD_PRICE": "0.9999",
+        "C2_STATUS": "CANCEL_PENDING",
+        "C2_TARGET_PRICE": "1.0002"
+      },
+      "STATUS": "PASS"
+    },
+    "HOTLINE_ISOLATION": {
+      "EVIDENCE": {
+        "PAIR_A_EVENTS": 1,
+        "PAIR_A_HOTLINE": "1.0003",
+        "PAIR_B_EVENTS": 1,
+        "PAIR_B_HOTLINE": "0.9997"
+      },
+      "STATUS": "PASS"
+    },
+    "NO_DOUBLE_CAPITAL": {
+      "EVIDENCE": {
+        "GRANTED_TOTAL": "200",
+        "GRANTS": [
+          {
+            "AMOUNT_USDT": "100",
+            "CANDIDATE": "B100"
+          },
+          {
+            "AMOUNT_USDT": "100",
+            "CANDIDATE": "A150"
+          }
+        ],
+        "REQUESTED_TOTAL": "250"
+      },
+      "STATUS": "PASS"
+    },
+    "NO_FUTURE_DATA": {
+      "EVIDENCE": {
+        "CUTOFF_US": 870000000,
+        "FUTURE_HOTLINE": "1.0100",
+        "HOTLINE_AT_CUTOFF_AFTER_FUTURE": "1.0000",
+        "HOTLINE_AT_CUTOFF_BEFORE_FUTURE": "1.0000"
+      },
+      "STATUS": "PASS"
+    },
+    "NO_SELF_FILL": {
+      "EVIDENCE": {
+        "SELF_FILL_REJECTED": true
+      },
+      "STATUS": "PASS"
+    },
+    "OPEN_INVENTORY_MARKING": {
+      "EVIDENCE": {
+        "GLOBAL_MARKED_EQUITY": "199.9003",
+        "PAIR_B_MARK": "0.90",
+        "ZERO_LOSS_ECONOMIC_PASS": false
+      },
+      "STATUS": "PASS"
+    },
+    "OWNED_RETURN_PRIORITY": {
+      "EVIDENCE": {
+        "ALLOCATION_ORDER": [
+          "RETURN_A",
+          "NEW_B"
+        ],
+        "AMOUNTS": [
+          "70",
+          "130"
+        ],
+        "FREE_AFTER": "0",
+        "OWNED_STATE": "RETURN_PAIR_A"
+      },
+      "STATUS": "PASS"
+    },
+    "PHYSICAL_COST_CONSERVATION": {
+      "EVIDENCE": {
+        "CYCLE_PNL_USDT": "0",
+        "EXTERNAL_COSTS_USDT": "1",
+        "FINAL_MARKED_EQUITY": "200"
+      },
+      "STATUS": "PASS"
+    },
+    "PHYSICAL_PATH_INTEGRATION": {
+      "EVIDENCE": {
+        "GLOBAL_CYCLE_PNL": "0.0002",
+        "GLOBAL_FREE_USDT": "199.0003",
+        "PAIR_A_CYCLES": [
+          "PHYSICAL-A-CYCLE-1"
+        ],
+        "PAIR_A_ORDER_STATUS": "FILLED",
+        "PAIR_A_RETURN_ORDER_STATUS": "FILLED",
+        "PAIR_B_CAPITAL_OWNER": "PAIR_B"
+      },
+      "STATUS": "PASS"
+    },
+    "PUBLIC_TRADE_ISOLATION": {
+      "EVIDENCE": {
+        "GLOBAL_MARKED_EQUITY": "200.0000",
+        "PAIR_A_INVENTORY": "1",
+        "PAIR_B_INVENTORY": "1",
+        "SAME_NATIVE_TRADE_ID_ALLOWED_PER_SYMBOL": true
+      },
+      "STATUS": "PASS"
+    },
+    "RISK_EXIT_AUTHORIZATION": {
+      "EVIDENCE": {
+        "INVENTED_AUTHORIZATION_BLOCKED": true,
+        "NEGATIVE_RISK_EXITS": 1,
+        "ZERO_LOSS_ECONOMIC_PASS": false
+      },
+      "STATUS": "PASS"
+    },
+    "UNFUNDED_ORDER_INERT": {
+      "EVIDENCE": {
+        "FILLS": {},
+        "ORDER_STATUS": "UNFUNDED",
+        "PAIR_INVENTORY": "0"
+      },
+      "STATUS": "PASS"
+    },
+    "ZERO_LOSS_ATTRIBUTION": {
+      "EVIDENCE": {
+        "AGGREGATE_PNL_USDT": "0.09",
+        "NEGATIVE_CLOSED_CYCLES": 1,
+        "ZERO_LOSS_CYCLE_PASS": false
+      },
+      "STATUS": "PASS"
+    }
+  },
+  "CONFIG": {
+    "COLUMNS": [
+      "C1_PERSISTENT",
+      "C2_OPPORTUNISTIC"
+    ],
+    "IDENTITY": "M035_PARALLEL_PAIR_CAPITAL_MANAGER_CONFORMANCE_V1",
+    "INITIAL_BANK_USDT": "200.00",
+    "LOGICAL_DURATION_SECONDS": 900,
+    "MODE": "SYNTHETIC_DETERMINISTIC_CONFORMANCE_ONLY",
+    "PAIRS": [
+      "PAIR_A:USDCUSDT",
+      "PAIR_B:FDUSDUSDT_SYNTHETIC_FIXTURE"
+    ],
+    "RANKS_PER_SIDE": 7
+  },
+  "CONFIG_SHA256": "097d94a4dcbabef40e97714dd2b37a8a66fe9eb7ae73fc7c84cd03de3253cccf",
+  "ECONOMIC_RUN_AUTHORIZED": false,
+  "ECONOMIC_RUN_BLOCKER": "MULTI_PAIR_HISTORICAL_TEST_BLOCKED_BY_PAIR_B_DATA",
+  "MODEL": "M035_PARALLEL_PAIR_CAPITAL_MANAGER",
+  "REPORT": "M035_CONFORMANCE_REPORT",
+  "SCIENTIFIC_ROLE": "SOFTWARE_CONFORMANCE_NOT_ECONOMIC_RESULT",
+  "SOURCE_BUNDLE_SHA256": "63cb0cd63d509f5cfe5cff1b89057b79d54636093c5cee3edccdf21775ecf15e",
+  "SOURCE_PUBLISHED": false,
+  "SOURCE_REVIEW_MODEL": "gpt-6-astra",
+  "SOURCE_REVIEW_REPORT": "docs/research/M035_SOURCE_REVIEW.md",
+  "SOURCE_REVIEW_STATUS": "PASS_NO_P1_P2",
+  "STATUS": "PASS"
+}

@@ -1,21 +1,41 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=NONE
-CAMPAIGN_STATUS=M034_OWNER_FORWARD_DIAGNOSTIC_COMPLETE
-CAMPAIGN_EXECUTION_SOURCE_SHA=be78f31d03006a93e0af9165ee744b9b38cb5913
+CAMPAIGN_STATUS=M035_SOURCE_CONFORMANCE_PASS_BLOCKED_PRE_ECONOMIC_RUN
+CAMPAIGN_EXECUTION_SOURCE_SHA=63cb0cd63d509f5cfe5cff1b89057b79d54636093c5cee3edccdf21775ecf15e_UNPUBLISHED_BUNDLE
 CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
-CAMPAIGN_VERDICT=PASS_FAIL_CLOSED_TRANSPORT_ONLY_STRATEGY_PASS_FALSE
-CAMPAIGN_PROGRESS_FILE=docs/research/M034_JOURNAL.md
-CAMPAIGN_JOURNAL=docs/research/M034_JOURNAL.md
-CAMPAIGN_SCOREBOARD=reports/m034/M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD_RESULT_AUDIT.json
-CURRENT_ACTIVE_RESEARCH_MODEL=NONE_AWAITING_OWNER_DIRECTION
-OWNER_NEXT_RESEARCH=NONE_FORWARD_DIAGNOSTIC_COMPLETE_NO_SUCCESSOR_AUTHORIZED
-OWNER_DIRECTIVE=docs/research/M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD.md
-NEXT_CAMPAIGN_STATUS=NOT_AUTHORIZED
+CAMPAIGN_VERDICT=SOURCE_CONFORMANCE_PASS_ECONOMIC_RESULT_NOT_EXECUTED_STRATEGY_PASS_FALSE
+CAMPAIGN_PROGRESS_FILE=docs/research/M035_JOURNAL.md
+CAMPAIGN_JOURNAL=docs/research/M035_JOURNAL.md
+CAMPAIGN_SCOREBOARD=reports/m035/M035_200USD_3H_RESULT.json
+CURRENT_ACTIVE_RESEARCH_MODEL=M035_PARALLEL_PAIR_CAPITAL_MANAGER
+OWNER_NEXT_RESEARCH=M035_DUAL_PAIR_CAPTURE_SOURCE_PUBLICATION_THEN_FIRST_FROZEN_CAPTURE
+OWNER_DIRECTIVE=docs/microstructure/M035_PARALLEL_PAIR_CAPITAL_MANAGER.md
+NEXT_CAMPAIGN_STATUS=CAPTURE_PREPARED_BLOCKED_SOURCE_PUBLICATION
 NEXT_CAMPAIGN_MODEL_HASH=NONE
 NEXT_CAMPAIGN_WINDOW=NONE
-NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=NONE
+NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=200_USDT_TOTAL_SHARED
+
+M035 implements two pair-isolated hotline/grid/FIFO engines sharing one exact 200 USDT global
+capital authority. Its deterministic 15-minute logical conformance passed all 18 recorded gates and
+40 M035 tests. GPT-6 Astra's source-bound review passed bundle
+`63cb0cd63d509f5cfe5cff1b89057b79d54636093c5cee3edccdf21775ecf15e` with no P1/P2.
+This proves source mechanics only. The three-hour single-pair baseline and two-pair treatment were
+not executed: the canonical inventory has USDCUSDT data but zero aligned physical L2 + individual
+trade units for FDUSDUSDT or any other Pair B. Status is
+`MULTI_PAIR_HISTORICAL_TEST_BLOCKED_BY_PAIR_B_DATA`; tape consumed=FALSE, economic runs=0, and all
+economic metrics remain null rather than fabricated zeros. Source publication is also pending
+because the current environment denied `.git` writes and GitHub network access.
+
+The Pair B evidence path is now prepared as `M035_DUAL_PAIR_FORWARD_CAPTURE_V1`: one Binance public
+connection records individual trades and snapshot-bridged L2 diffs for USDCUSDT+FDUSDUSDT on one
+receipt clock, with per-channel freshness/continuity, exclusive three-hour cutoff, raw-before-
+validation persistence and hashed manifests. GPT-6 Astra passed the final capture-source bundle
+`66ca6fa90a9f47bfe5e0d451b59c2de691f7566f7e2b5e62f81312a52b303813` with no P1/P2 after six defects
+were corrected. `CAPTURE_STARTED=false`; publication is required before the first frozen capture.
+
+<!-- Previous M034 owner forward diagnostic retained as provenance. -->
 
 The one-shot `M034_OWNER_DIAGNOSTIC_FORWARD_3H_200USD` completed its exact three-hour
 Binance public-paper window at `2026-09-11T16:08:39.103903Z`. All 149,240 decisions

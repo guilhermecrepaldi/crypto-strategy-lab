@@ -1,0 +1,1 @@
+cycle_id,pair_id,route,start_timestamp_us,end_timestamp_us,duration_seconds,capital_used_usdt,gross_pnl_usdt,fees_usdt,execution_cost_usdt,adverse_selection_usdt,net_pnl_usdt,return_pct

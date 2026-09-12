@@ -1,0 +1,74 @@
+{
+  "ALIGNED_TWO_PAIR_WINDOWS": 0,
+  "BLOCKER": "MULTI_PAIR_HISTORICAL_TEST_BLOCKED_BY_PAIR_B_DATA",
+  "CONFORMANCE_CONFIG_SHA256": "097d94a4dcbabef40e97714dd2b37a8a66fe9eb7ae73fc7c84cd03de3253cccf",
+  "CONFORMANCE_STATUS": "PASS",
+  "DATA_AUTHORITIES": [
+    "reports/usdcusdt/M034-pair-universe.json",
+    "reports/usdcusdt/M034_BINANCE_DATASET_MANIFEST.json",
+    "docs/research/M034_BINANCE_EVIDENCE_PACK.md"
+  ],
+  "DURATION_HOURS": 3,
+  "ECONOMIC_RUNS": 0,
+  "FROZEN_CONFORMANCE_CONFIG": {
+    "COLUMNS": [
+      "C1_PERSISTENT",
+      "C2_OPPORTUNISTIC"
+    ],
+    "IDENTITY": "M035_PARALLEL_PAIR_CAPITAL_MANAGER_CONFORMANCE_V1",
+    "INITIAL_BANK_USDT": "200.00",
+    "LOGICAL_DURATION_SECONDS": 900,
+    "MODE": "SYNTHETIC_DETERMINISTIC_CONFORMANCE_ONLY",
+    "PAIRS": [
+      "PAIR_A:USDCUSDT",
+      "PAIR_B:FDUSDUSDT_SYNTHETIC_FIXTURE"
+    ],
+    "RANKS_PER_SIDE": 7
+  },
+  "IDENTITY": "M035_200USD_3H_V1_NOT_STARTED",
+  "INITIAL_BANK_USD": "200.00",
+  "M029_M030_COMPATIBLE_BASELINE": "NOT_EXECUTED",
+  "M035_TREATMENT": "NOT_EXECUTED",
+  "METRICS": {
+    "CYCLES_PER_HOUR": null,
+    "DUST_BY_ASSET": null,
+    "FINAL_MARKED_EQUITY": null,
+    "FINAL_REALIZED_EQUITY": null,
+    "INITIAL_EQUITY": "200.00",
+    "MARKED_PNL": null,
+    "MARKED_RETURN_PCT": null,
+    "NEGATIVE_CLOSED_CYCLES": null,
+    "NEGATIVE_RISK_EXITS": null,
+    "NET_PNL_PER_CAPITAL_HOUR": null,
+    "PARALLEL_CYCLE_GAIN_PCT": null,
+    "PARALLEL_PRODUCTIVITY_GAIN_PCT": null,
+    "PHYSICAL_CYCLES": null,
+    "REALIZED_PNL": null,
+    "REALIZED_RETURN_PCT": null,
+    "SLOT_EQUIVALENT_CYCLES": null
+  },
+  "MODEL": "M035_PARALLEL_PAIR_CAPITAL_MANAGER",
+  "DUAL_PAIR_CAPTURE_PLAN": "reports/m035/M035_DUAL_PAIR_CAPTURE_PLAN.json",
+  "DUAL_PAIR_CAPTURE_REVIEW": "docs/research/M035_DUAL_PAIR_CAPTURE_SOURCE_REVIEW.md",
+  "DUAL_PAIR_CAPTURE_STATUS": "PREPARED_NOT_STARTED",
+  "NEXT_EVIDENCE_ACTION": "Publish the prepared dual-pair capture source, execute the first frozen simultaneous Binance public L2 + individual-trade capture, then validate continuity before preregistering replay.",
+  "PAIR_A": {
+    "DATA_STATUS": "AVAILABLE",
+    "SYMBOL": "USDCUSDT"
+  },
+  "PAIR_B": {
+    "DATA_STATUS": "UNAVAILABLE",
+    "SYMBOL": "FDUSDUSDT"
+  },
+  "PARALLEL": true,
+  "REASON": "No second canonical Binance pair has aligned physical L2 and individual trades.",
+  "SAME_BANK": true,
+  "SINGLE_PAIR_BASELINE": "NOT_EXECUTED",
+  "SOURCE_BUNDLE_SHA256": "63cb0cd63d509f5cfe5cff1b89057b79d54636093c5cee3edccdf21775ecf15e",
+  "SOURCE_PUBLISHED": false,
+  "SOURCE_REVIEW_MODEL": "gpt-6-astra",
+  "SOURCE_REVIEW_REPORT": "docs/research/M035_SOURCE_REVIEW.md",
+  "SOURCE_REVIEW_STATUS": "PASS_NO_P1_P2",
+  "STATUS": "BLOCKED_PRE_ECONOMIC_RUN",
+  "TAPE_CONSUMED": false
+}
