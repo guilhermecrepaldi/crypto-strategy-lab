@@ -1,0 +1,52 @@
+{
+  "identity": "M035_200USD_RANDOM_3H_PARALLEL_DEVELOPMENT_BACKTEST_V2",
+  "status": "COMPLETE",
+  "classification": "DEVELOPMENT_DIAGNOSTIC_BACKTEST_NOT_OOS_NOT_LIVE",
+  "strategy_pass": false,
+  "executed_source_commit": "e86953d03913d317e0fe25045501d6bf8717197a",
+  "window": {
+    "start": "2026-02-01T01:00:00Z",
+    "end_exclusive": "2026-02-01T04:00:00Z",
+    "event_count_per_scenario": 151063,
+    "window_hash": "15a4ad3cd557bc931a792a05504132b80225b5f8ab1755bac6c01d01df9849ef"
+  },
+  "initial_bank_usdt_per_independent_scenario": "200",
+  "parallel_bank_is_single_shared_ledger": true,
+  "results": [
+    {"mode":"SINGLE_PAIR","fee_bps_per_leg":"0","cycles":0,"cycles_per_hour":"0","marked_pnl_usdt":"0","return_pct":"0","final_marked_equity_usdt":"200","capital_utilization_pct":"50.00399952819166666666666667","maximum_reserved_usdt":"100.0400","negative_closed_cycles":0},
+    {"mode":"SINGLE_PAIR","fee_bps_per_leg":"1","cycles":0,"cycles_per_hour":"0","marked_pnl_usdt":"0","return_pct":"0","final_marked_equity_usdt":"200","capital_utilization_pct":"40.00120014844648148148148148","maximum_reserved_usdt":"80.0280","negative_closed_cycles":0},
+    {"mode":"SINGLE_PAIR","fee_bps_per_leg":"2","cycles":0,"cycles_per_hour":"0","marked_pnl_usdt":"0","return_pct":"0","final_marked_equity_usdt":"200","capital_utilization_pct":"29.99940050575472222222222222","maximum_reserved_usdt":"60.0180","negative_closed_cycles":0},
+    {"mode":"SINGLE_PAIR","fee_bps_per_leg":"5","cycles":0,"cycles_per_hour":"0","marked_pnl_usdt":"0","return_pct":"0","final_marked_equity_usdt":"200","capital_utilization_pct":"0","maximum_reserved_usdt":"0","negative_closed_cycles":0},
+    {"mode":"SINGLE_PAIR","fee_bps_per_leg":"10","cycles":0,"cycles_per_hour":"0","marked_pnl_usdt":"0","return_pct":"0","final_marked_equity_usdt":"200","capital_utilization_pct":"0","maximum_reserved_usdt":"0","negative_closed_cycles":0},
+    {"mode":"PARALLEL_TWO_PAIR","fee_bps_per_leg":"0","cycles":0,"cycles_per_hour":"0","marked_pnl_usdt":"0","return_pct":"0","final_marked_equity_usdt":"200","capital_utilization_pct":"99.52535892581296296296296296","maximum_reserved_usdt":"199.8350","negative_closed_cycles":0},
+    {"mode":"PARALLEL_TWO_PAIR","fee_bps_per_leg":"1","cycles":0,"cycles_per_hour":"0","marked_pnl_usdt":"0","return_pct":"0","final_marked_equity_usdt":"200","capital_utilization_pct":"79.61630272118333333333333333","maximum_reserved_usdt":"159.8600","negative_closed_cycles":0},
+    {"mode":"PARALLEL_TWO_PAIR","fee_bps_per_leg":"2","cycles":0,"cycles_per_hour":"0","marked_pnl_usdt":"0","return_pct":"0","final_marked_equity_usdt":"200","capital_utilization_pct":"59.70923872628722222222222222","maximum_reserved_usdt":"119.8890","negative_closed_cycles":0},
+    {"mode":"PARALLEL_TWO_PAIR","fee_bps_per_leg":"5","cycles":0,"cycles_per_hour":"0","marked_pnl_usdt":"0","return_pct":"0","final_marked_equity_usdt":"200","capital_utilization_pct":"0","maximum_reserved_usdt":"0","negative_closed_cycles":0},
+    {"mode":"PARALLEL_TWO_PAIR","fee_bps_per_leg":"10","cycles":0,"cycles_per_hour":"0","marked_pnl_usdt":"0","return_pct":"0","final_marked_equity_usdt":"200","capital_utilization_pct":"0","maximum_reserved_usdt":"0","negative_closed_cycles":0}
+  ],
+  "aggregate": {
+    "fills": 0,
+    "physical_cycles": 0,
+    "negative_closed_cycles": 0,
+    "negative_risk_exits": 0,
+    "dust": {},
+    "non_usdt_inventory": {},
+    "parallel_cycle_improvement_observed": false,
+    "parallel_productivity_improvement_observed": false,
+    "gain_percentages": "NOT_DEFINED_BECAUSE_SINGLE_DENOMINATORS_ARE_ZERO",
+    "zero_loss_economic_pass": true,
+    "zero_loss_qualification": "VACUOUS_NO_FILLS_NO_CYCLES",
+    "fee_break_even": "NOT_ESTIMABLE_FROM_ZERO_FILLS",
+    "f5_f10": "NO_ORDERS_ADMITTED_BY_FROZEN_EXPECTED_NET_EDGE_GATE"
+  },
+  "artifacts": {
+    "full_result_uncompressed_local_path": "reports/m035/M035_RANDOM_3H_V2_RESULT.json",
+    "full_result_uncompressed_bytes": 185838056,
+    "full_result_uncompressed_sha256": "b241cf85c8ea8c6afb68fc37f7aa37371c49274466dff08635afe0342e57ddd0",
+    "full_result_published_archive": "reports/m035/M035_RANDOM_3H_V2_RESULT_FULL.zip",
+    "full_result_published_archive_sha256": "7787fe34bf485781e32cb1a294be86aa841d4cbf988a4214b7837707ece13a93",
+    "post_run_audit": "reports/m035/M035_RANDOM_3H_V2_RESULT_AUDIT.json",
+    "post_run_audit_sha256": "821e77a28ce49563c93035782ac19257c3f906d698f6b9c99eacdbc0488cdc9f"
+  },
+  "no_rerun": true
+}

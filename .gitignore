@@ -30,3 +30,7 @@ output/
 *.dpapi
 *.credential
 *.session
+
+# M035 V2 full causal result is preserved locally and published as a compressed,
+# hash-bound archive because the uncompressed JSON exceeds GitHub's 100 MB limit.
+/reports/m035/M035_RANDOM_3H_V2_RESULT.json

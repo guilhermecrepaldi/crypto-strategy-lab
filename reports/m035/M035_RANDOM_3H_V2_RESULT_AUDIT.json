@@ -1,0 +1,364 @@
+{
+  "identity": "M035_200USD_RANDOM_3H_PARALLEL_DEVELOPMENT_BACKTEST_V2",
+  "status": "PASS",
+  "review_model": "gpt-6-astra",
+  "audit_date_utc": "2026-09-12",
+  "classification": "INDEPENDENT_POST_RUN_EVIDENCE_AUDIT_NOT_STRATEGY_PASS_NOT_OOS_NOT_LIVE",
+  "executed_source_commit": "e86953d03913d317e0fe25045501d6bf8717197a",
+  "reviewed_source_commit": "2bd07264b5f1227ee9a1f561b2755ee069728a5f",
+  "config_sha256": "816ff74ddd920d1a0858021a7026dfb80cc5838f2903946843abcfdf0b5600db",
+  "window_hash": "15a4ad3cd557bc931a792a05504132b80225b5f8ab1755bac6c01d01df9849ef",
+  "pair_a_data_hash": "06e77ff1036c2fbc79536d511824f216501598abb3942dd766b160e84d4ffe6a",
+  "pair_b_data_hash": "376f20225fb20a399442150a8fefc9bb9363a857b97b8d4b33b40249873e632b",
+  "findings": [],
+  "audit_scope": {
+    "economic_start": "2026-02-01T01:00:00Z",
+    "economic_end_exclusive": "2026-02-01T04:00:00Z",
+    "duration_seconds": 10800,
+    "completed_scenarios": 10,
+    "event_count_per_scenario": 151063,
+    "execution_order": [
+      "SINGLE_PAIR:F0",
+      "SINGLE_PAIR:F1",
+      "SINGLE_PAIR:F2",
+      "SINGLE_PAIR:F5",
+      "SINGLE_PAIR:F10",
+      "PARALLEL_TWO_PAIR:F0",
+      "PARALLEL_TWO_PAIR:F1",
+      "PARALLEL_TWO_PAIR:F2",
+      "PARALLEL_TWO_PAIR:F5",
+      "PARALLEL_TWO_PAIR:F10"
+    ],
+    "initial_bank_usdt_per_independent_scenario": "200",
+    "parallel_bank_is_single_shared_ledger": true
+  },
+  "verification": {
+    "checks_passed": 227,
+    "ledger_audit_records_checked": 960503,
+    "all_checks_pass": true,
+    "methods": [
+      "SHA-256 verification of claim, result, completed prefixes, four CSVs, reviewed source closure, raw slice archives and official individual-trade archives.",
+      "Exact comparison of all ten completed-prefix objects with the reporting projection in the final result; exact reconciliation of all four CSVs with their preserved prefix records.",
+      "Independent arithmetic reconstruction from preserved CAPITAL_RESERVED and CANCEL_ACK records only, starting at 200 USDT; unique ownership and nonnegative free balance checked after every recorded movement.",
+      "Cancel request retains capital; every preserved ACK was checked against its recorded request and frozen acknowledgement latency.",
+      "Independent integration of recorded reserved/free capital over timestamps, including the initial and final boundaries, and reconciliation of capital utilization, per-pair capital-hours and maximum commitment.",
+      "Independent lock percentile calculation from current physical capital owners; all reported observations are cutoff-censored because no settlement occurred.",
+      "Audit, order and queue timestamps checked against the economic window; seven checkpoint times verified from start through exclusive cutoff. Runtime event counts match the previously independently verified 151063-event physical projection.",
+      "Read-only descriptive scan of the public individual-trade tape for price ranges and the preserved F0 order's active interval. No strategy decisions, allocation choices, fills or queue transitions were recomputed."
+    ],
+    "check_categories": {
+      "claim_and_source_config_data_binding": "PASS",
+      "exactly_five_single_then_five_parallel_fee_scenarios": "PASS",
+      "ten_complete_three_hour_scenarios": "PASS",
+      "bootstrap_and_future_excluded_from_economic_state": "PASS",
+      "one_200_usdt_bank_and_unique_ownership": "PASS",
+      "event_time_capital_conservation": "PASS",
+      "cancel_ack_before_reuse": "PASS",
+      "final_equity_pnl_costs_cycles_dust": "PASS",
+      "independent_capital_time_and_lock_metrics": "PASS",
+      "prefixes_result_and_csv_reconciliation": "PASS",
+      "zero_denominator_comparisons": "PASS",
+      "v1_claim_and_failure_prefix_unchanged": "PASS"
+    },
+    "economic_logic_rerun": false,
+    "fills_recomputed": false,
+    "existing_claims_or_results_modified": false
+  },
+  "scenario_summary": [
+    {
+      "cancel_acks": 20,
+      "capital_utilization_pct": "50.00399952819166666666666667",
+      "cycles": 0,
+      "fee": "0",
+      "fills": 0,
+      "final_equity": "200",
+      "free_usdt": "99.9650",
+      "marked_pnl": "0",
+      "maximum_reserved_usdt": "100.0400",
+      "mode": "SINGLE_PAIR",
+      "open_capital_owners": 10,
+      "orders_created": 30,
+      "pair_capital_time_usd_hours": {
+        "PAIR_A": "300.02399716915",
+        "PAIR_B": "0"
+      },
+      "realized_pnl": "0",
+      "reserved_usdt": "100.0350"
+    },
+    {
+      "cancel_acks": 16,
+      "capital_utilization_pct": "40.00120014844648148148148148",
+      "cycles": 0,
+      "fee": "1",
+      "fills": 0,
+      "final_equity": "200",
+      "free_usdt": "119.9760",
+      "marked_pnl": "0",
+      "maximum_reserved_usdt": "80.0280",
+      "mode": "SINGLE_PAIR",
+      "open_capital_owners": 8,
+      "orders_created": 24,
+      "pair_capital_time_usd_hours": {
+        "PAIR_A": "240.0072008906788888888888889",
+        "PAIR_B": "0"
+      },
+      "realized_pnl": "0",
+      "reserved_usdt": "80.0240"
+    },
+    {
+      "cancel_acks": 12,
+      "capital_utilization_pct": "29.99940050575472222222222222",
+      "cycles": 0,
+      "fee": "2",
+      "fills": 0,
+      "final_equity": "200",
+      "free_usdt": "139.9850",
+      "marked_pnl": "0",
+      "maximum_reserved_usdt": "60.0180",
+      "mode": "SINGLE_PAIR",
+      "open_capital_owners": 6,
+      "orders_created": 18,
+      "pair_capital_time_usd_hours": {
+        "PAIR_A": "179.9964030345283333333333333",
+        "PAIR_B": "0"
+      },
+      "realized_pnl": "0",
+      "reserved_usdt": "60.0150"
+    },
+    {
+      "cancel_acks": 0,
+      "capital_utilization_pct": "0",
+      "cycles": 0,
+      "fee": "5",
+      "fills": 0,
+      "final_equity": "200",
+      "free_usdt": "200",
+      "marked_pnl": "0",
+      "maximum_reserved_usdt": "0",
+      "mode": "SINGLE_PAIR",
+      "open_capital_owners": 0,
+      "orders_created": 0,
+      "pair_capital_time_usd_hours": {
+        "PAIR_A": "0",
+        "PAIR_B": "0"
+      },
+      "realized_pnl": "0",
+      "reserved_usdt": "0"
+    },
+    {
+      "cancel_acks": 0,
+      "capital_utilization_pct": "0",
+      "cycles": 0,
+      "fee": "10",
+      "fills": 0,
+      "final_equity": "200",
+      "free_usdt": "200",
+      "marked_pnl": "0",
+      "maximum_reserved_usdt": "0",
+      "mode": "SINGLE_PAIR",
+      "open_capital_owners": 0,
+      "orders_created": 0,
+      "pair_capital_time_usd_hours": {
+        "PAIR_A": "0",
+        "PAIR_B": "0"
+      },
+      "realized_pnl": "0",
+      "reserved_usdt": "0"
+    },
+    {
+      "cancel_acks": 35,
+      "capital_utilization_pct": "99.52535892581296296296296296",
+      "cycles": 0,
+      "fee": "0",
+      "fills": 0,
+      "final_equity": "200",
+      "free_usdt": "0.1700",
+      "marked_pnl": "0",
+      "maximum_reserved_usdt": "199.8350",
+      "mode": "PARALLEL_TWO_PAIR",
+      "open_capital_owners": 20,
+      "orders_created": 55,
+      "pair_capital_time_usd_hours": {
+        "PAIR_A": "300.02399716915",
+        "PAIR_B": "297.1281563857277777777777778"
+      },
+      "realized_pnl": "0",
+      "reserved_usdt": "199.8300"
+    },
+    {
+      "cancel_acks": 28,
+      "capital_utilization_pct": "79.61630272118333333333333333",
+      "cycles": 0,
+      "fee": "1",
+      "fills": 0,
+      "final_equity": "200",
+      "free_usdt": "40.1440",
+      "marked_pnl": "0",
+      "maximum_reserved_usdt": "159.8600",
+      "mode": "PARALLEL_TWO_PAIR",
+      "open_capital_owners": 16,
+      "orders_created": 44,
+      "pair_capital_time_usd_hours": {
+        "PAIR_A": "240.0072008906788888888888889",
+        "PAIR_B": "237.6906154364211111111111111"
+      },
+      "realized_pnl": "0",
+      "reserved_usdt": "159.8560"
+    },
+    {
+      "cancel_acks": 21,
+      "capital_utilization_pct": "59.70923872628722222222222222",
+      "cycles": 0,
+      "fee": "2",
+      "fills": 0,
+      "final_equity": "200",
+      "free_usdt": "80.1140",
+      "marked_pnl": "0",
+      "maximum_reserved_usdt": "119.8890",
+      "mode": "PARALLEL_TWO_PAIR",
+      "open_capital_owners": 12,
+      "orders_created": 33,
+      "pair_capital_time_usd_hours": {
+        "PAIR_A": "179.9964030345283333333333333",
+        "PAIR_B": "178.259029323195"
+      },
+      "realized_pnl": "0",
+      "reserved_usdt": "119.8860"
+    },
+    {
+      "cancel_acks": 0,
+      "capital_utilization_pct": "0",
+      "cycles": 0,
+      "fee": "5",
+      "fills": 0,
+      "final_equity": "200",
+      "free_usdt": "200",
+      "marked_pnl": "0",
+      "maximum_reserved_usdt": "0",
+      "mode": "PARALLEL_TWO_PAIR",
+      "open_capital_owners": 0,
+      "orders_created": 0,
+      "pair_capital_time_usd_hours": {
+        "PAIR_A": "0",
+        "PAIR_B": "0"
+      },
+      "realized_pnl": "0",
+      "reserved_usdt": "0"
+    },
+    {
+      "cancel_acks": 0,
+      "capital_utilization_pct": "0",
+      "cycles": 0,
+      "fee": "10",
+      "fills": 0,
+      "final_equity": "200",
+      "free_usdt": "200",
+      "marked_pnl": "0",
+      "maximum_reserved_usdt": "0",
+      "mode": "PARALLEL_TWO_PAIR",
+      "open_capital_owners": 0,
+      "orders_created": 0,
+      "pair_capital_time_usd_hours": {
+        "PAIR_A": "0",
+        "PAIR_B": "0"
+      },
+      "realized_pnl": "0",
+      "reserved_usdt": "0"
+    }
+  ],
+  "economic_summary": {
+    "fills_all_scenarios": 0,
+    "physical_cycles_all_scenarios": 0,
+    "negative_closed_cycles_all_scenarios": 0,
+    "negative_risk_exits_all_scenarios": 0,
+    "final_realized_equity_each_scenario": "200",
+    "final_marked_equity_each_scenario": "200",
+    "pnl_each_scenario": "0",
+    "return_pct_each_scenario": "0",
+    "dust_all_scenarios": {},
+    "non_usdt_inventory_all_scenarios": {},
+    "parallel_cycle_improvement_observed": false,
+    "parallel_pnl_improvement_observed": false,
+    "gain_percentages": "NOT_DEFINED_BECAUSE_SINGLE_DENOMINATORS_ARE_ZERO",
+    "strategy_profitability_demonstrated": false,
+    "scientific_interpretation": "COMPLETE_VALID_DEVELOPMENT_OBSERVATION_WITH_NO_EXECUTIONS_AND_NO_OBSERVED_PARALLEL_PRODUCTIVITY_GAIN"
+  },
+  "zero_cycle_mechanics": {
+    "market_data_present": true,
+    "usdcusdt": {
+      "individual_trades": 48256,
+      "trade_price_min": "1.00070000",
+      "trade_price_max": "1.00100000",
+      "aggressor_sell_count": 25882,
+      "aggressor_sell_quantity": "56311578.00000000",
+      "f0_admitted_ranks": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "f1_admitted_ranks": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "f2_admitted_ranks": [
+        5,
+        6,
+        7
+      ],
+      "f1_max_buy_limit": "1.0006",
+      "f2_max_buy_limit": "1.0005",
+      "f0_special_order": {
+        "order_id": "PAIR_A:O:000025",
+        "limit_price": "1.0007",
+        "activation_exchange_upper_us": 1769910734637361,
+        "cancel_ack_local_us": 1769910995039137,
+        "aggressor_sell_trades_during_preserved_active_interval": 1236,
+        "aggressor_sell_price_min": "1.00080000",
+        "aggressor_sell_price_max": "1.00090000",
+        "trades_at_or_below_limit_during_that_interval": 0,
+        "interpretation": "The only admitted USDC limit overlapping the whole-window trade minimum was not reached while this preserved order was executable."
+      }
+    },
+    "fdusdusdt": {
+      "individual_trades": 4595,
+      "trade_price_min": "0.99830000",
+      "trade_price_max": "0.99850000",
+      "aggressor_sell_count": 1696,
+      "aggressor_sell_quantity": "5059820.00000000",
+      "f0_max_buy_limit": "0.9982",
+      "f1_max_buy_limit": "0.9981",
+      "f2_max_buy_limit": "0.9980",
+      "interpretation": "All admitted buy limits were below the minimum observed public trade price."
+    },
+    "f5_f10": "No orders were admitted in either mode; the frozen expected-net-edge gate rejected candidates.",
+    "conclusion": "The evidence supports a price-level/admission outcome, not a technical abort or an absence of public trade volume. Queue exhaustion is not needed to explain zero fills; no executable admitted buy was reached by the observed sell flow.",
+    "no_claim_of_exact_live_queue_rank": true
+  },
+  "interpretation_limits": [
+    "PASS certifies the audited development evidence, not live executability, out-of-sample validity or a profitable strategy.",
+    "ZERO_LOSS_CYCLE_PASS is mathematically true but vacuous here: there were no executed fills or completed cycles.",
+    "Reported capital utilization is time-weighted USDT reservation/commitment, not productive turnover or inventory exposure. Parallel F0 increased reservation from approximately 50.004% to 99.525% without producing any fill or PnL.",
+    "Positive economic edge was not realized even at F0. A fee break-even cannot be estimated from these zero-fill results; F5/F10 admission rejection is not an empirical profitability break-even.",
+    "Zero observed benefit in one development window does not prove that a second pair can never help. No additional run, tuning or window is authorized by this audit.",
+    "Rejection counters count repeated candidate evaluations, not unique independent opportunities.",
+    "All lock observations are right-censored reservation ages; they are not observed completed-cycle durations."
+  ],
+  "artifact_sha256": {
+    "data/m035/M035_200USD_RANDOM_3H_PARALLEL_DEVELOPMENT_BACKTEST_V2.claim.json": "f80c1e143a9b0475928b17d18cdd1392ca7a0ae778c8d0455cb49d18a2453e61",
+    "data/m035/M035_RANDOM_3H_V2_PARALLEL_COMPLETED_PREFIX.json": "06b94167275b8971bdd0d834ae92eadaf9e76432be82a68d7f7019875ae7906d",
+    "data/m035/M035_RANDOM_3H_V2_SINGLE_PAIR_COMPLETED_PREFIX.json": "919f380817150b5165e03f37f0f91eaf78fcbb8cd8b6d990fda22b2ea6102843",
+    "reports/m035/M035_RANDOM_3H_V2_CAPITAL_TIMELINE.csv": "f727d07806e497c16ce52276788358b379b26bc1169e057e5eefd928b3a7031e",
+    "reports/m035/M035_RANDOM_3H_V2_CONFIG.json": "563812bc460da5593e2561da25a7a5a773b6aceb861d292cfbcca3c565fff930",
+    "reports/m035/M035_RANDOM_3H_V2_CYCLES.csv": "7e6ddaab336ddb90b9d251dd5fc33d5b742c461e7ac1de893a86bd08accf7ceb",
+    "reports/m035/M035_RANDOM_3H_V2_DUAL_TAPE_VALIDATION.json": "6f78a2c49aaf7b7c3ddbbd6e18fd672b14d72c8c07727c723d50b84ee6443ee5",
+    "reports/m035/M035_RANDOM_3H_V2_PAIR_A_TIMELINE.csv": "e80e9adcd6c0802bfd9aa6904beacc181db3cbb1046efe8388b0105780771734",
+    "reports/m035/M035_RANDOM_3H_V2_PAIR_B_TIMELINE.csv": "9d01b5e6afe65116ae6e45b904919db964dfed6feba044a90eee3e3e7cf03eb4",
+    "reports/m035/M035_RANDOM_3H_V2_RESULT.json": "b241cf85c8ea8c6afb68fc37f7aa37371c49274466dff08635afe0342e57ddd0",
+    "reports/m035/M035_RANDOM_3H_V2_SOURCE_REVIEW.json": "63ee30c5c2ee541eb565dfb95c148a11fb68a06b71e1648e45a3f07825430bd4",
+    "reports/m035/M035_RANDOM_3H_V2_WINDOW_DRAW.json": "a89fc630aefd85cbc1f4cf9e932c5213780466ef6b19bc3ff098d89b29944611"
+  }
+}

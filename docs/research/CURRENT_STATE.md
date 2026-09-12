@@ -1,36 +1,48 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=NONE
-CAMPAIGN_STATUS=M035_INCOMPLETE_SAFETY_ABORT_ONE_SHOT_CONSUMED
-CAMPAIGN_EXECUTION_SOURCE_SHA=65feb3c09902ea38e708031a58ea0b0ec5753579
+CAMPAIGN_STATUS=M035_RANDOM_3H_V2_COMPLETE_ZERO_FILLS_ZERO_CYCLES
+CAMPAIGN_EXECUTION_SOURCE_SHA=e86953d03913d317e0fe25045501d6bf8717197a
 CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
-CAMPAIGN_VERDICT=INCONCLUSIVE_NO_3H_CAUSAL_COMPARISON_STRATEGY_PASS_FALSE
+CAMPAIGN_VERDICT=COMPLETE_DEVELOPMENT_OBSERVATION_ACCEPTANCE_FAIL_ZERO_PARALLEL_GAIN
 CAMPAIGN_PROGRESS_FILE=docs/research/M035_JOURNAL.md
 CAMPAIGN_JOURNAL=docs/research/M035_JOURNAL.md
-CAMPAIGN_SCOREBOARD=reports/m035/M035_200USD_3H_RESULT.json
+CAMPAIGN_SCOREBOARD=reports/m035/M035_RANDOM_3H_V2_RESULT_SUMMARY.json
 CURRENT_ACTIVE_RESEARCH_MODEL=M035_PARALLEL_PAIR_CAPITAL_MANAGER
-OWNER_NEXT_RESEARCH=OWNER_DECISION_REQUIRED_FOR_NEW_IDENTITY_AFTER_CAUSAL_SAFETY_ABORT
+OWNER_NEXT_RESEARCH=OWNER_DECISION_REQUIRED_AFTER_COMPLETE_ZERO_FILL_MECHANISM_TEST
 OWNER_DIRECTIVE=docs/microstructure/M035_PARALLEL_PAIR_CAPITAL_MANAGER.md
-NEXT_CAMPAIGN_STATUS=NO_RERUN_M035_V1_NEW_EXPERIMENT_REQUIRES_OWNER_AUTHORIZATION
+NEXT_CAMPAIGN_STATUS=NO_RERUN_M035_V2_NEW_EXPERIMENT_OR_TUNING_REQUIRES_NEW_IDENTITY
 NEXT_CAMPAIGN_MODEL_HASH=NONE
 NEXT_CAMPAIGN_WINDOW=UNAUTHORIZED
 NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=200_USDT_TOTAL_SHARED
 
 M035 implements two pair-isolated hotline/grid/FIFO engines sharing one exact 200 USDT global
-capital authority. The economic source passed independent GPT-6 Astra review at `4aa5734`; the
-executed HEAD was `65feb3c`, whose only later change was the bound review JSON. The one-shot claim
-was consumed. During the first, single-pair arm, the first USDCUSDT book above the frozen peg guard
-arrived at 2025-01-01T02:49:56.840601Z: bid1.0025, ask1.0028, midpoint1.00265, or26.5bps from peg
-against the25bps threshold. The causal guard stopped before mutating book, mark, hotline or orders.
+capital authority. The OWNER correctly identified that the V1 25 bps peg abort was not present in
+the M035 directive. It originated in preparation commit `1013bc7` from an M034 diagnostic value.
+V1 remains immutable provenance, but V2 removed only this unauthorized abort and did not invent a
+replacement numeric peg threshold.
 
-Consequently, no single scenario completed3h and the parallel arm never began. The campaign is
-`INCOMPLETE_SAFETY_ABORT`, not a loss result and not a strategy pass/fail comparison. The common
-accepted prefix contains141,696 merged events and reaches94.415% of the target window. F0 had one
-positive cycle and marked/realized equity200.003996600; F1/F2/F5/F10 remained exactly200. All had
-zero negative cycles, risk exits, dust and non-USDT inventory, with exact capital conservation.
-These are partial-prefix facts only, never3h results. Claim/prefix and raw projection passed
-independent Astra failure-evidence audit. Rerun of this identity is prohibited.
+The V2 window was drawn before economic inspection from 2,667 preregistered ten-minute-aligned
+candidates over the 21 acquired evidence days. The frozen draw selected 2026-02-01 01:00–04:00 UTC.
+Both physical tapes passed native snapshot/delta sequence validation and exact binding to Binance
+Vision individual trades. Each of the ten independent scenarios consumed all 151,063 merged events:
+five single-pair and five shared-bank parallel scenarios at F0/F1/F2/F5/F10.
+
+Every scenario completed with zero fills, zero physical cycles, zero PnL, zero negative cycles,
+zero risk exits, zero dust and final marked equity exactly 200 USDT. Parallel F0 increased
+time-weighted reserved-capital utilization from 50.004% to 99.525%, but produced no turnover or
+economic gain. Pair A and Pair B each completed zero cycles. F5/F10 admitted no orders because the
+frozen expected-net-edge gate rejected them. For F0-F2, the admitted buy levels were not reached by
+observed aggressor-sell trades while executable. Thus the mechanism test is complete and valid, but
+M035's acceptance conditions failed: parallel cycles and net PnL per capital-hour did not exceed
+the single-pair control. Zero-loss is true only vacuously because no fill occurred; fee break-even
+cannot be estimated from this run.
+
+Independent GPT-6 Astra post-run audit passed 227 checks over 960,503 preserved audit records,
+including hashes, exact prefix/result/CSV projection, capital conservation, unique ownership,
+cancel-ACK reuse, capital-time and censored lock metrics. This is a development observation, not
+OOS, live evidence or `STRATEGY_PASS`. V2 is consumed and cannot rerun.
 
 That Pair B inventory blocker is now partially resolved. Exactly 21 frozen first-of-month
 `FDUSDUSDT` source pairs (2025-01-01 through 2026-09-01) were acquired and revalidated: 3,437,530 L2

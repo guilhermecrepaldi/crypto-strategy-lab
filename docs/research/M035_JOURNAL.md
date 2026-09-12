@@ -221,3 +221,50 @@ Pair hashes: USDCUSDT
 `376f20225fb20a399442150a8fefc9bb9363a857b97b8d4b33b40249873e632b`.
 No V2 economic event has been consumed yet. Tests, publication and source-bound review remain
 mandatory before the single V2 run.
+
+## 2026-09-12 — Random-window V2 economic result
+
+The complete regression collected 1,303 tests with two expected skips. The targeted 94-test
+M029/M030/M032/M034/M035 suite, Ruff and strict mypy passed. The configuration, physical tape and
+source were published before execution; independent GPT-6 Astra source review returned
+`PASS_NO_P1_P2`. Executed source: `e86953d03913d317e0fe25045501d6bf8717197a`.
+
+The one-shot claim started at 2026-09-12T11:06:21.718624Z and completed at
+2026-09-12T13:14:56.950230Z. All ten scenarios consumed the full 2026-02-01 01:00–04:00 UTC window,
+151,063 merged events per scenario, in the frozen order: five single-pair arms followed by five
+parallel arms. The 00:00–01:00 L2 bootstrap was used only for causal book reconstruction and did not
+enter strategy state or metrics. There was no technical abort and no rerun.
+
+| Mode | Fee/leg | Cycles | Cycles/h | Marked PnL | Return | Final equity | Capital utilization |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Single | 0 bp | 0 | 0 | 0 | 0% | 200 | 50.004% |
+| Single | 1 bp | 0 | 0 | 0 | 0% | 200 | 40.001% |
+| Single | 2 bps | 0 | 0 | 0 | 0% | 200 | 29.999% |
+| Single | 5 bps | 0 | 0 | 0 | 0% | 200 | 0% |
+| Single | 10 bps | 0 | 0 | 0 | 0% | 200 | 0% |
+| Parallel | 0 bp | 0 | 0 | 0 | 0% | 200 | 99.525% |
+| Parallel | 1 bp | 0 | 0 | 0 | 0% | 200 | 79.616% |
+| Parallel | 2 bps | 0 | 0 | 0 | 0% | 200 | 59.709% |
+| Parallel | 5 bps | 0 | 0 | 0 | 0% | 200 | 0% |
+| Parallel | 10 bps | 0 | 0 | 0 | 0% | 200 | 0% |
+
+There were zero fills, negative cycles, risk exits, fees, dust or non-USDT inventory. Capital
+conservation residual was exactly zero and total committed capital never exceeded equity. Pair A
+and Pair B each completed zero cycles and zero PnL. Parallel gain percentages are not defined
+because the single-pair denominators are zero.
+
+The zero-cycle result is physically explained without recomputing decisions. FDUSDUSDT admitted
+buy limits no higher than 0.9982 while the minimum observed trade price was 0.9983. USDCUSDT F1/F2
+limits were no higher than 1.0006/1.0005 while the minimum trade price was 1.0007. In F0, the one
+1.0007 order existed during 1,236 aggressor-sell trades, but those trades occurred only at
+1.0008–1.0009 while the order was executable. F5/F10 admitted no orders because expected net edge
+was insufficient. Public flow existed; the admitted levels were not reached.
+
+Independent GPT-6 Astra post-run audit passed 227 checks over 960,503 records and reconciled the
+claim, source/config/data hashes, completed prefixes, JSON/CSVs, reservation/ACK movements,
+ownership, capital-time and lock percentiles. `ZERO_LOSS_ECONOMIC_PASS=true` is vacuous here because
+there were no fills. M035 did not improve cycles or capital productivity in this window, and its
+technical/economic acceptance criteria therefore failed. The full raw result is preserved locally
+with SHA-256 `b241cf85c8ea8c6afb68fc37f7aa37371c49274466dff08635afe0342e57ddd0` and published in a
+compressed archive because its uncompressed 185,838,056-byte JSON exceeds GitHub's per-file limit.
+No further run or tuning is authorized under this V2 identity.
