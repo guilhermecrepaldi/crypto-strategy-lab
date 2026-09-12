@@ -163,6 +163,38 @@ def test_checksum_mismatch(tmp_path, monkeypatch):
         download_archive("https://example/x.zip", tmp_path / "x.zip")
 
 
+def test_existing_archive_checksum_mismatch_is_never_overwritten(tmp_path, monkeypatch):
+    original = b"preserve-me"
+    replacement = b"new-official-data"
+    destination = tmp_path / "x.zip"
+    destination.write_bytes(original)
+
+    class Response:
+        def __init__(self, value):
+            self.value = value
+
+        def read(self, size=-1):
+            value, self.value = self.value, b""
+            return value
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return None
+
+    def opener(request, *, timeout):
+        assert timeout == 120
+        if request.full_url.endswith("CHECKSUM"):
+            return Response((sha256(replacement).hexdigest() + "  x\n").encode())
+        return Response(replacement)
+
+    monkeypatch.setattr("urllib.request.urlopen", opener)
+    with pytest.raises(MicrostructureIntegrityError, match="refusing overwrite"):
+        download_archive("https://example/x.zip", destination)
+    assert destination.read_bytes() == original
+
+
 def test_strict_rows_and_archive_day_are_validated(tmp_path):
     malformed = archive(
         tmp_path,
@@ -172,6 +204,20 @@ def test_strict_rows_and_archive_day_are_validated(tmp_path):
         parse_archive(malformed)
     with pytest.raises(MicrostructureIntegrityError, match="invalid row"):
         list(iter_archive(malformed))
+
+    for invalid_number in ("-1", "0", "NaN", "Infinity"):
+        bad_price = archive(
+            tmp_path,
+            [["1", invalid_number, "1", "1", "1704067200000", "false"]],
+        )
+        with pytest.raises(MicrostructureIntegrityError, match="invalid row"):
+            list(iter_archive(bad_price))
+        bad_quantity = archive(
+            tmp_path,
+            [["1", "1", invalid_number, "1", "1704067200000", "false"]],
+        )
+        with pytest.raises(MicrostructureIntegrityError, match="invalid row"):
+            list(iter_archive(bad_quantity))
 
     valid = archive(
         tmp_path,

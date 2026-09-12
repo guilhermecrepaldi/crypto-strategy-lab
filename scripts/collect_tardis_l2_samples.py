@@ -72,8 +72,8 @@ def candidate_dates(audited_manifest: Path = AUDITED_MANIFEST) -> list[date]:
     return result
 
 
-def source_url(day: date) -> str:
-    return f"{BASE_URL}/{day:%Y/%m/%d}/USDCUSDT.csv.gz"
+def source_url(day: date, symbol: str = "USDCUSDT") -> str:
+    return f"{BASE_URL}/{day:%Y/%m/%d}/{symbol.upper()}.csv.gz"
 
 
 def _timestamp(value: str) -> datetime:
@@ -89,7 +89,9 @@ def _timestamp(value: str) -> datetime:
         raise ValueError(f"invalid timestamp: {value!r}") from exc
 
 
-def validate_gzip(path: Path, expected_date: date) -> dict[str, object]:
+def validate_gzip(
+    path: Path, expected_date: date, expected_symbol: str = "USDCUSDT"
+) -> dict[str, object]:
     """Read all compressed bytes (thereby checking CRC/trailer) and validate rows."""
     digest = hashlib.sha256()
     rows = 0
@@ -111,7 +113,7 @@ def validate_gzip(path: Path, expected_date: date) -> dict[str, object]:
                     raise ValueError("malformed CSV row")
                 if (
                     row["exchange"].strip().lower() != "binance"
-                    or row["symbol"].strip().upper() != "USDCUSDT"
+                    or row["symbol"].strip().upper() != expected_symbol.upper()
                 ):
                     raise ValueError("unexpected exchange or symbol")
                 if row["side"].strip().lower() not in {"bid", "ask"}:
@@ -155,8 +157,10 @@ def validate_gzip(path: Path, expected_date: date) -> dict[str, object]:
     }
 
 
-def _download_one(day: date, root: Path, timeout: float) -> dict[str, object]:
-    url = source_url(day)
+def _download_one(
+    day: date, root: Path, timeout: float, symbol: str = "USDCUSDT"
+) -> dict[str, object]:
+    url = source_url(day, symbol)
     destination = root / day.isoformat() / "incremental_book_L2.csv.gz"
     destination.parent.mkdir(parents=True, exist_ok=True)
     now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
@@ -189,7 +193,7 @@ def _download_one(day: date, root: Path, timeout: float) -> dict[str, object]:
             raise ValueError("HTTP_CONTENT_LENGTH_MISMATCH")
         # Windows rename fails if the final original appeared meanwhile; never replace.
         part.rename(destination)
-        checked = validate_gzip(destination, day)
+        checked = validate_gzip(destination, day, symbol)
         status.update(checked, status="AVAILABLE")
     except HTTPError as exc:
         status.update(http_status=exc.code, error=str(exc))

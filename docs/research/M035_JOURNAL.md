@@ -105,3 +105,21 @@ regression is invalid; raw wire and REST evidence precede validation; the public
 complete; startup timeout also applies under continuous messages; and the exclusive-cutoff event
 cannot mutate the accepted window. Final bundle
 `66ca6fa90a9f47bfe5e0d451b59c2de691f7566f7e2b5e62f81312a52b303813` passed with no P1/P2.
+
+## 2026-09-12 — OWNER authorization for Pair B historical acquisition
+
+The OWNER authorized expanding the strategy database when required using safe, reliable public
+Binance API/archive data, Tardis data representing Binance, or an explicit mixture of both. Every
+artifact must disclose its source; silent mixing is prohibited. No account credentials, private
+endpoint, Testnet, live order or paid-data assumption is authorized.
+
+Exactly 21 `FDUSDUSDT` first-of-month days are frozen for acquisition, from 2025-01-01 through
+2026-09-01 inclusive. The three-hour economic window is not selected during acquisition and must be
+drawn and preregistered later without inspecting PnL. The acquisition pairing is:
+
+- L2: Tardis `incremental_book_L2`, exchange field `binance`, preserved and SHA-256 hashed;
+- individual trades: official Binance Vision Spot `trades` ZIP plus official adjacent checksum;
+- candles and `aggTrades`: prohibited as fill substitutes.
+
+This authorization changes the evidence-acquisition path, not M035's strategy or conformance
+semantics. Download/validation does not itself authorize or constitute the economic replay.

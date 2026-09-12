@@ -139,6 +139,13 @@ def _decimal(value: str) -> Decimal:
         raise MicrostructureIntegrityError(f"invalid decimal: {value!r}") from exc
 
 
+def _positive_decimal(value: str) -> Decimal:
+    number = _decimal(value)
+    if not number.is_finite() or number <= 0:
+        raise MicrostructureIntegrityError(f"decimal must be finite and positive: {value!r}")
+    return number
+
+
 def _strict_bool(value: str) -> bool:
     if value not in {"true", "false"}:
         raise MicrostructureIntegrityError(f"invalid maker boolean: {value!r}")
@@ -258,8 +265,8 @@ def _archive_trade_from_row(
             individual_trade_count=individual_trade_count,
             timestamp=_timestamp(stamp),
             timestamp_unit=_timestamp_unit(stamp),
-            price=_decimal(price),
-            quantity=_decimal(quantity),
+            price=_positive_decimal(price),
+            quantity=_positive_decimal(quantity),
             buyer_is_maker=_strict_bool(maker.strip().lower()),
         )
     except (ValueError, IndexError) as exc:
@@ -305,7 +312,11 @@ def download_archive(url: str, destination: str | Path) -> Path:
     if checksum_match is None:
         raise MicrostructureIntegrityError("invalid SHA256 checksum")
     checksum = checksum_match.group(1).lower()
-    if destination.exists() and _sha256_file(destination) == checksum:
+    if destination.exists():
+        if _sha256_file(destination) != checksum:
+            raise MicrostructureIntegrityError(
+                "existing archive checksum mismatch; refusing overwrite"
+            )
         checksum_path.write_bytes(checksum_bytes)
         return destination
     destination.parent.mkdir(parents=True, exist_ok=True)

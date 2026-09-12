@@ -44,6 +44,18 @@ def test_candidate_dates_are_exact_first_of_months() -> None:
     assert days[-1] == date(2026, 9, 1)
 
 
+def test_symbol_parameterization_preserves_default_and_accepts_fdusd(tmp_path: Path) -> None:
+    assert collector.source_url(date(2025, 1, 1)).endswith("/USDCUSDT.csv.gz")
+    assert collector.source_url(date(2025, 1, 1), "fdusdusdt").endswith(
+        "/FDUSDUSDT.csv.gz"
+    )
+    payload = row()
+    payload["symbol"] = "FDUSDUSDT"
+    path = tmp_path / "fdusd.csv.gz"
+    path.write_bytes(archive([payload]))
+    assert collector.validate_gzip(path, date(2025, 1, 1), "FDUSDUSDT")["rows"] == 1
+
+
 def test_sealed_week_and_nonmonthly_dates_rejected(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="ONLY_AUTHORIZED"):
         collector.collect(dates=[date(2026, 1, 8)], manifest_path=tmp_path / "m.json")
