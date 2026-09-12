@@ -8,7 +8,9 @@ import pytest
 from crypto_strategy_lab.microstructure import m035_data
 from crypto_strategy_lab.microstructure.m035_economic_backtest import (
     M035BacktestConfig,
+    M035BacktestExecutionError,
     M035EconomicScenario,
+    run_mode,
 )
 from crypto_strategy_lab.microstructure.parallel_pair_capital_manager import (
     AllocationCandidate,
@@ -16,6 +18,7 @@ from crypto_strategy_lab.microstructure.parallel_pair_capital_manager import (
     GlobalCapitalLedger,
     ParallelPairCapitalAllocator,
 )
+from scripts.run_m035_economic_backtest import _create_json_exclusive
 
 START = m035_data.START_US
 
@@ -108,6 +111,67 @@ def test_parallel_scenario_uses_one_shared_200_usdt_bank() -> None:
     }
 
 
+def test_economic_pair_hotlines_and_grids_are_isolated() -> None:
+    scenario = M035EconomicScenario(config(), fee_bps=D(0), parallel=True)
+    warm_pair(scenario, "USDCUSDT")
+    pair_a = scenario.engines["USDCUSDT"]
+    pair_b = scenario.engines["FDUSDUSDT"]
+    assert pair_a.hotline == D("1.0000")
+    assert pair_b.hotline is None
+    pair_a_orders = set(pair_a.orders)
+
+    warm_pair(scenario, "FDUSDUSDT", offset=3_000_000)
+    assert pair_a.hotline == D("1.0000")
+    assert set(pair_a.orders) == pair_a_orders
+    assert pair_b.hotline == D("1.0000")
+
+
+def test_economic_grid_preserves_c1_and_c2_capital_until_cancel_ack() -> None:
+    scenario = M035EconomicScenario(config(), fee_bps=D(0), parallel=False)
+    warm_pair(scenario, "USDCUSDT")
+    engine = scenario.engines["USDCUSDT"]
+    scenario.receive(book("USDCUSDT", START + 5_000_000))
+    c1_before = {
+        row.order_id: (row.price, row.status)
+        for row in engine.orders.values()
+        if row.kind == "ENTRY" and row.column == 1
+    }
+    free_before_move = scenario.ledger.free_usdt
+
+    scenario.receive(
+        book("USDCUSDT", START + 6_000_000, bid="1.0000", ask="1.0002")
+    )
+    assert all(
+        engine.orders[order_id].price == price
+        and engine.orders[order_id].status in {"ACTIVE", "PENDING", "PARTIAL"}
+        for order_id, (price, _status) in c1_before.items()
+    )
+    assert any(
+        row.kind == "ENTRY" and row.column == 2 and row.status == "CANCEL_PENDING"
+        for row in engine.orders.values()
+    )
+    assert scenario.ledger.free_usdt == free_before_move
+
+    scenario.receive(
+        book(
+            "USDCUSDT",
+            START + 6_000_000 + scenario.config.cancel_ack_latency_us - 1,
+            bid="1.0000",
+            ask="1.0002",
+        )
+    )
+    assert any(row.status == "CANCEL_PENDING" for row in engine.orders.values())
+    scenario.receive(
+        book(
+            "USDCUSDT",
+            START + 6_000_000 + scenario.config.cancel_ack_latency_us,
+            bid="1.0000",
+            ask="1.0002",
+        )
+    )
+    assert any(row.status == "CANCELLED" for row in engine.orders.values())
+
+
 def test_complete_physical_cycle_is_positive_and_has_no_cross_subsidy() -> None:
     scenario = M035EconomicScenario(config(), fee_bps=D(0), parallel=False)
     warm_pair(scenario, "USDCUSDT")
@@ -137,6 +201,52 @@ def test_complete_physical_cycle_is_positive_and_has_no_cross_subsidy() -> None:
     scenario.ledger.reconcile()
 
 
+def test_entry_fill_preserves_latest_causal_book_mark() -> None:
+    scenario = M035EconomicScenario(config(), fee_bps=D(0), parallel=False)
+    warm_pair(scenario, "USDCUSDT")
+    scenario.receive(book("USDCUSDT", START + 5_000_000))
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 6_000_000,
+            3,
+            price="0.9992",
+            buyer_maker=True,
+        )
+    )
+    assert scenario.ledger.asset_marks_usdt["USDC"] == D("0.9999")
+    assert all(
+        row.marked_value_usdt == row.quantity * D("0.9999")
+        for row in scenario.ledger.positions.values()
+        if row.asset == "USDC"
+    )
+
+
+def test_hotline_move_cannot_create_same_price_column_collision() -> None:
+    scenario = M035EconomicScenario(config(), fee_bps=D(0), parallel=False)
+    warm_pair(scenario, "USDCUSDT")
+    scenario.receive(book("USDCUSDT", START + 5_000_000))
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 6_000_000,
+            3,
+            price="0.9997",
+            quantity="10",
+            buyer_maker=True,
+        )
+    )
+    scenario.receive(book("USDCUSDT", START + 8_000_000, bid="0.9998", ask="1.0000"))
+    active = [
+        row
+        for row in scenario.engines["USDCUSDT"].orders.values()
+        if row.kind == "ENTRY" and row.status in {"PENDING", "ACTIVE", "PARTIAL", "CANCEL_PENDING"}
+    ]
+    physical_keys = [(row.price, row.column) for row in active]
+    assert len(physical_keys) == len(set(physical_keys))
+    scenario.receive(book("USDCUSDT", START + 10_000_000, bid="0.9998", ask="1.0000"))
+
+
 def test_fee_dust_is_retained_and_does_not_reject_entry() -> None:
     scenario = M035EconomicScenario(config(), fee_bps=D(1), parallel=False)
     warm_pair(scenario, "USDCUSDT")
@@ -164,6 +274,103 @@ def test_fee_dust_is_retained_and_does_not_reject_entry() -> None:
     assert scenario.ledger.dust.quantity("USDC") > 0
     assert scenario.ledger.dust.marked_value({"USDC": D(1)}) > 0
     scenario.ledger.reconcile()
+
+
+def test_tradeable_dust_reenters_owned_return_pipeline() -> None:
+    scenario = M035EconomicScenario(config(), fee_bps=D(1), parallel=False)
+    warm_pair(scenario, "USDCUSDT")
+    scenario.receive(book("USDCUSDT", START + 5_000_000))
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 6_000_000,
+            3,
+            price="0.9992",
+            buyer_maker=True,
+        )
+    )
+    scenario.receive(book("USDCUSDT", START + 8_000_000))
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 10_000_000,
+            4,
+            price="1.0008",
+            buyer_maker=False,
+        )
+    )
+    before = scenario.ledger.dust.quantity("USDC")
+    assert before >= D(1)
+    scenario.receive(book("USDCUSDT", START + 12_000_000))
+    dust_return = next(
+        row for row in scenario.engines["USDCUSDT"].orders.values() if row.kind == "DUST_RETURN"
+    )
+    assert dust_return.status == "PENDING"
+    assert scenario.ledger.dust.quantity("USDC") < before
+    scenario.receive(book("USDCUSDT", START + 14_000_000))
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 16_000_000,
+            5,
+            price="1.0008",
+            buyer_maker=False,
+        )
+    )
+    assert dust_return.cycle_id in scenario.ledger.cycles.cycles
+    assert scenario.ledger.cycles.cycles[dust_return.cycle_id].net_pnl_usdt >= 0
+    result = scenario.finish()
+    assert D(result["GLOBAL_CAPITAL_CONSERVATION_RESIDUAL"]) == 0
+    assert result["NEGATIVE_CLOSED_CYCLES"] == 0
+
+
+def test_failed_fill_does_not_mutate_physical_queue(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scenario = M035EconomicScenario(config(), fee_bps=D(0), parallel=False)
+    warm_pair(scenario, "USDCUSDT")
+    scenario.receive(book("USDCUSDT", START + 5_000_000))
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 6_000_000,
+            3,
+            price="0.9992",
+            buyer_maker=True,
+        )
+    )
+    scenario.receive(book("USDCUSDT", START + 8_000_000))
+    engine = scenario.engines["USDCUSDT"]
+    return_order = next(row for row in engine.orders.values() if row.kind == "RETURN")
+    queue_order = next(
+        row
+        for group in engine.queue.groups.values()
+        for row in group.own_orders
+        if row.order_id == return_order.order_id
+    )
+    before = queue_order.remaining
+
+    def reject(*_args, **_kwargs):
+        raise ValueError("SYNTHETIC_SETTLEMENT_REJECTION")
+
+    monkeypatch.setattr(GlobalCapitalLedger, "settle_return", reject)
+    with pytest.raises(ValueError, match="SYNTHETIC_SETTLEMENT_REJECTION"):
+        scenario.receive(
+            trade(
+                "USDCUSDT",
+                START + 10_000_000,
+                4,
+                price="1.0008",
+                buyer_maker=False,
+            )
+        )
+    actual = next(
+        row
+        for group in engine.queue.groups.values()
+        for row in group.own_orders
+        if row.order_id == return_order.order_id
+    )
+    assert actual.remaining == before
 
 
 def test_candidate_scan_is_single_pass(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -234,3 +441,31 @@ def test_merged_timeline_has_deterministic_pair_tie_break(
     monkeypatch.setattr(m035_data, "_checked_events", lambda _root, symbol: iter(rows[symbol]))
     merged = list(m035_data.merged_events(Path(".")))
     assert [row["symbol"] for row in merged] == ["USDCUSDT", "FDUSDUSDT"]
+
+
+def test_run_mode_preserves_all_fee_prefixes_on_failure() -> None:
+    invalid = book("USDCUSDT", START + 1)
+    invalid["kind"] = "UNKNOWN"
+    with pytest.raises(M035BacktestExecutionError) as captured:
+        run_mode(config(), events=[invalid], fees=(D(0), D(1), D(2), D(5), D(10)), parallel=False)
+    error = captured.value
+    assert error.mode == "SINGLE_PAIR"
+    assert error.event_index == 1
+    assert len(error.evidence) == 5
+    assert [row["event_count"] for row in error.evidence] == [1, 0, 0, 0, 0]
+
+
+def test_economic_engine_rejects_future_event() -> None:
+    scenario = M035EconomicScenario(config(), fee_bps=D(0), parallel=False)
+    with pytest.raises(ValueError, match="M035_EVENT_OUTSIDE_FROZEN_WINDOW"):
+        scenario.receive(book("USDCUSDT", scenario.config.end_us))
+    assert scenario.event_count == 0
+    assert scenario.engines["USDCUSDT"].hotline is None
+
+
+def test_one_shot_claim_creation_is_exclusive(tmp_path: Path) -> None:
+    claim = tmp_path / "claim.json"
+    _create_json_exclusive(claim, {"identity": "M035", "status": "STARTED"})
+    with pytest.raises(FileExistsError):
+        _create_json_exclusive(claim, {"identity": "M035", "status": "STARTED_AGAIN"})
+    assert "STARTED_AGAIN" not in claim.read_text(encoding="utf-8")

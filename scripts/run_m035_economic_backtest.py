@@ -6,6 +6,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import traceback
@@ -17,16 +18,41 @@ from typing import Any
 from crypto_strategy_lab.microstructure.m035_data import merged_events, validate_dual_tape
 from crypto_strategy_lab.microstructure.m035_economic_backtest import (
     M035BacktestConfig,
+    M035BacktestExecutionError,
     run_mode,
 )
 
 IDENTITY = "M035_200USD_3H_PARALLEL_DEVELOPMENT_BACKTEST_V1"
 CONFIG_PATH = Path("reports/m035/M035_200USD_3H_CONFIG.json")
 DATA_REPORT_PATH = Path("reports/m035/M035_DUAL_TAPE_VALIDATION.json")
+ECONOMIC_CONFORMANCE_PATH = Path("reports/m035/M035_ECONOMIC_CONFORMANCE_REPORT.json")
 REVIEW_PATH = Path("reports/m035/M035_ECONOMIC_SOURCE_REVIEW.json")
 RESULT_PATH = Path("reports/m035/M035_200USD_3H_RESULT.json")
 CLAIM_PATH = Path("data/m035/M035_200USD_3H_PARALLEL_DEVELOPMENT_BACKTEST_V1.claim.json")
 FEES = (D(0), D(1), D(2), D(5), D(10))
+REQUIRED_REVIEW_FILES = {
+    "src/crypto_strategy_lab/microstructure/m035_economic_backtest.py",
+    "src/crypto_strategy_lab/microstructure/m035_data.py",
+    "src/crypto_strategy_lab/microstructure/parallel_pair_capital_manager.py",
+    "src/crypto_strategy_lab/microstructure/multi_stable_queue.py",
+    "src/crypto_strategy_lab/microstructure/tardis_l2.py",
+    "src/crypto_strategy_lab/microstructure/data.py",
+    "scripts/run_m035_economic_backtest.py",
+    "scripts/validate_m035_dual_tape.py",
+    "tests/test_m035_economic_backtest.py",
+    "reports/m035/M035_200USD_3H_CONFIG.json",
+    "reports/m035/M035_DUAL_TAPE_VALIDATION.json",
+    "reports/m035/M035_ECONOMIC_CONFORMANCE_REPORT.json",
+    "docs/research/M035_200USD_3H_ECONOMIC_PROTOCOL.md",
+}
+ECONOMIC_CONFORMANCE_FILES = {
+    "src/crypto_strategy_lab/microstructure/m035_economic_backtest.py",
+    "src/crypto_strategy_lab/microstructure/m035_data.py",
+    "src/crypto_strategy_lab/microstructure/parallel_pair_capital_manager.py",
+    "src/crypto_strategy_lab/microstructure/multi_stable_queue.py",
+    "tests/test_m035_economic_backtest.py",
+    "tests/test_m035_parallel_pair_capital_manager.py",
+}
 
 
 def _git(root: Path, *args: str) -> str:
@@ -46,7 +72,19 @@ def _canonical_hash(payload: Any) -> str:
 
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True, default=str) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _create_json_exclusive(path: Path, payload: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+        stream.write(json.dumps(payload, indent=2, sort_keys=True, default=str) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
 
 
 def _write_csv(path: Path, rows: list[dict[str, Any]], fields: list[str]) -> None:
@@ -121,12 +159,78 @@ def _validate_pre_run(root: Path) -> tuple[dict[str, Any], dict[str, Any], str, 
         conformance["CHECKS"][name]["STATUS"] != "PASS" for name in required
     ):
         raise RuntimeError("M035_CONFORMANCE_GATE_FAILED")
+    economic_conformance = json.loads(
+        (root / ECONOMIC_CONFORMANCE_PATH).read_text(encoding="utf-8")
+    )
+    economic_required = {
+        *required,
+        "ATOMIC_FILL",
+        "DUAL_TAPE_ALIGNMENT",
+        "DUAL_TAPE_CONTINUITY",
+        "DETERMINISTIC_MERGE_ORDERING",
+        "EXCLUSIVE_ONE_SHOT_CLAIM",
+        "PREFIX_PRESERVATION",
+    }
+    tested_commit = str(economic_conformance.get("tested_source_commit", ""))
+    if (
+        economic_conformance.get("identity") != IDENTITY
+        or economic_conformance.get("status") != "PASS"
+        or not economic_conformance.get("all_required_gates_pass")
+        or economic_conformance.get("config_sha256") != config_hash
+        or economic_conformance.get("window_hash") != config["window_hash"]
+        or economic_conformance.get("pair_a_data_hash") != config["pair_a_data_hash"]
+        or economic_conformance.get("pair_b_data_hash") != config["pair_b_data_hash"]
+        or any(
+            economic_conformance.get("checks", {}).get(name, {}).get("status") != "PASS"
+            for name in economic_required
+        )
+        or not tested_commit
+    ):
+        raise RuntimeError("M035_ECONOMIC_CONFORMANCE_GATE_FAILED")
+    if (
+        subprocess.call(["git", "merge-base", "--is-ancestor", tested_commit, head], cwd=root)
+        != 0
+        or subprocess.call(
+            [
+                "git",
+                "diff",
+                "--quiet",
+                tested_commit,
+                "--",
+                *sorted(ECONOMIC_CONFORMANCE_FILES),
+            ],
+            cwd=root,
+        )
+        != 0
+    ):
+        raise RuntimeError("M035_ECONOMIC_CONFORMANCE_SOURCE_CLOSURE_FAILED")
     review = json.loads((root / REVIEW_PATH).read_text(encoding="utf-8"))
-    if review.get("status") != "PASS" or review.get("blocking_findings"):
+    reviewed_commit = str(review.get("reviewed_source_commit", ""))
+    if (
+        review.get("identity") != IDENTITY
+        or review.get("status") != "PASS_NO_P1_P2"
+        or review.get("blocking_findings")
+        or review.get("config_sha256") != config_hash
+        or review.get("window_hash") != config["window_hash"]
+        or review.get("pair_a_data_hash") != config["pair_a_data_hash"]
+        or review.get("pair_b_data_hash") != config["pair_b_data_hash"]
+        or set(review.get("file_sha256", {})) != REQUIRED_REVIEW_FILES
+        or not reviewed_commit
+    ):
         raise RuntimeError("M035_SOURCE_REVIEW_NOT_PASS")
     for relative, expected in review["file_sha256"].items():
         if _sha(root / relative) != expected:
             raise RuntimeError(f"M035_REVIEWED_SOURCE_CHANGED:{relative}")
+    if (
+        subprocess.call(["git", "merge-base", "--is-ancestor", reviewed_commit, head], cwd=root)
+        != 0
+        or subprocess.call(
+            ["git", "diff", "--quiet", reviewed_commit, "--", *sorted(REQUIRED_REVIEW_FILES)],
+            cwd=root,
+        )
+        != 0
+    ):
+        raise RuntimeError("M035_REVIEW_COMMIT_CLOSURE_FAILED")
     data = validate_dual_tape(root)
     if (
         data["status"] != "PASS"
@@ -213,6 +317,8 @@ def _write_artifacts(root: Path, payload: dict[str, Any], results: list[dict[str
             "SCENARIO",
             "FEE_BPS_PER_LEG",
             "cycle_id",
+            "cycle_type",
+            "counted_physical_cycle",
             "pair_id",
             "route",
             "start_timestamp_us",
@@ -221,11 +327,20 @@ def _write_artifacts(root: Path, payload: dict[str, Any], results: list[dict[str
             "capital_used",
             "entry_price",
             "exit_price",
+            "gross_proceeds",
+            "gross_pnl",
+            "cost_basis_ex_received_asset_fee",
+            "ledger_cost_basis_including_received_asset_fee",
+            "entry_fee_value",
+            "return_fee_value",
             "fees",
             "execution_cost",
             "adverse_selection_cost",
             "net_pnl",
+            "cost_attribution_residual",
             "return_pct",
+            "residual_dust_quantity",
+            "residual_dust_cost_basis",
         ],
     )
     capital_fields = [
@@ -267,8 +382,6 @@ def _write_artifacts(root: Path, payload: dict[str, Any], results: list[dict[str
 
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
-    if (root / CLAIM_PATH).exists():
-        raise RuntimeError("M035_ONE_SHOT_CLAIM_ALREADY_EXISTS_NO_RERUN")
     config_row, data, config_hash, head = _validate_pre_run(root)
     config = _config(config_row)
     config.validate()
@@ -282,10 +395,21 @@ def main() -> int:
         "execution_order": ["SINGLE_PAIR", "PARALLEL_TWO_PAIR"],
         "rerun_allowed": False,
     }
-    _write_json(root / CLAIM_PATH, claim)
+    try:
+        _create_json_exclusive(root / CLAIM_PATH, claim)
+    except FileExistsError:
+        raise RuntimeError("M035_ONE_SHOT_CLAIM_ALREADY_EXISTS_NO_RERUN") from None
+    completed_prefix: dict[str, Any] = {}
     try:
         single = run_mode(config, events=merged_events(root), fees=FEES, parallel=False)
+        single_prefix_path = root / "data/m035/M035_SINGLE_PAIR_COMPLETED_PREFIX.json"
+        _write_json(single_prefix_path, single)
+        completed_prefix["SINGLE_PAIR"] = {
+            "path": str(single_prefix_path.relative_to(root)).replace("\\", "/"),
+            "sha256": _sha(single_prefix_path),
+        }
         claim["single_pair_status"] = "COMPLETE"
+        claim["single_pair_prefix_sha256"] = _sha(single_prefix_path)
         _write_json(root / CLAIM_PATH, claim)
         parallel = run_mode(config, events=merged_events(root), fees=FEES, parallel=True)
         claim["parallel_status"] = "COMPLETE"
@@ -335,11 +459,21 @@ def main() -> int:
         print(json.dumps({"status": "COMPLETE", "result": str(RESULT_PATH)}))
         return 0
     except BaseException as error:
+        failure_evidence: dict[str, Any] = {"completed_prefix": completed_prefix}
+        if isinstance(error, M035BacktestExecutionError):
+            failure_evidence["failed_mode"] = error.mode
+            failure_evidence["event_index"] = error.event_index
+            failure_evidence["event"] = error.event
+            failure_evidence["scenarios"] = error.evidence
+        failure_path = root / "data/m035/M035_FAILED_PREFIX_EVIDENCE.json"
+        _write_json(failure_path, failure_evidence)
         claim["status"] = "INVALIDATED_TECHNICAL"
         claim["failed_at"] = datetime.now(UTC).isoformat()
         claim["error_type"] = type(error).__name__
         claim["error"] = str(error)
         claim["traceback"] = traceback.format_exc()
+        claim["failure_evidence_path"] = str(failure_path.relative_to(root)).replace("\\", "/")
+        claim["failure_evidence_sha256"] = _sha(failure_path)
         _write_json(root / CLAIM_PATH, claim)
         raise
 

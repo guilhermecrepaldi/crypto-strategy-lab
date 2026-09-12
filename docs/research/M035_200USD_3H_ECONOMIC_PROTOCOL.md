@@ -32,11 +32,21 @@ scenarios: maker fee per leg `0/1/2/5/10 bps`. Only the fee differs. Each scenar
 individual public trades, observed public queue ahead, FIFO, native-time activation boundaries,
 1,179,525 microseconds activation/cancel-ACK latency, seven ranks, persistent C1 and opportunistic
 C2. Ordinary returns with negative attributed PnL are prohibited. Dust remains owned, cost-based,
-causally marked inventory.
+causally marked inventory. Once accumulated dust is exchange-tradeable, it re-enters the same
+owned-return path with a fee- and cost-aware nonnegative exit constraint; its settlement is
+reported separately and is not counted as a new simple two-leg physical cycle.
+
+Every public-trade fill is applied first to a copied queue and ledger and committed only after all
+settlements from that trade pass. A rejected settlement therefore cannot consume queue position.
+Successful and failed prefixes both retain complete ledger, order, queue and processed-event
+evidence. Cycle exports separate gross basis, fees, execution cost, adverse selection and residual
+dust so dust cost cannot be charged to a completed cycle.
 
 The detailed immutable configuration is
 `reports/m035/M035_200USD_3H_CONFIG.json`. Its canonical JSON SHA-256 is computed and recorded by
 the one-shot runner before the first event. A claim file is created before event consumption; any
-existing claim makes a later invocation fail closed. There is no rerun or post-result tuning.
+existing claim makes a later invocation fail closed. Claim creation uses an exclusive filesystem
+create, preventing simultaneous invocations from both acquiring the run. There is no rerun or
+post-result tuning.
 
 M026/M029/M030 figures are historical context only and are explicitly not the causal baseline.

@@ -233,6 +233,43 @@ class DustLedger:
         tradeable = (available / step_size).to_integral_value(rounding=ROUND_FLOOR) * step_size
         return tradeable if tradeable >= minimum_quantity else ZERO
 
+    def preview_consumption(
+        self,
+        asset: str,
+        *,
+        quantity: D,
+        pair_id: str,
+        now_us: int,
+    ) -> DustConsumption:
+        """Return the exact FIFO lineage/cost that ``consume`` would take, without mutation."""
+        if quantity <= ZERO or self.quantity(asset, pair_id=pair_id) < quantity:
+            raise ValueError("M035_DUST_INSUFFICIENT")
+        remaining = quantity
+        cost_basis = ZERO
+        cycles: list[str] = []
+        capital_ids: list[str] = []
+        for lot in sorted(self.lots, key=lambda row: (row.created_at_us, row.capital_id)):
+            if remaining == ZERO:
+                break
+            if lot.asset != asset or lot.pair_id != pair_id:
+                continue
+            if now_us < lot.created_at_us:
+                raise ValueError("M035_NONCAUSAL_DUST_CONSUMPTION")
+            taken = min(lot.quantity, remaining)
+            cost_basis += lot.cost_basis_usdt * taken / lot.quantity
+            remaining -= taken
+            cycles.extend(lot.source_cycles)
+            capital_ids.append(lot.capital_id)
+        if remaining != ZERO:
+            raise ValueError("M035_DUST_CONSUMPTION_RESIDUAL")
+        return DustConsumption(
+            asset=asset,
+            quantity=quantity,
+            cost_basis_usdt=cost_basis,
+            source_cycles=tuple(dict.fromkeys(cycles)),
+            source_capital_ids=tuple(dict.fromkeys(capital_ids)),
+        )
+
     def consume(
         self,
         asset: str,
