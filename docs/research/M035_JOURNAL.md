@@ -163,3 +163,30 @@ replay; Binance Vision independently binds the complete individual-trade populat
 configuration is frozen in `reports/m035/M035_200USD_3H_CONFIG.json`. No economic event has yet been
 consumed; source publication and a new GPT-6 Astra source-bound review remain the final pre-run
 gates.
+
+## 2026-09-12 — one-shot economic run consumed; causal safety abort
+
+The hardened economic source passed independent GPT-6 Astra review with no P1/P2 at `4aa5734`.
+The bound review JSON produced executed HEAD `65feb3c`. The full regression passed1,302 collected
+tests with2 expected skips; targeted M035 tests, Ruff and strict mypy passed. The runner acquired
+the exclusive claim before consuming any event.
+
+The single-pair campaign stopped at merged event141,697, local time
+2025-01-01T02:49:56.840601Z. The physical USDCUSDT book had bid1.0025 and ask1.0028, midpoint
+1.00265: a26.5bps absolute peg deviation against the frozen25bps threshold. This was the first
+threshold crossing; maximum prior deviation was24.5bps. Raw slice hashes and normalized event
+projection matched. The guard used only the received event and fired before changing book, mark,
+hotline or orders. No negative/risk exit was invented.
+
+The common accepted prefix is141,696 events (USDC67,244 books+28,306 trades; FDUSD26,985
+books+19,161 trades). F0 advanced its clock/counter to the rejected event but did not apply it;
+F1/F2/F5/F10 stop on the immediately preceding event. Partial facts: F0 equity200.003996600 with
+one positive cycle, F1/F2/F5/F10 equity200 and zero cycles. All have zero negative cycles, risk
+exits, dust and non-USDT inventory, exact conservation and unique ownership. No scenario completed
+3h, and the parallel arm did not begin.
+
+The immutable claim records runner status `INVALIDATED_TECHNICAL`; independent Astra audit classifies
+the demonstrated cause more precisely as `INCOMPLETE_SAFETY_ABORT`, not data corruption, numerical
+bug or economic loss. The 62,637,508-byte prefix is preserved locally with SHA-256
+`2b9e2e405d913a8dfc63866b1791298a8f62cea59db8cc1254bb8bb8796763ff`. This identity cannot rerun.
+Any attempt to complete the comparison requires an explicitly authorized new identity and protocol.
