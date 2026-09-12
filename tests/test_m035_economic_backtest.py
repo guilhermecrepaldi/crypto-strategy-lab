@@ -33,7 +33,15 @@ def config(**changes: object) -> M035BacktestConfig:
     return M035BacktestConfig(**values)  # type: ignore[arg-type]
 
 
-def book(symbol: str, local_us: int, *, bid: str = "0.9999", ask: str = "1.0001"):
+def book(
+    symbol: str,
+    local_us: int,
+    *,
+    bid: str = "0.9999",
+    ask: str = "1.0001",
+    known_bid_floor: str | None = None,
+    known_ask_ceiling: str | None = None,
+):
     return {
         "kind": "BOOK",
         "symbol": symbol,
@@ -44,6 +52,8 @@ def book(symbol: str, local_us: int, *, bid: str = "0.9999", ask: str = "1.0001"
         "sequence_validated": True,
         "bids": [(bid, "100000")],
         "asks": [(ask, "100000")],
+        "known_bid_floor": known_bid_floor or str(D(bid) - D("0.01")),
+        "known_ask_ceiling": known_ask_ceiling or str(D(ask) + D("0.01")),
     }
 
 
@@ -324,6 +334,82 @@ def test_tradeable_dust_reenters_owned_return_pipeline() -> None:
     assert result["NEGATIVE_CLOSED_CYCLES"] == 0
 
 
+def test_owned_return_and_dust_return_share_price_column_occupancy() -> None:
+    scenario = M035EconomicScenario(config(), fee_bps=D(1), parallel=False)
+    warm_pair(scenario, "USDCUSDT")
+    scenario.receive(book("USDCUSDT", START + 5_000_000))
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 6_000_000,
+            3,
+            price="0.9992",
+            buyer_maker=True,
+        )
+    )
+    scenario.receive(book("USDCUSDT", START + 8_000_000))
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 10_000_000,
+            4,
+            price="1.0008",
+            buyer_maker=False,
+        )
+    )
+    scenario.receive(book("USDCUSDT", START + 12_000_000))
+    for offset in (14_000_000, 16_000_000, 18_000_000):
+        scenario.receive(
+            book("USDCUSDT", START + offset, bid="0.9996", ask="0.9998")
+        )
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 19_000_000,
+            5,
+            price="0.9989",
+            buyer_maker=True,
+        )
+    )
+    scenario.receive(book("USDCUSDT", START + 21_000_000, bid="0.9996", ask="0.9998"))
+    engine = scenario.engines["USDCUSDT"]
+    live_returns = [
+        row
+        for row in engine.orders.values()
+        if row.kind in {"RETURN", "DUST_RETURN"}
+        and row.status in {"PENDING", "ACTIVE", "PARTIAL", "CANCEL_PENDING"}
+    ]
+    physical_keys = [(row.price, row.column) for row in live_returns]
+    assert len(physical_keys) == len(set(physical_keys))
+
+
+def test_partial_cancel_below_minimum_moves_inventory_to_owned_dust() -> None:
+    scenario = M035EconomicScenario(config(), fee_bps=D(1), parallel=False)
+    warm_pair(scenario, "USDCUSDT")
+    scenario.receive(book("USDCUSDT", START + 5_000_000))
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 6_000_000,
+            3,
+            price="0.9996",
+            quantity="12",
+            buyer_maker=True,
+        )
+    )
+    scenario.receive(book("USDCUSDT", START + 8_000_000, bid="1.0000", ask="1.0002"))
+    scenario.receive(book("USDCUSDT", START + 10_000_000, bid="1.0000", ask="1.0002"))
+    assert scenario.ledger.dust.quantity("USDC", pair_id="PAIR_A") == D("1.9998")
+    assert all(
+        not (row.asset == "USDC" and row.quantity == D("1.9998"))
+        for row in scenario.ledger.positions.values()
+    )
+    assert any(
+        row["event"] == "UNTRADEABLE_INVENTORY_MOVED_TO_DUST"
+        for row in scenario.ledger.audit
+    )
+
+
 def test_failed_fill_does_not_mutate_physical_queue(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -371,6 +457,95 @@ def test_failed_fill_does_not_mutate_physical_queue(
         if row.order_id == return_order.order_id
     )
     assert actual.remaining == before
+
+
+def test_price_outside_known_l2_coverage_cannot_activate_or_fill() -> None:
+    scenario = M035EconomicScenario(config(), fee_bps=D(0), parallel=False)
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 1_000_000,
+            1,
+            price="0.9999",
+            quantity="600",
+            buyer_maker=True,
+        )
+    )
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 2_000_000,
+            2,
+            price="1.0001",
+            quantity="600",
+            buyer_maker=False,
+        )
+    )
+    for offset in (3_000_000, 5_000_000):
+        scenario.receive(
+            book(
+                "USDCUSDT",
+                START + offset,
+                known_bid_floor="0.9998",
+                known_ask_ceiling="1.0002",
+            )
+        )
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 6_000_000,
+            3,
+            price="0.9997",
+            quantity="1",
+            buyer_maker=True,
+        )
+    )
+    engine = scenario.engines["USDCUSDT"]
+    assert all(row.filled_quantity == 0 for row in engine.orders.values())
+    assert all(
+        row.price >= D("0.9998")
+        for row in engine.orders.values()
+        if row.kind == "ENTRY"
+    )
+
+
+def test_partial_return_fill_is_reflected_in_realized_pnl_and_dust_lock_is_censored() -> None:
+    scenario = M035EconomicScenario(config(), fee_bps=D(0), parallel=False)
+    warm_pair(scenario, "USDCUSDT")
+    scenario.receive(book("USDCUSDT", START + 5_000_000))
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 6_000_000,
+            3,
+            price="0.9992",
+            buyer_maker=True,
+        )
+    )
+    scenario.receive(book("USDCUSDT", START + 8_000_000))
+    scenario.receive(
+        trade(
+            "USDCUSDT",
+            START + 10_000_000,
+            4,
+            price="1.0008",
+            quantity="3",
+            buyer_maker=False,
+        )
+    )
+    expected = sum(
+        (
+            row.returned_proceeds_usdt
+            - row.returned_cost_basis_usdt
+            - row.returned_attributable_costs_usdt
+            for row in scenario.ledger.positions.values()
+        ),
+        D(0),
+    )
+    result = scenario.finish()
+    assert expected > 0
+    assert D(result["REALIZED_PNL_USD"]) == expected
+    assert result["P95_LOCK"] is not None
 
 
 def test_candidate_scan_is_single_pass(monkeypatch: pytest.MonkeyPatch) -> None:

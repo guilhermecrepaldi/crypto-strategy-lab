@@ -400,6 +400,8 @@ def main() -> int:
     except FileExistsError:
         raise RuntimeError("M035_ONE_SHOT_CLAIM_ALREADY_EXISTS_NO_RERUN") from None
     completed_prefix: dict[str, Any] = {}
+    single: list[dict[str, Any]] | None = None
+    parallel: list[dict[str, Any]] | None = None
     try:
         single = run_mode(config, events=merged_events(root), fees=FEES, parallel=False)
         single_prefix_path = root / "data/m035/M035_SINGLE_PAIR_COMPLETED_PREFIX.json"
@@ -412,7 +414,15 @@ def main() -> int:
         claim["single_pair_prefix_sha256"] = _sha(single_prefix_path)
         _write_json(root / CLAIM_PATH, claim)
         parallel = run_mode(config, events=merged_events(root), fees=FEES, parallel=True)
+        parallel_prefix_path = root / "data/m035/M035_PARALLEL_COMPLETED_PREFIX.json"
+        _write_json(parallel_prefix_path, parallel)
+        completed_prefix["PARALLEL_TWO_PAIR"] = {
+            "path": str(parallel_prefix_path.relative_to(root)).replace("\\", "/"),
+            "sha256": _sha(parallel_prefix_path),
+        }
         claim["parallel_status"] = "COMPLETE"
+        claim["parallel_prefix_sha256"] = _sha(parallel_prefix_path)
+        _write_json(root / CLAIM_PATH, claim)
         results = [*single, *parallel]
         comparisons = [
             _comparison(single_row, parallel_row)
@@ -460,6 +470,10 @@ def main() -> int:
         return 0
     except BaseException as error:
         failure_evidence: dict[str, Any] = {"completed_prefix": completed_prefix}
+        if single is not None and "SINGLE_PAIR" not in completed_prefix:
+            failure_evidence["single_completed_results"] = single
+        if parallel is not None and "PARALLEL_TWO_PAIR" not in completed_prefix:
+            failure_evidence["parallel_completed_results"] = parallel
         if isinstance(error, M035BacktestExecutionError):
             failure_evidence["failed_mode"] = error.mode
             failure_evidence["event_index"] = error.event_index

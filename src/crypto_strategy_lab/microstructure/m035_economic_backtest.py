@@ -198,7 +198,16 @@ class M035EconomicPairEngine:
     def receive_book(self, event: Mapping[str, Any], *, now_us: int) -> None:
         bids = tuple((D(str(p)), D(str(q))) for p, q in event["bids"])
         asks = tuple((D(str(p)), D(str(q))) for p, q in event["asks"])
-        if not bids or not asks or not event["sequence_validated"] or asks[0][0] <= bids[0][0]:
+        known_bid_floor = D(str(event.get("known_bid_floor")))
+        known_ask_ceiling = D(str(event.get("known_ask_ceiling")))
+        if (
+            not bids
+            or not asks
+            or not event["sequence_validated"]
+            or asks[0][0] <= bids[0][0]
+            or known_bid_floor > bids[0][0]
+            or known_ask_ceiling < asks[0][0]
+        ):
             raise ValueError("M035_INVALID_PHYSICAL_BOOK")
         midpoint = (bids[0][0] + asks[0][0]) / 2
         if abs(midpoint - 1) > self.config.emergency_peg_deviation:
@@ -295,6 +304,13 @@ class M035EconomicPairEngine:
         levels = self.last_book["bids"] if side == "BUY" else self.last_book["asks"]
         return next((D(str(q)) for p, q in levels if D(str(p)) == price), ZERO)
 
+    def _price_has_causal_book_coverage(self, side: str, price: D) -> bool:
+        if self.last_book is None:
+            return False
+        if side == "BUY":
+            return price >= D(str(self.last_book["known_bid_floor"]))
+        return price <= D(str(self.last_book["known_ask_ceiling"]))
+
     def advance_orders(self, *, now_us: int) -> None:
         for order in sorted(self.orders.values(), key=lambda row: row.order_id):
             if order.status == "CANCEL_PENDING":
@@ -318,6 +334,7 @@ class M035EconomicPairEngine:
             if (
                 self.last_book is None
                 or int(self.last_book["exchange_upper_us"]) < order.activate_at_us
+                or not self._price_has_causal_book_coverage(order.side, order.price)
             ):
                 continue
             bid = D(str(self.last_book["bids"][0][0]))
@@ -393,6 +410,11 @@ class M035EconomicPairEngine:
                 entry = self.hotline - D(rank) * self.config.tick_size
                 exit_price = self.hotline + D(rank) * self.config.tick_size
                 if (rank, column) in occupied or (entry, column) in occupied_prices:
+                    continue
+                if not self._price_has_causal_book_coverage("BUY", entry) or not (
+                    self._price_has_causal_book_coverage("SELL", exit_price)
+                ):
+                    self.rejections["PRICE_OUTSIDE_CAUSAL_BOOK_COVERAGE"] += 1
                     continue
                 quantity = self.config.order_quantity
                 input_usdt = entry * quantity
@@ -567,6 +589,9 @@ class M035EconomicPairEngine:
         if quantity * price < self.config.minimum_notional:
             self.rejections["DUST_RETURN_BELOW_EXCHANGE_MINIMUM"] += 1
             return
+        if not self._price_has_causal_book_coverage("SELL", price):
+            self.rejections["DUST_RETURN_OUTSIDE_CAUSAL_BOOK_COVERAGE"] += 1
+            return
         occupied = {
             row.column
             for row in self.orders.values()
@@ -632,11 +657,21 @@ class M035EconomicPairEngine:
             or quantity * entry.exit_price < self.config.minimum_notional
         ):
             self.rejections["RETURN_BELOW_EXCHANGE_MINIMUM"] += 1
+            self.ledger.move_untradeable_inventory_to_dust(
+                capital_id,
+                now_us=now_us,
+                reason="RETURN_BELOW_EXCHANGE_MINIMUM",
+            )
+            entry.inventory_capital_ids = []
+            entry.status = "DUSTED"
+            return
+        if not self._price_has_causal_book_coverage("SELL", entry.exit_price):
+            self.rejections["RETURN_OUTSIDE_CAUSAL_BOOK_COVERAGE"] += 1
             return
         occupied = {
             row.column
             for row in self.orders.values()
-            if row.kind == "RETURN"
+            if row.kind in {"RETURN", "DUST_RETURN"}
             and row.price == entry.exit_price
             and row.status in {"PENDING", "ACTIVE", "PARTIAL", "CANCEL_PENDING"}
         }
@@ -1178,7 +1213,7 @@ class M035EconomicScenario:
                     and row.status not in {"CANCELLED", "CLOSED", "RETURN_SUBMITTED"}
                 )
                 or (
-                    row.kind == "RETURN"
+                    row.kind in {"RETURN", "DUST_RETURN"}
                     and row.status in {"PENDING", "ACTIVE", "PARTIAL", "CANCEL_PENDING"}
                 )
             )

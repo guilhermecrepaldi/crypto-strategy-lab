@@ -511,6 +511,48 @@ class GlobalCapitalLedger:
         self._commit(now_us)
         self.reconcile()
 
+    def move_untradeable_inventory_to_dust(
+        self, capital_id: str, *, now_us: int, reason: str
+    ) -> None:
+        """Move a whole unsellable inventory lot into owned dust without changing equity."""
+        self._causal(now_us)
+        position = self.positions[capital_id]
+        if (
+            position.state
+            not in {CapitalState.INVENTORY_PAIR_A, CapitalState.INVENTORY_PAIR_B}
+            or position.asset == "USDT"
+            or position.quantity <= ZERO
+            or position.returned_quantity != ZERO
+            or position.pending_cycle_id is not None
+            or not reason
+        ):
+            raise ValueError("M035_INVENTORY_NOT_DUST_ELIGIBLE")
+        self.dust.add(
+            DustLot(
+                capital_id=capital_id,
+                pair_id=position.pair_id,
+                asset=position.asset,
+                quantity=position.quantity,
+                cost_basis_usdt=position.cost_basis_usdt + position.attributable_costs_usdt,
+                source_cycles=position.source_cycles,
+                created_at_us=now_us,
+            )
+        )
+        del self.positions[capital_id]
+        self.audit.append(
+            {
+                "event": "UNTRADEABLE_INVENTORY_MOVED_TO_DUST",
+                "time_us": now_us,
+                "capital_id": capital_id,
+                "pair_id": position.pair_id,
+                "asset": position.asset,
+                "quantity": str(position.quantity),
+                "reason": reason,
+            }
+        )
+        self._commit(now_us)
+        self.reconcile()
+
     def consolidate_inventory(
         self, capital_ids: Iterable[str], *, pair_id: str, asset: str, now_us: int
     ) -> str:
@@ -644,6 +686,7 @@ class GlobalCapitalLedger:
             position.returned_attributable_costs_usdt + sold_attributable_cost
         )
         realized = cumulative_proceeds - cumulative_cost_basis - cumulative_attributable_costs
+        fill_realized = net_proceeds_usdt - sold_cost_basis - sold_attributable_cost
         authorization: RiskExitAuthorization | None = None
         if realized < ZERO:
             if risk_exit_authorization_id is None:
@@ -662,6 +705,7 @@ class GlobalCapitalLedger:
         if return_order_complete and residual_quantity > ZERO and residual_mark_usdt <= ZERO:
             raise ValueError("M035_RESIDUAL_MARK_REQUIRED")
         self.free_usdt += net_proceeds_usdt
+        self.realized_pnl_usdt += fill_realized
         if not return_order_complete:
             position.quantity = residual_quantity
             position.cost_basis_usdt = residual_cost_basis
@@ -698,7 +742,6 @@ class GlobalCapitalLedger:
             risk_exit=authorization is not None,
         )
         self.cycles.record(cycle)
-        self.realized_pnl_usdt += realized
         if authorization is not None:
             self.consumed_risk_exit_authorizations.add(authorization.authorization_id)
         del self.positions[capital_id]
