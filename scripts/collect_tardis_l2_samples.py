@@ -592,14 +592,18 @@ def collect_raw(
         for day, entry in entries.items()
     }
     selected_offsets = list(range(0, 1440, 10) if offsets is None else offsets)
-    if symbol == "FDUSDUSDT" and selected_offsets != list(range(0, 180, 10)):
-        raise ValueError("FDUSDUSDT_ONLY_EXACT_00_TO_03_UTC_OFFSETS_AUTHORIZED")
     if (
         not selected_offsets
         or len(set(selected_offsets)) != len(selected_offsets)
         or any(offset not in range(0, 1440, 10) for offset in selected_offsets)
     ):
         raise ValueError("RAW_OFFSETS_MUST_BE_UNIQUE_0_TO_1430_STEP_10")
+    if symbol == "FDUSDUSDT" and (
+        len(selected_offsets) != 18
+        or sorted(selected_offsets)
+        != list(range(min(selected_offsets), min(selected_offsets) + 180, 10))
+    ):
+        raise ValueError("FDUSDUSDT_REQUIRES_ONE_CONTIGUOUS_3H_WINDOW")
     jobs = [(day, offset) for day in days for offset in selected_offsets]
     pool = ThreadPoolExecutor(max_workers=concurrency)
     futures = {}
