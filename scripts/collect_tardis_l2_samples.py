@@ -599,11 +599,10 @@ def collect_raw(
     ):
         raise ValueError("RAW_OFFSETS_MUST_BE_UNIQUE_0_TO_1430_STEP_10")
     if symbol == "FDUSDUSDT" and (
-        len(selected_offsets) != 18
-        or sorted(selected_offsets)
-        != list(range(min(selected_offsets), min(selected_offsets) + 180, 10))
+        len(selected_offsets) < 18
+        or sorted(selected_offsets) != list(range(0, max(selected_offsets) + 10, 10))
     ):
-        raise ValueError("FDUSDUSDT_REQUIRES_ONE_CONTIGUOUS_3H_WINDOW")
+        raise ValueError("FDUSDUSDT_REQUIRES_CAUSAL_DAY_PREFIX_THROUGH_3H_WINDOW")
     jobs = [(day, offset) for day in days for offset in selected_offsets]
     pool = ThreadPoolExecutor(max_workers=concurrency)
     futures = {}

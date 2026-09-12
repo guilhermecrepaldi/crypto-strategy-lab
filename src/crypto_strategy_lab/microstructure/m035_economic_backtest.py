@@ -68,12 +68,11 @@ class M035BacktestConfig:
     minimum_flow_per_second: D = D("10")
     flow_window_seconds: int = 60
     maximum_book_age_us: int = 2_000_000
-    emergency_peg_deviation: D = D("0.0025")
     taker_fee_bps: D = D("10")
 
     def validate(self) -> None:
         if (
-            self.identity != "M035_200USD_3H_PARALLEL_DEVELOPMENT_BACKTEST_V1"
+            self.identity != "M035_200USD_RANDOM_3H_PARALLEL_DEVELOPMENT_BACKTEST_V2"
             or self.end_us - self.start_us != 10_800_000_000
             or self.initial_bank_usdt != D(200)
             or self.order_quantity != D(10)
@@ -210,8 +209,6 @@ class M035EconomicPairEngine:
         ):
             raise ValueError("M035_INVALID_PHYSICAL_BOOK")
         midpoint = (bids[0][0] + asks[0][0]) / 2
-        if abs(midpoint - 1) > self.config.emergency_peg_deviation:
-            raise ValueError("M035_RISK_TRIGGER_FAIL_CLOSED_NO_UNREGISTERED_EXIT")
         next_hotline = (midpoint / self.config.tick_size).to_integral_value(
             rounding=ROUND_HALF_UP
         ) * self.config.tick_size

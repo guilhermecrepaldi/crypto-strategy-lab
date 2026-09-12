@@ -16,12 +16,18 @@ from typing import Any, cast
 from urllib.parse import parse_qs, urlparse
 
 from crypto_strategy_lab.microstructure.data import iter_archive
-from crypto_strategy_lab.microstructure.tardis_l2 import iter_native_events, validate_raw_lines
+from crypto_strategy_lab.microstructure.tardis_l2 import (
+    iter_native_events,
+    native_exchange_microseconds,
+    validate_raw_lines,
+)
 
-START_US = 1_735_689_600_000_000
-END_US = 1_735_700_400_000_000
+WINDOW_DATE = "2026-02-01"
+START_US = 1_769_907_600_000_000
+END_US = 1_769_918_400_000_000
 SYMBOLS = ("USDCUSDT", "FDUSDUSDT")
-OFFSETS = tuple(range(0, 180, 10))
+BOOTSTRAP_OFFSETS = tuple(range(0, 240, 10))
+WINDOW_OFFSETS = tuple(range(60, 240, 10))
 
 
 def file_sha256(path: Path) -> str:
@@ -29,8 +35,17 @@ def file_sha256(path: Path) -> str:
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
+def _trade_timestamp_matches(canonical_us: int, native_value: int) -> bool:
+    native_exchange_microseconds(native_value)
+    return (
+        canonical_us == native_value
+        if native_value >= 100_000_000_000_000
+        else canonical_us // 1000 == native_value
+    )
+
+
 def _raw_root(root: Path, symbol: str) -> Path:
-    return root / "data/l2/tardis/binance" / symbol.lower() / "2025-01-01/raw"
+    return root / "data/l2/tardis/binance" / symbol.lower() / WINDOW_DATE / "raw"
 
 
 def trade_path(root: Path, symbol: str) -> Path:
@@ -38,8 +53,8 @@ def trade_path(root: Path, symbol: str) -> Path:
         root
         / "data/raw/binance-microstructure"
         / symbol
-        / "trades/2025-01-01"
-        / f"{symbol}-trades-2025-01-01.zip"
+        / f"trades/{WINDOW_DATE}"
+        / f"{symbol}-trades-{WINDOW_DATE}.zip"
     )
     if nested.exists():
         return nested
@@ -48,12 +63,12 @@ def trade_path(root: Path, symbol: str) -> Path:
         / "data/raw/binance-microstructure"
         / symbol
         / "trades"
-        / f"{symbol}-trades-2025-01-01.zip"
+        / f"{symbol}-trades-{WINDOW_DATE}.zip"
     )
 
 
 def raw_lines(root: Path, symbol: str) -> Iterator[str]:
-    for offset in OFFSETS:
+    for offset in BOOTSTRAP_OFFSETS:
         path = _raw_root(root, symbol) / f"{offset:04d}.ndjson.gz"
         with gzip.open(path, "rt", encoding="utf-8") as stream:
             yield from stream
@@ -62,7 +77,7 @@ def raw_lines(root: Path, symbol: str) -> Iterator[str]:
 @lru_cache(maxsize=4)
 def _usdc_slice_metadata(manifest_path: str) -> dict[int, dict[str, Any]]:
     manifest = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
-    day = next(row for row in manifest["dates"] if row["date"] == "2025-01-01")
+    day = next(row for row in manifest["dates"] if row["date"] == WINDOW_DATE)
     return {int(row["offset"]): row for row in day["raw_slices"]}
 
 
@@ -93,7 +108,7 @@ def _validate_slice(root: Path, symbol: str, offset: int) -> dict[str, Any]:
         or url.scheme != "https"
         or url.netloc != "api.tardis.dev"
         or url.path != "/v1/data-feeds/binance"
-        or params.get("from") != ["2025-01-01"]
+        or params.get("from") != [WINDOW_DATE]
         or params.get("offset") != [str(offset)]
         or params.get("sliceSize") != ["10"]
         or params.get("compression") != ["gzip"]
@@ -124,19 +139,20 @@ def _verify_official_checksum(path: Path) -> str:
 def validate_pair(root: Path, symbol: str) -> dict[str, Any]:
     if symbol not in SYMBOLS:
         raise ValueError("M035_UNAUTHORIZED_PAIR")
-    slices = [_validate_slice(root, symbol, offset) for offset in OFFSETS]
+    slices = [_validate_slice(root, symbol, offset) for offset in BOOTSTRAP_OFFSETS]
     raw = validate_raw_lines(raw_lines(root, symbol), expected_symbol=symbol)
     if raw["sequence_gate"] != "PASS":
         raise ValueError(f"M035_NATIVE_SEQUENCE_FAILED:{symbol}")
     projected = list(iter_native_events(raw_lines(root, symbol), expected_symbol=symbol))
-    if not projected or any(
+    window_events = [event for event in projected if START_US <= int(event["local_us"]) < END_US]
+    if not window_events or any(
         event["symbol"] != symbol
-        or not START_US <= int(event["local_us"]) < END_US
-        or not START_US <= int(event["exchange_us"]) < END_US
         for event in projected
     ):
         raise ValueError(f"M035_NATIVE_WINDOW_FAILED:{symbol}")
-    if any(event["kind"] == "BOOK" and not event["sequence_validated"] for event in projected):
+    if any(
+        event["kind"] == "BOOK" and not event["sequence_validated"] for event in window_events
+    ):
         raise ValueError(f"M035_UNVALIDATED_BOOK_EXPOSED:{symbol}")
     archive_path = trade_path(root, symbol)
     archive_sha = _verify_official_checksum(archive_path)
@@ -146,7 +162,9 @@ def validate_pair(root: Path, symbol: str) -> dict[str, Any]:
         if START_US <= int(record.timestamp.timestamp() * 1_000_000) < END_US
     }
     native = {
-        int(event["data"]["t"]): event["data"] for event in projected if event["kind"] == "TRADE"
+        int(event["data"]["t"]): event["data"]
+        for event in window_events
+        if event["kind"] == "TRADE"
     }
     if set(canonical) != set(native):
         raise ValueError(f"M035_NATIVE_OFFICIAL_TRADE_IDS_FAILED:{symbol}")
@@ -156,14 +174,16 @@ def validate_pair(root: Path, symbol: str) -> dict[str, Any]:
             record.price != Decimal(data["p"])
             or record.quantity != Decimal(data["q"])
             or record.buyer_is_maker is not data["m"]
-            or int(record.timestamp.timestamp() * 1000) != data["T"]
+            or not _trade_timestamp_matches(
+                int(record.timestamp.timestamp() * 1_000_000), int(data["T"])
+            )
         ):
             raise ValueError(f"M035_NATIVE_OFFICIAL_TRADE_FIELDS_FAILED:{symbol}:{trade_id}")
     payload = {
         "symbol": symbol,
         "venue": "BINANCE_SPOT",
-        "start": "2025-01-01T00:00:00Z",
-        "end_exclusive": "2025-01-01T03:00:00Z",
+        "start": "2026-02-01T01:00:00Z",
+        "end_exclusive": "2026-02-01T04:00:00Z",
         "raw_slices": slices,
         "raw_validation": {
             key: raw[key]
@@ -175,7 +195,10 @@ def validate_pair(root: Path, symbol: str) -> dict[str, Any]:
                 "last_update_id",
             )
         },
-        "book_events": sum(event["kind"] == "BOOK" for event in projected),
+        "bootstrap_start": "2026-02-01T00:00:00Z",
+        "bootstrap_offsets": list(BOOTSTRAP_OFFSETS),
+        "window_offsets": list(WINDOW_OFFSETS),
+        "book_events": sum(event["kind"] == "BOOK" for event in window_events),
         "trade_events": len(native),
         "all_books_sequence_validated": True,
         "official_trade_archive": {
@@ -233,7 +256,7 @@ def validate_dual_tape(root: Path) -> dict[str, Any]:
         counts[event["symbol"]]["books" if event["kind"] == "BOOK" else "trades"] += 1
         events += 1
     window = {
-        "selection": "OWNER_ABSOLUTE_PREFERENCE_VALIDATED_NOT_PNL_SELECTED",
+        "selection": "OWNER_AUTHORIZED_CSPRNG_DRAW_FROM_21_DAY_CATALOG_NOT_PNL_SELECTED",
         "start_us": START_US,
         "end_us": END_US,
         "tie_break": "local_us,exchange_us,PAIR_A_before_PAIR_B,capture_order",
@@ -243,7 +266,7 @@ def validate_dual_tape(root: Path) -> dict[str, Any]:
         json.dumps(window, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
     return {
-        "identity": "M035_DUAL_TAPE_2025_01_01_00_03_V1",
+        "identity": "M035_DUAL_TAPE_2026_02_01_01_04_V2",
         "generated_at": datetime.now(UTC).isoformat(),
         "status": "PASS",
         "pairs": pairs,

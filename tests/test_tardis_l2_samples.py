@@ -146,8 +146,8 @@ def test_raw_url_is_symbol_parameterized() -> None:
     assert "fdusdusdt" in query["filters"][0]
 
 
-def test_fdusd_raw_scope_is_exactly_one_contiguous_three_hour_window(tmp_path: Path) -> None:
-    with pytest.raises(ValueError, match="ONE_CONTIGUOUS_3H_WINDOW"):
+def test_fdusd_raw_scope_requires_causal_day_prefix_through_window(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="CAUSAL_DAY_PREFIX_THROUGH_3H_WINDOW"):
         collector.collect_raw(
             dates=[date(2025, 1, 1)],
             root=tmp_path,
@@ -155,13 +155,13 @@ def test_fdusd_raw_scope_is_exactly_one_contiguous_three_hour_window(tmp_path: P
             symbol="FDUSDUSDT",
             offsets=[180],
         )
-    with pytest.raises(ValueError, match="ONE_CONTIGUOUS_3H_WINDOW"):
+    with pytest.raises(ValueError, match="CAUSAL_DAY_PREFIX_THROUGH_3H_WINDOW"):
         collector.collect_raw(
             dates=[date(2025, 1, 1)],
             root=tmp_path,
             manifest_path=tmp_path / "m.json",
             symbol="FDUSDUSDT",
-            offsets=[*range(60, 230, 10), 240],
+            offsets=range(60, 240, 10),
         )
     with pytest.raises(ValueError, match="RAW_SYMBOL_OUTSIDE"):
         collector.collect_raw(

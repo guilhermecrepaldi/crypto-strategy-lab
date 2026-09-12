@@ -32,6 +32,10 @@ No price, spread, cycle, volatility or PnL value from this window was inspected 
 If the selected dual tape cannot pass native sequence and exact individual-trade binding, V2 is
 invalidated without reroll.
 
+Native reconstruction may consume the same-day L2 prefix from 00:00 to 01:00 solely to obtain a
+causally bridged book at the selected start. No strategy state, order, allocation, fill, cycle,
+metric or PnL may consume that bootstrap prefix; economic events remain exactly 01:00–04:00.
+
 ## Frozen economic comparison
 
 Every fee scenario begins independently with exactly 200 USDT. The baseline is M035 single-pair

@@ -25,7 +25,7 @@ START = m035_data.START_US
 
 def config(**changes: object) -> M035BacktestConfig:
     values: dict[str, object] = {
-        "identity": "M035_200USD_3H_PARALLEL_DEVELOPMENT_BACKTEST_V1",
+        "identity": "M035_200USD_RANDOM_3H_PARALLEL_DEVELOPMENT_BACKTEST_V2",
         "start_us": START,
         "end_us": START + 10_800_000_000,
     }
@@ -134,6 +134,21 @@ def test_economic_pair_hotlines_and_grids_are_isolated() -> None:
     assert pair_a.hotline == D("1.0000")
     assert set(pair_a.orders) == pair_a_orders
     assert pair_b.hotline == D("1.0000")
+
+
+def test_valid_book_beyond_25_bps_is_processed_and_marked_without_abort() -> None:
+    scenario = M035EconomicScenario(config(), fee_bps=D(0), parallel=False)
+    scenario.receive(
+        book(
+            "USDCUSDT",
+            START + 1_000_000,
+            bid="1.0025",
+            ask="1.0028",
+        )
+    )
+    engine = scenario.engines["USDCUSDT"]
+    assert engine.hotline == D("1.0027")
+    assert scenario.ledger.asset_marks_usdt["USDC"] == D("1.0025")
 
 
 def test_economic_grid_preserves_c1_and_c2_capital_until_cancel_ack() -> None:

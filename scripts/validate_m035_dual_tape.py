@@ -16,7 +16,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("reports/m035/M035_DUAL_TAPE_VALIDATION.json"),
+        default=Path("reports/m035/M035_RANDOM_3H_V2_DUAL_TAPE_VALIDATION.json"),
     )
     return parser.parse_args()
 

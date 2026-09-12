@@ -22,13 +22,13 @@ from crypto_strategy_lab.microstructure.m035_economic_backtest import (
     run_mode,
 )
 
-IDENTITY = "M035_200USD_3H_PARALLEL_DEVELOPMENT_BACKTEST_V1"
-CONFIG_PATH = Path("reports/m035/M035_200USD_3H_CONFIG.json")
-DATA_REPORT_PATH = Path("reports/m035/M035_DUAL_TAPE_VALIDATION.json")
-ECONOMIC_CONFORMANCE_PATH = Path("reports/m035/M035_ECONOMIC_CONFORMANCE_REPORT.json")
-REVIEW_PATH = Path("reports/m035/M035_ECONOMIC_SOURCE_REVIEW.json")
-RESULT_PATH = Path("reports/m035/M035_200USD_3H_RESULT.json")
-CLAIM_PATH = Path("data/m035/M035_200USD_3H_PARALLEL_DEVELOPMENT_BACKTEST_V1.claim.json")
+IDENTITY = "M035_200USD_RANDOM_3H_PARALLEL_DEVELOPMENT_BACKTEST_V2"
+CONFIG_PATH = Path("reports/m035/M035_RANDOM_3H_V2_CONFIG.json")
+DATA_REPORT_PATH = Path("reports/m035/M035_RANDOM_3H_V2_DUAL_TAPE_VALIDATION.json")
+ECONOMIC_CONFORMANCE_PATH = Path("reports/m035/M035_RANDOM_3H_V2_CONFORMANCE_REPORT.json")
+REVIEW_PATH = Path("reports/m035/M035_RANDOM_3H_V2_SOURCE_REVIEW.json")
+RESULT_PATH = Path("reports/m035/M035_RANDOM_3H_V2_RESULT.json")
+CLAIM_PATH = Path("data/m035/M035_200USD_RANDOM_3H_PARALLEL_DEVELOPMENT_BACKTEST_V2.claim.json")
 FEES = (D(0), D(1), D(2), D(5), D(10))
 REQUIRED_REVIEW_FILES = {
     "src/crypto_strategy_lab/microstructure/m035_economic_backtest.py",
@@ -40,10 +40,10 @@ REQUIRED_REVIEW_FILES = {
     "scripts/run_m035_economic_backtest.py",
     "scripts/validate_m035_dual_tape.py",
     "tests/test_m035_economic_backtest.py",
-    "reports/m035/M035_200USD_3H_CONFIG.json",
-    "reports/m035/M035_DUAL_TAPE_VALIDATION.json",
-    "reports/m035/M035_ECONOMIC_CONFORMANCE_REPORT.json",
-    "docs/research/M035_200USD_3H_ECONOMIC_PROTOCOL.md",
+    "reports/m035/M035_RANDOM_3H_V2_CONFIG.json",
+    "reports/m035/M035_RANDOM_3H_V2_DUAL_TAPE_VALIDATION.json",
+    "reports/m035/M035_RANDOM_3H_V2_CONFORMANCE_REPORT.json",
+    "docs/research/M035_RANDOM_3H_V2_PREREGISTRATION.md",
 }
 ECONOMIC_CONFORMANCE_FILES = {
     "src/crypto_strategy_lab/microstructure/m035_economic_backtest.py",
@@ -122,7 +122,6 @@ def _config(row: dict[str, Any]) -> M035BacktestConfig:
         minimum_flow_per_second=D(row["minimum_compatible_flow_asset_per_second"]),
         flow_window_seconds=int(row["flow_window_seconds"]),
         maximum_book_age_us=int(row["maximum_book_age_us"]),
-        emergency_peg_deviation=D(row["emergency_peg_deviation"]),
         taker_fee_bps=D(row["taker_contingency_fee_bps"]),
     )
 
@@ -310,7 +309,7 @@ def _write_artifacts(root: Path, payload: dict[str, Any], results: list[dict[str
     cycles, capital, pair_a, pair_b = _extract_artifacts(results)
     _write_json(root / RESULT_PATH, payload)
     _write_csv(
-        root / "reports/m035/M035_CYCLES.csv",
+        root / "reports/m035/M035_RANDOM_3H_V2_CYCLES.csv",
         sorted(cycles, key=lambda row: (row["MODE"], row["SCENARIO"], row["end_timestamp_us"])),
         [
             "MODE",
@@ -360,7 +359,11 @@ def _write_artifacts(root: Path, payload: dict[str, Any], results: list[dict[str
         "TOTAL_MARKED_EQUITY",
         "GLOBAL_CAPITAL_CONSERVATION_RESIDUAL",
     ]
-    _write_csv(root / "reports/m035/M035_CAPITAL_TIMELINE.csv", capital, capital_fields)
+    _write_csv(
+        root / "reports/m035/M035_RANDOM_3H_V2_CAPITAL_TIMELINE.csv",
+        capital,
+        capital_fields,
+    )
     pair_fields = [
         "MODE",
         "SCENARIO",
@@ -376,8 +379,8 @@ def _write_artifacts(root: Path, payload: dict[str, Any], results: list[dict[str
         "REASON",
         "AFFECTED_C2_ORDER_IDS",
     ]
-    _write_csv(root / "reports/m035/M035_PAIR_A_TIMELINE.csv", pair_a, pair_fields)
-    _write_csv(root / "reports/m035/M035_PAIR_B_TIMELINE.csv", pair_b, pair_fields)
+    _write_csv(root / "reports/m035/M035_RANDOM_3H_V2_PAIR_A_TIMELINE.csv", pair_a, pair_fields)
+    _write_csv(root / "reports/m035/M035_RANDOM_3H_V2_PAIR_B_TIMELINE.csv", pair_b, pair_fields)
 
 
 def main() -> int:
@@ -404,7 +407,7 @@ def main() -> int:
     parallel: list[dict[str, Any]] | None = None
     try:
         single = run_mode(config, events=merged_events(root), fees=FEES, parallel=False)
-        single_prefix_path = root / "data/m035/M035_SINGLE_PAIR_COMPLETED_PREFIX.json"
+        single_prefix_path = root / "data/m035/M035_RANDOM_3H_V2_SINGLE_PAIR_COMPLETED_PREFIX.json"
         _write_json(single_prefix_path, single)
         completed_prefix["SINGLE_PAIR"] = {
             "path": str(single_prefix_path.relative_to(root)).replace("\\", "/"),
@@ -414,7 +417,7 @@ def main() -> int:
         claim["single_pair_prefix_sha256"] = _sha(single_prefix_path)
         _write_json(root / CLAIM_PATH, claim)
         parallel = run_mode(config, events=merged_events(root), fees=FEES, parallel=True)
-        parallel_prefix_path = root / "data/m035/M035_PARALLEL_COMPLETED_PREFIX.json"
+        parallel_prefix_path = root / "data/m035/M035_RANDOM_3H_V2_PARALLEL_COMPLETED_PREFIX.json"
         _write_json(parallel_prefix_path, parallel)
         completed_prefix["PARALLEL_TWO_PAIR"] = {
             "path": str(parallel_prefix_path.relative_to(root)).replace("\\", "/"),
@@ -479,7 +482,7 @@ def main() -> int:
             failure_evidence["event_index"] = error.event_index
             failure_evidence["event"] = error.event
             failure_evidence["scenarios"] = error.evidence
-        failure_path = root / "data/m035/M035_FAILED_PREFIX_EVIDENCE.json"
+        failure_path = root / "data/m035/M035_RANDOM_3H_V2_FAILED_PREFIX_EVIDENCE.json"
         _write_json(failure_path, failure_evidence)
         claim["status"] = "INVALIDATED_TECHNICAL"
         claim["failed_at"] = datetime.now(UTC).isoformat()

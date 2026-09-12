@@ -190,3 +190,34 @@ the demonstrated cause more precisely as `INCOMPLETE_SAFETY_ABORT`, not data cor
 bug or economic loss. The 62,637,508-byte prefix is preserved locally with SHA-256
 `2b9e2e405d913a8dfc63866b1791298a8f62cea59db8cc1254bb8bb8796763ff`. This identity cannot rerun.
 Any attempt to complete the comparison requires an explicitly authorized new identity and protocol.
+
+## 2026-09-12 — OWNER correction and random-window V2 authorization
+
+The OWNER corrected the V1 interpretation: M035 was never given a 25 bps peg-deviation abort and
+authorized a different three-hour test so the mechanism is actually measured. Source provenance
+shows `0.0025` entered M035 in preparation commit `1013bc7`, matches the earlier M034 diagnostic
+value, and has no stated authority in the M035 economic prompt. V1 remains immutable and accurately records
+what its published source did, but its abort is not treated as an OWNER M035 economic rule.
+
+Independent GPT-6 Astra review agreed that V2 must remove only the unauthorized abort without
+inventing a replacement numeric threshold. Book integrity, native sequence, causal marks, spread,
+depth, flow, positive expected edge, capital ownership, FIFO, cancel-ACK, dust and per-cycle
+zero-loss gates remain unchanged. A valid price distant from one is economic data, not data
+corruption; any open loss remains visible in marked equity.
+
+Before inspecting any new-window economic value, a CSPRNG-derived draw was frozen over all 2,667
+10-minute-aligned three-hour candidates within the 21 authorized evidence days. Seed
+`bc895e20515f5a6f821419c897fdcf2174359e8082e7730fdcfafa3189af3bef` selected
+2026-02-01 01:00–04:00 UTC. No reroll is allowed. One hour of same-day L2 preceding the selected
+window is consumed only to bridge the native snapshot causally; it cannot affect strategy state or
+economic metrics.
+
+Both selected tapes passed native snapshot/delta sequence validation and exact binding to Binance
+Vision individual trades. The economic window contains 151,063 merged events: USDCUSDT 93,795
+books + 48,256 trades; FDUSDUSDT 4,417 books + 4,595 trades. Window hash:
+`15a4ad3cd557bc931a792a05504132b80225b5f8ab1755bac6c01d01df9849ef`.
+Pair hashes: USDCUSDT
+`06e77ff1036c2fbc79536d511824f216501598abb3942dd766b160e84d4ffe6a`; FDUSDUSDT
+`376f20225fb20a399442150a8fefc9bb9363a857b97b8d4b33b40249873e632b`.
+No V2 economic event has been consumed yet. Tests, publication and source-bound review remain
+mandatory before the single V2 run.
