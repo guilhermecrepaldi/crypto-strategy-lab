@@ -1,0 +1,32 @@
+{
+  "blocking_findings": [],
+  "classification": "SOURCE_BOUND_PRE_RUN_REVIEW_DEVELOPMENT_DIAGNOSTIC_NOT_OOS",
+  "config_sha256": "422faab9011cf6d9ae509694f138efd3920cb85edea004072693ccbf5bfd3867",
+  "file_sha256": {
+    "docs/research/M035_200USD_3H_ECONOMIC_PROTOCOL.md": "ffe9e41d94f30a698003bc4b18a9467c8aa0e15e20fb670901194dda21f3817c",
+    "reports/m035/M035_200USD_3H_CONFIG.json": "b0108c2936aae8c255fd8f8a394abfabbc0534525b0bd3e39152bf897efb321c",
+    "reports/m035/M035_DUAL_TAPE_VALIDATION.json": "150a2acd770d8fd74a82439c0827d94f235292307fcad4893f16566f1ba08f4e",
+    "reports/m035/M035_ECONOMIC_CONFORMANCE_REPORT.json": "622fca6368f6f0bad622c7a6ae68bc29a23673f159be0d488278261f3cc98c92",
+    "scripts/run_m035_economic_backtest.py": "79ba20f2eb24162bfbecd762494c355891dff3dfc18b3e638fda95b08150162e",
+    "scripts/validate_m035_dual_tape.py": "4c88aa0cb5fdf51bf4c0dbdf736b45df835d0fc3959efc598b67a4fb598ed173",
+    "src/crypto_strategy_lab/microstructure/data.py": "b4ee66a808e9e4d8d802635712ee0230a5cc4e99ed8abe15bf89dd7c946eeba8",
+    "src/crypto_strategy_lab/microstructure/m035_data.py": "88cc10d88e79b611099eb9296c7e5381d2e411e55481a07b4cfe4072b925c6a9",
+    "src/crypto_strategy_lab/microstructure/m035_economic_backtest.py": "00f98c7e67aa87caa3d84af3639afda7504861571fd9ab7f4853b28dcbdbd8f4",
+    "src/crypto_strategy_lab/microstructure/multi_stable_queue.py": "266600243c855dd9eeab567e59377555b55f2804e61ffd3d4eeb28a6fbad5523",
+    "src/crypto_strategy_lab/microstructure/parallel_pair_capital_manager.py": "1046cd462907bbd37a3f077a198756d979bc21fea95b7082e4c484426063d5e0",
+    "src/crypto_strategy_lab/microstructure/tardis_l2.py": "d23f5f558845b5221a79608b405cc01d6476d62b935acba054d7d3a8bf3b5e39",
+    "tests/test_m035_economic_backtest.py": "6ac4a6c48540670c6078c2ffbef5476df5bac7a59b21aff3e301b110cd204db6"
+  },
+  "identity": "M035_200USD_3H_PARALLEL_DEVELOPMENT_BACKTEST_V1",
+  "notes": [
+    "No P1/P2 finding remains after four review rounds.",
+    "The review did not execute the historical economic runner or create its claim.",
+    "The dual-tape local byte hash differs from its published blob only by verified CRLF normalization; the runner binds the exact local bytes listed here."
+  ],
+  "pair_a_data_hash": "22696126494561e7a23354570bf3f7aa60f9ff6389a6d36d304e5a7d54ccce52",
+  "pair_b_data_hash": "fd2d83ebc8bf0301616a3679da302e20cd56c8cde1235758c8aedc6f8b07eb09",
+  "review_model": "gpt-6-astra",
+  "reviewed_source_commit": "4aa5734ab6ab607094a7c4f2ec9b233f01674d6f",
+  "status": "PASS_NO_P1_P2",
+  "window_hash": "327142fa6be8a51a70b8f845842e97a596b52b8ab744ab95f68ba72261d60b9b"
+}
