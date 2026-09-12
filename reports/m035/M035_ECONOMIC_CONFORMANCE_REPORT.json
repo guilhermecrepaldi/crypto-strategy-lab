@@ -53,6 +53,10 @@
       "evidence": "test_economic_pair_hotlines_and_grids_are_isolated",
       "status": "PASS"
     },
+    "LOCK_METRIC_OWNERSHIP": {
+      "evidence": "test_partial_cancel_below_minimum_moves_inventory_to_owned_dust; cutoff-censored locks derive only from current GlobalCapitalLedger and DustLedger owners",
+      "status": "PASS"
+    },
     "NO_DOUBLE_CAPITAL": {
       "evidence": "test_parallel_scenario_uses_one_shared_200_usdt_bank; test_insufficient_capital_never_commits_250",
       "status": "PASS"
@@ -104,7 +108,7 @@
     "passed": 76,
     "status": "PASS"
   },
-  "tested_source_commit": "d8322d0c36d79a58ccec1e2a7d958f1363f806ef",
+  "tested_source_commit": "1d60153bc0224ce9e803175e63ce7313906b364a",
   "type_checks": {
     "mypy_strict": "PASS",
     "ruff": "PASS"
