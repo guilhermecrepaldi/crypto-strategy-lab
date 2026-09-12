@@ -48,6 +48,9 @@ evidence. Cycle exports separate gross basis, fees, execution cost, adverse sele
 dust so dust cost cannot be charged to a completed cycle. Partial return fills contribute to
 realized PnL when physically settled, while cycle closure remains a separate classification.
 Open normal and aggregated-dust returns are both included in cutoff-censored lock statistics.
+Cutoff lock observations are derived from current capital owners in the GlobalCapitalLedger and
+DustLedger, not stale order statuses, so a converted or fully consumed dust lineage is never
+counted twice.
 
 The detailed immutable configuration is
 `reports/m035/M035_200USD_3H_CONFIG.json`. Its canonical JSON SHA-256 is computed and recorded by

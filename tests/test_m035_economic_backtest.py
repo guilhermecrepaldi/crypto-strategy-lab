@@ -408,6 +408,13 @@ def test_partial_cancel_below_minimum_moves_inventory_to_owned_dust() -> None:
         row["event"] == "UNTRADEABLE_INVENTORY_MOVED_TO_DUST"
         for row in scenario.ledger.audit
     )
+    expected_open_owners = len(scenario.ledger.positions) + len(scenario.ledger.dust.lots)
+    result = scenario.finish()
+    assert result["LOCK_OBSERVATIONS_OPEN_CAPITAL"] == expected_open_owners
+    assert all(
+        row.status != "DUSTED" or row.capital_id not in scenario.ledger.positions
+        for row in scenario.engines["USDCUSDT"].orders.values()
+    )
 
 
 def test_failed_fill_does_not_mutate_physical_queue(

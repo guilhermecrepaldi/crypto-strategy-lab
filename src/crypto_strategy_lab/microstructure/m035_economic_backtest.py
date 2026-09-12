@@ -1204,19 +1204,15 @@ class M035EconomicScenario:
         physical_cycles = [row for row in cycles if row["counted_physical_cycle"]]
         cycle_pnls = [row.net_pnl_usdt for row in self.ledger.cycles.cycles.values()]
         locks = [value for engine in self.engines.values() for value in engine.lock_seconds]
-        for engine in self.engines.values():
-            locks.extend(
-                D(self.config.end_us - row.submitted_at_us) / 1_000_000
-                for row in engine.orders.values()
-                if (
-                    row.kind == "ENTRY"
-                    and row.status not in {"CANCELLED", "CLOSED", "RETURN_SUBMITTED"}
-                )
-                or (
-                    row.kind in {"RETURN", "DUST_RETURN"}
-                    and row.status in {"PENDING", "ACTIVE", "PARTIAL", "CANCEL_PENDING"}
-                )
-            )
+        open_capital_locks = [
+            D(self.config.end_us - row.created_at_us) / 1_000_000
+            for row in self.ledger.positions.values()
+        ]
+        open_capital_locks.extend(
+            D(self.config.end_us - row.created_at_us) / 1_000_000
+            for row in self.ledger.dust.lots
+        )
+        locks.extend(open_capital_locks)
         observed = self.locked_integral + self.idle_integral
         dust = {
             asset: _s(self.ledger.dust.quantity(asset))
@@ -1294,6 +1290,11 @@ class M035EconomicScenario:
             "P50_LOCK": None if not locks else _s(D(str(median(locks)))),
             "P90_LOCK": None if not locks else _s(_percentile(locks, D("0.90")) or ZERO),
             "P95_LOCK": None if not locks else _s(_percentile(locks, D("0.95")) or ZERO),
+            "LOCK_OBSERVATIONS_CLOSED_SETTLEMENTS": len(locks) - len(open_capital_locks),
+            "LOCK_OBSERVATIONS_OPEN_CAPITAL": len(open_capital_locks),
+            "LOCK_STATISTIC_SEMANTICS": (
+                "CLOSED_SETTLEMENT_DURATION_PLUS_CUTOFF_CENSORED_CURRENT_CAPITAL_OWNERS"
+            ),
             "MAX_SIMULTANEOUS_CAPITAL": _s(self.max_committed),
             "GLOBAL_CAPITAL_CONSERVATION_RESIDUAL": _s(accounting_residual),
             "MAX_ABS_CAPITAL_CONSERVATION_RESIDUAL": _s(self.max_abs_conservation_residual),
