@@ -200,3 +200,14 @@ capture/replay is implied by this architecture freeze.
    manifest/config are frozen before the first event.
 
 `CONFORMANCE_PASS != ECONOMIC_RESULT != STRATEGY_PASS`.
+
+## Post-freeze evidence update — 2026-09-12
+
+The OWNER subsequently authorized safe public Binance/Tardis acquisition with explicit mixed-source
+reporting. Exactly 21 frozen first-of-month `FDUSDUSDT` days were acquired: normalized Binance Spot
+L2 through Tardis and official Binance Vision individual-trade archives with adjacent checksums.
+See `reports/m035/M035_FDUSDUSDT_21_DAY_DATA_REPORT.json`.
+
+This resolves raw Pair B source absence, but does not retroactively alter the architecture freeze or
+authorize replay. Native `U/u` continuity, aligned Pair A/B coverage and the randomly drawn,
+preregistered three-hour window remain pre-economic gates.

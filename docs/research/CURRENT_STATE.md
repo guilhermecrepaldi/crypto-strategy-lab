@@ -1,8 +1,8 @@
 # CURRENT STATE
 
 ACTIVE_EXECUTION_CAMPAIGN=NONE
-CAMPAIGN_STATUS=M035_SOURCE_CONFORMANCE_PASS_BLOCKED_PRE_ECONOMIC_RUN
-CAMPAIGN_EXECUTION_SOURCE_SHA=63cb0cd63d509f5cfe5cff1b89057b79d54636093c5cee3edccdf21775ecf15e_UNPUBLISHED_BUNDLE
+CAMPAIGN_STATUS=M035_PAIR_B_21_DAY_DATA_ACQUIRED_PRE_ECONOMIC_VALIDATION
+CAMPAIGN_EXECUTION_SOURCE_SHA=f67c3c4a0a23045eac1aac7e5265d981bf004774
 CAMPAIGN_ACTIVE_ENVELOPE=NONE
 CAMPAIGN_QUEUED_ENVELOPE=NONE
 CAMPAIGN_VERDICT=SOURCE_CONFORMANCE_PASS_ECONOMIC_RESULT_NOT_EXECUTED_STRATEGY_PASS_FALSE
@@ -10,9 +10,9 @@ CAMPAIGN_PROGRESS_FILE=docs/research/M035_JOURNAL.md
 CAMPAIGN_JOURNAL=docs/research/M035_JOURNAL.md
 CAMPAIGN_SCOREBOARD=reports/m035/M035_200USD_3H_RESULT.json
 CURRENT_ACTIVE_RESEARCH_MODEL=M035_PARALLEL_PAIR_CAPITAL_MANAGER
-OWNER_NEXT_RESEARCH=M035_DUAL_PAIR_CAPTURE_SOURCE_PUBLICATION_THEN_FIRST_FROZEN_CAPTURE
+OWNER_NEXT_RESEARCH=M035_ALIGN_VALIDATE_AND_PREREGISTER_RANDOM_3H_WINDOW
 OWNER_DIRECTIVE=docs/microstructure/M035_PARALLEL_PAIR_CAPITAL_MANAGER.md
-NEXT_CAMPAIGN_STATUS=CAPTURE_PREPARED_BLOCKED_SOURCE_PUBLICATION
+NEXT_CAMPAIGN_STATUS=PAIR_B_21_DAY_ARCHIVES_ACQUIRED_NATIVE_SEQUENCE_GATE_PENDING
 NEXT_CAMPAIGN_MODEL_HASH=NONE
 NEXT_CAMPAIGN_WINDOW=NONE
 NEXT_CAMPAIGN_INITIAL_TOTAL_EQUITY=200_USDT_TOTAL_SHARED
@@ -25,15 +25,28 @@ This proves source mechanics only. The three-hour single-pair baseline and two-p
 not executed: the canonical inventory has USDCUSDT data but zero aligned physical L2 + individual
 trade units for FDUSDUSDT or any other Pair B. Status is
 `MULTI_PAIR_HISTORICAL_TEST_BLOCKED_BY_PAIR_B_DATA`; tape consumed=FALSE, economic runs=0, and all
-economic metrics remain null rather than fabricated zeros. Source publication is also pending
-because the current environment denied `.git` writes and GitHub network access.
+economic metrics remain null rather than fabricated zeros.
+
+That Pair B inventory blocker is now partially resolved. Exactly 21 frozen first-of-month
+`FDUSDUSDT` source pairs (2025-01-01 through 2026-09-01) were acquired and revalidated: 3,437,530 L2
+rows from Tardis' Binance Spot `incremental_book_L2` archives plus 2,704,621 individual trades from
+official Binance Vision archives. The mixed provenance is explicit per day and per file in
+`reports/m035/M035_FDUSDUSDT_21_DAY_DATA_REPORT.json`; all originals are hashed and Binance trade
+ZIPs are bound to their official adjacent checksums. The acquisition source was independently
+reviewed by GPT-6 Astra and published as `6200676` before download.
+
+This is not yet an economic-run authorization or physical replay PASS. Tardis' normalized L2 does
+not itself prove native Binance `U/u` sequence continuity. Pair A/B coverage must be aligned and the
+three-hour window must be randomly drawn and preregistered before any M035 replay. Economic runs
+remain zero and no PnL-based window selection occurred.
 
 The Pair B evidence path is now prepared as `M035_DUAL_PAIR_FORWARD_CAPTURE_V1`: one Binance public
 connection records individual trades and snapshot-bridged L2 diffs for USDCUSDT+FDUSDUSDT on one
 receipt clock, with per-channel freshness/continuity, exclusive three-hour cutoff, raw-before-
 validation persistence and hashed manifests. GPT-6 Astra passed the final capture-source bundle
 `66ca6fa90a9f47bfe5e0d451b59c2de691f7566f7e2b5e62f81312a52b303813` with no P1/P2 after six defects
-were corrected. `CAPTURE_STARTED=false`; publication is required before the first frozen capture.
+were corrected. `CAPTURE_STARTED=false`; the forward path remains unused because the OWNER selected
+historical 21-day acquisition first.
 
 <!-- Previous M034 owner forward diagnostic retained as provenance. -->
 

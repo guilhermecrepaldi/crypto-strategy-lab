@@ -123,3 +123,22 @@ drawn and preregistered later without inspecting PnL. The acquisition pairing is
 
 This authorization changes the evidence-acquisition path, not M035's strategy or conformance
 semantics. Download/validation does not itself authorize or constitute the economic replay.
+
+### Acquisition result
+
+The fail-closed acquisition source passed independent GPT-6 Astra review after correcting four
+provenance/integrity defects. Commit `6200676` was published before network acquisition. The run then
+completed and a separate offline pass revalidated all 21 days:
+
+- L2: 3,437,530 rows, 37,470,494 compressed bytes;
+- individual trades: 2,704,621 records, 34,561,612 compressed bytes;
+- paired days acquired: 21/21;
+- missing/invalid source pairs: 0;
+- economic replay runs: 0;
+- three-hour window: not selected.
+
+The complete per-day URLs, timestamps, SHA-256 hashes, coverage fields, row counts and explicit
+mixed provenance are in `reports/m035/M035_FDUSDUSDT_21_DAY_DATA_REPORT.json`. The originals remain
+local under ignored `data/` paths and are not uploaded to Git. Because normalized Tardis L2 does not
+prove native Binance `U/u` continuity, the next gate is aligned Pair A/B validation and a later
+random, preregistered three-hour draw—not PnL inspection.
