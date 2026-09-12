@@ -1,0 +1,46 @@
+{
+  "all_required_gates_pass": true,
+  "checks": {
+    "ATOMIC_FILL": {"evidence": "test_failed_fill_does_not_mutate_physical_queue", "status": "PASS"},
+    "C1_FIFO_PRESERVATION": {"evidence": "test_economic_grid_preserves_c1_and_c2_capital_until_cancel_ack", "status": "PASS"},
+    "C2_MOBILITY": {"evidence": "test_economic_grid_preserves_c1_and_c2_capital_until_cancel_ack", "status": "PASS"},
+    "CANCEL_ACK": {"evidence": "C2 capital remains unavailable until causal cancel ACK", "status": "PASS"},
+    "CAUSAL_L2_COVERAGE": {"evidence": "test_price_outside_known_l2_coverage_cannot_activate_or_fill", "status": "PASS"},
+    "DETERMINISTIC_MERGE_ORDERING": {"evidence": "test_merged_timeline_has_deterministic_pair_tie_break", "status": "PASS"},
+    "DUAL_TAPE_ALIGNMENT": {"evidence": "M035_RANDOM_3H_V2_DUAL_TAPE_VALIDATION.json: 151063 merged economic-window events", "status": "PASS"},
+    "DUAL_TAPE_CONTINUITY": {"evidence": "Both native streams are snapshot-bridged and Binance sequence-valid; window books expose only validated states", "status": "PASS"},
+    "DUST_ACCOUNTING": {"evidence": "fee dust retained, marked and re-enters owned-return path when tradeable", "status": "PASS"},
+    "EXCLUSIVE_ONE_SHOT_CLAIM": {"evidence": "test_one_shot_claim_creation_is_exclusive with distinct V2 claim path", "status": "PASS"},
+    "GLOBAL_CAPITAL_CONSERVATION": {"evidence": "single 200 USDT GlobalCapitalLedger with exact Decimal reconciliation", "status": "PASS"},
+    "GRID_FOLLOWS_HOTLINE": {"evidence": "grid reconciliation and same-price collision regression", "status": "PASS"},
+    "HOTLINE_ISOLATION": {"evidence": "test_economic_pair_hotlines_and_grids_are_isolated", "status": "PASS"},
+    "NO_DOUBLE_CAPITAL": {"evidence": "shared-bank and insufficient-capital regressions", "status": "PASS"},
+    "NO_FUTURE_DATA": {"evidence": "future-event rejection, exclusive cutoff and causal bootstrap isolation", "status": "PASS"},
+    "NO_SELF_FILL": {"evidence": "only individual public TRADE events consume queue", "status": "PASS"},
+    "NO_UNAUTHORIZED_PEG_ABORT": {"evidence": "test_valid_book_beyond_25_bps_is_processed_and_marked_without_abort", "status": "PASS"},
+    "OWNED_RETURN_PRIORITY": {"evidence": "owned returns are submitted before new allocation", "status": "PASS"},
+    "PREFIX_PRESERVATION": {"evidence": "fee prefixes and mode prefixes persist before reporting", "status": "PASS"},
+    "ZERO_LOSS_ATTRIBUTION": {"evidence": "per-cycle attribution rejects cross-subsidy", "status": "PASS"}
+  },
+  "classification": "SOFTWARE_AND_DATA_CONFORMANCE_NOT_ECONOMIC_RESULT",
+  "config_sha256": "816ff74ddd920d1a0858021a7026dfb80cc5838f2903946843abcfdf0b5600db",
+  "full_regression": {
+    "collected_tests": 1303,
+    "command": "uv run python -m pytest -q",
+    "skipped": 2,
+    "status": "PASS"
+  },
+  "identity": "M035_200USD_RANDOM_3H_PARALLEL_DEVELOPMENT_BACKTEST_V2",
+  "pair_a_data_hash": "06e77ff1036c2fbc79536d511824f216501598abb3942dd766b160e84d4ffe6a",
+  "pair_b_data_hash": "376f20225fb20a399442150a8fefc9bb9363a857b97b8d4b33b40249873e632b",
+  "source_review_status": "PENDING_SOURCE_BOUND_ASTRA_REVIEW",
+  "status": "PASS",
+  "targeted_regression": {
+    "collected_tests": 94,
+    "command": "uv run python -m pytest tests/test_m035_economic_backtest.py tests/test_m035_parallel_pair_capital_manager.py tests/test_m035_fdusdusdt_21_days.py tests/test_m035_dual_pair_capture.py tests/test_tardis_l2_samples.py -q",
+    "status": "PASS"
+  },
+  "tested_source_commit": "6e90cf47716dd5b0ea18715fb9c20f15926800c5",
+  "type_checks": {"mypy_strict": "PASS", "ruff": "PASS"},
+  "window_hash": "15a4ad3cd557bc931a792a05504132b80225b5f8ab1755bac6c01d01df9849ef"
+}
