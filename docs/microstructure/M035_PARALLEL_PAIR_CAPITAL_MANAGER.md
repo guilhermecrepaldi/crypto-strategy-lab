@@ -1,6 +1,6 @@
 # M035 — Parallel Pair Capital Manager
 
-Status: `ARCHITECTURE_MAP_FROZEN_PRE_IMPLEMENTATION`  
+Status: `IMPLEMENTED_CONFORMANCE_PASS_V2_ECONOMIC_OBSERVATION_COMPLETE_ACCEPTANCE_FAIL`
 Identity: `M035_PARALLEL_PAIR_CAPITAL_MANAGER`  
 Venue: `BINANCE_ONLY`  
 Economic bank: `200.00 USDT TOTAL`, never per pair  
@@ -14,10 +14,13 @@ multi-stable route, a second venue, or a claim of live profitability. M029/M030 
 simple hotline/FIFO mechanics; M034 provides the accounting, causal execution and zero-loss
 invariants.
 
-This document freezes the architecture before implementation. The historical economic treatment
-is currently blocked because the canonical inventory contains no second Binance pair with aligned
-physical L2 and individual trades. Synthetic conformance remains authorized and is not an economic
-result.
+This document originally froze the architecture before implementation. That gate has since been
+completed: the source and deterministic conformance passed independent review, and aligned native
+Binance evidence was acquired for `USDCUSDT` and `FDUSDUSDT`. The random-window V2 economic
+observation completed ten three-hour scenarios with a single 200 USDT bank per scenario. It found
+zero fills, cycles and PnL in both single and parallel modes. The architecture invariants passed,
+but the economic acceptance criteria did not. See
+[`M035_RANDOM_3H_V2_RESULT.md`](../research/M035_RANDOM_3H_V2_RESULT.md).
 
 ## M035_ARCHITECTURE_MAP
 
