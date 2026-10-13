@@ -1,0 +1,46 @@
+schema_version: crypto-lab-day-job-v1
+day: "2026-10-14"
+model_id: M036
+parent: M035
+window:
+  start: "2026-10-14T00:00:00Z"
+  end: "2026-10-15T00:00:00Z"
+window_selection: PENDING_OWNER_AUTHORIZATION_NO_DATA_INSPECTION
+scenarios:
+  - name: F0_single
+    fee_bps: "0"
+    mode: single
+  - name: F1_single
+    fee_bps: "1"
+    mode: single
+  - name: F2_single
+    fee_bps: "2"
+    mode: single
+  - name: F5_single
+    fee_bps: "5"
+    mode: single
+  - name: F10_single
+    fee_bps: "10"
+    mode: single
+oracle:
+  backend: auto
+  candidates: []
+  advisory_only: true
+engine: causal_cpu
+gates:
+  # L2/trade-inferred cycles are a counterfactual diagnostic, never venue receipts.
+  min_l2_inferred_cycles: 38
+  max_negative_cycles: 0
+  capital_conservation: true
+output_dir: reports/m036
+# A valid reconstructed L2 mark must be no older than this at the UTC cutoff.
+terminal_mark_max_age_seconds: 60
+# Maximum permitted interval between valid L2 snapshot/delta updates, including
+# the opening and cutoff portions of every frozen UTC window.
+max_l2_update_age_seconds: 60
+current_state_binding:
+  next_campaign_status: PENDING_OWNER_AUTHORIZATION
+  next_campaign_model_hash: MODEL_SPEC_SHA256
+  next_campaign_window: PENDING_OWNER_AUTHORIZATION
+model_spec_sha256: "686df7e034e3857bccc8b0066b58b5911d867be8f67c7605fce453fae8b06ba1"
+execution_authorized: false

@@ -1,0 +1,92 @@
+{
+  "schema_version": "crypto-lab-day-model-spec-v1",
+  "model_id": "MXXX",
+  "parent_model_id": "MXXX",
+  "identity": "MXXX_DESCRIBE_FROZEN_HYPOTHESIS_V1",
+  "classification": "DEVELOPMENT_DIAGNOSTIC_NOT_OOS_NOT_LIVE",
+  "status": "DRAFT_NOT_CONSUMED",
+  "symbol": "USDCUSDT",
+  "venue": "BINANCE_SPOT",
+  "execution_authorized": false,
+  "authorization": {
+    "status": "OWNER_DECISION_REQUIRED",
+    "required_before_execution": [
+      "new model identity and parent-mechanism review",
+      "hash of STRATEGY.md and canonical job contract",
+      "preselected hash-bound L2 and individual-trade tape plus source manifest",
+      "exact CURRENT_STATE binding, reviewed source commit, and explicit owner authorization"
+    ]
+  },
+  "invariants": {
+    "frozen_event_order_replay": true,
+    "l2_inferred_fills_require_continuous_l2_and_individual_trades": true,
+    "public_l2_queue_never_claims_own_queue_rank": true,
+    "capture_arrival_and_latency_not_historical_proof": true,
+    "decimal_exact": true,
+    "capital_conservation": true,
+    "zero_loss": true,
+    "no_negative_ordinary_cycle_exit": true,
+    "cancel_release_requires_ack": true,
+    "live_testnet_closed": true,
+    "llm_in_execution_loop": false
+  },
+  "execution": {
+    "engine": "causal_cpu",
+    "evidence_class": "COUNTERFACTUAL_L2_QUEUE_ENVELOPE",
+    "tape_path": "data/mxxx/REPLACE_WITH_HASH_BOUND_TAPE.json",
+    "tape_manifest_path": "data/mxxx/REPLACE_WITH_HASH_BOUND_MANIFEST.json",
+    "temporal_provenance": {
+      "fee_record": {
+        "path": "data/mxxx/REPLACE_WITH_HISTORICAL_FEE_RECORD.json",
+        "sha256": "REPLACE_WITH_FEE_RECORD_SHA256",
+        "venue": "BINANCE_SPOT",
+        "symbol": "USDCUSDT"
+      },
+      "rule_record": {
+        "path": "data/mxxx/REPLACE_WITH_HISTORICAL_RULE_RECORD.json",
+        "sha256": "REPLACE_WITH_RULE_RECORD_SHA256",
+        "venue": "BINANCE_SPOT",
+        "symbol": "USDCUSDT"
+      }
+    },
+    "asset_mapping": {
+      "base_asset": "USDC",
+      "quote_asset": "USDT",
+      "adapter": "legacy_s0_quote_base_v1"
+    },
+    "s0_config": {
+      "strategy_id": "MXXX_REPLACE_BEFORE_AUTHORIZATION",
+      "symbol": "USDCUSDT",
+      "lower": "1.0000",
+      "upper": "1.0030",
+      "quantity_override": "10",
+      "initial_usdc": "200",
+      "lot_mode": "FIXED_LOT",
+      "fixed_lot_usdc": "10",
+      "step_size": "0.0001",
+      "min_quantity": "1",
+      "min_notional": "5",
+      "queue_model": "REALISTIC_QUEUE",
+      "conservative_queue_multiplier": "2",
+      "latency": {
+        "market_data_ms": 0,
+        "decision_ms": 0,
+        "order_submit_ms": 0,
+        "cancel_ms": 0
+      },
+      "fees": {
+        "maker_rate": "0",
+        "taker_rate": "0",
+        "buy_fee_asset": "QUOTE",
+        "sell_fee_asset": "QUOTE",
+        "source": "REPLACE_WITH_FROZEN_FEE_PROVENANCE"
+      }
+    }
+  },
+  "provenance": {
+    "strategy_sha256": "REPLACE_WITH_STRATEGY_SHA256",
+    "job_contract_sha256": "REPLACE_WITH_CANONICAL_JOB_CONTRACT_SHA256",
+    "execution_source_commit": "REPLACE_WITH_REVIEWED_MAIN_COMMIT"
+  },
+  "spec_sha256": "TO_BE_CALCULATED_AFTER_ALL_FIELDS_ARE_FROZEN"
+}

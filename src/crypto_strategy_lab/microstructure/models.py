@@ -28,6 +28,7 @@ class OrderStatus(StrEnum):
     CANCEL_PENDING = "CANCEL_PENDING"
     CANCELED = "CANCELED"
     REJECTED_POST_ONLY = "REJECTED_POST_ONLY"
+    REJECTED_NO_OBSERVED_QUEUE_COVERAGE = "REJECTED_NO_OBSERVED_QUEUE_COVERAGE"
     EXPIRED = "EXPIRED"
 
 
@@ -255,6 +256,12 @@ class MicroFill(BaseModel):
     role: LiquidityRole
     queue_ahead_after: Decimal
     completes_order: bool
+    # A counterfactual fill must remain traceable to the one canonical public
+    # print that depleted its modeled queue.  This is not an assertion that the
+    # venue filled our hypothetical order; that distinction lives in the
+    # day-run evidence classification.
+    source_trade_id: int = Field(ge=0)
+    source_event_sequence: int = Field(ge=0)
 
 
 class InventoryLedger(BaseModel):

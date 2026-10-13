@@ -1,0 +1,93 @@
+{
+  "schema_version": "crypto-lab-day-model-spec-v1",
+  "model_id": "M036",
+  "parent_model_id": "M035",
+  "identity": "M036_S0_CAUSAL_ENTRY_REACHABILITY_DIAGNOSTIC_V1",
+  "classification": "DEVELOPMENT_S0_ADAPTER_DIAGNOSTIC_NOT_OOS_NOT_LIVE",
+  "status": "DRAFT_NOT_CONSUMED",
+  "symbol": "USDCUSDT",
+  "venue": "BINANCE_SPOT",
+  "execution_authorized": false,
+  "authorization": {
+    "status": "OWNER_DECISION_REQUIRED",
+    "reason": "CURRENT_STATE declares NEXT_CAMPAIGN_WINDOW=UNAUTHORIZED after consumed M035 V2.",
+    "required_before_execution": [
+      "new owner authorization recorded in the authoritative CURRENT_STATE head",
+      "preselected UTC window and exact model-spec hash binding",
+      "hash-bound L2 snapshot/delta and individual-trade tape plus source manifest",
+      "reviewed clean main source commit and frozen fee provenance"
+    ]
+  },
+  "invariants": {
+    "frozen_event_order_replay": true,
+    "l2_inferred_fills_require_continuous_l2_and_individual_trades": true,
+    "public_l2_queue_never_claims_own_queue_rank": true,
+    "capture_arrival_and_latency_not_historical_proof": true,
+    "decimal_exact": true,
+    "capital_conservation": true,
+    "zero_loss": true,
+    "no_negative_ordinary_cycle_exit": true,
+    "cancel_release_requires_ack": true,
+    "live_testnet_closed": true,
+    "llm_in_execution_loop": false
+  },
+  "execution": {
+    "engine": "causal_cpu",
+    "evidence_class": "COUNTERFACTUAL_L2_QUEUE_ENVELOPE",
+    "tape_path": "data/m036/M036_S0_CAUSAL_ENTRY_REACHABILITY_DIAGNOSTIC_V1.tape.json",
+    "tape_manifest_path": "data/m036/M036_S0_CAUSAL_ENTRY_REACHABILITY_DIAGNOSTIC_V1.tape-manifest.json",
+    "temporal_provenance": {
+      "fee_record": {
+        "path": "data/m036/M036_S0_CAUSAL_ENTRY_REACHABILITY_DIAGNOSTIC_V1.fee-record.json",
+        "sha256": "PENDING_OWNER_HISTORICAL_FEE_RECORD_SHA256",
+        "venue": "BINANCE_SPOT",
+        "symbol": "USDCUSDT"
+      },
+      "rule_record": {
+        "path": "data/m036/M036_S0_CAUSAL_ENTRY_REACHABILITY_DIAGNOSTIC_V1.rule-record.json",
+        "sha256": "PENDING_OWNER_HISTORICAL_RULE_RECORD_SHA256",
+        "venue": "BINANCE_SPOT",
+        "symbol": "USDCUSDT"
+      }
+    },
+    "asset_mapping": {
+      "base_asset": "USDC",
+      "quote_asset": "USDT",
+      "adapter": "legacy_s0_quote_base_v1"
+    },
+    "s0_config": {
+      "strategy_id": "M036_S0_CAUSAL_ENTRY_REACHABILITY_DIAGNOSTIC_V1",
+      "symbol": "USDCUSDT",
+      "lower": "1.0000",
+      "upper": "1.0030",
+      "quantity_override": "10",
+      "initial_usdc": "200",
+      "lot_mode": "FIXED_LOT",
+      "fixed_lot_usdc": "10",
+      "step_size": "0.0001",
+      "min_quantity": "1",
+      "min_notional": "5",
+      "queue_model": "REALISTIC_QUEUE",
+      "conservative_queue_multiplier": "2",
+      "latency": {
+        "market_data_ms": 0,
+        "decision_ms": 0,
+        "order_submit_ms": 0,
+        "cancel_ms": 0
+      },
+      "fees": {
+        "maker_rate": "0",
+        "taker_rate": "0",
+        "buy_fee_asset": "QUOTE",
+        "sell_fee_asset": "QUOTE",
+        "source": "PENDING_OWNER_FROZEN_FEE_PROVENANCE"
+      }
+    }
+  },
+  "provenance": {
+    "strategy_sha256": "0bdb2b92acc1eaf3b8d1b2d7b8fe4b50842f1b26136aa14119d80e05be7403ee",
+    "job_contract_sha256": "dd50af5589c27e3446d7420ccb94af3b9248764667c6263fc532cc529c83acba",
+    "execution_source_commit": "PENDING_OWNER_FROZEN_COMMIT"
+  },
+  "spec_sha256": "686df7e034e3857bccc8b0066b58b5911d867be8f67c7605fce453fae8b06ba1"
+}

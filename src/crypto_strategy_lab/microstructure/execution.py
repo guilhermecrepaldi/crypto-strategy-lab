@@ -126,6 +126,11 @@ class PassiveExecutionSimulator:
             [item.timestamp for item in events]
             + [order.exchange_arrival_at for order in self._orders]
             + [fill.timestamp for fill in self._fills]
+            + [
+                order.cancel_effective_at
+                for order in self._orders
+                if order.cancel_effective_at is not None
+            ]
         )
         self._mark_inventory(finished_at)
         payload = {
@@ -348,6 +353,12 @@ class PassiveExecutionSimulator:
             if order.side == Side.BUY
             else self._asks.get(order.price, Decimal("0"))
         )
+        # A top-N L2 feed says nothing about queue depth at an absent price.
+        # Refuse the modeled order rather than treating an unobserved level as a
+        # zero-ahead queue and manufacturing a favorable fill.
+        if public_quantity <= 0:
+            order.status = OrderStatus.REJECTED_NO_OBSERVED_QUEUE_COVERAGE
+            return
         if self.config.queue_model == QueueModel.OPTIMISTIC:
             order.queue_ahead = Decimal("0")
         elif self.config.queue_model == QueueModel.REALISTIC_QUEUE:
@@ -363,6 +374,12 @@ class PassiveExecutionSimulator:
 
     def _match_trade(self, trade: TradeEvent) -> None:
         passive_side = Side.BUY if trade.buyer_is_maker else Side.SELL
+        book = self._bids if passive_side == Side.BUY else self._asks
+        # A print at an unobserved/deleted price cannot clear modeled queue.  The
+        # remaining L2 book can still be valid, but it supplies no evidence for
+        # this order's level.
+        if book.get(trade.price, Decimal("0")) <= 0:
+            return
         available = trade.quantity
         matching = [
             order
@@ -381,7 +398,13 @@ class PassiveExecutionSimulator:
                 break
             fill_quantity = min(order.remaining_quantity, available)
             if fill_quantity > 0:
-                fill = self._apply_fill(order, trade.timestamp, fill_quantity)
+                fill = self._apply_fill(
+                    order,
+                    trade.timestamp,
+                    fill_quantity,
+                    source_trade_id=trade.trade_id,
+                    source_event_sequence=trade.sequence,
+                )
                 available -= fill_quantity
                 self._schedule(
                     trade.timestamp + self.config.latency.market_data,
@@ -389,7 +412,6 @@ class PassiveExecutionSimulator:
                     "FILL_NOTICE",
                     fill,
                 )
-        book = self._bids if passive_side == Side.BUY else self._asks
         if trade.price in book:
             book[trade.price] = max(Decimal("0"), book[trade.price] - trade.quantity)
             if book[trade.price] == 0:
@@ -401,6 +423,9 @@ class PassiveExecutionSimulator:
         order: PassiveOrder,
         timestamp: datetime,
         quantity: Decimal,
+        *,
+        source_trade_id: int,
+        source_event_sequence: int,
     ) -> MicroFill:
         cancel_pending = order.status == OrderStatus.CANCEL_PENDING
         rate = self.config.fees.rate(LiquidityRole.MAKER)
@@ -478,6 +503,8 @@ class PassiveExecutionSimulator:
             role=LiquidityRole.MAKER,
             queue_ahead_after=order.queue_ahead,
             completes_order=order.status == OrderStatus.FILLED,
+            source_trade_id=source_trade_id,
+            source_event_sequence=source_event_sequence,
         )
         self._fills.append(fill)
         self._mark_inventory(timestamp)

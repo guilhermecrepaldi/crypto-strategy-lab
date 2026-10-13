@@ -62,6 +62,7 @@ from crypto_strategy_lab.microstructure.data import (
     slice_history_manifest,
     verify_history_manifest,
 )
+from crypto_strategy_lab.microstructure.day_run import DayRunError, run_day_campaign
 from crypto_strategy_lab.microstructure.evolution_diagnostics import diagnose_evolution
 from crypto_strategy_lab.microstructure.level_scanner import (
     scan_campaign,
@@ -231,6 +232,39 @@ def simulate_fixture(
     typer.echo(f"Run ID: {result.run_id}")
     typer.echo(f"JSON: {json_path}")
     typer.echo(f"Markdown: {markdown_path}")
+
+
+@app.command("day-run")
+def day_run(
+    campaign: Annotated[
+        Path,
+        typer.Option(
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            help="Campaign directory under campaigns/ containing job.yaml and model_spec.json",
+        ),
+    ],
+) -> None:
+    """Run one frozen local campaign; preflight rejects unsafe or consumed work."""
+    try:
+        outcome = run_day_campaign(Path.cwd().resolve(), campaign)
+    except DayRunError as error:
+        typer.echo(f"day-run blocked: {error}", err=True)
+        raise typer.Exit(code=1) from None
+    typer.echo(
+        json.dumps(
+            {
+                "model_id": outcome.model_id,
+                "status": outcome.status,
+                "summary": str(outcome.summary_path),
+                "audit": str(outcome.audit_path),
+                "run_status": str(outcome.status_path),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
 
 
 @app.command("download-month")

@@ -24,6 +24,7 @@ reports/*.md
 !reports/learning-dashboard.html
 reports/runs/
 output/
+/campaigns/*/runner.log
 .playwright-cli/
 /runtime/
 *.secret

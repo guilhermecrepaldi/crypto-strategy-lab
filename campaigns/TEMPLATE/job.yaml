@@ -1,0 +1,47 @@
+schema_version: crypto-lab-day-job-v1
+day: "YYYY-MM-DD"
+model_id: MXXX
+parent: MXXX
+window:
+  start: "YYYY-MM-DDT00:00:00Z"
+  end: "YYYY-MM-DDT00:00:00Z"
+window_selection: PENDING_OWNER_AUTHORIZATION_NO_DATA_INSPECTION
+scenarios:
+  - name: F0_single
+    fee_bps: "0"
+    mode: single
+  - name: F1_single
+    fee_bps: "1"
+    mode: single
+  - name: F2_single
+    fee_bps: "2"
+    mode: single
+  - name: F5_single
+    fee_bps: "5"
+    mode: single
+  - name: F10_single
+    fee_bps: "10"
+    mode: single
+oracle:
+  backend: auto
+  candidates: []
+  advisory_only: true
+engine: causal_cpu
+gates:
+  # L2/trade-inferred cycles are a counterfactual diagnostic, never venue receipts.
+  min_l2_inferred_cycles: 38
+  max_negative_cycles: 0
+  capital_conservation: true
+output_dir: reports/mxxx
+# Freeze a positive bound before data inspection; the runner requires a fresh
+# continuous L2 mark at each authorized UTC cutoff.
+terminal_mark_max_age_seconds: 60
+# Maximum permitted interval between valid L2 snapshot/delta updates, including
+# the opening and cutoff portions of every frozen UTC window.
+max_l2_update_age_seconds: 60
+current_state_binding:
+  next_campaign_status: REPLACE_WITH_AUTHORIZED_CURRENT_STATE_STATUS
+  next_campaign_model_hash: MODEL_SPEC_SHA256
+  next_campaign_window: REPLACE_WITH_EXACT_UTC_WINDOW_TOKEN
+model_spec_sha256: TO_BE_CALCULATED_AFTER_ALL_FIELDS_ARE_FROZEN
+execution_authorized: false

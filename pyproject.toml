@@ -11,6 +11,7 @@ dependencies = [
   "psycopg[binary]>=3.2,<4",
   "pydantic>=2.10,<3",
   "pydantic-settings>=2.7,<3",
+  "pyyaml>=6,<7",
   "sqlalchemy>=2.0,<3",
   "stable-baselines3>=2.6,<3",
   "structlog>=25.1,<26",
@@ -36,6 +37,8 @@ dev = [
   "pytest>=8.3,<9",
   "pytest-cov>=6,<7",
   "ruff>=0.9,<1",
+  "types-pyyaml>=6.0.12.20250915,<7",
+  "websockets>=15,<16",
 ]
 
 [build-system]
@@ -48,6 +51,7 @@ packages = ["src/crypto_strategy_lab"]
 [tool.pytest.ini_options]
 addopts = "-q --strict-markers"
 testpaths = ["tests"]
+pythonpath = ["."]
 markers = [
   "integration: requires the TimescaleDB container",
   "ml: executes a short reinforcement-learning training loop",
