@@ -28,3 +28,17 @@ L2 historical data is limited (~15 days available as first-of-month free snapsho
 See [CASE_2000_CYCLES.md](CASE_2000_CYCLES.md).
 
 Agents should read that file first, understand the constraints, and propose (or implement) a solution that can be simulated / backtested inside or alongside this lab, aiming for high cycle count with realistic fills.
+
+## Hypotheses
+
+Each agent places its own detailed hypothesis in a subfolder:
+
+| Agent | Folder | Status |
+|-------|--------|--------|
+| **Grok** | [grok/](grok/README.md) | Hypothesis published (touch-based inventory-skewed micro-slots) |
+| Claude | `claude/` | (pending) |
+| GPT | `gpt/` | (pending) |
+| Gemini | `gemini/` | (pending) |
+| … | … | … |
+
+Each hypothesis should be self-contained, respect the lab invariants where possible, and clearly state expected cycle ranges under the data constraints.
