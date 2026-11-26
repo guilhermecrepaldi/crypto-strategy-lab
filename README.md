@@ -9,6 +9,8 @@ O operador local possui um observador opcional de conta Binance em modo somente 
 credenciais protegidas localmente por DPAPI. Não existe transporte para enviar ordens ou saques;
 `TESTNET` e `LIVE` falham fechado.
 
+> **Case para IAs / pesquisadores**: ver a pasta [`.ai/`](.ai/README.md) — especialmente [`.ai/CASE_2000_CYCLES.md`](.ai/CASE_2000_CYCLES.md). O objetivo é chegar a ~2.000 ciclos/dia em paridade de stablecoins com capital pequeno (~200 USDT), focando no processo e no motor de execução.
+
 ## Estado atual
 
 A linha mais recente é o **M035 Parallel Pair Capital Manager**: dois pares simples e independentes,
@@ -114,7 +116,8 @@ o protocolo da identidade.
 - `docs/microstructure/`: especificações e diretivas experimentais;
 - `docs/research/`: journals, estado atual e revisões;
 - `reports/`: resultados, auditorias, gráficos e dashboards autocontidos;
-- `scripts/`: runners e utilitários reproduzíveis.
+- `scripts/`: runners e utilitários reproduzíveis;
+- `.ai/`: case study para IAs alcançarem ~2.000 ciclos/dia em paridade de stablecoins.
 
 ## Limites
 
